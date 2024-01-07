@@ -16,4 +16,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
     private String userNickname;
+
+    public void updateUserNickname(String newUserNickname) {
+        this.userNickname = newUserNickname;
+    }
 }
