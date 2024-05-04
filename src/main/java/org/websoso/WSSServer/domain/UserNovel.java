@@ -37,7 +37,7 @@ public class UserNovel extends BaseEntity {
     private Flag isInterest;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column
     private ReadStatus status;
 
     @Column(nullable = false, columnDefinition = "float default 0.0")

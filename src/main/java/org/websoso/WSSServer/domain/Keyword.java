@@ -21,7 +21,7 @@ public class Keyword {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)
-    private Long keywordId;
+    private Integer keywordId;
 
     @Column(nullable = false)
     private KeywordCategory categoryName;

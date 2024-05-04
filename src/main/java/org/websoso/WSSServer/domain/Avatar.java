@@ -1,7 +1,9 @@
 package org.websoso.WSSServer.domain;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,6 +31,6 @@ public class Avatar {
     @Column(columnDefinition = "varchar(100)", nullable = false)
     private String avatarImage;
 
-    @OneToMany(mappedBy = "avatar")
+    @OneToMany(mappedBy = "avatar", cascade = ALL)
     private List<AvatarLine> avatarLine = new ArrayList<>();
 }

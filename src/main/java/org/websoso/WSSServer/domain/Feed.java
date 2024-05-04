@@ -3,6 +3,7 @@ package org.websoso.WSSServer.domain;
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -37,7 +38,7 @@ public class Feed extends BaseEntity {
     @ColumnDefault("'N'")
     private Flag isHidden;
 
-    @Column(columnDefinition = "varchar(2000)")
+    @Column(columnDefinition = "varchar(2000)", nullable = false)
     private String feedContent;
 
     @Column
@@ -67,6 +68,6 @@ public class Feed extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "feed")
+    @OneToMany(mappedBy = "feed", cascade = ALL)
     private List<Comment> comments = new ArrayList<>();
 }
