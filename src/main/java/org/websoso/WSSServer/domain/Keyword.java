@@ -28,5 +28,5 @@ public class Keyword {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private KeywordCategory keywordName;
+    private String keywordName;
 }
