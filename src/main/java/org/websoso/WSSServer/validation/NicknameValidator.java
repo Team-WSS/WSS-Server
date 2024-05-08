@@ -14,6 +14,8 @@ import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
 @Component
 public class NicknameValidator implements ConstraintValidator<NicknameConstraint, String> {
 
+    private static final String NICKNAME_REGEX = "^\\s*[가-힣a-zA-Z0-9]*\\s*$";
+
     @Override
     public void initialize(NicknameConstraint nickname) {
     }
@@ -29,7 +31,7 @@ public class NicknameValidator implements ConstraintValidator<NicknameConstraint
         if (!(nickname.length() >= 2 && nickname.length() <= 10)) {
             throw new InvalidNicknameException(INVALID_NICKNAME_LENGTH, "nickname must be 2 to 10 characters long");
         }
-        if (!nickname.matches("^\\s*[가-힣a-zA-Z0-9]*\\s*$")) {
+        if (!nickname.matches(NICKNAME_REGEX)) {
             throw new InvalidNicknameException(INVALID_NICKNAME_PATTERN,
                     "nickname should be written in Korean, English, and numbers");
         }
