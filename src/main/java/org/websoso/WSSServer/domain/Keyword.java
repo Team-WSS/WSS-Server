@@ -23,10 +23,10 @@ public class Keyword {
     @Column(nullable = false)
     private Integer keywordId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private KeywordCategory categoryName;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private String keywordName;
 }
