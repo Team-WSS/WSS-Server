@@ -31,7 +31,7 @@ public class NicknameValidator implements ConstraintValidator<NicknameConstraint
         if (!(nickname.length() >= 2 && nickname.length() <= 10)) {
             throw new InvalidNicknameException(INVALID_NICKNAME_LENGTH, "nickname must be 2 to 10 characters long");
         }
-        if (!nickname.matches(NICKNAME_REGEX)) {
+        if (!isMatches(nickname)) {
             throw new InvalidNicknameException(INVALID_NICKNAME_PATTERN,
                     "nickname should be written in Korean, English, and numbers");
         }
@@ -40,5 +40,9 @@ public class NicknameValidator implements ConstraintValidator<NicknameConstraint
                     "nickname cannot start or end with whitespace");
         }
         return true;
+    }
+
+    private static boolean isMatches(String nickname) {
+        return nickname.matches(NICKNAME_REGEX);
     }
 }
