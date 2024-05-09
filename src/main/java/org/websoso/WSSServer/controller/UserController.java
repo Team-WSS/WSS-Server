@@ -3,10 +3,13 @@ package org.websoso.WSSServer.controller;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.OK;
 
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,4 +39,13 @@ public class UserController {
                 .status(OK)
                 .body(nicknameValidation);
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> login(@RequestBody String userId) {
+        String token = userService.login(Long.valueOf(userId));
+        return ResponseEntity
+                .status(OK)
+                .body(Map.of("Authorization", token));
+    }
+
 }
