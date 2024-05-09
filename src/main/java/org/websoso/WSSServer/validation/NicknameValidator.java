@@ -29,16 +29,16 @@ public class NicknameValidator implements ConstraintValidator<NicknameConstraint
         if (nickname.isBlank()) {
             throw new InvalidNicknameException(INVALID_NICKNAME_BLANK, "nickname cannot be blank");
         }
+        if (nickname.startsWith(" ") || nickname.endsWith(" ")) {
+            throw new InvalidNicknameException(INVALID_NICKNAME_START_OR_END_WITH_BLANK,
+                    "nickname cannot start or end with whitespace");
+        }
         if (!(nickname.length() >= 2 && nickname.length() <= 10)) {
             throw new InvalidNicknameException(INVALID_NICKNAME_LENGTH, "nickname must be 2 to 10 characters long");
         }
         if (!isMatches(nickname)) {
             throw new InvalidNicknameException(INVALID_NICKNAME_PATTERN,
                     "nickname should be written in Korean, English, and numbers");
-        }
-        if (nickname.startsWith(" ") || nickname.endsWith(" ")) {
-            throw new InvalidNicknameException(INVALID_NICKNAME_START_OR_END_WITH_BLANK,
-                    "nickname cannot start or end with whitespace");
         }
         return true;
     }
