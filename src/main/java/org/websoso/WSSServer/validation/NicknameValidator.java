@@ -8,13 +8,14 @@ import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_NICKNAM
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
 
 @Component
 public class NicknameValidator implements ConstraintValidator<NicknameConstraint, String> {
 
-    private static final String NICKNAME_REGEX = "^\\s*[가-힣a-zA-Z0-9]*\\s*$";
+    private static final Pattern NICKNAME_REGEX = Pattern.compile("^\\s*[가-힣a-zA-Z0-9]*\\s*$");
 
     @Override
     public void initialize(NicknameConstraint nickname) {
@@ -43,6 +44,6 @@ public class NicknameValidator implements ConstraintValidator<NicknameConstraint
     }
 
     private static boolean isMatches(String nickname) {
-        return nickname.matches(NICKNAME_REGEX);
+        return NICKNAME_REGEX.matcher(nickname).matches();
     }
 }
