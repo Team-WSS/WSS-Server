@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Flag.Y;
+import static org.websoso.WSSServer.exception.category.CategoryErrorCode.INVALID_CATEGORY_FORMAT;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Category;
 import org.websoso.WSSServer.domain.Category.CategoryBuilder;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.exception.category.exeption.InvalidCategoryException;
 import org.websoso.WSSServer.repository.CategoryRepository;
 
 @Service
@@ -41,7 +43,7 @@ public class CategoryService {
             case "wuxia" -> builder.isWu(Y);
             case "mystery" -> builder.isMy(Y);
             case "BL" -> builder.isBl(Y);
-            default -> throw new RuntimeException("잘못된 카테고리"); // 수정 예정
+            default -> throw new InvalidCategoryException(INVALID_CATEGORY_FORMAT, "invalid category format");
         }
     }
 }
