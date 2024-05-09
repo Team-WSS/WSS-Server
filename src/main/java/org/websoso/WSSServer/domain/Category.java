@@ -11,11 +11,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.Flag;
 
+@DynamicInsert
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -79,4 +82,20 @@ public class Category {
     @OneToOne
     @JoinColumn(name = "feed_id", nullable = false)
     private Feed feed;
+
+    @Builder
+    public Category(Flag isRf, Flag isRo, Flag isFa, Flag isMf, Flag isDr, Flag isLn, Flag isWu, Flag isMy, Flag isBl,
+                    Flag isEtc, Feed feed) {
+        this.isRf = isRf;
+        this.isRo = isRo;
+        this.isFa = isFa;
+        this.isMf = isMf;
+        this.isDr = isDr;
+        this.isLn = isLn;
+        this.isWu = isWu;
+        this.isMy = isMy;
+        this.isBl = isBl;
+        this.isEtc = isEtc;
+        this.feed = feed;
+    }
 }
