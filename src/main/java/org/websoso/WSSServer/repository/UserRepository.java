@@ -6,4 +6,6 @@ import org.websoso.WSSServer.domain.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+
+    boolean existsByNickname(String nickname);
 }
