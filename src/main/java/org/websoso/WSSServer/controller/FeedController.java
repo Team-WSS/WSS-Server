@@ -24,7 +24,7 @@ public class FeedController {
     private final UserService userService;
 
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Void> createFeed(Principal principal,
                                            @Valid @RequestBody FeedCreateRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
