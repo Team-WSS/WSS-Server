@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.User.LoginResponse;
 import org.websoso.WSSServer.dto.User.NicknameValidation;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
 import org.websoso.WSSServer.repository.UserRepository;
@@ -26,12 +27,13 @@ public class UserService {
         return NicknameValidation.of(isNicknameTaken);
     }
 
-    public String login(Long userId) {
+    public LoginResponse login(Long userId) {
         User user = getUserOrException(userId);
 
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
+        String token = jwtProvider.generateToken(userAuthentication);
 
-        return jwtProvider.generateToken(userAuthentication);
+        return LoginResponse.of(token);
     }
 
     public User getUserOrException(Long userId) {
