@@ -21,7 +21,7 @@ public class CategoryService {
 
     @Transactional
     public void createCategory(Feed feed, List<String> relevantCategories) {
-        Category.CategoryBuilder builder = Category.builder()
+        CategoryBuilder builder = Category.builder()
                 .feed(feed);
 
         for (String category : relevantCategories) {
