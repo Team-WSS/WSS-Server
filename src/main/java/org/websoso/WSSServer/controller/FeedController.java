@@ -23,7 +23,6 @@ public class FeedController {
     private final FeedService feedService;
     private final UserService userService;
 
-
     @PostMapping
     public ResponseEntity<Void> createFeed(Principal principal,
                                            @Valid @RequestBody FeedCreateRequest request) {
