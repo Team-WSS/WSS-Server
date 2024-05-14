@@ -47,6 +47,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ErrorResult InvalidFeedExceptionHandler(MethodArgumentNotValidException e) {
         log.error("[MethodArgumentNotValidException] exception ", e);
-        return new ErrorResult("BAD REQUEST", e.getBindingResult().getAllErrors().get(0).getDefaultMessage());
+        return new ErrorResult(BAD_REQUEST.getReasonPhrase(),
+                e.getBindingResult().getAllErrors().get(0).getDefaultMessage());
     }
 }
