@@ -3,7 +3,6 @@ package org.websoso.WSSServer.domain;
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,12 +16,15 @@ import jakarta.persistence.OneToOne;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.domain.common.Flag;
 
+@DynamicInsert
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -70,4 +72,12 @@ public class Feed extends BaseEntity {
 
     @OneToMany(mappedBy = "feed", cascade = ALL)
     private List<Comment> comments = new ArrayList<>();
+
+    @Builder
+    public Feed(String feedContent, Flag isSpoiler, Long novelId, User user) {
+        this.feedContent = feedContent;
+        this.isSpoiler = isSpoiler;
+        this.novelId = novelId;
+        this.user = user;
+    }
 }

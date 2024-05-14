@@ -48,7 +48,7 @@ public class Novel {
     private Flag isCompleted;
 
     @Column(columnDefinition = "int default 0", nullable = false)
-    private Long novelRatingCount;
+    private Integer novelRatingCount;
 
     @Column(columnDefinition = "float default 0.0", nullable = false)
     private Float novelRatingSum;
