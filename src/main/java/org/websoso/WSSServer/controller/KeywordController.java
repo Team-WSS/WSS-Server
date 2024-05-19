@@ -17,7 +17,7 @@ public class KeywordController {
     private final KeywordService keywordService;
 
     @GetMapping
-    public ResponseEntity<KeywordByCategoryGetResponse> getKeywordsByCategory(@RequestParam(required = false) String word) {
-        return ResponseEntity.ok(keywordService.getAll(word));
+    public ResponseEntity<KeywordByCategoryGetResponse> getKeywordsByCategory(@RequestParam(required = false) String query) {
+        return ResponseEntity.ok(keywordService.getAll(query));
     }
 }
