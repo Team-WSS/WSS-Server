@@ -6,5 +6,5 @@ import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.common.KeywordCategory;
 
 public interface KeywordRepository extends JpaRepository<Keyword, Integer> {
-    List<Keyword> findAllByCategoryName(KeywordCategory keywordCategory);
+    List<Keyword> findByKeywordNameContaining(String word);
 }
