@@ -21,7 +21,13 @@ public class KeywordService {
     private final KeywordRepository keywordRepository;
 
     public List<KeywordGetResponse> searchKeywordsByCategory(String query, KeywordCategory keywordCategory) {
-        List<Keyword> searchedKeyword = keywordRepository.findByKeywordNameContaining(query);
+        List<Keyword> searchedKeyword;
+
+        if (query == null || query.isEmpty()) {
+            searchedKeyword = keywordRepository.findAll();
+        } else {
+            searchedKeyword = keywordRepository.findByKeywordNameContaining(query);
+        }
 
         List<Keyword> filteredKeywords = searchedKeyword.stream()
                 .filter(keyword -> keyword.getCategoryName().equals(keywordCategory))
