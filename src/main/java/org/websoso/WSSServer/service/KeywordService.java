@@ -20,7 +20,7 @@ public class KeywordService {
 
     private final KeywordRepository keywordRepository;
 
-    public List<KeywordGetResponse> searchKeywordsByCategory(String query, KeywordCategory keywordCategory) {
+    public List<KeywordGetResponse> searchKeyword(String query, KeywordCategory keywordCategory) {
         List<Keyword> searchedKeyword;
 
         if (query == null || query.isEmpty()) {
@@ -38,22 +38,22 @@ public class KeywordService {
                 .collect(Collectors.toList());
     }
 
-    public List<CategoryGetResponse> getCategorys(String query) { //TODO 반복적인 코드 줄이기
+    public List<CategoryGetResponse> sortByCategory(String query) { //TODO 반복적인 코드 줄이기
         CategoryGetResponse worldview = CategoryGetResponse.of(KeywordCategory.WORLDVIEW,
-                searchKeywordsByCategory(query, KeywordCategory.WORLDVIEW));
+                searchKeyword(query, KeywordCategory.WORLDVIEW));
         CategoryGetResponse material = CategoryGetResponse.of(KeywordCategory.MATERIAL,
-                searchKeywordsByCategory(query, KeywordCategory.MATERIAL));
+                searchKeyword(query, KeywordCategory.MATERIAL));
         CategoryGetResponse character = CategoryGetResponse.of(KeywordCategory.CHARACTER,
-                searchKeywordsByCategory(query, KeywordCategory.CHARACTER));
+                searchKeyword(query, KeywordCategory.CHARACTER));
         CategoryGetResponse relationship = CategoryGetResponse.of(KeywordCategory.RELATIONSHIP,
-                searchKeywordsByCategory(query, KeywordCategory.RELATIONSHIP));
+                searchKeyword(query, KeywordCategory.RELATIONSHIP));
         CategoryGetResponse vibe = CategoryGetResponse.of(KeywordCategory.VIBE,
-                searchKeywordsByCategory(query, KeywordCategory.VIBE));
+                searchKeyword(query, KeywordCategory.VIBE));
         return Arrays.asList(worldview, material, character, relationship, vibe);
     }
 
-    public KeywordByCategoryGetResponse getAll(String query) { //TODO 함수 이름
-        List<CategoryGetResponse> categorys = getCategorys(query);
+    public KeywordByCategoryGetResponse searchKeywordByCategory(String query) { //TODO 함수 이름
+        List<CategoryGetResponse> categorys = sortByCategory(query);
         return KeywordByCategoryGetResponse.of(categorys);
     }
 }
