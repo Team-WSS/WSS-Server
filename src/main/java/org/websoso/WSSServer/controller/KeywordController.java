@@ -1,5 +1,7 @@
 package org.websoso.WSSServer.controller;
 
+import static org.springframework.http.HttpStatus.OK;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,8 @@ public class KeywordController {
     @GetMapping
     public ResponseEntity<KeywordByCategoryGetResponse> searchKeywordByCategory(
             @RequestParam(required = false) String query) {
-        return ResponseEntity.ok(keywordService.searchKeywordByCategory(query));
+        return ResponseEntity
+                .status(OK)
+                .body(keywordService.searchKeywordByCategory(query));
     }
 }
