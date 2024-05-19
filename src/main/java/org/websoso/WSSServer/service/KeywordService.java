@@ -49,7 +49,7 @@ public class KeywordService {
                 .collect(Collectors.toList());
     }
 
-    public KeywordByCategoryGetResponse searchKeywordByCategory(String query) { //TODO 함수 이름
+    public KeywordByCategoryGetResponse searchKeywordByCategory(String query) {
         List<CategoryGetResponse> categorys = getResultByCategory(query);
         return KeywordByCategoryGetResponse.of(categorys);
     }
