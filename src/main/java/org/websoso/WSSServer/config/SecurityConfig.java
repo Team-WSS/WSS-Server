@@ -27,7 +27,8 @@ public class SecurityConfig {
     private final String[] permitAllPaths = {
             "/users/login",
             "/users/nickname/check",
-            "/actuator/health"
+            "/actuator/health",
+            "/keywords"
     };
 
     @Bean
