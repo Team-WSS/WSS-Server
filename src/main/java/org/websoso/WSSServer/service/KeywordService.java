@@ -43,18 +43,10 @@ public class KeywordService {
                 .collect(Collectors.toList());
     }
 
-    public List<CategoryGetResponse> getResultByCategory(String query) { //TODO 반복적인 코드 줄이기
-        CategoryGetResponse worldview = CategoryGetResponse.of(KeywordCategory.WORLDVIEW,
-                sortByCategory(KeywordCategory.WORLDVIEW, searchKeyword(query)));
-        CategoryGetResponse material = CategoryGetResponse.of(KeywordCategory.MATERIAL,
-                sortByCategory(KeywordCategory.MATERIAL, searchKeyword(query)));
-        CategoryGetResponse character = CategoryGetResponse.of(KeywordCategory.CHARACTER,
-                sortByCategory(KeywordCategory.CHARACTER, searchKeyword(query)));
-        CategoryGetResponse relationship = CategoryGetResponse.of(KeywordCategory.RELATIONSHIP,
-                sortByCategory(KeywordCategory.RELATIONSHIP, searchKeyword(query)));
-        CategoryGetResponse vibe = CategoryGetResponse.of(KeywordCategory.VIBE,
-                sortByCategory(KeywordCategory.VIBE, searchKeyword(query)));
-        return Arrays.asList(worldview, material, character, relationship, vibe);
+    public List<CategoryGetResponse> getResultByCategory(String query) {
+        return Arrays.stream(KeywordCategory.values())
+                .map(category -> CategoryGetResponse.of(category, sortByCategory(category, searchKeyword(query))))
+                .collect(Collectors.toList());
     }
 
     public KeywordByCategoryGetResponse searchKeywordByCategory(String query) { //TODO 함수 이름
