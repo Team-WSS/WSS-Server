@@ -20,7 +20,7 @@ public class KeywordService {
 
     private final KeywordRepository keywordRepository;
 
-    public List<KeywordGetResponse> searchKeyword(String query, KeywordCategory keywordCategory) {
+    public List<Keyword> searchKeyword(String query) {
         List<Keyword> searchedKeyword;
 
         if (query == null || query.isEmpty()) {
@@ -29,6 +29,11 @@ public class KeywordService {
             searchedKeyword = keywordRepository.findByKeywordNameContaining(query);
         }
 
+        return searchedKeyword.stream()
+                .toList();
+    }
+
+    public List<KeywordGetResponse> sortByCategory(KeywordCategory keywordCategory, List<Keyword> searchedKeyword) {
         List<Keyword> filteredKeywords = searchedKeyword.stream()
                 .filter(keyword -> keyword.getCategoryName().equals(keywordCategory))
                 .toList();
@@ -38,22 +43,22 @@ public class KeywordService {
                 .collect(Collectors.toList());
     }
 
-    public List<CategoryGetResponse> sortByCategory(String query) { //TODO 반복적인 코드 줄이기
+    public List<CategoryGetResponse> getResultByCategory(String query) { //TODO 반복적인 코드 줄이기
         CategoryGetResponse worldview = CategoryGetResponse.of(KeywordCategory.WORLDVIEW,
-                searchKeyword(query, KeywordCategory.WORLDVIEW));
+                sortByCategory(KeywordCategory.WORLDVIEW, searchKeyword(query)));
         CategoryGetResponse material = CategoryGetResponse.of(KeywordCategory.MATERIAL,
-                searchKeyword(query, KeywordCategory.MATERIAL));
+                sortByCategory(KeywordCategory.MATERIAL, searchKeyword(query)));
         CategoryGetResponse character = CategoryGetResponse.of(KeywordCategory.CHARACTER,
-                searchKeyword(query, KeywordCategory.CHARACTER));
+                sortByCategory(KeywordCategory.CHARACTER, searchKeyword(query)));
         CategoryGetResponse relationship = CategoryGetResponse.of(KeywordCategory.RELATIONSHIP,
-                searchKeyword(query, KeywordCategory.RELATIONSHIP));
+                sortByCategory(KeywordCategory.RELATIONSHIP, searchKeyword(query)));
         CategoryGetResponse vibe = CategoryGetResponse.of(KeywordCategory.VIBE,
-                searchKeyword(query, KeywordCategory.VIBE));
+                sortByCategory(KeywordCategory.VIBE, searchKeyword(query)));
         return Arrays.asList(worldview, material, character, relationship, vibe);
     }
 
     public KeywordByCategoryGetResponse searchKeywordByCategory(String query) { //TODO 함수 이름
-        List<CategoryGetResponse> categorys = sortByCategory(query);
+        List<CategoryGetResponse> categorys = getResultByCategory(query);
         return KeywordByCategoryGetResponse.of(categorys);
     }
 }
