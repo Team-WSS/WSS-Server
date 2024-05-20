@@ -34,7 +34,7 @@ public class Novel {
     @Column(nullable = false)
     private String author;
 
-    @Column(columnDefinition = "varchar(5)", nullable = false)
+    @Column(nullable = false)
     private String genre;
 
     @Column(columnDefinition = "text", nullable = false)
