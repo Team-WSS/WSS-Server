@@ -21,16 +21,10 @@ public class KeywordService {
     private final KeywordRepository keywordRepository;
 
     public List<Keyword> searchKeyword(String query) {
-        List<Keyword> searchedKeyword;
-
         if (query == null || query.isEmpty()) {
-            searchedKeyword = keywordRepository.findAll();
-        } else {
-            searchedKeyword = keywordRepository.findByKeywordNameContaining(query);
+            return keywordRepository.findAll().stream().toList();
         }
-
-        return searchedKeyword.stream()
-                .toList();
+        return keywordRepository.findByKeywordNameContaining(query).stream().toList();
     }
 
     public List<KeywordGetResponse> sortByCategory(KeywordCategory keywordCategory, List<Keyword> searchedKeyword) {
