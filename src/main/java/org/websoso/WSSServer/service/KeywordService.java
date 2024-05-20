@@ -31,20 +31,15 @@ public class KeywordService {
         List<Keyword> filteredKeywords = searchedKeyword.stream()
                 .filter(keyword -> keyword.getCategoryName().equals(keywordCategory))
                 .toList();
-
         return filteredKeywords.stream()
                 .map(KeywordGetResponse::of)
                 .collect(Collectors.toList());
     }
 
-    private List<CategoryGetResponse> getResultByCategory(String query) {
-        return Arrays.stream(KeywordCategory.values())
+    public KeywordByCategoryGetResponse searchKeywordByCategory(String query) {
+        List<CategoryGetResponse> categorys = Arrays.stream(KeywordCategory.values())
                 .map(category -> CategoryGetResponse.of(category, sortByCategory(category, searchKeyword(query))))
                 .collect(Collectors.toList());
-    }
-
-    public KeywordByCategoryGetResponse searchKeywordByCategory(String query) {
-        List<CategoryGetResponse> categorys = getResultByCategory(query);
         return KeywordByCategoryGetResponse.of(categorys);
     }
 }
