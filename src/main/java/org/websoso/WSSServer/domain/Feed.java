@@ -80,4 +80,10 @@ public class Feed extends BaseEntity {
         this.novelId = novelId;
         this.user = user;
     }
+
+    public void updateFeed(String feedContent, Flag isSpoiler, Long novelId) {
+        this.feedContent = feedContent;
+        this.isSpoiler = isSpoiler;
+        this.novelId = novelId;
+    }
 }
