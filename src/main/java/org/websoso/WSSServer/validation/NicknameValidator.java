@@ -15,7 +15,7 @@ import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
 @Component
 public class NicknameValidator implements ConstraintValidator<NicknameConstraint, String> {
 
-    private static final Pattern NICKNAME_REGEX = Pattern.compile("^\\s*[가-힣a-zA-Z0-9]*\\s*$");
+    private static final Pattern NICKNAME_REGEX = Pattern.compile("^\\s*[가-힣a-zA-Z0-9-_]*\\s*$");
 
     @Override
     public void initialize(NicknameConstraint nickname) {
