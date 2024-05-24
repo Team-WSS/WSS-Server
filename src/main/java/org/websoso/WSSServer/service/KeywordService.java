@@ -28,7 +28,7 @@ public class KeywordService {
     }
 
     private List<Keyword> searchKeyword(String query) {
-        if (query == null || query.isEmpty()) {
+        if (query == null || query.isBlank()) {
             return keywordRepository.findAll().stream().toList();
         }
         String[] words = query.split(" ");
