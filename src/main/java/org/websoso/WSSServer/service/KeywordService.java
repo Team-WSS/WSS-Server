@@ -21,10 +21,10 @@ public class KeywordService {
     private final KeywordRepository keywordRepository;
 
     public KeywordByCategoryGetResponse searchKeywordByCategory(String query) {
-        List<CategoryGetResponse> categorys = Arrays.stream(KeywordCategory.values())
+        List<CategoryGetResponse> categories = Arrays.stream(KeywordCategory.values())
                 .map(category -> CategoryGetResponse.of(category, sortByCategory(category, searchKeyword(query))))
                 .collect(Collectors.toList());
-        return KeywordByCategoryGetResponse.of(categorys);
+        return KeywordByCategoryGetResponse.of(categories);
     }
 
     private List<Keyword> searchKeyword(String query) {
