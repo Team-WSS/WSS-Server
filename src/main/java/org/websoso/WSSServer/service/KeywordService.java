@@ -20,6 +20,13 @@ public class KeywordService {
 
     private final KeywordRepository keywordRepository;
 
+    public KeywordByCategoryGetResponse searchKeywordByCategory(String query) {
+        List<CategoryGetResponse> categorys = Arrays.stream(KeywordCategory.values())
+                .map(category -> CategoryGetResponse.of(category, sortByCategory(category, searchKeyword(query))))
+                .collect(Collectors.toList());
+        return KeywordByCategoryGetResponse.of(categorys);
+    }
+
     private List<Keyword> searchKeyword(String query) {
         if (query == null || query.isEmpty()) {
             return keywordRepository.findAll().stream().toList();
@@ -45,12 +52,5 @@ public class KeywordService {
         return filteredKeywords.stream()
                 .map(KeywordGetResponse::of)
                 .collect(Collectors.toList());
-    }
-
-    public KeywordByCategoryGetResponse searchKeywordByCategory(String query) {
-        List<CategoryGetResponse> categorys = Arrays.stream(KeywordCategory.values())
-                .map(category -> CategoryGetResponse.of(category, sortByCategory(category, searchKeyword(query))))
-                .collect(Collectors.toList());
-        return KeywordByCategoryGetResponse.of(categorys);
     }
 }
