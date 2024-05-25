@@ -33,10 +33,10 @@ public class KeywordService {
         }
         String[] words = query.split(" ");
         return keywordRepository.findAll().stream()
-                .filter(keyword -> containsAllKeywords(keyword.getKeywordName(), words)).toList();
+                .filter(keyword -> containsAllWords(keyword.getKeywordName(), words)).toList();
     }
 
-    private boolean containsAllKeywords(String keywordName, String[] words) {
+    private boolean containsAllWords(String keywordName, String[] words) {
         for (String word : words) {
             if (!keywordName.contains(word)) {
                 return false;
