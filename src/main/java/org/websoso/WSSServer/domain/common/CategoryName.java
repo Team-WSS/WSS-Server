@@ -1,8 +1,10 @@
 package org.websoso.WSSServer.domain.common;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public enum CategoryName {
     RF("romanceFantasy"),
     RO("romance"),
@@ -16,9 +18,5 @@ public enum CategoryName {
     ETC("etc");
 
     private final String value;
-
-    CategoryName(String value) {
-        this.value = value;
-    }
-
+    
 }
