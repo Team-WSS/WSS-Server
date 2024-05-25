@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.websoso.WSSServer.exception.category.CategoryErrorCode;
 import org.websoso.WSSServer.exception.category.exception.InvalidCategoryException;
 import org.websoso.WSSServer.exception.common.ErrorResult;
+import org.websoso.WSSServer.exception.feed.FeedErrorCode;
+import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
 import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
@@ -59,6 +61,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(httpStatus)
                 .body(new ErrorResult(httpStatus.name(),
                         e.getBindingResult().getAllErrors().get(0).getDefaultMessage()));
+    }
+
+    @ExceptionHandler(InvalidFeedException.class)
+    public ResponseEntity<ErrorResult> InvalidFeedExceptionHandler(InvalidFeedException e) {
+        log.error("[InvalidFeedException] exception ", e);
+        FeedErrorCode feedErrorCode = e.getFeedErrorCode();
+        return ResponseEntity
+                .status(feedErrorCode.getStatusCode())
+                .body(new ErrorResult(feedErrorCode.getCode(), feedErrorCode.getDescription()));
     }
 
 }

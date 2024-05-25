@@ -46,4 +46,13 @@ public class FeedService {
         categoryService.updateCategory(feed, request.relevantCategories());
     }
 
+    public void likeFeed(User user, Long feedId) {
+        Feed feed = feedRepository.findById(feedId).orElseThrow(() ->
+                new InvalidFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
+
+        String likeUserId = String.valueOf(user.getUserId());
+
+        feed.updateLikeUsers(likeUserId);
+    }
+
 }

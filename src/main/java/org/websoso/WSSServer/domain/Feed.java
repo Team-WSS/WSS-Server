@@ -2,6 +2,7 @@ package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
+import static org.websoso.WSSServer.exception.feed.FeedErrorCode.ALREADY_LIKED;
 import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_AUTHORIZED;
 
 import jakarta.persistence.Column;
@@ -24,6 +25,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.domain.common.Flag;
+import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 
 @DynamicInsert
@@ -92,6 +94,18 @@ public class Feed extends BaseEntity {
         if (!this.user.equals(user)) {
             throw new InvalidAuthorizedException(INVALID_AUTHORIZED,
                     "only the author can " + action.getDescription() + " the feed");
+        }
+    }
+
+    public void updateLikeUsers(String likeUserId) {
+        if (this.likeUsers.contains(likeUserId)) {
+            throw new InvalidFeedException(ALREADY_LIKED, "already liked feed");
+        }
+
+        if (this.likeUsers.isBlank()) {
+            this.likeUsers += likeUserId;
+        } else {
+            this.likeUsers += "," + likeUserId;
         }
     }
 
