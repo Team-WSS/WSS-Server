@@ -7,7 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.websoso.WSSServer.exception.category.CategoryErrorCode;
-import org.websoso.WSSServer.exception.category.exeption.InvalidCategoryException;
+import org.websoso.WSSServer.exception.category.exception.InvalidCategoryException;
 import org.websoso.WSSServer.exception.common.ErrorResult;
 import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
