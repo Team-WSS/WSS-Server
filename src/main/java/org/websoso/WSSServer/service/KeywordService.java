@@ -46,11 +46,7 @@ public class KeywordService {
     }
 
     private List<KeywordGetResponse> sortByCategory(KeywordCategory keywordCategory, List<Keyword> searchedKeyword) {
-        List<Keyword> filteredKeywords = searchedKeyword.stream()
-                .filter(keyword -> keyword.getCategoryName().equals(keywordCategory))
-                .toList();
-        return filteredKeywords.stream()
-                .map(KeywordGetResponse::of)
-                .collect(Collectors.toList());
+        return searchedKeyword.stream().filter(keyword -> keyword.getCategoryName().equals(keywordCategory))
+                .map(KeywordGetResponse::of).collect(Collectors.toList());
     }
 }
