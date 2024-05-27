@@ -44,7 +44,8 @@ public class FeedService {
         feed.updateFeed(request.feedContent(), request.isSpoiler() ? Y : N, request.novelId());
         categoryService.updateCategory(feed, request.relevantCategories());
     }
-    
+
+    @Transactional
     public void likeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 
