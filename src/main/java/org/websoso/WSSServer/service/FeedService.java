@@ -51,7 +51,7 @@ public class FeedService {
 
         String likeUserId = String.valueOf(user.getUserId());
 
-        feed.updateLikeUsers(likeUserId);
+        feed.addLike(likeUserId);
     }
 
     private Feed getFeedOrException(Long feedId) {

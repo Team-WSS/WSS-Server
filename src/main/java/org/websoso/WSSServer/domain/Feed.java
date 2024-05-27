@@ -97,7 +97,7 @@ public class Feed extends BaseEntity {
         }
     }
 
-    public void updateLikeUsers(String likeUserId) {
+    public void addLike(String likeUserId) {
         if (this.likeUsers.contains(likeUserId)) {
             throw new InvalidFeedException(ALREADY_LIKED, "already liked feed");
         }
@@ -107,6 +107,8 @@ public class Feed extends BaseEntity {
         } else {
             this.likeUsers += "," + likeUserId;
         }
+
+        this.likeCount++;
     }
 
 }
