@@ -48,10 +48,12 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(InvalidAuthorizedException.class)
-    public ErrorResult InvalidUserAuthorizedExceptionHandler(InvalidAuthorizedException e) {
+    public ResponseEntity<ErrorResult> InvalidUserAuthorizedExceptionHandler(InvalidAuthorizedException e) {
         log.error("[InvalidAuthorizedException] exception ", e);
         UserErrorCode userErrorCode = e.getUserErrorCode();
-        return new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription());
+        return ResponseEntity
+                .status(userErrorCode.getStatusCode())
+                .body(new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
