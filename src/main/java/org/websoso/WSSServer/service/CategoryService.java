@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Category;
 import org.websoso.WSSServer.domain.Category.CategoryBuilder;
 import org.websoso.WSSServer.domain.Feed;
-import org.websoso.WSSServer.exception.category.exeption.InvalidCategoryException;
+import org.websoso.WSSServer.exception.category.exception.InvalidCategoryException;
 import org.websoso.WSSServer.repository.CategoryRepository;
 
 @Service
