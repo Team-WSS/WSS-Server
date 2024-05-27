@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.domain.common.Flag.N;
 import static org.websoso.WSSServer.domain.common.Flag.Y;
@@ -52,6 +53,14 @@ public class FeedService {
         String likeUserId = String.valueOf(user.getUserId());
 
         feed.addLike(likeUserId);
+    }
+
+    public void deleteFeed(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
+
+        feed.validateUserAuthorization(user, DELETE);
+
+        feedRepository.delete(feed);
     }
 
     private Feed getFeedOrException(Long feedId) {
