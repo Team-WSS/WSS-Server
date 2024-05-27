@@ -1,7 +1,9 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.domain.common.Flag.N;
 import static org.websoso.WSSServer.domain.common.Flag.Y;
+import static org.websoso.WSSServer.exception.feed.FeedErrorCode.FEED_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
+import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
+import org.websoso.WSSServer.exception.feed.exeption.InvalidFeedException;
 import org.websoso.WSSServer.repository.FeedRepository;
 
 @Service
@@ -29,6 +33,17 @@ public class FeedService {
 
         feedRepository.save(feed);
         categoryService.createCategory(feed, request.relevantCategories());
+    }
+
+    @Transactional
+    public void updateFeed(User user, Long feedId, FeedUpdateRequest request) {
+        Feed feed = feedRepository.findById(feedId).orElseThrow(() ->
+                new InvalidFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
+
+        feed.validateUserAuthorization(user, UPDATE);
+
+        feed.updateFeed(request.feedContent(), request.isSpoiler() ? Y : N, request.novelId());
+        categoryService.updateCategory(feed, request.relevantCategories());
     }
 
 }

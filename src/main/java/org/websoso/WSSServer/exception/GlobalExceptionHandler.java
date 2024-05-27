@@ -10,6 +10,7 @@ import org.websoso.WSSServer.exception.category.CategoryErrorCode;
 import org.websoso.WSSServer.exception.category.exception.InvalidCategoryException;
 import org.websoso.WSSServer.exception.common.ErrorResult;
 import org.websoso.WSSServer.exception.user.UserErrorCode;
+import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
 
@@ -44,8 +45,15 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResult(categoryErrorCode.getCode(), categoryErrorCode.getDescription()));
     }
 
+    @ExceptionHandler(InvalidAuthorizedException.class)
+    public ErrorResult InvalidUserAuthorizedExceptionHandler(InvalidAuthorizedException e) {
+        log.error("[InvalidAuthorizedException] exception ", e);
+        UserErrorCode userErrorCode = e.getUserErrorCode();
+        return new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResult> InvalidFeedExceptionHandler(MethodArgumentNotValidException e) {
+    public ResponseEntity<ErrorResult> InvalidRequestBodyExceptionHandler(MethodArgumentNotValidException e) {
         log.error("[MethodArgumentNotValidException] exception ", e);
         HttpStatus httpStatus = HttpStatus.valueOf(e.getStatusCode().value());
         return ResponseEntity.status(httpStatus)
