@@ -61,4 +61,7 @@ public class Novel {
 
     @OneToMany(mappedBy = "novel")
     private List<Platform> platforms = new ArrayList<>();
+
+    @OneToMany(mappedBy = "novel")
+    private List<NovelGenre> novelGenres = new ArrayList<>();
 }
