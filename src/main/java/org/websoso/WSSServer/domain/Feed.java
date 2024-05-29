@@ -102,12 +102,7 @@ public class Feed extends BaseEntity {
             throw new InvalidFeedException(ALREADY_LIKED, "already liked feed");
         }
 
-        if (this.likeUsers.isBlank()) {
-            this.likeUsers += likeUserId;
-        } else {
-            this.likeUsers += "," + likeUserId;
-        }
-
+        this.likeUsers += "{" + likeUserId + "}";
         this.likeCount++;
     }
 
