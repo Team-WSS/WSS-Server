@@ -13,7 +13,7 @@ import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
-import org.websoso.WSSServer.exception.feed.exeption.InvalidFeedException;
+import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
 import org.websoso.WSSServer.repository.FeedRepository;
 
 @Service
@@ -22,6 +22,7 @@ public class FeedService {
 
     private final FeedRepository feedRepository;
     private final CategoryService categoryService;
+    private final NovelStatisticsService novelStatisticsService;
 
     @Transactional
     public void createFeed(User user, FeedCreateRequest request) {
@@ -59,6 +60,12 @@ public class FeedService {
         Feed feed = getFeedOrException(feedId);
 
         feed.validateUserAuthorization(user, DELETE);
+
+        Long linkedNovelId = feed.getNovelId();
+
+        if (linkedNovelId != null) {
+            novelStatisticsService.decreaseNovelFeedCount(linkedNovelId);
+        }
 
         feedRepository.delete(feed);
     }
