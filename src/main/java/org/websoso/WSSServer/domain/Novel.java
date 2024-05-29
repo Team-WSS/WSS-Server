@@ -34,9 +34,6 @@ public class Novel {
     @Column(nullable = false)
     private String author;
 
-    @Column(nullable = false)
-    private String genre;
-
     @Column(columnDefinition = "text", nullable = false)
     private String novelImage;
 
