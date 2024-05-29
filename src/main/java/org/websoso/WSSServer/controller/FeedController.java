@@ -50,4 +50,15 @@ public class FeedController {
                 .build();
     }
 
+    @PostMapping("/{feedId}/likes")
+    public ResponseEntity<Void> likeFeed(Principal principal,
+                                         @PathVariable("feedId") Long feedId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.likeFeed(user, feedId);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
 }

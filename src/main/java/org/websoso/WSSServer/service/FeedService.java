@@ -37,13 +37,26 @@ public class FeedService {
 
     @Transactional
     public void updateFeed(User user, Long feedId, FeedUpdateRequest request) {
-        Feed feed = feedRepository.findById(feedId).orElseThrow(() ->
-                new InvalidFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
+        Feed feed = getFeedOrException(feedId);
 
         feed.validateUserAuthorization(user, UPDATE);
 
         feed.updateFeed(request.feedContent(), request.isSpoiler() ? Y : N, request.novelId());
         categoryService.updateCategory(feed, request.relevantCategories());
+    }
+
+    @Transactional
+    public void likeFeed(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
+
+        String likeUserId = String.valueOf(user.getUserId());
+
+        feed.addLike(likeUserId);
+    }
+
+    private Feed getFeedOrException(Long feedId) {
+        return feedRepository.findById(feedId).orElseThrow(() ->
+                new InvalidFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
     }
 
 }
