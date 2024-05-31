@@ -34,9 +34,6 @@ public class Novel {
     @Column(nullable = false)
     private String author;
 
-    @Column(nullable = false)
-    private String genre;
-
     @Column(columnDefinition = "text", nullable = false)
     private String novelImage;
 
@@ -61,4 +58,7 @@ public class Novel {
 
     @OneToMany(mappedBy = "novel")
     private List<Platform> platforms = new ArrayList<>();
+
+    @OneToMany(mappedBy = "novel")
+    private List<NovelGenre> novelGenres = new ArrayList<>();
 }
