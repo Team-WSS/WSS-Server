@@ -12,7 +12,4 @@ import org.websoso.WSSServer.domain.NovelStatistics;
 public interface NovelStatisticsRepository extends JpaRepository<NovelStatistics, Long> {
     Optional<NovelStatistics> findByNovel(Novel novel);
 
-    default NovelStatistics findByNovelOrThrow(Novel novel) {
-        return findByNovel(novel).orElseThrow(() -> new EntityNotFoundException(""));
-    }
 }

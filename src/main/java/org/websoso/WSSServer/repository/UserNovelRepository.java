@@ -13,7 +13,4 @@ import org.websoso.WSSServer.domain.UserNovel;
 public interface UserNovelRepository extends JpaRepository<UserNovel, Long> {
     Optional<UserNovel> findByNovelAndUser(Novel novel, User user);
 
-    default UserNovel findUserNovelByNovelAndUserOrThrow(Novel novel, User user) {
-        return findByNovelAndUser(novel, user).orElseThrow(() -> new EntityNotFoundException(""));
-    }
 }
