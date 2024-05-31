@@ -25,7 +25,7 @@ public class Genre {
     private String genreName;
 
     @Column(columnDefinition = "text", nullable = false)
-    private String genreBadge;
+    private String genreImage;
 
     @OneToMany(mappedBy = "genre")
     private List<NovelGenre> novelGenres = new ArrayList<>();
