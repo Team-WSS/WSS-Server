@@ -25,13 +25,14 @@ public record NovelGetResponse(
         String endDate,
         Boolean isUserNovelInterest
 ) {
-    public static NovelGetResponse of(Novel novel, UserNovel userNovel, NovelStatistics novelStatistics) {
+    public static NovelGetResponse of(Novel novel, UserNovel userNovel, NovelStatistics novelStatistics,
+                                      String novelGenres, String novelGenreImage) {
         return new NovelGetResponse(
                 novel.getNovelId(),
                 novel.getTitle(),
                 novel.getNovelImage(),
-                novel.getGenre(),
-                "genre badge",  //TODO 장르 도메인 만들기
+                novelGenres,
+                novelGenreImage,
                 novel.getIsCompleted().equals(Flag.Y),
                 novel.getAuthor(),
                 novelStatistics.getInterestCount(),
