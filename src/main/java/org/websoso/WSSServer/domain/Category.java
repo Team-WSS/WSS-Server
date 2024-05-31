@@ -15,10 +15,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.Flag;
 
-@DynamicInsert
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -84,8 +82,9 @@ public class Category {
     private Feed feed;
 
     @Builder
-    public Category(Flag isRf, Flag isRo, Flag isFa, Flag isMf, Flag isDr, Flag isLn, Flag isWu, Flag isMy, Flag isBl,
-                    Flag isEtc, Feed feed) {
+    public Category(Long categoryId, Flag isRf, Flag isRo, Flag isFa, Flag isMf, Flag isDr, Flag isLn, Flag isWu,
+                    Flag isMy, Flag isBl, Flag isEtc, Feed feed) {
+        this.categoryId = categoryId;
         this.isRf = isRf;
         this.isRo = isRo;
         this.isFa = isFa;
@@ -98,4 +97,5 @@ public class Category {
         this.isEtc = isEtc;
         this.feed = feed;
     }
+
 }

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
-public record FeedCreateRequest(
+public record FeedUpdateRequest(
         @NotNull(message = "카테고리는 null일 수 없습니다.")
         @NotEmpty(message = "카테고리는 1개 이상 선택해야 합니다.")
         List<String> relevantCategories,

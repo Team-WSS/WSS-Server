@@ -2,6 +2,8 @@ package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
+import static org.websoso.WSSServer.exception.feed.FeedErrorCode.ALREADY_LIKED;
+import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_AUTHORIZED;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,16 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
+import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.domain.common.Flag;
+import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
+import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 
 @DynamicInsert
 @Entity
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Feed extends BaseEntity {
 
@@ -80,4 +83,27 @@ public class Feed extends BaseEntity {
         this.novelId = novelId;
         this.user = user;
     }
+
+    public void updateFeed(String feedContent, Flag isSpoiler, Long novelId) {
+        this.feedContent = feedContent;
+        this.isSpoiler = isSpoiler;
+        this.novelId = novelId;
+    }
+
+    public void validateUserAuthorization(User user, Action action) {
+        if (!this.user.equals(user)) {
+            throw new InvalidAuthorizedException(INVALID_AUTHORIZED,
+                    "only the author can " + action.getDescription() + " the feed");
+        }
+    }
+
+    public void addLike(String likeUserId) {
+        if (this.likeUsers.contains(likeUserId)) {
+            throw new InvalidFeedException(ALREADY_LIKED, "already liked feed");
+        }
+
+        this.likeUsers += "{" + likeUserId + "}";
+        this.likeCount++;
+    }
+
 }
