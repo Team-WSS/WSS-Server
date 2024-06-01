@@ -7,7 +7,7 @@ import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.Flag;
 
-public record NovelGetResponse(
+public record NovelGetResponse1(
         Long userNovelId,
         String novelTitle,
         String novelImage,
@@ -25,9 +25,9 @@ public record NovelGetResponse(
         String endDate,
         Boolean isUserNovelInterest
 ) {
-    public static NovelGetResponse of(Novel novel, UserNovel userNovel, NovelStatistics novelStatistics,
-                                      String novelGenres, String novelGenreImage) {
-        return new NovelGetResponse(
+    public static NovelGetResponse1 of(Novel novel, UserNovel userNovel, NovelStatistics novelStatistics,
+                                       String novelGenres, String novelGenreImage) {
+        return new NovelGetResponse1(
                 userNovel != null ? userNovel.getUserNovelId() : null,
                 novel.getTitle(),
                 novel.getNovelImage(),

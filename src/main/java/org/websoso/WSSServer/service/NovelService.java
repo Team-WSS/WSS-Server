@@ -10,7 +10,7 @@ import org.websoso.WSSServer.domain.NovelGenre;
 import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
-import org.websoso.WSSServer.dto.novel.NovelGetResponse;
+import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
 import org.websoso.WSSServer.exception.novel.NovelErrorCode;
 import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
@@ -26,14 +26,14 @@ public class NovelService {
     private final UserNovelRepository userNovelRepository;
     private final NovelStatisticsRepository novelStatisticsRepository;
 
-    public NovelGetResponse getNovelInfo1(User user, Long novelId) {
+    public NovelGetResponse1 getNovelInfo1(User user, Long novelId) {
         Novel novel = getNovelOrException(novelId);
         NovelStatistics novelStatistics = getNovelStatisticsOrException(novel);
         UserNovel userNovel = getUserNovelOrNull(user, novel);
         List<NovelGenre> novelGenres = novel.getNovelGenres();
         String novelGenreNames = getNovelGenreNames(novelGenres);
         String randomNovelGenreImage = getRandomNovelGenreImage(novelGenres);
-        return NovelGetResponse.of(novel, userNovel, novelStatistics, novelGenreNames, randomNovelGenreImage);
+        return NovelGetResponse1.of(novel, userNovel, novelStatistics, novelGenreNames, randomNovelGenreImage);
     }
 
     private Novel getNovelOrException(Long novelId) {

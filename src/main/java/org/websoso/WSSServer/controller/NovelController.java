@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.dto.novel.NovelGetResponse;
+import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserService;
 
@@ -23,7 +23,7 @@ public class NovelController {
     private final UserService userService;
 
     @GetMapping("/{novelId}")
-    public ResponseEntity<NovelGetResponse> getNovelInfo1(Principal principal, @PathVariable Long novelId) {
+    public ResponseEntity<NovelGetResponse1> getNovelInfo1(Principal principal, @PathVariable Long novelId) {
         User user = null;
         if(principal != null){
             user = userService.getUserOrException(Long.valueOf(principal.getName()));
