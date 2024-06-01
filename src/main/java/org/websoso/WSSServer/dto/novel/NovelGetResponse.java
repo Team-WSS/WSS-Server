@@ -39,12 +39,15 @@ public record NovelGetResponse(
                 novel.getNovelRatingSum() / novel.getNovelRatingCount(),
                 novel.getNovelRatingCount(),
                 novelStatistics.getNovelFeedCount(),
-                userNovel.getUserNovelRating(),
-                userNovel.getStatus().getName(),
-                userNovel.getStartDate()
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko"))),
-                userNovel.getEndDate().toString(),
-                userNovel.getIsInterest().equals(Flag.Y)
+                userNovel != null ? userNovel.getUserNovelRating() : null,
+                userNovel != null ? userNovel.getStatus().getName() : null,
+                userNovel != null && userNovel.getStartDate() != null ? userNovel.getStartDate()
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
+                        : null,
+                userNovel != null && userNovel.getEndDate() != null ? userNovel.getEndDate()
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
+                        : null,
+                userNovel != null ? userNovel.getIsInterest().equals(Flag.Y) : null
         );
     }
 }
