@@ -36,7 +36,7 @@ public record NovelGetResponse(
                 novel.getIsCompleted().equals(Flag.Y),
                 novel.getAuthor(),
                 novelStatistics.getInterestCount(),
-                novel.getNovelRatingSum() / novel.getNovelRatingCount(),
+                novel.getNovelRatingCount() > 0 ? novel.getNovelRatingSum() / novel.getNovelRatingCount() : 0,
                 novel.getNovelRatingCount(),
                 novelStatistics.getNovelFeedCount(),
                 userNovel != null ? userNovel.getUserNovelRating() : null,
