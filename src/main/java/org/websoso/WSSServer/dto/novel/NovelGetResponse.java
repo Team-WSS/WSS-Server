@@ -47,7 +47,7 @@ public record NovelGetResponse(
                 userNovel != null && userNovel.getEndDate() != null ? userNovel.getEndDate()
                         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
                         : null,
-                userNovel != null ? userNovel.getIsInterest().equals(Flag.Y) : false
+                userNovel != null && userNovel.getIsInterest().equals(Flag.Y)
         );
     }
 }
