@@ -28,7 +28,7 @@ public record NovelGetResponse(
     public static NovelGetResponse of(Novel novel, UserNovel userNovel, NovelStatistics novelStatistics,
                                       String novelGenres, String novelGenreImage) {
         return new NovelGetResponse(
-                novel.getNovelId(),
+                userNovel != null ? userNovel.getUserNovelId() : null,
                 novel.getTitle(),
                 novel.getNovelImage(),
                 novelGenres,
@@ -47,7 +47,7 @@ public record NovelGetResponse(
                 userNovel != null && userNovel.getEndDate() != null ? userNovel.getEndDate()
                         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
                         : null,
-                userNovel != null ? userNovel.getIsInterest().equals(Flag.Y) : null
+                userNovel != null ? userNovel.getIsInterest().equals(Flag.Y) : false
         );
     }
 }
