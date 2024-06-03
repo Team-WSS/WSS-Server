@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.exception.category.CategoryErrorCode;
 import org.websoso.WSSServer.exception.category.exception.InvalidCategoryException;
 import org.websoso.WSSServer.exception.common.ErrorResult;
@@ -16,6 +15,8 @@ import org.websoso.WSSServer.exception.novel.NovelErrorCode;
 import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
 import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
+import org.websoso.WSSServer.exception.platform.PlatformErrorCode;
+import org.websoso.WSSServer.exception.platform.exception.InvalidPlatformException;
 import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
@@ -80,7 +81,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(InvalidNovelException.class)
-    public ResponseEntity<ErrorResult> InvalidNovelExceptionHandler(InvalidNovelException e){
+    public ResponseEntity<ErrorResult> InvalidNovelExceptionHandler(InvalidNovelException e) {
         log.error("[InvalidNovelException] exception ", e);
         NovelErrorCode novelErrorCode = e.getNovelErrorCode();
         return ResponseEntity
@@ -89,12 +90,21 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(InvalidNovelStatisticsException.class)
-    public ResponseEntity<ErrorResult> InvalidNovelStatisticsExceptionHandler(InvalidNovelStatisticsException e){
+    public ResponseEntity<ErrorResult> InvalidNovelStatisticsExceptionHandler(InvalidNovelStatisticsException e) {
         log.error("[InvalidNovelStatisticsException] exception", e);
         NovelStatisticsErrorCode novelStatisticsErrorCode = e.getNovelStatisticsErrorCode();
         return ResponseEntity
                 .status(novelStatisticsErrorCode.getStatusCode())
                 .body(new ErrorResult(novelStatisticsErrorCode.getCode(), novelStatisticsErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidPlatformException.class)
+    public ResponseEntity<ErrorResult> InvalidPlatformExceptionHandler(InvalidPlatformException e) {
+        log.error("[InvalidPlatformException] exception", e);
+        PlatformErrorCode platformErrorCode = e.getPlatformErrorCode();
+        return ResponseEntity
+                .status(platformErrorCode.getStatusCode())
+                .body(new ErrorResult(platformErrorCode.getCode(), platformErrorCode.getDescription()));
     }
 
 }
