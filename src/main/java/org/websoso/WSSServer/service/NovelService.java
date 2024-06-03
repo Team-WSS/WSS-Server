@@ -28,12 +28,14 @@ public class NovelService {
 
     public NovelGetResponse1 getNovelInfo1(User user, Long novelId) {
         Novel novel = getNovelOrException(novelId);
-        NovelStatistics novelStatistics = getNovelStatisticsOrException(novel);
-        UserNovel userNovel = getUserNovelOrNull(user, novel);
         List<NovelGenre> novelGenres = novel.getNovelGenres();
-        String novelGenreNames = getNovelGenreNames(novelGenres);
-        String randomNovelGenreImage = getRandomNovelGenreImage(novelGenres);
-        return NovelGetResponse1.of(novel, userNovel, novelStatistics, novelGenreNames, randomNovelGenreImage);
+        return NovelGetResponse1.of(
+                novel,
+                getUserNovelOrNull(user, novel),
+                getNovelStatisticsOrException(novel),
+                getNovelGenreNames(novelGenres),
+                getRandomNovelGenreImage(novelGenres)
+        );
     }
 
     private Novel getNovelOrException(Long novelId) {
