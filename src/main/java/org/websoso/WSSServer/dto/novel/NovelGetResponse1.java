@@ -7,6 +7,7 @@ import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.Flag;
 
+// TODO 이름 변경(작품 정보 조회 뷰에서 상단, 기본정보를 제공하는 부분)
 public record NovelGetResponse1(
         Long userNovelId,
         String novelTitle,
