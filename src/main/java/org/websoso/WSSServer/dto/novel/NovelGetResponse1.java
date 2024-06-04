@@ -46,29 +46,28 @@ public record NovelGetResponse1(
                     null,
                     false
             );
-        } else {
-            return new NovelGetResponse1(
-                    userNovel.getUserNovelId(),
-                    novel.getTitle(),
-                    novel.getNovelImage(),
-                    novelGenres,
-                    novelGenreImage,
-                    novel.getIsCompleted().equals(Flag.Y),
-                    novel.getAuthor(),
-                    novelStatistics.getInterestCount(),
-                    novel.getNovelRatingCount() > 0 ? novel.getNovelRatingSum() / novel.getNovelRatingCount() : 0,
-                    novel.getNovelRatingCount(),
-                    novelStatistics.getNovelFeedCount(),
-                    userNovel.getUserNovelRating(),
-                    userNovel.getStatus().getName(),
-                    userNovel.getStartDate() != null ? userNovel.getStartDate()
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
-                            : null,
-                    userNovel.getEndDate() != null ? userNovel.getEndDate()
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
-                            : null,
-                    userNovel.getIsInterest().equals(Flag.Y)
-            );
         }
+        return new NovelGetResponse1(
+                userNovel.getUserNovelId(),
+                novel.getTitle(),
+                novel.getNovelImage(),
+                novelGenres,
+                novelGenreImage,
+                novel.getIsCompleted().equals(Flag.Y),
+                novel.getAuthor(),
+                novelStatistics.getInterestCount(),
+                novel.getNovelRatingCount() > 0 ? novel.getNovelRatingSum() / novel.getNovelRatingCount() : 0,
+                novel.getNovelRatingCount(),
+                novelStatistics.getNovelFeedCount(),
+                userNovel.getUserNovelRating(),
+                userNovel.getStatus().getName(),
+                userNovel.getStartDate() != null ? userNovel.getStartDate()
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
+                        : null,
+                userNovel.getEndDate() != null ? userNovel.getEndDate()
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
+                        : null,
+                userNovel.getIsInterest().equals(Flag.Y)
+        );
     }
 }
