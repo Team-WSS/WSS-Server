@@ -25,7 +25,7 @@ public class NovelController {
     @GetMapping("/{novelId}")
     public ResponseEntity<NovelGetResponse1> getNovelInfo1(Principal principal, @PathVariable Long novelId) {
         User user = null;
-        if(principal != null){
+        if (principal != null) {
             user = userService.getUserOrException(Long.valueOf(principal.getName()));
         }
         return ResponseEntity

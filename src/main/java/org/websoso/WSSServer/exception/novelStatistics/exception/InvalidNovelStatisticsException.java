@@ -8,7 +8,7 @@ import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
 @AllArgsConstructor
 public class InvalidNovelStatisticsException extends RuntimeException {
 
-    public InvalidNovelStatisticsException(NovelStatisticsErrorCode novelStatisticsErrorCode, String message){
+    public InvalidNovelStatisticsException(NovelStatisticsErrorCode novelStatisticsErrorCode, String message) {
         super(message);
         this.novelStatisticsErrorCode = novelStatisticsErrorCode;
     }

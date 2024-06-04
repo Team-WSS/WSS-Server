@@ -1,8 +1,6 @@
 package org.websoso.WSSServer.repository;
 
-import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
-import javax.swing.text.html.Option;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Novel;
