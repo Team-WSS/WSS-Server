@@ -56,7 +56,7 @@ public class NovelService {
 
     private String getNovelGenreNames(List<NovelGenre> novelGenres) {
         return novelGenres.stream().map(novelGenre -> novelGenre.getGenre().getGenreName())
-                .collect(Collectors.joining(", "));
+                .collect(Collectors.joining("/"));
     }
 
     private String getRandomNovelGenreImage(List<NovelGenre> novelGenres) {
