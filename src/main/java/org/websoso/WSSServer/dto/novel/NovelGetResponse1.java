@@ -27,27 +27,48 @@ public record NovelGetResponse1(
 ) {
     public static NovelGetResponse1 of(Novel novel, UserNovel userNovel, NovelStatistics novelStatistics,
                                        String novelGenres, String novelGenreImage) {
-        return new NovelGetResponse1(
-                userNovel != null ? userNovel.getUserNovelId() : null,
-                novel.getTitle(),
-                novel.getNovelImage(),
-                novelGenres,
-                novelGenreImage,
-                novel.getIsCompleted().equals(Flag.Y),
-                novel.getAuthor(),
-                novelStatistics.getInterestCount(),
-                novel.getNovelRatingCount() > 0 ? novel.getNovelRatingSum() / novel.getNovelRatingCount() : 0,
-                novel.getNovelRatingCount(),
-                novelStatistics.getNovelFeedCount(),
-                userNovel != null ? userNovel.getUserNovelRating() : null,
-                userNovel != null ? userNovel.getStatus().getName() : null,
-                userNovel != null && userNovel.getStartDate() != null ? userNovel.getStartDate()
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
-                        : null,
-                userNovel != null && userNovel.getEndDate() != null ? userNovel.getEndDate()
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
-                        : null,
-                userNovel != null && userNovel.getIsInterest().equals(Flag.Y)
-        );
+        if (userNovel == null) {
+            return new NovelGetResponse1(
+                    null,
+                    novel.getTitle(),
+                    novel.getNovelImage(),
+                    novelGenres,
+                    novelGenreImage,
+                    novel.getIsCompleted().equals(Flag.Y),
+                    novel.getAuthor(),
+                    novelStatistics.getInterestCount(),
+                    novel.getNovelRatingCount() > 0 ? novel.getNovelRatingSum() / novel.getNovelRatingCount() : 0,
+                    novel.getNovelRatingCount(),
+                    novelStatistics.getNovelFeedCount(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    false
+            );
+        } else {
+            return new NovelGetResponse1(
+                    userNovel.getUserNovelId(),
+                    novel.getTitle(),
+                    novel.getNovelImage(),
+                    novelGenres,
+                    novelGenreImage,
+                    novel.getIsCompleted().equals(Flag.Y),
+                    novel.getAuthor(),
+                    novelStatistics.getInterestCount(),
+                    novel.getNovelRatingCount() > 0 ? novel.getNovelRatingSum() / novel.getNovelRatingCount() : 0,
+                    novel.getNovelRatingCount(),
+                    novelStatistics.getNovelFeedCount(),
+                    userNovel.getUserNovelRating(),
+                    userNovel.getStatus().getName(),
+                    userNovel.getStartDate() != null ? userNovel.getStartDate()
+                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
+                            : null,
+                    userNovel.getEndDate() != null ? userNovel.getEndDate()
+                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
+                            : null,
+                    userNovel.getIsInterest().equals(Flag.Y)
+            );
+        }
     }
 }
