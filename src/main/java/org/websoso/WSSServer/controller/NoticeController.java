@@ -2,11 +2,13 @@ package org.websoso.WSSServer.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.notice.NoticeEditRequest;
 import org.websoso.WSSServer.dto.notice.NoticePostRequest;
+import org.websoso.WSSServer.dto.notice.NoticesGetResponse;
 import org.websoso.WSSServer.service.NoticeService;
 import org.websoso.WSSServer.service.UserService;
 
@@ -46,5 +49,13 @@ public class NoticeController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
+    }
+
+    @GetMapping
+    public ResponseEntity<NoticesGetResponse> getNotices(Principal principal) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(noticeService.getNotices(user));
     }
 }
