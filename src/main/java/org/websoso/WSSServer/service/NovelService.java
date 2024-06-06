@@ -52,6 +52,9 @@ public class NovelService {
     }
 
     private UserNovel getUserNovelOrNull(User user, Novel novel) {
+        if (user == null) {
+            return null;
+        }
         return userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
     }
 
