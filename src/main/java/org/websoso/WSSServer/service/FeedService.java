@@ -54,6 +54,15 @@ public class FeedService {
         feed.addLike(likeUserId);
     }
 
+    @Transactional
+    public void unLikeFeed(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
+
+        String unLikeUserId = String.valueOf(user.getUserId());
+
+        feed.unLike(unLikeUserId);
+    }
+
     private Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() ->
                 new InvalidFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));

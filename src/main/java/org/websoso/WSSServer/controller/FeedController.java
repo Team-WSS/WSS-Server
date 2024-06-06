@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -55,6 +56,17 @@ public class FeedController {
                                          @PathVariable("feedId") Long feedId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.likeFeed(user, feedId);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @DeleteMapping("/{feedId}/likes")
+    public ResponseEntity<Void> unLikeFeed(Principal principal,
+                                           @PathVariable("feedId") Long feedId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.unLikeFeed(user, feedId);
 
         return ResponseEntity
                 .status(NO_CONTENT)
