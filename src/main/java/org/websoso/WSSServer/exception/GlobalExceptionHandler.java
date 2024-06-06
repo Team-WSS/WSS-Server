@@ -11,6 +11,8 @@ import org.websoso.WSSServer.exception.category.exception.InvalidCategoryExcepti
 import org.websoso.WSSServer.exception.common.ErrorResult;
 import org.websoso.WSSServer.exception.feed.FeedErrorCode;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
+import org.websoso.WSSServer.exception.notice.NoticeErrorCode;
+import org.websoso.WSSServer.exception.notice.exception.ForbiddenNoticeCreationException;
 import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
@@ -74,4 +76,12 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResult(feedErrorCode.getCode(), feedErrorCode.getDescription()));
     }
 
+    @ExceptionHandler(ForbiddenNoticeCreationException.class)
+    public ResponseEntity<ErrorResult> ForbiddenNoticeCreationExceptionHandler(ForbiddenNoticeCreationException e) {
+        log.error("[ForbiddenNoticeCreationException] exception ", e);
+        NoticeErrorCode noticeErrorCode = e.getNoticeErrorCode();
+        return ResponseEntity
+                .status(noticeErrorCode.getStatusCode())
+                .body(new ErrorResult(noticeErrorCode.getCode(), noticeErrorCode.getDescription()));
+    }
 }
