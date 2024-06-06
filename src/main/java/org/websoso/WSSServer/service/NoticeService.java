@@ -60,4 +60,11 @@ public class NoticeService {
         List<Notice> notices = noticeRepository.findByUserId(user.getUserId());
         return NoticesGetResponse.of(notices);
     }
+
+    @Transactional
+    public void deleteNotice(User user, Long noticeId) {
+        validateAuthorization(user);
+        Notice notice = getNoticeOrException(noticeId);
+        noticeRepository.delete(notice);
+    }
 }
