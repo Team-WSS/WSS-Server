@@ -37,4 +37,10 @@ public class Notice extends BaseEntity {
         this.noticeContent = noticeContent;
         this.userId = userId;
     }
+
+    public void updateNotice(String noticeTitle, String noticeContent, Long userId) {
+        this.noticeTitle = noticeTitle;
+        this.noticeContent = noticeContent;
+        this.userId = userId;
+    }
 }
