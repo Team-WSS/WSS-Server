@@ -2,6 +2,7 @@ package org.websoso.WSSServer.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
+import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class NoticeController {
 
     @PostMapping
     public ResponseEntity<Void> createNotice(Principal principal,
-                                             @RequestBody NoticePostRequest noticePostRequest) {
+                                             @Valid @RequestBody NoticePostRequest noticePostRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         noticeService.createNotice(user, noticePostRequest);
         return ResponseEntity
