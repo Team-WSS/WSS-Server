@@ -14,6 +14,10 @@ import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
 import org.websoso.WSSServer.exception.notice.NoticeErrorCode;
 import org.websoso.WSSServer.exception.notice.exception.ForbiddenNoticeManipulationException;
 import org.websoso.WSSServer.exception.notice.exception.NoticeNotFoundException;
+import org.websoso.WSSServer.exception.novel.NovelErrorCode;
+import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
+import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
+import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
@@ -78,7 +82,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ForbiddenNoticeManipulationException.class)
-    public ResponseEntity<ErrorResult> ForbiddenNoticeManipulationExceptionHandler(ForbiddenNoticeManipulationException e) {
+    public ResponseEntity<ErrorResult> ForbiddenNoticeManipulationExceptionHandler(
+            ForbiddenNoticeManipulationException e) {
         log.error("[ForbiddenNoticeManipulationException] exception ", e);
         NoticeErrorCode noticeErrorCode = e.getNoticeErrorCode();
         return ResponseEntity
@@ -93,5 +98,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(noticeErrorCode.getStatusCode())
                 .body(new ErrorResult(noticeErrorCode.getCode(), noticeErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidNovelException.class)
+    public ResponseEntity<ErrorResult> InvalidNovelExceptionHandler(InvalidNovelException e) {
+        log.error("[InvalidNovelException] exception ", e);
+        NovelErrorCode novelErrorCode = e.getNovelErrorCode();
+        return ResponseEntity
+                .status(novelErrorCode.getStatusCode())
+                .body(new ErrorResult(novelErrorCode.getCode(), novelErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidNovelStatisticsException.class)
+    public ResponseEntity<ErrorResult> InvalidNovelStatisticsExceptionHandler(InvalidNovelStatisticsException e) {
+        log.error("[InvalidNovelStatisticsException] exception", e);
+        NovelStatisticsErrorCode novelStatisticsErrorCode = e.getNovelStatisticsErrorCode();
+        return ResponseEntity
+                .status(novelStatisticsErrorCode.getStatusCode())
+                .body(new ErrorResult(novelStatisticsErrorCode.getCode(), novelStatisticsErrorCode.getDescription()));
     }
 }
