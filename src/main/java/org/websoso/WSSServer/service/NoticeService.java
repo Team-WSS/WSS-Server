@@ -4,6 +4,7 @@ import static org.websoso.WSSServer.domain.common.Role.ADMIN;
 import static org.websoso.WSSServer.exception.notice.NoticeErrorCode.NOTICE_FORBIDDEN;
 import static org.websoso.WSSServer.exception.notice.NoticeErrorCode.NOTICE_NOT_FOUND;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.Role;
 import org.websoso.WSSServer.dto.notice.NoticeEditRequest;
 import org.websoso.WSSServer.dto.notice.NoticePostRequest;
+import org.websoso.WSSServer.dto.notice.NoticesGetResponse;
 import org.websoso.WSSServer.exception.notice.exception.ForbiddenNoticeCreationException;
 import org.websoso.WSSServer.exception.notice.exception.NoticeNotFoundException;
 import org.websoso.WSSServer.repository.NoticeRepository;
@@ -52,5 +54,10 @@ public class NoticeService {
     private Notice getNoticeOrException(Long noticeId) {
         return noticeRepository.findById(noticeId).orElseThrow(() ->
                 new NoticeNotFoundException(NOTICE_NOT_FOUND, "notice with given noticeId was not found"));
+    }
+
+    public NoticesGetResponse getNotices(User user) {
+        List<Notice> notices = noticeRepository.findByUserId(user.getUserId());
+        return NoticesGetResponse.of(notices);
     }
 }
