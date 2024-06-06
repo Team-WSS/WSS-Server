@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,5 +58,15 @@ public class NoticeController {
         return ResponseEntity
                 .status(OK)
                 .body(noticeService.getNotices(user));
+    }
+
+    @DeleteMapping("/{noticeId}")
+    public ResponseEntity<Void> deleteNotice(Principal principal,
+                                             @PathVariable("noticeId") Long noticeId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        noticeService.deleteNotice(user, noticeId);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
     }
 }
