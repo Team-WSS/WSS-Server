@@ -47,7 +47,7 @@ public class NoticeService {
     private static void validateAuthorization(User user) {
         if (user.getRole() != ADMIN_ROLE) {
             throw new ForbiddenNoticeCreationException(NOTICE_FORBIDDEN,
-                    "user who tried to create or modify the notice is not ADMIN");
+                    "user who tried to create or modify or delete the notice is not ADMIN");
         }
     }
 
