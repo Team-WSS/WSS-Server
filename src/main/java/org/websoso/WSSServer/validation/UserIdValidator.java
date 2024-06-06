@@ -4,18 +4,16 @@ import static org.websoso.WSSServer.exception.user.UserErrorCode.USER_NOT_FOUND;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Component
+@AllArgsConstructor
 public class UserIdValidator implements ConstraintValidator<UserIdConstraint, Long> {
 
     private final UserRepository userRepository;
-
-    public UserIdValidator(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Override
     public void initialize(UserIdConstraint userId) {
