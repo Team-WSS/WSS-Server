@@ -23,13 +23,17 @@ public class NoticeService {
 
     @Transactional
     public void createNotice(User user, NoticePostRequest noticePostRequest) {
-        if (user.getRole() != ADMIN_ROLE) {
-            throw new ForbiddenNoticeCreationException(NOTICE_FORBIDDEN, "user is not ADMIN");
-        }
+        validateAuthorization(user);
         noticeRepository.save(Notice.builder()
                 .noticeTitle(noticePostRequest.noticeTitle())
                 .noticeContent(noticePostRequest.noticeContent())
                 .userId(noticePostRequest.userId())
                 .build());
+    }
+
+    private static void validateAuthorization(User user) {
+        if (user.getRole() != ADMIN_ROLE) {
+            throw new ForbiddenNoticeCreationException(NOTICE_FORBIDDEN, "user is not ADMIN");
+        }
     }
 }
