@@ -28,6 +28,8 @@ public record NovelGetResponse1(
 ) {
     public static NovelGetResponse1 of(Novel novel, UserNovel userNovel, NovelStatistics novelStatistics,
                                        String novelGenres, String novelGenreImage) {
+        Float novelRating = novel.getNovelRatingCount() > 0 ?
+                Math.round((novel.getNovelRatingSum() / novel.getNovelRatingCount()) * 10) / 10.0f : 0;
         if (userNovel == null) {
             return new NovelGetResponse1(
                     null,
@@ -38,7 +40,7 @@ public record NovelGetResponse1(
                     novel.getIsCompleted().equals(Flag.Y),
                     novel.getAuthor(),
                     novelStatistics.getInterestCount(),
-                    novel.getNovelRatingCount() > 0 ? novel.getNovelRatingSum() / novel.getNovelRatingCount() : 0,
+                    novelRating,
                     novel.getNovelRatingCount(),
                     novelStatistics.getNovelFeedCount(),
                     null,
@@ -57,7 +59,7 @@ public record NovelGetResponse1(
                 novel.getIsCompleted().equals(Flag.Y),
                 novel.getAuthor(),
                 novelStatistics.getInterestCount(),
-                novel.getNovelRatingCount() > 0 ? novel.getNovelRatingSum() / novel.getNovelRatingCount() : 0,
+                novelRating,
                 novel.getNovelRatingCount(),
                 novelStatistics.getNovelFeedCount(),
                 userNovel.getUserNovelRating(),
