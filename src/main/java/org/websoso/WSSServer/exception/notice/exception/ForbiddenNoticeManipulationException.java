@@ -6,9 +6,9 @@ import org.websoso.WSSServer.exception.notice.NoticeErrorCode;
 
 @Getter
 @AllArgsConstructor
-public class ForbiddenNoticeCreationException extends RuntimeException {
+public class ForbiddenNoticeManipulationException extends RuntimeException {
 
-    public ForbiddenNoticeCreationException(NoticeErrorCode noticeErrorCode, String message) {
+    public ForbiddenNoticeManipulationException(NoticeErrorCode noticeErrorCode, String message) {
         super(message);
         this.noticeErrorCode = noticeErrorCode;
     }

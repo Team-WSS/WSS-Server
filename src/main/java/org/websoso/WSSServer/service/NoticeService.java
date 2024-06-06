@@ -14,7 +14,7 @@ import org.websoso.WSSServer.domain.common.Role;
 import org.websoso.WSSServer.dto.notice.NoticeEditRequest;
 import org.websoso.WSSServer.dto.notice.NoticePostRequest;
 import org.websoso.WSSServer.dto.notice.NoticesGetResponse;
-import org.websoso.WSSServer.exception.notice.exception.ForbiddenNoticeCreationException;
+import org.websoso.WSSServer.exception.notice.exception.ForbiddenNoticeManipulationException;
 import org.websoso.WSSServer.exception.notice.exception.NoticeNotFoundException;
 import org.websoso.WSSServer.repository.NoticeRepository;
 
@@ -46,7 +46,7 @@ public class NoticeService {
 
     private static void validateAuthorization(User user) {
         if (user.getRole() != ADMIN_ROLE) {
-            throw new ForbiddenNoticeCreationException(NOTICE_FORBIDDEN,
+            throw new ForbiddenNoticeManipulationException(NOTICE_FORBIDDEN,
                     "user who tried to create or modify or delete the notice is not ADMIN");
         }
     }

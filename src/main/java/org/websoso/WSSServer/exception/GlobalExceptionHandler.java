@@ -12,7 +12,7 @@ import org.websoso.WSSServer.exception.common.ErrorResult;
 import org.websoso.WSSServer.exception.feed.FeedErrorCode;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
 import org.websoso.WSSServer.exception.notice.NoticeErrorCode;
-import org.websoso.WSSServer.exception.notice.exception.ForbiddenNoticeCreationException;
+import org.websoso.WSSServer.exception.notice.exception.ForbiddenNoticeManipulationException;
 import org.websoso.WSSServer.exception.notice.exception.NoticeNotFoundException;
 import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
@@ -77,9 +77,9 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResult(feedErrorCode.getCode(), feedErrorCode.getDescription()));
     }
 
-    @ExceptionHandler(ForbiddenNoticeCreationException.class)
-    public ResponseEntity<ErrorResult> ForbiddenNoticeCreationExceptionHandler(ForbiddenNoticeCreationException e) {
-        log.error("[ForbiddenNoticeCreationException] exception ", e);
+    @ExceptionHandler(ForbiddenNoticeManipulationException.class)
+    public ResponseEntity<ErrorResult> ForbiddenNoticeManipulationExceptionHandler(ForbiddenNoticeManipulationException e) {
+        log.error("[ForbiddenNoticeManipulationException] exception ", e);
         NoticeErrorCode noticeErrorCode = e.getNoticeErrorCode();
         return ResponseEntity
                 .status(noticeErrorCode.getStatusCode())
