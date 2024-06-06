@@ -9,13 +9,9 @@ public record NoticesGetResponse(
 ) {
 
     public static NoticesGetResponse of(List<Notice> notices) {
-        List<NoticeGetResponse> noticeGetResponses = notices.stream()
-                .map(notice -> new NoticeGetResponse(
-                        notice.getNoticeTitle(),
-                        notice.getNoticeContent(),
-                        notice.getCreatedDate()
-                ))
+        List<NoticeGetResponse> noticeList = notices.stream()
+                .map(NoticeGetResponse::from)
                 .collect(Collectors.toList());
-        return new NoticesGetResponse(noticeGetResponses);
+        return new NoticesGetResponse(noticeList);
     }
 }
