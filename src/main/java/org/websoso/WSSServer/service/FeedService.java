@@ -26,12 +26,18 @@ public class FeedService {
 
     @Transactional
     public void createFeed(User user, FeedCreateRequest request) {
+        Long linkedNovelId = request.novelId();
+
         Feed feed = Feed.builder()
                 .feedContent(request.feedContent())
                 .isSpoiler(request.isSpoiler() ? Y : N)
-                .novelId(request.novelId())
+                .novelId(linkedNovelId)
                 .user(user)
                 .build();
+
+        if (linkedNovelId != null) {
+            novelStatisticsService.increaseNovelFeedCount(linkedNovelId);
+        }
 
         feedRepository.save(feed);
         categoryService.createCategory(feed, request.relevantCategories());
