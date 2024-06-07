@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.dto.User.LoginResponse;
-import org.websoso.WSSServer.dto.User.NicknameValidation;
+import org.websoso.WSSServer.dto.user.LoginResponse;
+import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.service.UserService;
 import org.websoso.WSSServer.validation.NicknameConstraint;
 

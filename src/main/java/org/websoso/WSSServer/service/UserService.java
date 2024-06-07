@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.dto.User.LoginResponse;
-import org.websoso.WSSServer.dto.User.NicknameValidation;
+import org.websoso.WSSServer.dto.user.LoginResponse;
+import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
 import org.websoso.WSSServer.repository.UserRepository;
 
