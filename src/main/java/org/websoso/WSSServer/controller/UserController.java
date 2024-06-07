@@ -3,6 +3,7 @@ package org.websoso.WSSServer.controller;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.OK;
 
+import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.user.EmailGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.service.UserService;
@@ -39,6 +42,15 @@ public class UserController {
                 .status(OK)
                 .body(nicknameValidation);
     }
+
+    @GetMapping("/email")
+    public ResponseEntity<EmailGetResponse> getEmail(Principal principal) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(userService.getEmail(user));
+    }
+
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody String userId) {
