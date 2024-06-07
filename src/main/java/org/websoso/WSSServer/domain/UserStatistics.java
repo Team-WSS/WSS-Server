@@ -38,56 +38,29 @@ public class UserStatistics {
     @Column(nullable = false, columnDefinition = "int default 0")
     private Integer roNovelNovelCount;
 
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float roNovelRatingSum;
-
     @Column(nullable = false, columnDefinition = "int default 0")
     private Integer rfNovelNovelCount;
-
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float rfNovelRatingSum;
 
     @Column(nullable = false, columnDefinition = "int default 0")
     private Integer blNovelNovelCount;
 
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float blNovelRatingSum;
-
     @Column(nullable = false, columnDefinition = "int default 0")
     private Integer faNovelNovelCount;
-
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float faNovelRatingSum;
 
     @Column(nullable = false, columnDefinition = "int default 0")
     private Integer mfNovelNovelCount;
 
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float mfNovelRatingSum;
-
     @Column(nullable = false, columnDefinition = "int default 0")
     private Integer wuNovelNovelCount;
-
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float wuNovelRatingSum;
 
     @Column(nullable = false, columnDefinition = "int default 0")
     private Integer lnNovelNovelCount;
 
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float lnNovelRatingSum;
-
     @Column(nullable = false, columnDefinition = "int default 0")
     private Integer drNovelNovelCount;
 
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float drNovelRatingSum;
-
     @Column(nullable = false, columnDefinition = "int default 0")
     private Integer myNovelNovelCount;
-
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float myNovelRatingSum;
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
