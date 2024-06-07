@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
-import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.NovelStatisticsRepository;
 
 @Service
@@ -16,7 +15,7 @@ import org.websoso.WSSServer.repository.NovelStatisticsRepository;
 public class NovelStatisticsService {
 
     private final NovelStatisticsRepository novelStatisticsRepository;
-    private final NovelRepository novelRepository; // 나경이거 머지 되면 수정
+    private final NovelService novelService;
 
     @Transactional
     public void increaseNovelFeedCount(Long novelId) {
@@ -28,7 +27,7 @@ public class NovelStatisticsService {
 
     @Transactional
     public NovelStatistics createNovelStatistics(Long novelId) {
-        Novel novel = novelRepository.findById(novelId).get(); // 나경이거 머지 되면 수정
+        Novel novel = novelService.getNovelOrException(novelId);
 
         return novelStatisticsRepository.save(
                 NovelStatistics.builder()
@@ -51,5 +50,5 @@ public class NovelStatisticsService {
                 () -> new InvalidNovelStatisticsException(NOVEL_STATISTICS_NOT_FOUND,
                         "novel statistics with the given novel is not found"));
     }
-  
+
 }
