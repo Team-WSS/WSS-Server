@@ -65,9 +65,13 @@ public class NovelService {
         UserNovel userNovel = userNovelService.getUserNovelOrNull(user, novel);
         NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
         UserStatistics userStatistics = userStatisticsService.getUserStatisticsOrException(user);
-        List<String> genreNames = novel.getNovelGenres().stream().map(NovelGenre::getGenre).map(Genre::getGenreName).toList();
+        List<String> genreNames = novel.getNovelGenres()
+                .stream()
+                .map(NovelGenre::getGenre)
+                .map(Genre::getGenreName)
+                .toList();
 
-        if(userNovel.getIsInterest() == Flag.Y){
+        if (userNovel.getIsInterest() == Flag.Y) {
             throw new InvalidNovelException(ALREADY_INTERESTED, "already interested the novel");
         }
 
@@ -79,9 +83,9 @@ public class NovelService {
         novelStatistics.increaseField("interestCount");
         userStatistics.increaseField("interestNovelCount");
 
-        for(String genreName : genreNames){
+        for (String genreName : genreNames) {
 
-            String fieldName = switch (genreName){ // TODO genreName 확인 필요
+            String fieldName = switch (genreName) { // TODO genreName 확인 필요
                 case "로맨스" -> "roNovelNovelCount";
                 case "로판" -> "rfNovelNovelCount";
                 case "BL" -> "blNovelNovelCount";
