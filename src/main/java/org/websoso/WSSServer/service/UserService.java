@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.user.EmailGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
@@ -34,6 +35,11 @@ public class UserService {
         String token = jwtProvider.generateToken(userAuthentication);
 
         return LoginResponse.of(token);
+    }
+
+    @Transactional(readOnly = true)
+    public EmailGetResponse getEmail(User user) {
+        return EmailGetResponse.of(user.getEmail());
     }
 
     public User getUserOrException(Long userId) {
