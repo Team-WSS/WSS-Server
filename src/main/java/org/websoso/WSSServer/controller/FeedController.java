@@ -50,6 +50,17 @@ public class FeedController {
                 .status(NO_CONTENT)
                 .build();
     }
+  
+    @DeleteMapping("/{feedId}")
+    public ResponseEntity<Void> deleteFeed(Principal principal,
+                                           @PathVariable("feedId") Long feedId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.deleteFeed(user, feedId);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
 
     @PostMapping("/{feedId}/likes")
     public ResponseEntity<Void> likeFeed(Principal principal,
@@ -67,7 +78,7 @@ public class FeedController {
                                            @PathVariable("feedId") Long feedId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.unLikeFeed(user, feedId);
-
+  
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

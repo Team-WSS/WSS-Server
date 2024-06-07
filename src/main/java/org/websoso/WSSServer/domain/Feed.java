@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
@@ -30,6 +31,7 @@ import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 
+@Getter
 @DynamicInsert
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
