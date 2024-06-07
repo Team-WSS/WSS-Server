@@ -46,16 +46,8 @@ public class FeedService {
         feed.updateFeed(request.feedContent(), request.isSpoiler() ? Y : N, request.novelId());
         categoryService.updateCategory(feed, request.relevantCategories());
     }
-
+  
     @Transactional
-    public void likeFeed(User user, Long feedId) {
-        Feed feed = getFeedOrException(feedId);
-
-        String likeUserId = String.valueOf(user.getUserId());
-
-        feed.addLike(likeUserId);
-    }
-
     public void deleteFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 
@@ -66,6 +58,24 @@ public class FeedService {
         }
 
         feedRepository.delete(feed);
+    }
+
+    @Transactional
+    public void likeFeed(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
+
+        String likeUserId = String.valueOf(user.getUserId());
+
+        feed.addLike(likeUserId);
+    }
+
+    @Transactional
+    public void unLikeFeed(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
+
+        String unLikeUserId = String.valueOf(user.getUserId());
+
+        feed.unLike(unLikeUserId);
     }
 
     private Feed getFeedOrException(Long feedId) {
