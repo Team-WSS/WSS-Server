@@ -26,17 +26,15 @@ public class FeedService {
 
     @Transactional
     public void createFeed(User user, FeedCreateRequest request) {
-        Long linkedNovelId = request.novelId();
-
         Feed feed = Feed.builder()
                 .feedContent(request.feedContent())
                 .isSpoiler(request.isSpoiler() ? Y : N)
-                .novelId(linkedNovelId)
+                .novelId(request.novelId())
                 .user(user)
                 .build();
 
-        if (linkedNovelId != null) {
-            novelStatisticsService.increaseNovelFeedCount(linkedNovelId);
+        if (request.novelId() != null) {
+            novelStatisticsService.increaseNovelFeedCount(request.novelId());
         }
 
         feedRepository.save(feed);
@@ -52,7 +50,7 @@ public class FeedService {
         feed.updateFeed(request.feedContent(), request.isSpoiler() ? Y : N, request.novelId());
         categoryService.updateCategory(feed, request.relevantCategories());
     }
-  
+
     @Transactional
     public void deleteFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
