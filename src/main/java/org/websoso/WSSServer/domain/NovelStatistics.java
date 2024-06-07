@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import java.lang.reflect.Field;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,4 +56,16 @@ public class NovelStatistics {
     @OneToOne
     @JoinColumn(name = "novel_id", nullable = false)
     private Novel novel;
+
+    public void increaseField(String fieldName) {
+        try {
+            Field field = this.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            Integer currentValue = (Integer) field.get(this);
+            field.set(this, currentValue + 1);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException("Field not found or not accessible", e);
+        }
+    }
+
 }
