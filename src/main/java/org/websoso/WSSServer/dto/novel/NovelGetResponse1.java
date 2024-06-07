@@ -7,6 +7,7 @@ import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.Flag;
 
+// TODO 이름 변경(작품 정보 조회 뷰에서 상단, 기본정보를 제공하는 부분)
 public record NovelGetResponse1(
         Long userNovelId,
         String novelTitle,
@@ -27,8 +28,30 @@ public record NovelGetResponse1(
 ) {
     public static NovelGetResponse1 of(Novel novel, UserNovel userNovel, NovelStatistics novelStatistics,
                                        String novelGenres, String novelGenreImage) {
+        Float novelRating = novel.getNovelRatingCount() > 0 ?
+                Math.round((novel.getNovelRatingSum() / novel.getNovelRatingCount()) * 10) / 10.0f : 0;
+        if (userNovel == null) {
+            return new NovelGetResponse1(
+                    null,
+                    novel.getTitle(),
+                    novel.getNovelImage(),
+                    novelGenres,
+                    novelGenreImage,
+                    novel.getIsCompleted().equals(Flag.Y),
+                    novel.getAuthor(),
+                    novelStatistics.getInterestCount(),
+                    novelRating,
+                    novel.getNovelRatingCount(),
+                    novelStatistics.getNovelFeedCount(),
+                    0f,
+                    null,
+                    null,
+                    null,
+                    false
+            );
+        }
         return new NovelGetResponse1(
-                userNovel != null ? userNovel.getUserNovelId() : null,
+                userNovel.getUserNovelId(),
                 novel.getTitle(),
                 novel.getNovelImage(),
                 novelGenres,
@@ -36,18 +59,18 @@ public record NovelGetResponse1(
                 novel.getIsCompleted().equals(Flag.Y),
                 novel.getAuthor(),
                 novelStatistics.getInterestCount(),
-                novel.getNovelRatingCount() > 0 ? novel.getNovelRatingSum() / novel.getNovelRatingCount() : 0,
+                novelRating,
                 novel.getNovelRatingCount(),
                 novelStatistics.getNovelFeedCount(),
-                userNovel != null ? userNovel.getUserNovelRating() : null,
-                userNovel != null ? userNovel.getStatus().getName() : null,
-                userNovel != null && userNovel.getStartDate() != null ? userNovel.getStartDate()
+                userNovel.getUserNovelRating(),
+                userNovel.getStatus().getName(),
+                userNovel.getStartDate() != null ? userNovel.getStartDate()
                         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
                         : null,
-                userNovel != null && userNovel.getEndDate() != null ? userNovel.getEndDate()
+                userNovel.getEndDate() != null ? userNovel.getEndDate()
                         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
                         : null,
-                userNovel != null && userNovel.getIsInterest().equals(Flag.Y)
+                userNovel.getIsInterest().equals(Flag.Y)
         );
     }
 }

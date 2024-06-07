@@ -1,5 +1,7 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,41 +16,36 @@ import org.websoso.WSSServer.domain.NovelKeywords;
 import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.domain.Platform;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.dto.Keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse2;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
-import org.websoso.WSSServer.exception.novel.NovelErrorCode;
 import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
-import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
-import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 import org.websoso.WSSServer.exception.platform.PlatformErrorCode;
 import org.websoso.WSSServer.exception.platform.exception.InvalidPlatformException;
 import org.websoso.WSSServer.repository.KeywordRepository;
 import org.websoso.WSSServer.repository.NovelKeywordRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
-import org.websoso.WSSServer.repository.NovelStatisticsRepository;
 import org.websoso.WSSServer.repository.PlatformRepository;
-import org.websoso.WSSServer.repository.UserNovelRepository;
 
 @Service
 @RequiredArgsConstructor
 public class NovelService {
+
     private final NovelRepository novelRepository;
-    private final UserNovelRepository userNovelRepository;
-    private final NovelStatisticsRepository novelStatisticsRepository;
     private final PlatformRepository platformRepository;
     private final KeywordRepository keywordRepository;
     private final NovelKeywordRepository novelKeywordRepository;
+    private final NovelStatisticsService novelStatisticsService;
+    private final UserNovelService userNovelService;
 
     public NovelGetResponse1 getNovelInfo1(User user, Long novelId) {
         Novel novel = getNovelOrException(novelId);
         List<NovelGenre> novelGenres = novel.getNovelGenres();
         return NovelGetResponse1.of(
                 novel,
-                getUserNovelOrNull(user, novel),
-                getNovelStatisticsOrException(novel),
+                userNovelService.getUserNovelOrNull(user, novel),
+                novelStatisticsService.getNovelStatisticsOrException(novel),
                 getNovelGenreNames(novelGenres),
                 getRandomNovelGenreImage(novelGenres)
         );
@@ -56,7 +53,7 @@ public class NovelService {
 
     public NovelGetResponse2 getNovelInfo2(Long novelId) {
         Novel novel = getNovelOrException(novelId);
-        NovelStatistics novelStatistics = getNovelStatisticsOrException(novel);
+        NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
         return NovelGetResponse2.of(
                 novel,
                 novelStatistics,
@@ -94,24 +91,14 @@ public class NovelService {
     }
 
     private Novel getNovelOrException(Long novelId) {
-        return novelRepository.findById(novelId).orElseThrow(
-                () -> new InvalidNovelException(NovelErrorCode.NOVEL_NOT_FOUND,
+        return novelRepository.findById(novelId)
+                .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND,
                         "novel with the given id is not found"));
-    }
-
-    private NovelStatistics getNovelStatisticsOrException(Novel novel) {
-        return novelStatisticsRepository.findByNovel(novel).orElseThrow(
-                () -> new InvalidNovelStatisticsException(NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND,
-                        "novel statistics with the given novel is not found"));
-    }
-
-    private UserNovel getUserNovelOrNull(User user, Novel novel) {
-        return userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
     }
 
     private String getNovelGenreNames(List<NovelGenre> novelGenres) {
         return novelGenres.stream().map(novelGenre -> novelGenre.getGenre().getGenreName())
-                .collect(Collectors.joining(", "));
+                .collect(Collectors.joining("/"));
     }
 
     private String getRandomNovelGenreImage(List<NovelGenre> novelGenres) {
