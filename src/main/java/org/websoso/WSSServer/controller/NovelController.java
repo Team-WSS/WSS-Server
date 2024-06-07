@@ -6,7 +6,6 @@ import static org.springframework.http.HttpStatus.OK;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,7 +40,7 @@ public class NovelController {
 
     @PostMapping("/{novelId}/is-interest")
     public ResponseEntity<Void> registerAsInterest(Principal principal,
-                                                   @PathVariable("novelId") Long novelId){
+                                                   @PathVariable("novelId") Long novelId) {
 
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         novelService.registerAsInterest(user, novelId);
