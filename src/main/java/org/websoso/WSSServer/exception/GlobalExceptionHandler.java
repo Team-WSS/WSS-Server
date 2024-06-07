@@ -19,6 +19,8 @@ import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
+import org.websoso.WSSServer.exception.userStatistics.UserStatisticsErrorCode;
+import org.websoso.WSSServer.exception.userStatistics.exception.InvalidUserStatisticsException;
 
 @Slf4j
 @RestControllerAdvice
@@ -94,6 +96,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(novelStatisticsErrorCode.getStatusCode())
                 .body(new ErrorResult(novelStatisticsErrorCode.getCode(), novelStatisticsErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidUserStatisticsException.class)
+    public ResponseEntity<ErrorResult> InvalidUserStatisticsExceptionHandler(InvalidUserStatisticsException e) {
+        log.error("[InvalidUserStatisticsException] exception", e);
+        UserStatisticsErrorCode userStatisticsErrorCode = e.getUserStatisticsErrorCode();
+        return ResponseEntity
+                .status(userStatisticsErrorCode.getStatusCode())
+                .body(new ErrorResult(userStatisticsErrorCode.getCode(), userStatisticsErrorCode.getDescription()));
     }
 
 }
