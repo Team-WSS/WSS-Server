@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
+import static org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode.INVALID_NOVEL_FEED_COUNT;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +13,7 @@ import java.lang.reflect.Field;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 
 @Entity
 @Getter
@@ -66,6 +68,14 @@ public class NovelStatistics {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException("Field not found or not accessible", e);
         }
+    }
+
+    public void decreaseNovelFeedCount() {
+        if (this.novelFeedCount <= 0) {
+            throw new InvalidNovelStatisticsException(INVALID_NOVEL_FEED_COUNT, "invalid novel feed count");
+        }
+
+        this.novelFeedCount--;
     }
 
 }
