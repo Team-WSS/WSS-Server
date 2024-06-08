@@ -32,4 +32,8 @@ public class Block {
         this.blockingId = blockingId;
         this.blockedId = blockedId;
     }
+
+    public static Block create(Long blockingId, Long blockedId) {
+        return new Block(blockingId, blockedId);
+    }
 }
