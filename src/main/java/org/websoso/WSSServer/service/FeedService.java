@@ -2,8 +2,6 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
-import static org.websoso.WSSServer.domain.common.Flag.N;
-import static org.websoso.WSSServer.domain.common.Flag.Y;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 
 import java.util.List;
@@ -36,7 +34,7 @@ public class FeedService {
     public void createFeed(User user, FeedCreateRequest request) {
         Feed feed = Feed.builder()
                 .feedContent(request.feedContent())
-                .isSpoiler(request.isSpoiler() ? Y : N)
+                .isSpoiler(request.isSpoiler())
                 .novelId(request.novelId())
                 .user(user)
                 .build();
@@ -63,7 +61,7 @@ public class FeedService {
             }
         }
 
-        feed.updateFeed(request.feedContent(), request.isSpoiler() ? Y : N, request.novelId());
+        feed.updateFeed(request.feedContent(), request.isSpoiler(), request.novelId());
         categoryService.updateCategory(feed, request.relevantCategories());
     }
 
