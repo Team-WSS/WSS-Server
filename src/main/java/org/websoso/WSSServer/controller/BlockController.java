@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.service.BlockService;
 import org.websoso.WSSServer.service.UserService;
+import org.websoso.WSSServer.validation.UserIdConstraint;
 
 @RestController
 @RequestMapping("/blocks")
@@ -23,7 +24,7 @@ public class BlockController {
 
     @PostMapping
     public ResponseEntity<Void> block(Principal principal,
-                                      @RequestParam("userId") Long blockedId) {
+                                      @RequestParam("userId") @UserIdConstraint Long blockedId) {
         User blocker = userService.getUserOrException(Long.valueOf(principal.getName()));
         blockService.block(blocker, blockedId);
         return ResponseEntity
