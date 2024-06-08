@@ -10,6 +10,7 @@ import org.websoso.WSSServer.exception.avatar.AvatarErrorCode;
 import org.websoso.WSSServer.exception.avatar.exception.AvatarNotFoundException;
 import org.websoso.WSSServer.exception.block.BlockErrorCode;
 import org.websoso.WSSServer.exception.block.exception.AlreadyBlockedException;
+import org.websoso.WSSServer.exception.block.exception.BlockNotFoundException;
 import org.websoso.WSSServer.exception.block.exception.SelfBlockedException;
 import org.websoso.WSSServer.exception.category.CategoryErrorCode;
 import org.websoso.WSSServer.exception.category.exception.InvalidCategoryException;
@@ -148,5 +149,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(avatarErrorCode.getStatusCode())
                 .body(new ErrorResult(avatarErrorCode.getCode(), avatarErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(BlockNotFoundException.class)
+    public ResponseEntity<ErrorResult> BlockNotFoundExceptionHandler(BlockNotFoundException e) {
+        log.error("[BlockNotFoundException] exception ", e);
+        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
+        return ResponseEntity
+                .status(blockErrorCode.getStatusCode())
+                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
     }
 }
