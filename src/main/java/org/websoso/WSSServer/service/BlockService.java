@@ -45,10 +45,7 @@ public class BlockService {
                 .map(block -> {
                     User blockedUser = userService.getUserOrException(block.getBlockedId());
                     Avatar avatarOfBlockedUser = avatarService.getAvatarOrException(blockedUser.getAvatarId());
-                    return new BlockGetResponse(block.getBlockId(),
-                            block.getBlockedId(),
-                            blockedUser.getNickname(),
-                            avatarOfBlockedUser.getAvatarImage());
+                    return BlockGetResponse.of(block, blockedUser, avatarOfBlockedUser);
                 }).toList();
         return new BlocksGetResponse(blockGetResponses);
     }
