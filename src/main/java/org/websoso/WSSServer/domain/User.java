@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.domain.common.Role;
+import org.websoso.WSSServer.dto.User.UserBasicInfo;
 
 @Entity
 @Getter
@@ -75,4 +76,9 @@ public class User {
     public void updateProfileStatus(Boolean profileStatus) {
         this.isProfilePublic = profileStatus;
     }
+
+    public UserBasicInfo getUserBasicInfo(String avatarImage) {
+        return UserBasicInfo.of(this.getUserId(), this.getNickname(), avatarImage);
+    }
+
 }

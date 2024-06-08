@@ -15,6 +15,7 @@ import static org.websoso.WSSServer.domain.common.Flag.Y;
 import static org.websoso.WSSServer.exception.error.CustomCategoryError.CATEGORY_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomCategoryError.INVALID_CATEGORY_FORMAT;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +57,43 @@ public class CategoryService {
         Category category = setCategory(builder, relevantCategories);
 
         categoryRepository.save(category);
+    }
+
+    public List<String> getRelevantCategoryNames(Category category) {
+        List<String> relevantCategories = new ArrayList<>();
+
+        if (category.getIsRf() == Y) {
+            relevantCategories.add(RF.getValue());
+        }
+        if (category.getIsRo() == Y) {
+            relevantCategories.add(RO.getValue());
+        }
+        if (category.getIsFa() == Y) {
+            relevantCategories.add(FA.getValue());
+        }
+        if (category.getIsMf() == Y) {
+            relevantCategories.add(MF.getValue());
+        }
+        if (category.getIsDr() == Y) {
+            relevantCategories.add(DR.getValue());
+        }
+        if (category.getIsLn() == Y) {
+            relevantCategories.add(LN.getValue());
+        }
+        if (category.getIsWu() == Y) {
+            relevantCategories.add(WU.getValue());
+        }
+        if (category.getIsMy() == Y) {
+            relevantCategories.add(MY.getValue());
+        }
+        if (category.getIsBl() == Y) {
+            relevantCategories.add(BL.getValue());
+        }
+        if (category.getIsEtc() == Y) {
+            relevantCategories.add(ETC.getValue());
+        }
+
+        return relevantCategories;
     }
 
     private Category setCategory(CategoryBuilder builder, List<String> relevantCategories) {
