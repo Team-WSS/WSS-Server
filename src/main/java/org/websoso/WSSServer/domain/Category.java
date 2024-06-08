@@ -15,7 +15,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.websoso.WSSServer.domain.common.Flag;
 
 @Entity
 @Getter
@@ -27,63 +26,61 @@ public class Category {
     @Column(nullable = false)
     private Long categoryId;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isRf;
+    private Boolean isRf;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'N'")
-    private Flag isRo;
+    private Boolean isRo;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'N'")
-    private Flag isFa;
+    private Boolean isFa;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'N'")
-    private Flag isMf;
+    private Boolean isMf;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'N'")
-    private Flag isDr;
+    private Boolean isDr;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'N'")
-    private Flag isLn;
+    private Boolean isLn;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'N'")
-    private Flag isWu;
+    private Boolean isWu;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'N'")
-    private Flag isMy;
+    private Boolean isMy;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'N'")
-    private Flag isBl;
+    private Boolean isBl;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'N'")
-    private Flag isEtc;
+    private Boolean isEtc;
 
     @OneToOne
     @JoinColumn(name = "feed_id", nullable = false)
     private Feed feed;
 
     @Builder
-    public Category(Long categoryId, Flag isRf, Flag isRo, Flag isFa, Flag isMf, Flag isDr, Flag isLn, Flag isWu,
-                    Flag isMy, Flag isBl, Flag isEtc, Feed feed) {
+    public Category(Long categoryId, Boolean isRf, Boolean isRo, Boolean isFa, Boolean isMf, Boolean isDr, Boolean isLn,
+                    Boolean isWu, Boolean isMy, Boolean isBl, Boolean isEtc, Feed feed) {
         this.categoryId = categoryId;
         this.isRf = isRf;
         this.isRo = isRo;
@@ -97,5 +94,4 @@ public class Category {
         this.isEtc = isEtc;
         this.feed = feed;
     }
-
 }
