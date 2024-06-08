@@ -2,7 +2,9 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER_ACCESS;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ public class FeedService {
     private final NovelStatisticsService novelStatisticsService;
     private final NovelService novelService;
     private final AvatarService avatarService;
+    private final BlockService blockService;
 
     public void createFeed(User user, FeedCreateRequest request) {
         Feed feed = Feed.builder()
@@ -97,6 +100,9 @@ public class FeedService {
     public FeedGetResponse getFeedById(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 
+        isHiddenFeed(feed);
+        isBlockedRelationship(feed.getUser(), user);
+
         UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
         Novel novel = getLinkedNovelOrNull(feed.getNovelId());
         Boolean isLiked = isUserLikedFeed(feed.getLikeUsers(), user);
@@ -109,6 +115,19 @@ public class FeedService {
     private Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() ->
                 new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
+    }
+
+    private void isHiddenFeed(Feed feed) {
+        if (feed.getIsHidden()) {
+            throw new CustomFeedException(HIDDEN_FEED_ACCESS, "Cannot access hidden feed.");
+        }
+    }
+
+    private void isBlockedRelationship(User createdFeedUser, User user) {
+        if (blockService.isBlockedRelationship(user.getUserId(), createdFeedUser.getUserId())) {
+            throw new CustomFeedException(BLOCKED_USER_ACCESS,
+                    "cannot access this feed because either you or the feed author has blocked the other.");
+        }
     }
 
     private UserBasicInfo getUserBasicInfo(User user) {
