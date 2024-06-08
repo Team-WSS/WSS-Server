@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.websoso.WSSServer.exception.block.BlockErrorCode;
+import org.websoso.WSSServer.exception.block.exception.AlreadyBlockedException;
 import org.websoso.WSSServer.exception.category.CategoryErrorCode;
 import org.websoso.WSSServer.exception.category.exception.InvalidCategoryException;
 import org.websoso.WSSServer.exception.common.ErrorResult;
@@ -116,5 +118,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(novelStatisticsErrorCode.getStatusCode())
                 .body(new ErrorResult(novelStatisticsErrorCode.getCode(), novelStatisticsErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(AlreadyBlockedException.class)
+    public ResponseEntity<ErrorResult> AlreadyBlockedExceptionHandler(AlreadyBlockedException e) {
+        log.error("[AlreadyBlockedException] exception ", e);
+        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
+        return ResponseEntity
+                .status(blockErrorCode.getStatusCode())
+                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
     }
 }
