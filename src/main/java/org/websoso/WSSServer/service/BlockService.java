@@ -30,9 +30,6 @@ public class BlockService {
             throw new AlreadyBlockedException(ALREADY_BLOCKED, "account has already been blocked");
         }
 
-        blockRepository.save(Block.builder()
-                .blockingId(blockingId)
-                .blockedId(blockedId)
-                .build());
+        blockRepository.save(Block.create(blockingId, blockedId));
     }
 }
