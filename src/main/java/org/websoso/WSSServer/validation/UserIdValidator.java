@@ -21,9 +21,6 @@ public class UserIdValidator implements ConstraintValidator<UserIdConstraint, Lo
 
     @Override
     public boolean isValid(Long userId, ConstraintValidatorContext constraintValidatorContext) {
-        if (userId == 0) {
-            return true;
-        }
         userRepository.findById(userId).orElseThrow(() ->
                 new InvalidUserException(USER_NOT_FOUND, "user with the given id was not found"));
 
