@@ -7,7 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,7 +26,6 @@ public class Block {
     @Column(nullable = false)
     private Long blockedId;
 
-    @Builder
     private Block(Long blockingId, Long blockedId) {
         this.blockingId = blockingId;
         this.blockedId = blockedId;
