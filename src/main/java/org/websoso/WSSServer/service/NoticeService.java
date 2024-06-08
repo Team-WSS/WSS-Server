@@ -51,11 +51,6 @@ public class NoticeService {
         }
     }
 
-    private Notice getNoticeOrException(Long noticeId) {
-        return noticeRepository.findById(noticeId).orElseThrow(() ->
-                new NoticeNotFoundException(NOTICE_NOT_FOUND, "notice with given noticeId was not found"));
-    }
-
     public NoticesGetResponse getNotices(User user) {
         List<Notice> notices = noticeRepository.findByUserId(user.getUserId());
         return NoticesGetResponse.of(notices);
@@ -66,5 +61,10 @@ public class NoticeService {
         validateAuthorization(user);
         Notice notice = getNoticeOrException(noticeId);
         noticeRepository.delete(notice);
+    }
+
+    private Notice getNoticeOrException(Long noticeId) {
+        return noticeRepository.findById(noticeId).orElseThrow(() ->
+                new NoticeNotFoundException(NOTICE_NOT_FOUND, "notice with given noticeId was not found"));
     }
 }
