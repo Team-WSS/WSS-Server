@@ -28,6 +28,8 @@ import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
+import org.websoso.WSSServer.exception.user.exception.InvalidUserIdException;
+import org.websoso.WSSServer.exception.user.exception.UserNotFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -158,5 +160,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(blockErrorCode.getStatusCode())
                 .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidUserIdException.class)
+    public ResponseEntity<ErrorResult> InvalidUserIdExceptionHandler(InvalidUserIdException e) {
+        log.error("[InvalidUserIdException] exception ", e);
+        UserErrorCode userErrorCode = e.getUserErrorCode();
+        return ResponseEntity
+                .status(userErrorCode.getStatusCode())
+                .body(new ErrorResult((userErrorCode.getCode()), userErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResult> UserNotFoundExceptionHandler(UserNotFoundException e) {
+        log.error("[UserNotFoundException] exception ", e);
+        UserErrorCode userErrorCode = e.getUserErrorCode();
+        return ResponseEntity
+                .status(userErrorCode.getStatusCode())
+                .body(new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription()));
     }
 }
