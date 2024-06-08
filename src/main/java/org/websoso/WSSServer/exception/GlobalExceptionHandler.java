@@ -11,6 +11,9 @@ import org.websoso.WSSServer.exception.category.exception.InvalidCategoryExcepti
 import org.websoso.WSSServer.exception.common.ErrorResult;
 import org.websoso.WSSServer.exception.feed.FeedErrorCode;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
+import org.websoso.WSSServer.exception.notice.NoticeErrorCode;
+import org.websoso.WSSServer.exception.notice.exception.ForbiddenNoticeManipulationException;
+import org.websoso.WSSServer.exception.notice.exception.NoticeNotFoundException;
 import org.websoso.WSSServer.exception.novel.NovelErrorCode;
 import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
@@ -78,6 +81,25 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResult(feedErrorCode.getCode(), feedErrorCode.getDescription()));
     }
 
+    @ExceptionHandler(ForbiddenNoticeManipulationException.class)
+    public ResponseEntity<ErrorResult> ForbiddenNoticeManipulationExceptionHandler(
+            ForbiddenNoticeManipulationException e) {
+        log.error("[ForbiddenNoticeManipulationException] exception ", e);
+        NoticeErrorCode noticeErrorCode = e.getNoticeErrorCode();
+        return ResponseEntity
+                .status(noticeErrorCode.getStatusCode())
+                .body(new ErrorResult(noticeErrorCode.getCode(), noticeErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(NoticeNotFoundException.class)
+    public ResponseEntity<ErrorResult> NoticeNotFoundExceptionHandler(NoticeNotFoundException e) {
+        log.error("[NoticeNotFoundException] exception ", e);
+        NoticeErrorCode noticeErrorCode = e.getNoticeErrorCode();
+        return ResponseEntity
+                .status(noticeErrorCode.getStatusCode())
+                .body(new ErrorResult(noticeErrorCode.getCode(), noticeErrorCode.getDescription()));
+    }
+
     @ExceptionHandler(InvalidNovelException.class)
     public ResponseEntity<ErrorResult> InvalidNovelExceptionHandler(InvalidNovelException e) {
         log.error("[InvalidNovelException] exception ", e);
@@ -95,5 +117,4 @@ public class GlobalExceptionHandler {
                 .status(novelStatisticsErrorCode.getStatusCode())
                 .body(new ErrorResult(novelStatisticsErrorCode.getCode(), novelStatisticsErrorCode.getDescription()));
     }
-
 }
