@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.exception.avatar;
 
-
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import lombok.AllArgsConstructor;
@@ -17,5 +16,5 @@ public enum AvatarErrorCode implements IErrorCode {
     private final String code;
     private final String description;
     private final HttpStatus statusCode;
-}
 
+}
