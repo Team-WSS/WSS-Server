@@ -99,7 +99,7 @@ public class FeedService {
     public FeedGetResponse getFeedById(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 
-        UserBasicInfo userBasicInfo = getUserInformation(feed.getUser());
+        UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
         Novel novel = getLinkedNovelOrNull(feed.getNovelId());
         Boolean isLiked = isUserLikedFeed(feed.getLikeUsers(), user);
         List<String> relevantCategories = categoryService.getRelevantCategoryNames(feed.getCategory());
@@ -113,7 +113,7 @@ public class FeedService {
                 new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
     }
 
-    private UserBasicInfo getUserInformation(User user) {
+    private UserBasicInfo getUserBasicInfo(User user) {
         return user.getUserBasicInfo(
                 avatarService.getAvatarOrException(user.getAvatarId()).getAvatarImage()
         );
