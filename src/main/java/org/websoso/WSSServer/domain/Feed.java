@@ -39,7 +39,7 @@ public class Feed extends BaseEntity {
     @Column(nullable = false)
     private Long feedId;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "Boolean default false", nullable = false)
     private Boolean isHidden;
 
     @Column(columnDefinition = "varchar(2000)", nullable = false)
@@ -48,7 +48,7 @@ public class Feed extends BaseEntity {
     @Column
     private Long novelId;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "Boolean", nullable = false)
     private Boolean isSpoiler;
 
     @Column(columnDefinition = "int default 0", nullable = false)
