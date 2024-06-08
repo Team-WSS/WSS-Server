@@ -1,7 +1,5 @@
 package org.websoso.WSSServer.dto.feed;
 
-import static org.websoso.WSSServer.domain.common.Flag.Y;
-
 import java.util.List;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
@@ -53,7 +51,7 @@ public record FeedGetResponse(
                 novelRatingCount,
                 novelRating,
                 relevantCategories,
-                feed.getIsSpoiler().equals(Y),
+                feed.getIsSpoiler(),
                 !feed.getModifiedDate().isBlank(),
                 isMyFeed
         );
