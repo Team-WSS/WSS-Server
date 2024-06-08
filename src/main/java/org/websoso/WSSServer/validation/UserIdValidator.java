@@ -1,12 +1,14 @@
 package org.websoso.WSSServer.validation;
 
+import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_USER_ID;
 import static org.websoso.WSSServer.exception.user.UserErrorCode.USER_NOT_FOUND;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
+import org.websoso.WSSServer.exception.user.exception.InvalidUserIdException;
+import org.websoso.WSSServer.exception.user.exception.UserNotFoundException;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Component
@@ -21,8 +23,11 @@ public class UserIdValidator implements ConstraintValidator<UserIdConstraint, Lo
 
     @Override
     public boolean isValid(Long userId, ConstraintValidatorContext constraintValidatorContext) {
+        if (userId <= 0) {
+            throw new InvalidUserIdException(INVALID_USER_ID, "given userId is an invalid value");
+        }
         userRepository.findById(userId).orElseThrow(() ->
-                new InvalidUserException(USER_NOT_FOUND, "user with the given id was not found"));
+                new UserNotFoundException(USER_NOT_FOUND, "user with the given id was not found"));
 
         return true;
     }
