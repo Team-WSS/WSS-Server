@@ -24,7 +24,6 @@ public class BlockController {
     @PostMapping
     public ResponseEntity<Void> block(Principal principal,
                                       @RequestParam("userId") Long blockedId) {
-        System.out.println("---------------kingking");
         User blocker = userService.getUserOrException(Long.valueOf(principal.getName()));
         blockService.block(blocker, blockedId);
         return ResponseEntity
