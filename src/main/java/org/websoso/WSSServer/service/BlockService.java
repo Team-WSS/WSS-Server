@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.block.BlockErrorCode.ALREADY_BLOCKED;
+import static org.websoso.WSSServer.exception.block.BlockErrorCode.BLOCK_NOT_FOUND;
 import static org.websoso.WSSServer.exception.block.BlockErrorCode.SELF_BLOCKED;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.block.BlockGetResponse;
 import org.websoso.WSSServer.dto.block.BlocksGetResponse;
 import org.websoso.WSSServer.exception.block.exception.AlreadyBlockedException;
+import org.websoso.WSSServer.exception.block.exception.BlockNotFoundException;
 import org.websoso.WSSServer.exception.block.exception.SelfBlockedException;
 import org.websoso.WSSServer.repository.BlockRepository;
 
@@ -48,5 +50,12 @@ public class BlockService {
                     return BlockGetResponse.of(block, blockedUser, avatarOfBlockedUser);
                 }).toList();
         return new BlocksGetResponse(blockGetResponses);
+    }
+
+    @Transactional
+    public void deleteBlock(User user, Long blockId) {
+        Block block = blockRepository.findByBlockingIdAndBlockedId(user.getUserId(), blockId).orElseThrow(() ->
+                new BlockNotFoundException(BLOCK_NOT_FOUND, "block with the given blockId was not found"));
+        blockRepository.delete(block);
     }
 }
