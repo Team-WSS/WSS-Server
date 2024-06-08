@@ -11,6 +11,7 @@ import org.websoso.WSSServer.exception.avatar.exception.AvatarNotFoundException;
 import org.websoso.WSSServer.exception.block.BlockErrorCode;
 import org.websoso.WSSServer.exception.block.exception.AlreadyBlockedException;
 import org.websoso.WSSServer.exception.block.exception.BlockNotFoundException;
+import org.websoso.WSSServer.exception.block.exception.InvalidBlockIdException;
 import org.websoso.WSSServer.exception.block.exception.SelfBlockedException;
 import org.websoso.WSSServer.exception.category.CategoryErrorCode;
 import org.websoso.WSSServer.exception.category.exception.InvalidCategoryException;
@@ -178,5 +179,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(userErrorCode.getStatusCode())
                 .body(new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidBlockIdException.class)
+    public ResponseEntity<ErrorResult> InvalidBlockIdExceptionHandler(InvalidBlockIdException e) {
+        log.error("[InvalidBlockIdException] exception ", e);
+        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
+        return ResponseEntity
+                .status(blockErrorCode.getStatusCode())
+                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
     }
 }
