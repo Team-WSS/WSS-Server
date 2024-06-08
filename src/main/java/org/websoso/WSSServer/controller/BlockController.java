@@ -1,15 +1,18 @@
 package org.websoso.WSSServer.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.block.BlocksGetResponse;
 import org.websoso.WSSServer.service.BlockService;
 import org.websoso.WSSServer.service.UserService;
 import org.websoso.WSSServer.validation.UserIdConstraint;
@@ -30,5 +33,13 @@ public class BlockController {
         return ResponseEntity
                 .status(CREATED)
                 .build();
+    }
+
+    @GetMapping
+    public ResponseEntity<BlocksGetResponse> getBlockList(Principal principal) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(blockService.getBlockList(user));
     }
 }
