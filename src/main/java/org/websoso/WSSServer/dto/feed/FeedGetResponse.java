@@ -41,7 +41,7 @@ public record FeedGetResponse(
                 userBasicInfo.userId(),
                 userBasicInfo.nickname(),
                 userBasicInfo.avatarImage(),
-                feed.getCreatedDate(),
+                feed.getCreatedDate(), // TODO : 형식 포맷팅
                 feed.getFeedContent(),
                 feed.getLikeCount(),
                 isLiked,
@@ -52,7 +52,7 @@ public record FeedGetResponse(
                 novelRating,
                 relevantCategories,
                 feed.getIsSpoiler(),
-                !feed.getModifiedDate().isBlank(),
+                !feed.getCreatedDate().equals(feed.getModifiedDate()),
                 isMyFeed
         );
     }
