@@ -15,7 +15,8 @@ public enum BlockErrorCode implements IErrorCode {
 
     ALREADY_BLOCKED("BLOCK-001", "이미 차단한 계정입니다.", CONFLICT),
     SELF_BLOCKED("BLOCK-002", "본인을 차단할 수 없습니다.", BAD_REQUEST),
-    BLOCK_NOT_FOUND("BLOCK-002", "해당 ID에 해당하는 차단을 찾을 수 없습니다.", NOT_FOUND);
+    BLOCK_NOT_FOUND("BLOCK-003", "해당 ID에 해당하는 차단을 찾을 수 없습니다.", NOT_FOUND),
+    INVALID_BLOCK_ID("BLOCK-004", "유효하지 않은 ID입니다.", BAD_REQUEST);
 
     private final String code;
     private final String description;
