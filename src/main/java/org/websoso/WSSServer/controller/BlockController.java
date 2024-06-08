@@ -18,6 +18,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.block.BlocksGetResponse;
 import org.websoso.WSSServer.service.BlockService;
 import org.websoso.WSSServer.service.UserService;
+import org.websoso.WSSServer.validation.BlockIdConstraint;
 import org.websoso.WSSServer.validation.UserIdConstraint;
 
 @RestController
@@ -48,7 +49,7 @@ public class BlockController {
 
     @DeleteMapping("/{blockId}")
     public ResponseEntity<Void> deleteBlock(Principal principal,
-                                            @PathVariable("blockId") Long blockId) {
+                                            @PathVariable("blockId") @BlockIdConstraint Long blockId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         blockService.deleteBlock(user, blockId);
         return ResponseEntity
