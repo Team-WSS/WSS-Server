@@ -32,15 +32,9 @@ public class UserController {
     public ResponseEntity<NicknameValidation> checkNicknameAvailability(
             @RequestParam("nickname")
             @NicknameConstraint String nickname) {
-        NicknameValidation nicknameValidation = userService.isNicknameAvailable(nickname);
-        if (nicknameValidation.isDuplicated()) {
-            return ResponseEntity
-                    .status(CONFLICT)
-                    .body(nicknameValidation);
-        }
         return ResponseEntity
                 .status(OK)
-                .body(nicknameValidation);
+                .body(userService.isNicknameAvailable(nickname));
     }
 
     @GetMapping("/email")
