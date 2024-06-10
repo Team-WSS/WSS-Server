@@ -27,11 +27,13 @@ public class AvatarService {
         List<AvatarGetResponse> avatarGetResponses = avatars.stream()
                 .map(avatar -> {
                     List<AvatarLine> avatarLines = avatar.getAvatarLine();
-                    final int avatarLineSize = avatarLines.size();
-                    int randomNumber = random.nextInt(avatarLineSize);
-                    AvatarLine avatarLine = avatarLines.get(randomNumber);
-                    return AvatarGetResponse.of(avatar, avatarLine, representativeAvatarId);
+                    return AvatarGetResponse.of(avatar, getRandomAvatarLine(avatarLines), representativeAvatarId);
                 }).toList();
         return new AvatarsGetResponse(avatarGetResponses);
+    }
+
+    private static AvatarLine getRandomAvatarLine(List<AvatarLine> avatarLines) {
+        final int avatarLineSize = avatarLines.size();
+        return avatarLines.get(random.nextInt(avatarLineSize));
     }
 }
