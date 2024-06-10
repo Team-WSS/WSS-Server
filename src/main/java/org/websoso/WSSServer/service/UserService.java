@@ -29,7 +29,7 @@ public class UserService {
         if (userRepository.existsByNickname(nickname)) {
             throw new DuplicatedNicknameException(DUPLICATED_NICKNAME, "nickname is duplicated.");
         }
-        return NicknameValidation.of(false);
+        return NicknameValidation.of(true);
     }
 
     public LoginResponse login(Long userId) {

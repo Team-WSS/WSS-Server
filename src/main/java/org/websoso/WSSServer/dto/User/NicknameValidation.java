@@ -1,10 +1,10 @@
 package org.websoso.WSSServer.dto.User;
 
 public record NicknameValidation(
-        boolean isDuplicated
+        boolean isValid
 ) {
 
-    public static NicknameValidation of(boolean isDuplicated) {
-        return new NicknameValidation(isDuplicated);
+    public static NicknameValidation of(boolean isValid) {
+        return new NicknameValidation(isValid);
     }
 }
