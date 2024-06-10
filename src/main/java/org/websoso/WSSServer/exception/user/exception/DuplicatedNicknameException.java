@@ -15,5 +15,3 @@ public class DuplicatedNicknameException extends RuntimeException {
 
     private UserErrorCode userErrorCode;
 }
-
-
