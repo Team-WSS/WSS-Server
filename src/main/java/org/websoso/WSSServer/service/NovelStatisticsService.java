@@ -15,20 +15,17 @@ import org.websoso.WSSServer.repository.NovelStatisticsRepository;
 public class NovelStatisticsService {
 
     private final NovelStatisticsRepository novelStatisticsRepository;
-    private final NovelService novelService;
 
     @Transactional
-    public void increaseNovelFeedCount(Long novelId) {
-        NovelStatistics novelStatistics = novelStatisticsRepository.findByNovelId(novelId)
-                .orElseGet(() -> createNovelStatistics(novelId));
+    public void increaseNovelFeedCount(Novel novel) {
+        NovelStatistics novelStatistics = novelStatisticsRepository.findByNovel(novel)
+                .orElseGet(() -> createNovelStatistics(novel));
 
         novelStatistics.increaseNovelFeedCount();
     }
 
     @Transactional
-    public NovelStatistics createNovelStatistics(Long novelId) {
-        Novel novel = novelService.getNovelOrException(novelId);
-
+    public NovelStatistics createNovelStatistics(Novel novel) {
         return novelStatisticsRepository.save(
                 NovelStatistics.builder()
                         .novel(novel)
@@ -37,10 +34,8 @@ public class NovelStatisticsService {
     }
 
     @Transactional
-    public void decreaseNovelFeedCount(Long novelId) {
-        NovelStatistics novelStatistics = novelStatisticsRepository.findByNovelId(novelId)
-                .orElseThrow(() -> new InvalidNovelStatisticsException(NOVEL_STATISTICS_NOT_FOUND,
-                        "novel statistics not found"));
+    public void decreaseNovelFeedCount(Novel novel) {
+        NovelStatistics novelStatistics = getNovelStatisticsOrException(novel);
 
         novelStatistics.decreaseNovelFeedCount();
     }
