@@ -1,7 +1,5 @@
 package org.websoso.WSSServer.dto.avatar;
 
-import java.util.List;
-import java.util.Random;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.AvatarLine;
 
@@ -12,13 +10,11 @@ public record AvatarGetResponse(
         String avatarImage,
         Boolean isRepresentative
 ) {
-    public static AvatarGetResponse of(Avatar avatar, List<AvatarLine> avatarLines, Byte representativeAvatarId) {
-        int avatarLineSize = avatarLines.size();
-        int randomNumber = new Random().nextInt(avatarLineSize);
+    public static AvatarGetResponse of(Avatar avatar, AvatarLine avatarLine, Byte representativeAvatarId) {
         return new AvatarGetResponse(
                 avatar.getAvatarId(),
                 avatar.getAvatarName(),
-                avatarLines.get(randomNumber).getAvatarLine(),
+                avatarLine.getAvatarLine(),
                 avatar.getAvatarImage(),
                 avatar.getAvatarId().equals(representativeAvatarId)
         );

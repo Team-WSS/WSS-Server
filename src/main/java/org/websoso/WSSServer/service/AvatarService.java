@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.service;
 
 import java.util.List;
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import org.websoso.WSSServer.repository.AvatarRepository;
 public class AvatarService {
 
     private final AvatarRepository avatarRepository;
+    private static final Random random = new Random();      //TODO thread-safe하지 않아서 multi-thread 환경에서는 사용X
 
     @Transactional(readOnly = true)
     public AvatarsGetResponse getAvatarList(User user) {
@@ -25,7 +27,10 @@ public class AvatarService {
         List<AvatarGetResponse> avatarGetResponses = avatars.stream()
                 .map(avatar -> {
                     List<AvatarLine> avatarLines = avatar.getAvatarLine();
-                    return AvatarGetResponse.of(avatar, avatarLines, representativeAvatarId);
+                    final int avatarLineSize = avatarLines.size();
+                    int randomNumber = random.nextInt(avatarLineSize);
+                    AvatarLine avatarLine = avatarLines.get(randomNumber);
+                    return AvatarGetResponse.of(avatar, avatarLine, representativeAvatarId);
                 }).toList();
         return new AvatarsGetResponse(avatarGetResponses);
     }
