@@ -18,7 +18,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.springframework.cglib.core.Local;
 import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.domain.common.ReadStatus;
@@ -63,7 +62,8 @@ public class UserNovel extends BaseEntity {
     private Novel novel;
 
     @Builder
-    public UserNovel(Flag isInterest, ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate, AttractivePoint attractivePoint, User user, Novel novel){
+    public UserNovel(Flag isInterest, ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,
+                     AttractivePoint attractivePoint, User user, Novel novel) {
         this.isInterest = isInterest;
         this.status = status;
         this.userNovelRating = userNovelRating;
