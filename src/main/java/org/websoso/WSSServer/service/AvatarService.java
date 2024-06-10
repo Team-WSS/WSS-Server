@@ -20,11 +20,12 @@ public class AvatarService {
 
     @Transactional(readOnly = true)
     public AvatarsGetResponse getAvatarList(User user) {
+        Byte representativeAvatarId = user.getAvatarId();
         List<Avatar> avatars = avatarRepository.findAll();
         List<AvatarGetResponse> avatarGetResponses = avatars.stream()
                 .map(avatar -> {
                     List<AvatarLine> avatarLines = avatar.getAvatarLine();
-                    return AvatarGetResponse.of(avatar, avatarLines, user);
+                    return AvatarGetResponse.of(avatar, avatarLines, representativeAvatarId);
                 }).toList();
         return new AvatarsGetResponse(avatarGetResponses);
     }

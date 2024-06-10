@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Random;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.AvatarLine;
-import org.websoso.WSSServer.domain.User;
 
 public record AvatarGetResponse(
         Byte avatarId,
@@ -13,11 +12,9 @@ public record AvatarGetResponse(
         String avatarImage,
         Boolean isRepresentative
 ) {
-
-    public static AvatarGetResponse of(Avatar avatar, List<AvatarLine> avatarLines, User user) {
+    public static AvatarGetResponse of(Avatar avatar, List<AvatarLine> avatarLines, Byte representativeAvatarId) {
         int avatarLineSize = avatarLines.size();
         int randomNumber = new Random().nextInt(avatarLineSize);
-        Byte representativeAvatarId = user.getAvatarId();
         return new AvatarGetResponse(
                 avatar.getAvatarId(),
                 avatar.getAvatarName(),
