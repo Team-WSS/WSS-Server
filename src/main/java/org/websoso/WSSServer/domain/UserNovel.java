@@ -14,9 +14,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import java.time.LocalDate;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.cglib.core.Local;
 import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.domain.common.ReadStatus;
@@ -59,4 +61,17 @@ public class UserNovel extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "novel_id", nullable = false)
     private Novel novel;
+
+    @Builder
+    public UserNovel(Flag isInterest, ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate, AttractivePoint attractivePoint, User user, Novel novel){
+        this.isInterest = isInterest;
+        this.status = status;
+        this.userNovelRating = userNovelRating;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.attractivePoint = attractivePoint;
+        this.user = user;
+        this.novel = novel;
+    }
+
 }
