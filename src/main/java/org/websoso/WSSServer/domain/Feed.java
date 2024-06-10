@@ -3,6 +3,8 @@ package org.websoso.WSSServer.domain;
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static org.websoso.WSSServer.exception.feed.FeedErrorCode.ALREADY_LIKED;
+import static org.websoso.WSSServer.exception.feed.FeedErrorCode.INVALID_LIKE_COUNT;
+import static org.websoso.WSSServer.exception.feed.FeedErrorCode.LIKE_USER_NOT_FOUND;
 import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_AUTHORIZED;
 
 import jakarta.persistence.Column;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
@@ -28,6 +31,7 @@ import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 
+@Getter
 @DynamicInsert
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -98,12 +102,29 @@ public class Feed extends BaseEntity {
     }
 
     public void addLike(String likeUserId) {
-        if (this.likeUsers.contains(likeUserId)) {
+        String likeUserIdFormatted = "{" + likeUserId + "}";
+
+        if (this.likeUsers.contains(likeUserIdFormatted)) {
             throw new InvalidFeedException(ALREADY_LIKED, "already liked feed");
         }
 
-        this.likeUsers += "{" + likeUserId + "}";
+        this.likeUsers += likeUserIdFormatted;
         this.likeCount++;
+    }
+
+    public void unLike(String unLikeUserId) {
+        String unLikeUserIdFormatted = "{" + unLikeUserId + "}";
+
+        if (!this.likeUsers.contains(unLikeUserIdFormatted)) {
+            throw new InvalidFeedException(LIKE_USER_NOT_FOUND, "user has not liked this feed");
+        }
+
+        if (this.likeCount <= 0) {
+            throw new InvalidFeedException(INVALID_LIKE_COUNT, "invalid like count");
+        }
+
+        this.likeUsers = this.likeUsers.replace(unLikeUserIdFormatted, "");
+        this.likeCount--;
     }
 
 }

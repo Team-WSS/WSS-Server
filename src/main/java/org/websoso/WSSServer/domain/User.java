@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.domain.common.Gender;
+import org.websoso.WSSServer.domain.common.Role;
 
 @Entity
 @Getter
@@ -56,6 +57,11 @@ public class User {
     @Column(nullable = false)
     @ColumnDefault("'Y'")
     private Flag isProfilePublic;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @ColumnDefault("'USER'")
+    private Role role;
 
     @OneToOne(mappedBy = "user", cascade = ALL)
     private GenrePreference genrePreference;

@@ -14,4 +14,5 @@ public class InvalidNovelStatisticsException extends RuntimeException {
     }
 
     private NovelStatisticsErrorCode novelStatisticsErrorCode;
+
 }

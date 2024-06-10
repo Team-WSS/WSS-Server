@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
+import static org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode.INVALID_NOVEL_FEED_COUNT;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,10 +9,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import java.util.Optional;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 
+@DynamicInsert
+@DynamicUpdate
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -55,4 +63,22 @@ public class NovelStatistics {
     @OneToOne
     @JoinColumn(name = "novel_id", nullable = false)
     private Novel novel;
+
+    @Builder
+    public NovelStatistics(Novel novel) {
+        this.novel = novel;
+    }
+
+    public void increaseNovelFeedCount() {
+        this.novelFeedCount = Optional.ofNullable(this.novelFeedCount).orElse(0) + 1;
+    }
+
+    public void decreaseNovelFeedCount() {
+        if (this.novelFeedCount <= 0) {
+            throw new InvalidNovelStatisticsException(INVALID_NOVEL_FEED_COUNT, "invalid novel feed count");
+        }
+
+        this.novelFeedCount--;
+    }
+
 }
