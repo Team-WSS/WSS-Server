@@ -54,4 +54,12 @@ public class AttractivePoint {
     @OneToOne
     @JoinColumn(name = "user_novel_id", nullable = false)
     private UserNovel userNovel;
+
+    private AttractivePoint(UserNovel userNovel) {
+        this.userNovel = userNovel;
+    }
+
+    public static AttractivePoint create(UserNovel userNovel) {
+        return new AttractivePoint(userNovel);
+    }
 }
