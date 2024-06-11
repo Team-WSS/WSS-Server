@@ -18,6 +18,7 @@ import org.websoso.WSSServer.repository.FeedRepository;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class FeedService {
 
     private final FeedRepository feedRepository;
@@ -25,7 +26,6 @@ public class FeedService {
     private final NovelStatisticsService novelStatisticsService;
     private final NovelService novelService;
 
-    @Transactional
     public void createFeed(User user, FeedCreateRequest request) {
         Feed feed = Feed.builder()
                 .feedContent(request.feedContent())
@@ -42,7 +42,6 @@ public class FeedService {
         categoryService.createCategory(feed, request.relevantCategories());
     }
 
-    @Transactional
     public void updateFeed(User user, Long feedId, FeedUpdateRequest request) {
         Feed feed = getFeedOrException(feedId);
 
@@ -61,7 +60,6 @@ public class FeedService {
         categoryService.updateCategory(feed, request.relevantCategories());
     }
 
-    @Transactional
     public void deleteFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 
@@ -74,7 +72,6 @@ public class FeedService {
         feedRepository.delete(feed);
     }
 
-    @Transactional
     public void likeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 
@@ -83,7 +80,6 @@ public class FeedService {
         feed.addLike(likeUserId);
     }
 
-    @Transactional
     public void unLikeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 

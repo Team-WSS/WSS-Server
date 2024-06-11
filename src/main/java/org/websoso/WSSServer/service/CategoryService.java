@@ -30,11 +30,11 @@ import org.websoso.WSSServer.repository.CategoryRepository;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    @Transactional
     public void createCategory(Feed feed, List<String> relevantCategories) {
         CategoryBuilder builder = Category.builder()
                 .feed(feed);
@@ -44,7 +44,6 @@ public class CategoryService {
         categoryRepository.save(category);
     }
 
-    @Transactional
     public void updateCategory(Feed feed, List<String> relevantCategories) {
         Long categoryId = categoryRepository.findByFeed(feed).orElseThrow(() ->
                         new InvalidCategoryException(CATEGORY_NOT_FOUND, "Category for the given feed was not found"))
