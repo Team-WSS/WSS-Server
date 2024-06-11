@@ -14,7 +14,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import java.time.LocalDate;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -61,9 +60,8 @@ public class UserNovel extends BaseEntity {
     @JoinColumn(name = "novel_id", nullable = false)
     private Novel novel;
 
-    @Builder
-    public UserNovel(Flag isInterest, ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,
-                     AttractivePoint attractivePoint, User user, Novel novel) {
+    private UserNovel(Flag isInterest, ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,
+                      AttractivePoint attractivePoint, User user, Novel novel) {
         this.isInterest = isInterest;
         this.status = status;
         this.userNovelRating = userNovelRating;
@@ -72,6 +70,11 @@ public class UserNovel extends BaseEntity {
         this.attractivePoint = attractivePoint;
         this.user = user;
         this.novel = novel;
+    }
+
+    public static UserNovel create(Flag isInterest, ReadStatus status, Float userNovelRating, LocalDate startDate,
+                                   LocalDate endDate, AttractivePoint attractivePoint, User user, Novel novel) {
+        return new UserNovel(isInterest, status, userNovelRating, startDate, endDate, attractivePoint, user, novel);
     }
 
 }
