@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.dto.feed;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
@@ -41,7 +42,7 @@ public record FeedGetResponse(
                 userBasicInfo.userId(),
                 userBasicInfo.nickname(),
                 userBasicInfo.avatarImage(),
-                feed.getCreatedDate(), // TODO : 형식 포맷팅
+                feed.getCreatedDate().format(DateTimeFormatter.ofPattern("M월 d일")), // TODO : 형식 포맷팅
                 feed.getFeedContent(),
                 feed.getLikeCount(),
                 isLiked,
