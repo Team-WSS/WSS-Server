@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.dto.userNovel;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.util.List;
 
 public record UserNovelCreateRequest(
@@ -11,9 +12,9 @@ public record UserNovelCreateRequest(
         @NotNull(message = "읽기 상태는 null일 수 없습니다.")
         //status는 WATCHING, WATCHED, QUIT 중에 하나만 가능하도록
         String status,
-        //포맷정해주기
+        @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "시작 날짜는 yyyy-MM-dd 형식이어야 합니다.")
         String startDate,
-        //포맷정해주기
+        @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "종료 날짜는 yyyy-MM-dd 형식이어야 합니다.")
         String endDate,
         //attractivePoints가 없는 경우 null이 아닌 빈배열로 받도록
         List<String> attractivePoints,
