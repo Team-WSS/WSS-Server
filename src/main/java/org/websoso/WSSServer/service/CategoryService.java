@@ -56,6 +56,7 @@ public class CategoryService {
         categoryRepository.save(category);
     }
 
+    @Transactional(readOnly = true)
     public List<String> getRelevantCategoryNames(Category category) {
         List<String> relevantCategories = new ArrayList<>();
 
