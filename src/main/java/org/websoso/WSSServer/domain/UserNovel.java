@@ -60,9 +60,8 @@ public class UserNovel extends BaseEntity {
     @JoinColumn(name = "novel_id", nullable = false)
     private Novel novel;
 
-    private UserNovel(Flag isInterest, ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,
+    private UserNovel(ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,
                       AttractivePoint attractivePoint, User user, Novel novel) {
-        this.isInterest = isInterest;
         this.status = status;
         this.userNovelRating = userNovelRating;
         this.startDate = startDate;
@@ -72,9 +71,9 @@ public class UserNovel extends BaseEntity {
         this.novel = novel;
     }
 
-    public static UserNovel create(Flag isInterest, ReadStatus status, Float userNovelRating, LocalDate startDate,
+    public static UserNovel create(ReadStatus status, Float userNovelRating, LocalDate startDate,
                                    LocalDate endDate, AttractivePoint attractivePoint, User user, Novel novel) {
-        return new UserNovel(isInterest, status, userNovelRating, startDate, endDate, attractivePoint, user, novel);
+        return new UserNovel(status, userNovelRating, startDate, endDate, attractivePoint, user, novel);
     }
 
 }
