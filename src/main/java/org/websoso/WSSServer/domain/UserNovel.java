@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.domain.common.Flag;
@@ -49,6 +50,7 @@ public class UserNovel extends BaseEntity {
     @Column
     private LocalDate endDate;
 
+    @Setter
     @OneToOne(mappedBy = "userNovel", cascade = ALL)
     private AttractivePoint attractivePoint;
 
