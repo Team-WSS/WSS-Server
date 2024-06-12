@@ -12,10 +12,12 @@ import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.BaseEntity;
 
 @Entity
 @Getter
+@DynamicInsert
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment extends BaseEntity {
 
@@ -36,5 +38,15 @@ public class Comment extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feed_id", nullable = false)
     private Feed feed;
+
+    public static Comment create(Long userId, Feed feed, String commentContent) {
+        return new Comment(commentContent, userId, feed);
+    }
+
+    private Comment(String commentContent, Long userId, Feed feed) {
+        this.commentContent = commentContent;
+        this.userId = userId;
+        this.feed = feed;
+    }
 
 }

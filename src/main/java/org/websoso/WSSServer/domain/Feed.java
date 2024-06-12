@@ -1,12 +1,12 @@
 package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -47,17 +47,17 @@ public class Feed extends BaseEntity {
     @Column(columnDefinition = "Boolean default false", nullable = false)
     private Boolean isSpoiler;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = LAZY)
     private List<FeedCategory> feedCategories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = LAZY)
     private List<Like> likes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = LAZY)
     private List<Comment> comments = new ArrayList<>();
 
     @Builder

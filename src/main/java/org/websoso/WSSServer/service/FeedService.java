@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedInfo;
@@ -39,6 +40,7 @@ public class FeedService {
     private final BlockService blockService;
     private final LikeService likeService;
     private final PopularFeedService popularFeedService;
+    private final CommentService commentService;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
@@ -131,6 +133,17 @@ public class FeedService {
 
         return FeedsGetResponse.of(category == null ? DEFAULT_CATEGORY : category, feeds.hasNext(),
                 feedGetResponses);
+    }
+
+    public void createComment(User user, Long feedId, CommentCreateRequest request) {
+        Feed feed = getFeedOrException(feedId);
+
+        if (!feed.getUser().equals(user)) {
+            checkHiddenFeed(feed);
+            checkBlockedRelationship(feed.getUser(), user);
+        }
+
+        commentService.createComment(user.getUserId(), feed, request.commentContent());
     }
 
     private Feed getFeedOrException(Long feedId) {
