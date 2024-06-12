@@ -9,8 +9,6 @@ import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_AUTHORI
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -20,15 +18,14 @@ import jakarta.persistence.OneToOne;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.domain.common.BaseEntity;
-import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 
@@ -43,10 +40,8 @@ public class Feed extends BaseEntity {
     @Column(nullable = false)
     private Long feedId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isHidden;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isHidden;
 
     @Column(columnDefinition = "varchar(2000)", nullable = false)
     private String feedContent;
@@ -54,10 +49,8 @@ public class Feed extends BaseEntity {
     @Column
     private Long novelId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isSpoiler;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isSpoiler;
 
     @Column(columnDefinition = "int default 0", nullable = false)
     private Integer likeCount;
@@ -82,14 +75,14 @@ public class Feed extends BaseEntity {
     private List<Comment> comments = new ArrayList<>();
 
     @Builder
-    public Feed(String feedContent, Flag isSpoiler, Long novelId, User user) {
+    public Feed(String feedContent, Boolean isSpoiler, Long novelId, User user) {
         this.feedContent = feedContent;
         this.isSpoiler = isSpoiler;
         this.novelId = novelId;
         this.user = user;
     }
 
-    public void updateFeed(String feedContent, Flag isSpoiler, Long novelId) {
+    public void updateFeed(String feedContent, Boolean isSpoiler, Long novelId) {
         this.feedContent = feedContent;
         this.isSpoiler = isSpoiler;
         this.novelId = novelId;
@@ -134,6 +127,10 @@ public class Feed extends BaseEntity {
 
     public boolean isNovelChanged(Long novelId) {
         return !Objects.equals(this.novelId, novelId);
+    }
+
+    public void incrementCommentCount() {
+        this.commentCount = Optional.ofNullable(this.commentCount).orElse(0) + 1;
     }
 
 }

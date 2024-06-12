@@ -72,4 +72,10 @@ public class BlockService {
         }
         blockRepository.delete(block);
     }
+
+    @Transactional(readOnly = true)
+    public Boolean isBlockedRelationship(Long firstUserId, Long secondUserId) {
+        return blockRepository.findByTwoUserId(firstUserId, secondUserId).isPresent();
+    }
+
 }

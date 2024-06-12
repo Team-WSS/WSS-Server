@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.service.FeedService;
@@ -50,7 +51,7 @@ public class FeedController {
                 .status(NO_CONTENT)
                 .build();
     }
-  
+
     @DeleteMapping("/{feedId}")
     public ResponseEntity<Void> deleteFeed(Principal principal,
                                            @PathVariable("feedId") Long feedId) {
@@ -78,7 +79,19 @@ public class FeedController {
                                            @PathVariable("feedId") Long feedId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.unLikeFeed(user, feedId);
-  
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @PostMapping("/{feedId}/comments")
+    public ResponseEntity<Void> createComment(Principal principal,
+                                              @PathVariable("feedId") Long feedId,
+                                              @Valid @RequestBody CommentCreateRequest request) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.createComment(user, feedId, request);
+
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

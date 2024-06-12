@@ -2,15 +2,16 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
-import static org.websoso.WSSServer.domain.common.Flag.N;
-import static org.websoso.WSSServer.domain.common.Flag.Y;
+import static org.websoso.WSSServer.exception.feed.FeedErrorCode.BLOCKED_USER_ACCESS;
 import static org.websoso.WSSServer.exception.feed.FeedErrorCode.FEED_NOT_FOUND;
+import static org.websoso.WSSServer.exception.feed.FeedErrorCode.HIDDEN_FEED_ACCESS;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
@@ -25,11 +26,13 @@ public class FeedService {
     private final CategoryService categoryService;
     private final NovelStatisticsService novelStatisticsService;
     private final NovelService novelService;
+    private final CommentService commentService;
+    private final BlockService blockService;
 
     public void createFeed(User user, FeedCreateRequest request) {
         Feed feed = Feed.builder()
                 .feedContent(request.feedContent())
-                .isSpoiler(request.isSpoiler() ? Y : N)
+                .isSpoiler(request.isSpoiler())
                 .novelId(request.novelId())
                 .user(user)
                 .build();
@@ -46,7 +49,7 @@ public class FeedService {
         Feed feed = getFeedOrException(feedId);
 
         feed.validateUserAuthorization(user, UPDATE);
-
+        
         if (feed.isNovelChanged(request.novelId())) {
             if (feed.isNovelLinked()) {
                 novelStatisticsService.decreaseNovelFeedCount(novelService.getNovelOrException(feed.getNovelId()));
@@ -56,7 +59,7 @@ public class FeedService {
             }
         }
 
-        feed.updateFeed(request.feedContent(), request.isSpoiler() ? Y : N, request.novelId());
+        feed.updateFeed(request.feedContent(), request.isSpoiler(), request.novelId());
         categoryService.updateCategory(feed, request.relevantCategories());
     }
 
@@ -88,9 +91,35 @@ public class FeedService {
         feed.unLike(unLikeUserId);
     }
 
+    public void createComment(User user, Long feedId, CommentCreateRequest request) {
+        Feed feed = getFeedOrException(feedId);
+
+        if (!feed.getUser().equals(user)) {
+            isHiddenFeed(feed);
+            isBlockedRelationship(feed.getUser(), user);
+        }
+
+        commentService.createComment(user.getUserId(), feed, request.commentContent());
+
+        feed.incrementCommentCount();
+    }
+
     private Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() ->
                 new InvalidFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
+    }
+
+    private void isHiddenFeed(Feed feed) {
+        if (feed.getIsHidden()) {
+            throw new InvalidFeedException(HIDDEN_FEED_ACCESS, "Cannot access hidden feed.");
+        }
+    }
+
+    private void isBlockedRelationship(User createdFeedUser, User user) {
+        if (blockService.isBlockedRelationship(user.getUserId(), createdFeedUser.getUserId())) {
+            throw new InvalidFeedException(BLOCKED_USER_ACCESS,
+                    "cannot access this feed because either you or the feed author has blocked the other.");
+        }
     }
 
 }
