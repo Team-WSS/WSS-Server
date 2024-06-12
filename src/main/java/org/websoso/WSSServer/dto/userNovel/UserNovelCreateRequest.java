@@ -1,24 +1,29 @@
 package org.websoso.WSSServer.dto.userNovel;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import java.util.List;
+import org.hibernate.annotations.ColumnDefault;
+import org.websoso.WSSServer.domain.common.ReadStatus;
+import org.websoso.WSSServer.validation.UserNovelRatingConstraint;
 
 public record UserNovelCreateRequest(
         @NotNull(message = "작품 id는 null일 수 없습니다.")
         Long novelId,
-        //userNovelRating은 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0 중 하나만 가능하도록
+        @UserNovelRatingConstraint
+        @ColumnDefault("0.0")
         Float userNovelRating,
         @NotNull(message = "읽기 상태는 null일 수 없습니다.")
-        //status는 WATCHING, WATCHED, QUIT 중에 하나만 가능하도록
-        String status,
+        ReadStatus status,
         @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "시작 날짜는 yyyy-MM-dd 형식이어야 합니다.")
         String startDate,
         @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "종료 날짜는 yyyy-MM-dd 형식이어야 합니다.")
         String endDate,
-        //attractivePoints가 없는 경우 null이 아닌 빈배열로 받도록
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
         List<String> attractivePoints,
-        //keywords가 없는 경우 null이 아닌 빈배열로 받도록
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
         List<String> keywords
 ) {
 }
