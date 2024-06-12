@@ -6,8 +6,6 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -20,24 +18,21 @@ public abstract class BaseEntity {
 
     @CreatedDate
     @Column(nullable = false)
-    protected String createdDate;
+    protected LocalDateTime createdDate;
 
     @LastModifiedDate
     @Column(nullable = false)
-    protected String modifiedDate;
+    protected LocalDateTime modifiedDate;
 
     @PrePersist
     public void onPrePersist() {
-        String formattedDateTime = LocalDateTime.now()
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd a hh:mm").withLocale(Locale.forLanguageTag("ko")));
-
-        this.createdDate = formattedDateTime;
-        this.modifiedDate = formattedDateTime;
+        this.createdDate = LocalDateTime.now();
+        this.modifiedDate = createdDate;
     }
 
     @PreUpdate
     public void onPreUpdate() {
-        this.modifiedDate = LocalDateTime.now()
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd a hh:mm").withLocale(Locale.forLanguageTag("ko")));
+        this.modifiedDate = LocalDateTime.now();
     }
+
 }

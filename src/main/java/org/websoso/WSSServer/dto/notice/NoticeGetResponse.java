@@ -18,10 +18,7 @@ public record NoticeGetResponse(
         );
     }
 
-    private static String formatDateString(String dateTime) {
-        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd a hh:mm");
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
-        LocalDateTime date = LocalDateTime.parse(dateTime, inputFormatter);
-        return date.format(outputFormatter);
+    private static String formatDateString(LocalDateTime dateTime) {
+        return dateTime.format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
     }
 }
