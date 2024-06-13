@@ -7,12 +7,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
-public class UserIdInclusiveZeroValidator implements ConstraintValidator<UserIdInclusiveZeroConstraint, Long> {
+public class ZeroAllowedUserIdValidator implements ConstraintValidator<ZeroAllowedUserIdConstraint, Long> {
 
     private final UserIdValidator userIdValidator;
 
     @Override
-    public void initialize(UserIdInclusiveZeroConstraint userId) {
+    public void initialize(ZeroAllowedUserIdConstraint userId) {
     }
 
     @Override

@@ -2,7 +2,7 @@ package org.websoso.WSSServer.dto.notice;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import org.websoso.WSSServer.validation.UserIdInclusiveZeroConstraint;
+import org.websoso.WSSServer.validation.ZeroAllowedUserIdConstraint;
 
 public record NoticePostRequest(
 
@@ -14,7 +14,7 @@ public record NoticePostRequest(
         @Size(max = 2000, message = "공지 내용은 2000자를 초과할 수 없습니다.")
         String noticeContent,
 
-        @UserIdInclusiveZeroConstraint
+        @ZeroAllowedUserIdConstraint
         Long userId
 ) {
 }

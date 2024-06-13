@@ -10,10 +10,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 @Documented
-@Constraint(validatedBy = UserIdInclusiveZeroValidator.class)
+@Constraint(validatedBy = ZeroAllowedUserIdValidator.class)
 @Target({FIELD})
 @Retention(RUNTIME)
-public @interface UserIdInclusiveZeroConstraint {
+public @interface ZeroAllowedUserIdConstraint {
 
     String message() default "invalid userId.";
 
