@@ -19,7 +19,7 @@ public class AttractivePointService {
                 case "universe" -> attractivePoint.setUniverse(Flag.Y);
                 case "vibe" -> attractivePoint.setVibe(Flag.Y);
                 case "material" -> attractivePoint.setMaterial(Flag.Y);
-                case "characters" -> attractivePoint.setCharacters(Flag.Y);
+                case "character" -> attractivePoint.setCharacters(Flag.Y);
                 case "relationship" -> attractivePoint.setRelationship(Flag.Y);
                 default -> throw new IllegalArgumentException("Invalid attractive point: " + point);
             }
