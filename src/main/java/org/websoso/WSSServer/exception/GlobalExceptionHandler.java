@@ -6,6 +6,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.websoso.WSSServer.exception.avatar.AvatarErrorCode;
+import org.websoso.WSSServer.exception.avatar.exception.AvatarNotFoundException;
+import org.websoso.WSSServer.exception.block.BlockErrorCode;
+import org.websoso.WSSServer.exception.block.exception.AlreadyBlockedException;
+import org.websoso.WSSServer.exception.block.exception.BlockNotFoundException;
+import org.websoso.WSSServer.exception.block.exception.InvalidAuthorizedBlockException;
+import org.websoso.WSSServer.exception.block.exception.InvalidBlockIdException;
+import org.websoso.WSSServer.exception.block.exception.SelfBlockedException;
 import org.websoso.WSSServer.exception.category.CategoryErrorCode;
 import org.websoso.WSSServer.exception.category.exception.InvalidCategoryException;
 import org.websoso.WSSServer.exception.common.ErrorResult;
@@ -22,6 +30,8 @@ import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
+import org.websoso.WSSServer.exception.user.exception.InvalidUserIdException;
+import org.websoso.WSSServer.exception.user.exception.UserNotFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -116,5 +126,77 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(novelStatisticsErrorCode.getStatusCode())
                 .body(new ErrorResult(novelStatisticsErrorCode.getCode(), novelStatisticsErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(AlreadyBlockedException.class)
+    public ResponseEntity<ErrorResult> AlreadyBlockedExceptionHandler(AlreadyBlockedException e) {
+        log.error("[AlreadyBlockedException] exception ", e);
+        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
+        return ResponseEntity
+                .status(blockErrorCode.getStatusCode())
+                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(SelfBlockedException.class)
+    public ResponseEntity<ErrorResult> SelfBlockedExceptionHandler(SelfBlockedException e) {
+        log.error("[SelfBlockedException] exception ", e);
+        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
+        return ResponseEntity
+                .status(blockErrorCode.getStatusCode())
+                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(AvatarNotFoundException.class)
+    public ResponseEntity<ErrorResult> AvatarNotFoundExceptionHandler(AvatarNotFoundException e) {
+        log.error("[AvatarNotFoundException] exception ", e);
+        AvatarErrorCode avatarErrorCode = e.getAvatarErrorCode();
+        return ResponseEntity
+                .status(avatarErrorCode.getStatusCode())
+                .body(new ErrorResult(avatarErrorCode.getCode(), avatarErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(BlockNotFoundException.class)
+    public ResponseEntity<ErrorResult> BlockNotFoundExceptionHandler(BlockNotFoundException e) {
+        log.error("[BlockNotFoundException] exception ", e);
+        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
+        return ResponseEntity
+                .status(blockErrorCode.getStatusCode())
+                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidUserIdException.class)
+    public ResponseEntity<ErrorResult> InvalidUserIdExceptionHandler(InvalidUserIdException e) {
+        log.error("[InvalidUserIdException] exception ", e);
+        UserErrorCode userErrorCode = e.getUserErrorCode();
+        return ResponseEntity
+                .status(userErrorCode.getStatusCode())
+                .body(new ErrorResult((userErrorCode.getCode()), userErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResult> UserNotFoundExceptionHandler(UserNotFoundException e) {
+        log.error("[UserNotFoundException] exception ", e);
+        UserErrorCode userErrorCode = e.getUserErrorCode();
+        return ResponseEntity
+                .status(userErrorCode.getStatusCode())
+                .body(new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidBlockIdException.class)
+    public ResponseEntity<ErrorResult> InvalidBlockIdExceptionHandler(InvalidBlockIdException e) {
+        log.error("[InvalidBlockIdException] exception ", e);
+        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
+        return ResponseEntity
+                .status(blockErrorCode.getStatusCode())
+                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidAuthorizedBlockException.class)
+    public ResponseEntity<ErrorResult> InvalidAuthorizedBlockExceptionHandler(InvalidAuthorizedBlockException e) {
+        log.error("[InvalidAuthorizedBlockException] exception ", e);
+        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
+        return ResponseEntity
+                .status(blockErrorCode.getStatusCode())
+                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
     }
 }

@@ -10,12 +10,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 @Documented
-@Constraint(validatedBy = UserIdValidator.class)
+@Constraint(validatedBy = BlockIdValidator.class)
 @Target({PARAMETER})
 @Retention(RUNTIME)
-public @interface UserIdConstraint {
-
-    String message() default "invalid userId.";
+public @interface BlockIdConstraint {
+    String message() default "invalid blockId.";
 
     Class<?>[] groups() default {};
 

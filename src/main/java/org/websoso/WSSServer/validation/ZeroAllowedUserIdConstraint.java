@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.validation;
 
-import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import jakarta.validation.Constraint;
@@ -10,10 +10,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 @Documented
-@Constraint(validatedBy = UserIdValidator.class)
-@Target({PARAMETER})
+@Constraint(validatedBy = ZeroAllowedUserIdValidator.class)
+@Target({FIELD})
 @Retention(RUNTIME)
-public @interface UserIdConstraint {
+public @interface ZeroAllowedUserIdConstraint {
 
     String message() default "invalid userId.";
 
