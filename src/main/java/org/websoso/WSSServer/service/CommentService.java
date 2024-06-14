@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.exception.error.CustomCommentError.COMMENT_NOT_FOUND;
 
@@ -30,6 +31,16 @@ public class CommentService {
         comment.validateUserAuthorization(userId, UPDATE);
 
         comment.updateContent(commentContent);
+    }
+
+    public void deleteComment(Long userId, Feed feed, Long commentId) {
+        Comment comment = getCommentOrException(commentId);
+
+        comment.validateFeedAssociation(feed);
+
+        comment.validateUserAuthorization(userId, DELETE);
+
+        commentRepository.delete(comment);
     }
 
     private Comment getCommentOrException(Long commentId) {

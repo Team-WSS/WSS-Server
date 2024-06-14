@@ -151,4 +151,16 @@ public class FeedController {
                 .build();
     }
 
+    @DeleteMapping("/{feedId}/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(Principal principal,
+                                              @PathVariable("feedId") Long feedId,
+                                              @PathVariable("commentId") Long commentId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.deleteComment(user, feedId, commentId);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
 }
