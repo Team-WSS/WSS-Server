@@ -24,6 +24,6 @@ public record UserNovelCreateRequest(
         @JsonSetter(nulls = Nulls.AS_EMPTY)
         List<String> attractivePoints,
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        List<String> keywords
+        List<Integer> keywordIds
 ) {
 }
