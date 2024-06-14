@@ -75,6 +75,17 @@ public class UserNovelService {
         increaseStatisticsByAttractivePoint(attractivePoint, novelStatistics);
     }
 
+    protected UserNovel getUserNovelOrNull(User user, Novel novel) {
+        if (user == null) {
+            return null;
+        }
+        return userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
+    }
+
+    private LocalDate convertToLocalDate(String string) {
+        return LocalDate.parse(string, DateTimeFormatter.ISO_DATE);
+    }
+
     private static void increaseStatisticsByReadStatus(ReadStatus readStatus, UserStatistics userStatistics,
                                                        NovelStatistics novelStatistics) {
         switch (readStatus) {
@@ -171,16 +182,4 @@ public class UserNovelService {
         }
         return attractivePoint;
     }
-
-    private LocalDate convertToLocalDate(String string) {
-        return LocalDate.parse(string, DateTimeFormatter.ISO_DATE);
-    }
-
-    protected UserNovel getUserNovelOrNull(User user, Novel novel) {
-        if (user == null) {
-            return null;
-        }
-        return userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
-    }
-
 }
