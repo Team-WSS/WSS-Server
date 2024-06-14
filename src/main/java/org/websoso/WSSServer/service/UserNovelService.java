@@ -55,7 +55,8 @@ public class UserNovelService {
                 user,
                 novel));
 
-        AttractivePoint attractivePoint = createAndGetAttractivePoint(request.attractivePoints(), userNovel);
+        AttractivePoint attractivePoint = AttractivePointService.createAndGetAttractivePoint(request.attractivePoints(),
+                userNovel);
         userNovel.setAttractivePoint(attractivePoint);
 
         if (request.userNovelRating() != 0.0f) {
@@ -167,19 +168,4 @@ public class UserNovelService {
         }
     }
 
-    private static AttractivePoint createAndGetAttractivePoint(List<String> request, UserNovel userNovel) {
-        AttractivePoint attractivePoint = AttractivePoint.create(userNovel);
-
-        for (String point : request) {
-            switch (point.toLowerCase()) {
-                case "universe" -> attractivePoint.setUniverse(Flag.Y);
-                case "vibe" -> attractivePoint.setVibe(Flag.Y);
-                case "material" -> attractivePoint.setMaterial(Flag.Y);
-                case "characters" -> attractivePoint.setCharacters(Flag.Y);
-                case "relationship" -> attractivePoint.setRelationship(Flag.Y);
-                default -> throw new IllegalArgumentException("Invalid attractive point: " + point);
-            }
-        }
-        return attractivePoint;
-    }
 }
