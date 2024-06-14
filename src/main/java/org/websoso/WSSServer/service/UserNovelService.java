@@ -1,6 +1,8 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND;
 import static org.websoso.WSSServer.exception.userNovel.UserNovelErrorCode.USER_NOVEL_ALREADY_EXISTS;
+import static org.websoso.WSSServer.exception.userStatistics.UserStatisticsErrorCode.USER_STATISTICS_NOT_FOUND;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -10,13 +12,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
 import org.websoso.WSSServer.domain.Novel;
+import org.websoso.WSSServer.domain.NovelGenre;
+import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
+import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.domain.common.Flag;
+import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
+import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
+import org.websoso.WSSServer.exception.userStatistics.exception.InvalidUserStatisticsException;
 import org.websoso.WSSServer.repository.NovelRepository;
+import org.websoso.WSSServer.repository.NovelStatisticsRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
+import org.websoso.WSSServer.repository.UserStatisticsRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +34,8 @@ public class UserNovelService {
 
     private final UserNovelRepository userNovelRepository;
     private final NovelRepository novelRepository;
+    private final UserStatisticsRepository userStatisticsRepository;
+    private final NovelStatisticsRepository novelStatisticsRepository;
 
     @Transactional
     public void createUserNovel(User user, UserNovelCreateRequest request) {
@@ -49,8 +61,40 @@ public class UserNovelService {
             novel.increaseNovelRatingCount();
             novel.increaseNovelRatingSum(request.userNovelRating());
         }
-        //UserStatistics watchingNovelCount, faNovelCount, faNovelRatingSum
-        //NovelStatistics watchingCount, vibeCount
+
+        UserStatistics userStatistics = userStatisticsRepository.findByUser(user).orElseThrow(
+                () -> new InvalidUserStatisticsException(USER_STATISTICS_NOT_FOUND,
+                        "user statistics with the given user is not found"));
+        NovelStatistics novelStatistics = novelStatisticsRepository.findByNovel(novel).orElseThrow(
+                () -> new InvalidNovelStatisticsException(NOVEL_STATISTICS_NOT_FOUND,
+                        "novel statistics with the given novel is not found"));
+
+        increaseStatisticsByReadStatus(request.status(), userStatistics, novelStatistics);
+        increaseStatisticsByNovelGenre(novel.getNovelGenres(), request.userNovelRating(), userStatistics,
+                novelStatistics);
+    }
+
+    private static void increaseStatisticsByReadStatus(ReadStatus readStatus, UserStatistics userStatistics,
+                                                       NovelStatistics novelStatistics) {
+        switch (readStatus) {
+            case WATCHING -> {
+                userStatistics.increaseField("watchingNovelCount");
+                novelStatistics.increaseField("watchingCount");
+            }
+            case WATCHED -> {
+                userStatistics.increaseField("watchedNovelCount");
+                novelStatistics.increaseField("watchedCount");
+            }
+            case QUIT -> {
+                userStatistics.increaseField("quitNovelCount");
+                novelStatistics.increaseField("quitCount");
+            }
+        }
+    }
+
+    private static void increaseStatisticsByNovelGenre(List<NovelGenre> novelGenres, Float userNovelRating,
+                                                       UserStatistics userStatistics, NovelStatistics novelStatistics) {
+        //TODO
     }
 
     private static AttractivePoint createAndGetAttractivePoint(List<String> request, UserNovel userNovel) {
