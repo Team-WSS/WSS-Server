@@ -55,7 +55,8 @@ public class UserNovelService {
                 user,
                 novel));
 
-        userNovel.setAttractivePoint(createAndGetAttractivePoint(request.attractivePoints(), userNovel));
+        AttractivePoint attractivePoint = createAndGetAttractivePoint(request.attractivePoints(), userNovel);
+        userNovel.setAttractivePoint(attractivePoint);
 
         if (request.userNovelRating() != 0.0f) {
             novel.increaseNovelRatingCount();
@@ -70,8 +71,8 @@ public class UserNovelService {
                         "novel statistics with the given novel is not found"));
 
         increaseStatisticsByReadStatus(request.status(), userStatistics, novelStatistics);
-        increaseStatisticsByNovelGenre(novel.getNovelGenres(), request.userNovelRating(), userStatistics,
-                novelStatistics);
+        increaseStatisticsByNovelGenre(novel.getNovelGenres(), request.userNovelRating(), userStatistics);
+        increaseStatisticsByAttractivePoint(attractivePoint, novelStatistics);
     }
 
     private static void increaseStatisticsByReadStatus(ReadStatus readStatus, UserStatistics userStatistics,
@@ -93,8 +94,66 @@ public class UserNovelService {
     }
 
     private static void increaseStatisticsByNovelGenre(List<NovelGenre> novelGenres, Float userNovelRating,
-                                                       UserStatistics userStatistics, NovelStatistics novelStatistics) {
-        //TODO
+                                                       UserStatistics userStatistics) {
+        for (NovelGenre novelGenre : novelGenres) {
+            switch (novelGenre.getGenre().getGenreName()) {
+                case "로맨스" -> {
+                    userStatistics.increaseField("roNovelNovelCount");
+                    userStatistics.increaseFieldByAmount("roNovelRatingSum", userNovelRating);
+                }
+                case "로판" -> {
+                    userStatistics.increaseField("rfNovelNovelCount");
+                    userStatistics.increaseFieldByAmount("rfNovelRatingSum", userNovelRating);
+                }
+                case "BL" -> {
+                    userStatistics.increaseField("blNovelNovelCount");
+                    userStatistics.increaseFieldByAmount("blNovelRatingSum", userNovelRating);
+                }
+                case "판타지" -> {
+                    userStatistics.increaseField("faNovelNovelCount");
+                    userStatistics.increaseFieldByAmount("faNovelRatingSum", userNovelRating);
+                }
+                case "현판" -> {
+                    userStatistics.increaseField("mfNovelNovelCount");
+                    userStatistics.increaseFieldByAmount("mfNovelRatingSum", userNovelRating);
+                }
+                case "무협" -> {
+                    userStatistics.increaseField("wuNovelNovelCount");
+                    userStatistics.increaseFieldByAmount("wuNovelRatingSum", userNovelRating);
+                }
+                case "라노벨" -> {
+                    userStatistics.increaseField("lnNovelNovelCount");
+                    userStatistics.increaseFieldByAmount("lnNovelRatingSum", userNovelRating);
+                }
+                case "드라마" -> {
+                    userStatistics.increaseField("drNovelNovelCount");
+                    userStatistics.increaseFieldByAmount("drNovelRatingSum", userNovelRating);
+                }
+                case "미스터리" -> {
+                    userStatistics.increaseField("myNovelNovelCount");
+                    userStatistics.increaseFieldByAmount("myNovelNovelCount", userNovelRating);
+                }
+            }
+        }
+    }
+
+    private static void increaseStatisticsByAttractivePoint(AttractivePoint attractivePoint,
+                                                            NovelStatistics novelStatistics) {
+        if (attractivePoint.getUniverse() == Flag.Y) {
+            novelStatistics.increaseField("universeCount");
+        }
+        if (attractivePoint.getVibe() == Flag.Y) {
+            novelStatistics.increaseField("vibeCount");
+        }
+        if (attractivePoint.getMaterial() == Flag.Y) {
+            novelStatistics.increaseField("materialCount");
+        }
+        if (attractivePoint.getCharacters() == Flag.Y) {
+            novelStatistics.increaseField("charactersCount");
+        }
+        if (attractivePoint.getRelationship() == Flag.Y) {
+            novelStatistics.increaseField("relationshipCount");
+        }
     }
 
     private static AttractivePoint createAndGetAttractivePoint(List<String> request, UserNovel userNovel) {
