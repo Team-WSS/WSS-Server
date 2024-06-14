@@ -12,8 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
+import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
+import org.websoso.WSSServer.domain.NovelKeywords;
 import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
@@ -61,6 +63,10 @@ public class UserNovelService {
         AttractivePoint attractivePoint = AttractivePointService.createAndGetAttractivePoint(request.attractivePoints(),
                 userNovel);
         userNovel.setAttractivePoint(attractivePoint);
+
+        for(Integer keywordId : request.keywordIds()){
+            NovelKeywords.create(novel.getNovelId(), keywordId, user.getUserId());
+        }
 
         increaseStatistics(user, novel, request, attractivePoint);
     }
