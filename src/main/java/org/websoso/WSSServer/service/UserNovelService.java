@@ -62,6 +62,22 @@ public class UserNovelService {
                 userNovel);
         userNovel.setAttractivePoint(attractivePoint);
 
+        increaseStatistics(user, novel, request, attractivePoint);
+    }
+
+    protected UserNovel getUserNovelOrNull(User user, Novel novel) {
+        if (user == null) {
+            return null;
+        }
+        return userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
+    }
+
+    private LocalDate convertToLocalDate(String string) {
+        return LocalDate.parse(string, DateTimeFormatter.ISO_DATE);
+    }
+
+    private void increaseStatistics(User user, Novel novel, UserNovelCreateRequest request,
+                                    AttractivePoint attractivePoint) {
         UserStatistics userStatistics = userStatisticsRepository.findByUser(user).orElseThrow(
                 () -> new InvalidUserStatisticsException(USER_STATISTICS_NOT_FOUND,
                         "user statistics with the given user is not found"));
@@ -76,17 +92,6 @@ public class UserNovelService {
             novel.increaseNovelRatingSum(request.userNovelRating());
             increaseStatisticsByNovelGenre(novel.getNovelGenres(), request.userNovelRating(), userStatistics);
         }
-    }
-
-    protected UserNovel getUserNovelOrNull(User user, Novel novel) {
-        if (user == null) {
-            return null;
-        }
-        return userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
-    }
-
-    private LocalDate convertToLocalDate(String string) {
-        return LocalDate.parse(string, DateTimeFormatter.ISO_DATE);
     }
 
     private static void increaseStatisticsByReadStatus(ReadStatus readStatus, UserStatistics userStatistics,
