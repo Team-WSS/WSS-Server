@@ -16,6 +16,8 @@ import org.websoso.WSSServer.exception.block.exception.InvalidBlockIdException;
 import org.websoso.WSSServer.exception.block.exception.SelfBlockedException;
 import org.websoso.WSSServer.exception.category.CategoryErrorCode;
 import org.websoso.WSSServer.exception.category.exception.InvalidCategoryException;
+import org.websoso.WSSServer.exception.comment.CommentErrorCode;
+import org.websoso.WSSServer.exception.comment.exception.InvalidCommentException;
 import org.websoso.WSSServer.exception.common.ErrorResult;
 import org.websoso.WSSServer.exception.feed.FeedErrorCode;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
@@ -199,4 +201,14 @@ public class GlobalExceptionHandler {
                 .status(blockErrorCode.getStatusCode())
                 .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
     }
+
+    @ExceptionHandler(InvalidCommentException.class)
+    public ResponseEntity<ErrorResult> InvalidCommentExceptionHandler(InvalidCommentException e) {
+        log.error("[InvalidCommentException] exception", e);
+        CommentErrorCode commentErrorCode = e.getCommentErrorCode();
+        return ResponseEntity
+                .status(commentErrorCode.getStatusCode())
+                .body(new ErrorResult(commentErrorCode.getCode(), commentErrorCode.getDescription()));
+    }
+
 }
