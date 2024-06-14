@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.exception.user.UserErrorCode.DUPLICATED_NICKNAME;
 import static org.websoso.WSSServer.exception.user.UserErrorCode.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,8 @@ import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.User.LoginResponse;
 import org.websoso.WSSServer.dto.User.NicknameValidation;
+import org.websoso.WSSServer.dto.user.EmailGetResponse;
+import org.websoso.WSSServer.exception.user.exception.DuplicatedNicknameException;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
 import org.websoso.WSSServer.repository.UserRepository;
 
@@ -23,8 +26,10 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public NicknameValidation isNicknameAvailable(String nickname) {
-        boolean isNicknameTaken = userRepository.existsByNickname(nickname);
-        return NicknameValidation.of(isNicknameTaken);
+        if (userRepository.existsByNickname(nickname)) {
+            throw new DuplicatedNicknameException(DUPLICATED_NICKNAME, "nickname is duplicated.");
+        }
+        return NicknameValidation.of(true);
     }
 
     public LoginResponse login(Long userId) {
@@ -34,6 +39,11 @@ public class UserService {
         String token = jwtProvider.generateToken(userAuthentication);
 
         return LoginResponse.of(token);
+    }
+
+    @Transactional(readOnly = true)
+    public EmailGetResponse getEmail(User user) {
+        return EmailGetResponse.of(user.getEmail());
     }
 
     public User getUserOrException(Long userId) {

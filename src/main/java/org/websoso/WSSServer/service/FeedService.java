@@ -23,6 +23,7 @@ public class FeedService {
     private final FeedRepository feedRepository;
     private final CategoryService categoryService;
     private final NovelStatisticsService novelStatisticsService;
+    private final NovelService novelService;
 
     @Transactional
     public void createFeed(User user, FeedCreateRequest request) {
@@ -32,6 +33,10 @@ public class FeedService {
                 .novelId(request.novelId())
                 .user(user)
                 .build();
+
+        if (request.novelId() != null) {
+            novelStatisticsService.increaseNovelFeedCount(novelService.getNovelOrException(request.novelId()));
+        }
 
         feedRepository.save(feed);
         categoryService.createCategory(feed, request.relevantCategories());
@@ -46,7 +51,7 @@ public class FeedService {
         feed.updateFeed(request.feedContent(), request.isSpoiler() ? Y : N, request.novelId());
         categoryService.updateCategory(feed, request.relevantCategories());
     }
-  
+
     @Transactional
     public void deleteFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
@@ -54,7 +59,7 @@ public class FeedService {
         feed.validateUserAuthorization(user, DELETE);
 
         if (feed.getNovelId() != null) {
-            novelStatisticsService.decreaseNovelFeedCount(feed.getNovelId());
+            novelStatisticsService.decreaseNovelFeedCount(novelService.getNovelOrException(feed.getNovelId()));
         }
 
         feedRepository.delete(feed);
