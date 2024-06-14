@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
+import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
@@ -102,6 +103,17 @@ public class FeedService {
         commentService.createComment(user.getUserId(), feed, request.commentContent());
 
         feed.incrementCommentCount();
+    }
+
+    public void updateComment(User user, Long feedId, Long commentId, CommentUpdateRequest request) {
+        Feed feed = getFeedOrException(feedId);
+
+        if (!feed.getUser().equals(user)) {
+            isHiddenFeed(feed);
+            isBlockedRelationship(feed.getUser(), user);
+        }
+
+        commentService.updateComment(user.getUserId(), feed, commentId, request.commentContent());
     }
 
     private Feed getFeedOrException(Long feedId) {

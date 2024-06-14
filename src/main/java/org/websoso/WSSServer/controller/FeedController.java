@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
+import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.service.FeedService;
@@ -91,6 +92,19 @@ public class FeedController {
                                               @Valid @RequestBody CommentCreateRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.createComment(user, feedId, request);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @PutMapping("/{feedId}/comments/{commentId}")
+    public ResponseEntity<Void> updateComment(Principal principal,
+                                              @PathVariable("feedId") Long feedId,
+                                              @PathVariable("commentId") Long commentId,
+                                              @Valid @RequestBody CommentUpdateRequest request) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.updateComment(user, feedId, commentId, request);
 
         return ResponseEntity
                 .status(NO_CONTENT)
