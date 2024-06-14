@@ -104,4 +104,15 @@ public class UserStatistics {
         }
     }
 
+    public void increaseFieldByAmount(String fieldName, float amount) {
+        try {
+            Field field = this.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            Float currentValue = (Float) field.get(this);
+            field.set(this, currentValue + amount);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException("Field not found or not accessible", e);
+        }
+    }
+
 }
