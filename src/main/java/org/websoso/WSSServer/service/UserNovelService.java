@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND;
 import static org.websoso.WSSServer.exception.userNovel.UserNovelErrorCode.USER_NOVEL_ALREADY_EXISTS;
 import static org.websoso.WSSServer.exception.userStatistics.UserStatisticsErrorCode.USER_STATISTICS_NOT_FOUND;
@@ -20,6 +21,7 @@ import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
+import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
 import org.websoso.WSSServer.exception.userStatistics.exception.InvalidUserStatisticsException;
@@ -40,7 +42,8 @@ public class UserNovelService {
     @Transactional
     public void createUserNovel(User user, UserNovelCreateRequest request) {
 
-        Novel novel = novelRepository.getById(request.novelId());
+        Novel novel = novelRepository.findById(request.novelId())
+                .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
 
         if (getUserNovelOrNull(user, novel) != null) {
             throw new NovelAlreadyRegisteredException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
