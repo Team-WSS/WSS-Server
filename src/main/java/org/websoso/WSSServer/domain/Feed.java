@@ -3,6 +3,7 @@ package org.websoso.WSSServer.domain;
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static org.websoso.WSSServer.exception.feed.FeedErrorCode.ALREADY_LIKED;
+import static org.websoso.WSSServer.exception.feed.FeedErrorCode.INVALID_COMMENT_COUNT;
 import static org.websoso.WSSServer.exception.feed.FeedErrorCode.INVALID_LIKE_COUNT;
 import static org.websoso.WSSServer.exception.feed.FeedErrorCode.LIKE_USER_NOT_FOUND;
 import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_AUTHORIZED;
@@ -131,6 +132,14 @@ public class Feed extends BaseEntity {
 
     public void incrementCommentCount() {
         this.commentCount = Optional.ofNullable(this.commentCount).orElse(0) + 1;
+    }
+
+    public void decrementCommentCount() {
+        if (this.commentCount <= 0) {
+            throw new InvalidFeedException(INVALID_COMMENT_COUNT, "invalid comment count");
+        }
+
+        this.commentCount--;
     }
 
 }

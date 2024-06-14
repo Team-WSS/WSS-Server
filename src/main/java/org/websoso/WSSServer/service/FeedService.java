@@ -116,6 +116,19 @@ public class FeedService {
         commentService.updateComment(user.getUserId(), feed, commentId, request.commentContent());
     }
 
+    public void deleteComment(User user, Long feedId, Long commentId) {
+        Feed feed = getFeedOrException(feedId);
+
+        if (!feed.getUser().equals(user)) {
+            isHiddenFeed(feed);
+            isBlockedRelationship(feed.getUser(), user);
+        }
+
+        commentService.deleteComment(user.getUserId(), feed, commentId);
+
+        feed.decrementCommentCount();
+    }
+
     private Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() ->
                 new InvalidFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
