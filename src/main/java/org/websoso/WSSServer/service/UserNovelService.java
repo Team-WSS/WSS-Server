@@ -60,8 +60,8 @@ public class UserNovelService {
         UserNovel userNovel = userNovelRepository.save(UserNovel.create(
                 request.status(),
                 request.userNovelRating(),
-                convertToLocalDate(request.startDate()),
-                convertToLocalDate(request.endDate()),
+                request.startDate() != null ? convertToLocalDate(request.startDate()) : null,
+                request.endDate() != null ? convertToLocalDate(request.endDate()) : null,
                 null,
                 user,
                 novel));
