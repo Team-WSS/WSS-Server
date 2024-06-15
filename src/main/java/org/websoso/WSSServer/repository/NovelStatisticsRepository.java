@@ -8,6 +8,7 @@ import org.websoso.WSSServer.domain.NovelStatistics;
 
 @Repository
 public interface NovelStatisticsRepository extends JpaRepository<NovelStatistics, Long> {
+    
     Optional<NovelStatistics> findByNovel(Novel novel);
 
 }

@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.domain.common.Flag.N;
 import static org.websoso.WSSServer.domain.common.Flag.Y;
@@ -12,7 +13,7 @@ import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
-import org.websoso.WSSServer.exception.feed.exeption.InvalidFeedException;
+import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
 import org.websoso.WSSServer.repository.FeedRepository;
 
 @Service
@@ -21,6 +22,8 @@ public class FeedService {
 
     private final FeedRepository feedRepository;
     private final CategoryService categoryService;
+    private final NovelStatisticsService novelStatisticsService;
+    private final NovelService novelService;
 
     @Transactional
     public void createFeed(User user, FeedCreateRequest request) {
@@ -30,6 +33,10 @@ public class FeedService {
                 .novelId(request.novelId())
                 .user(user)
                 .build();
+
+        if (request.novelId() != null) {
+            novelStatisticsService.increaseNovelFeedCount(novelService.getNovelOrException(request.novelId()));
+        }
 
         feedRepository.save(feed);
         categoryService.createCategory(feed, request.relevantCategories());
@@ -46,12 +53,34 @@ public class FeedService {
     }
 
     @Transactional
+    public void deleteFeed(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
+
+        feed.validateUserAuthorization(user, DELETE);
+
+        if (feed.getNovelId() != null) {
+            novelStatisticsService.decreaseNovelFeedCount(novelService.getNovelOrException(feed.getNovelId()));
+        }
+
+        feedRepository.delete(feed);
+    }
+
+    @Transactional
     public void likeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 
         String likeUserId = String.valueOf(user.getUserId());
 
         feed.addLike(likeUserId);
+    }
+
+    @Transactional
+    public void unLikeFeed(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
+
+        String unLikeUserId = String.valueOf(user.getUserId());
+
+        feed.unLike(unLikeUserId);
     }
 
     private Feed getFeedOrException(Long feedId) {
