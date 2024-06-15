@@ -1,5 +1,7 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.exception.avatar.AvatarErrorCode.AVATAR_NOT_FOUND;
+
 import java.util.List;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,7 @@ import org.websoso.WSSServer.domain.AvatarLine;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.avatar.AvatarGetResponse;
 import org.websoso.WSSServer.dto.avatar.AvatarsGetResponse;
+import org.websoso.WSSServer.exception.avatar.exception.AvatarNotFoundException;
 import org.websoso.WSSServer.repository.AvatarRepository;
 
 @Service
@@ -19,6 +22,12 @@ public class AvatarService {
 
     private final AvatarRepository avatarRepository;
     private static final Random random = new Random();      //TODO thread-safe하지 않아서 multi-thread 환경에서는 사용X
+
+    @Transactional(readOnly = true)
+    public Avatar getAvatarOrException(Byte avatarId) {
+        return avatarRepository.findById(avatarId).orElseThrow(() ->
+                new AvatarNotFoundException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
+    }
 
     @Transactional(readOnly = true)
     public AvatarsGetResponse getAvatarList(User user) {

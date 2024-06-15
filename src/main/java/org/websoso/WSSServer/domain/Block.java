@@ -25,4 +25,13 @@ public class Block {
 
     @Column(nullable = false)
     private Long blockedId;
+
+    private Block(Long blockingId, Long blockedId) {
+        this.blockingId = blockingId;
+        this.blockedId = blockedId;
+    }
+
+    public static Block create(Long blockingId, Long blockedId) {
+        return new Block(blockingId, blockedId);
+    }
 }
