@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
-import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
 import org.websoso.WSSServer.domain.NovelKeywords;
@@ -27,6 +26,7 @@ import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
 import org.websoso.WSSServer.exception.userStatistics.exception.InvalidUserStatisticsException;
+import org.websoso.WSSServer.repository.NovelKeywordsRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.NovelStatisticsRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
@@ -40,6 +40,7 @@ public class UserNovelService {
     private final NovelRepository novelRepository;
     private final UserStatisticsRepository userStatisticsRepository;
     private final NovelStatisticsRepository novelStatisticsRepository;
+    private final NovelKeywordsRepository novelKeywordsRepository;
 
     @Transactional
     public void createUserNovel(User user, UserNovelCreateRequest request) {
@@ -64,8 +65,8 @@ public class UserNovelService {
                 userNovel);
         userNovel.setAttractivePoint(attractivePoint);
 
-        for(Integer keywordId : request.keywordIds()){
-            NovelKeywords.create(novel.getNovelId(), keywordId, user.getUserId());
+        for (Integer keywordId : request.keywordIds()) {
+            novelKeywordsRepository.save(NovelKeywords.create(novel.getNovelId(), keywordId, user.getUserId()));
         }
 
         increaseStatistics(user, novel, request, attractivePoint);
