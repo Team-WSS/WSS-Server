@@ -36,8 +36,9 @@ public class NovelController {
                         novelId));
     }
 
+    // TODO 이름 변경(작품 정보 조회 뷰에서 하단, 정보탭 부분)
     @GetMapping("/{novelId}/info")
-    public ResponseEntity<NovelGetResponse2> getNovelInfo2(@PathVariable Long novelId){
+    public ResponseEntity<NovelGetResponse2> getNovelInfo2(@PathVariable Long novelId) {
         return ResponseEntity
                 .status(OK)
                 .body(novelService.getNovelInfo2(novelId));
