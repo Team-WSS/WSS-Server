@@ -19,6 +19,8 @@ import org.websoso.WSSServer.exception.category.exception.InvalidCategoryExcepti
 import org.websoso.WSSServer.exception.common.ErrorResult;
 import org.websoso.WSSServer.exception.feed.FeedErrorCode;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
+import org.websoso.WSSServer.exception.keyword.KeywordErrorCode;
+import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
 import org.websoso.WSSServer.exception.notice.NoticeErrorCode;
 import org.websoso.WSSServer.exception.notice.exception.ForbiddenNoticeManipulationException;
 import org.websoso.WSSServer.exception.notice.exception.NoticeNotFoundException;
@@ -147,6 +149,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(userNovelErrorCode.getStatusCode())
                 .body(new ErrorResult(userNovelErrorCode.getCode(), userNovelErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidKeywordException.class)
+    public ResponseEntity<ErrorResult> InvalidKeywordExceptionHandler(InvalidKeywordException e) {
+        log.error("[InvalidKeywordException] exception", e);
+        KeywordErrorCode keywordErrorCode = e.getKeywordErrorCode();
+        return ResponseEntity
+                .status(keywordErrorCode.getStatusCode())
+                .body(new ErrorResult(keywordErrorCode.getCode(), keywordErrorCode.getDescription()));
     }
 
     @ExceptionHandler(AlreadyBlockedException.class)
