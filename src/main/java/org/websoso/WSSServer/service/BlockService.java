@@ -1,7 +1,9 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.Role.ADMIN;
 import static org.websoso.WSSServer.exception.block.BlockErrorCode.ALREADY_BLOCKED;
 import static org.websoso.WSSServer.exception.block.BlockErrorCode.BLOCK_NOT_FOUND;
+import static org.websoso.WSSServer.exception.block.BlockErrorCode.CANNOT_ADMIN_BLOCK;
 import static org.websoso.WSSServer.exception.block.BlockErrorCode.INVALID_AUTHORIZED_BLOCK;
 import static org.websoso.WSSServer.exception.block.BlockErrorCode.SELF_BLOCKED;
 
@@ -12,8 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Block;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.common.Role;
 import org.websoso.WSSServer.dto.block.BlockGetResponse;
 import org.websoso.WSSServer.dto.block.BlocksGetResponse;
+import org.websoso.WSSServer.exception.block.exception.AdminBlockRestrictionException;
 import org.websoso.WSSServer.exception.block.exception.AlreadyBlockedException;
 import org.websoso.WSSServer.exception.block.exception.BlockNotFoundException;
 import org.websoso.WSSServer.exception.block.exception.InvalidAuthorizedBlockException;
@@ -29,8 +33,15 @@ public class BlockService {
     private final AvatarService avatarService;
     private final BlockRepository blockRepository;
 
+    private static final Role ADMIN_ROLE = ADMIN;
+
     @Transactional
     public void block(User blocker, Long blockedId) {
+        User blockedUser = userService.getUserOrException(blockedId);
+        if (blockedUser.getRole() != ADMIN_ROLE) {
+            throw new AdminBlockRestrictionException(CANNOT_ADMIN_BLOCK, "user requested to be blocked is ADMIN");
+        }
+
         Long blockingId = blocker.getUserId();
         if (blockingId.equals(blockedId)) {
             throw new SelfBlockedException(SELF_BLOCKED, "cannot block yourself");
