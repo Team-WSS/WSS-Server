@@ -53,7 +53,7 @@ public class NovelService {
         );
     }
 
-    private Novel getNovelOrException(Long novelId) {
+    public Novel getNovelOrException(Long novelId) {
         return novelRepository.findById(novelId)
                 .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND,
                         "novel with the given id is not found"));
