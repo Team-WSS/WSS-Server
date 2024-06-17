@@ -28,7 +28,8 @@ public class SecurityConfig {
             "/users/login",
             "/users/nickname/check",
             "/actuator/health",
-            "/novels/{novelId}"
+            "/novels/{novelId}",
+            "/novels/{novelId}/info"
     };
 
     @Bean
