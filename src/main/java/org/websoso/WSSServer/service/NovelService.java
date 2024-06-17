@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.exception.keyword.KeywordErrorCode.KEYWORD_NOT_FOUND;
 import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import org.websoso.WSSServer.dto.Keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse2;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
+import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
 import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.exception.platform.PlatformErrorCode;
 import org.websoso.WSSServer.exception.platform.exception.InvalidPlatformException;
@@ -147,17 +149,24 @@ public class NovelService {
     }
 
     private List<KeywordCountGetResponse> getKeywordResponses(Long novelId) {
-        //TODO 아예 없는 경우 : 빈배열
-        //TODO 등록한 개수가 많은 5개 키워드를 순서대로 노출
         List<NovelKeywords> novelKeywords = novelKeywordRepository.findAllByNovelId(novelId);
+
+        if (novelKeywords.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         Map<Integer, Long> keywordFrequencyMap = novelKeywords.stream()
                 .collect(Collectors.groupingBy(NovelKeywords::getKeywordId, Collectors.counting()));
-        List<Integer> keywordIds = new ArrayList<>(keywordFrequencyMap.keySet());
-        List<Keyword> keywords = keywordRepository.findAllById(keywordIds);
-        return keywords.stream()
-                .map(keyword -> KeywordCountGetResponse.of(
-                        keyword,
-                        keywordFrequencyMap.getOrDefault(keyword.getKeywordId(), 0L).intValue()))
+
+        return keywordFrequencyMap.entrySet().stream()
+                .sorted(Map.Entry.<Integer, Long>comparingByValue().reversed())
+                .limit(5)
+                .map(entry -> {
+                    Keyword keyword = keywordRepository.findById(entry.getKey()).orElseThrow(
+                            () -> new InvalidKeywordException(KEYWORD_NOT_FOUND,
+                                    "keyword with the given id is not found"));
+                    return KeywordCountGetResponse.of(keyword, entry.getValue().intValue());
+                })
                 .collect(Collectors.toList());
     }
 
