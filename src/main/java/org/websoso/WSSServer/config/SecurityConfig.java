@@ -15,7 +15,6 @@ import org.websoso.WSSServer.config.jwt.CustomAccessDeniedHandler;
 import org.websoso.WSSServer.config.jwt.CustomJwtAuthenticationEntryPoint;
 import org.websoso.WSSServer.config.jwt.JwtAuthenticationFilter;
 
-
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
