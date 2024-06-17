@@ -48,6 +48,15 @@ public class FeedService {
 
         feed.validateUserAuthorization(user, UPDATE);
 
+        if (feed.isNovelChanged(request.novelId())) {
+            if (feed.isNovelLinked()) {
+                novelStatisticsService.decreaseNovelFeedCount(novelService.getNovelOrException(feed.getNovelId()));
+            }
+            if (request.novelId() != null) {
+                novelStatisticsService.increaseNovelFeedCount(novelService.getNovelOrException(request.novelId()));
+            }
+        }
+
         feed.updateFeed(request.feedContent(), request.isSpoiler() ? Y : N, request.novelId());
         categoryService.updateCategory(feed, request.relevantCategories());
     }
