@@ -53,6 +53,22 @@ public class NovelService {
         );
     }
 
+    private Novel getNovelOrException(Long novelId) {
+        return novelRepository.findById(novelId)
+                .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND,
+                        "novel with the given id is not found"));
+    }
+
+    private String getNovelGenreNames(List<NovelGenre> novelGenres) {
+        return novelGenres.stream().map(novelGenre -> novelGenre.getGenre().getGenreName())
+                .collect(Collectors.joining("/"));
+    }
+
+    private String getRandomNovelGenreImage(List<NovelGenre> novelGenres) {
+        Random random = new Random();
+        return novelGenres.get(random.nextInt(novelGenres.size())).getGenre().getGenreImage();
+    }
+
     public NovelGetResponse2 getNovelInfo2(Long novelId) {
         Novel novel = getNovelOrException(novelId);
         NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
@@ -143,22 +159,6 @@ public class NovelService {
                         keyword,
                         keywordFrequencyMap.getOrDefault(keyword.getKeywordId(), 0L).intValue()))
                 .collect(Collectors.toList());
-    }
-
-    private Novel getNovelOrException(Long novelId) {
-        return novelRepository.findById(novelId)
-                .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND,
-                        "novel with the given id is not found"));
-    }
-
-    private String getNovelGenreNames(List<NovelGenre> novelGenres) {
-        return novelGenres.stream().map(novelGenre -> novelGenre.getGenre().getGenreName())
-                .collect(Collectors.joining("/"));
-    }
-
-    private String getRandomNovelGenreImage(List<NovelGenre> novelGenres) {
-        Random random = new Random();
-        return novelGenres.get(random.nextInt(novelGenres.size())).getGenre().getGenreImage();
     }
 
 }
