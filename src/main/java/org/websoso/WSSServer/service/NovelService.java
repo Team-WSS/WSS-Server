@@ -3,6 +3,8 @@ package org.websoso.WSSServer.service;
 import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -72,7 +74,60 @@ public class NovelService {
         return platforms.stream().map(PlatformGetResponse::of).collect(Collectors.toList());
     }
 
-    private List<String> getAttractivePoints(NovelStatistics novelStatistics) { //TODO
+    private List<String> getAttractivePoints(NovelStatistics novelStatistics) {
+        Map<String, Integer> attractivePointsMap = makeAttractivePointsMapExcludingZero(novelStatistics);
+
+        if (attractivePointsMap.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Integer, List<String>> groupedByValue = groupAttractivePointsByValue(attractivePointsMap);
+
+        List<String> result = new ArrayList<>();
+        List<Integer> sortedKeys = new ArrayList<>(groupedByValue.keySet());
+        Collections.sort(sortedKeys, Collections.reverseOrder());
+
+        Random random = new Random();
+
+        for (Integer key : sortedKeys) {
+            List<String> items = groupedByValue.get(key);
+            if (result.size() + items.size() > 3) {
+                Collections.shuffle(items, random);
+                items = items.subList(0, 3 - result.size());
+            }
+            result.addAll(items);
+            if (result.size() >= 3) {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    private Map<String, Integer> makeAttractivePointsMapExcludingZero(NovelStatistics novelStatistics) {
+        Map<String, Integer> attractivePointsMap = new HashMap<>();
+
+        attractivePointsMap.put("세계관", novelStatistics.getUniverseCount());
+        attractivePointsMap.put("분위기", novelStatistics.getVibeCount());
+        attractivePointsMap.put("소재", novelStatistics.getMaterialCount());
+        attractivePointsMap.put("캐릭터", novelStatistics.getCharactersCount());
+        attractivePointsMap.put("관계", novelStatistics.getRelationshipCount());
+
+        attractivePointsMap.entrySet().removeIf(entry -> entry.getValue() == 0);
+
+        return attractivePointsMap;
+    }
+
+    private Map<Integer, List<String>> groupAttractivePointsByValue(Map<String, Integer> attractivePointsMap) {
+        Map<Integer, List<String>> groupedByValue = new HashMap<>();
+
+        for (Map.Entry<String, Integer> entry : attractivePointsMap.entrySet()) {
+            groupedByValue
+                    .computeIfAbsent(entry.getValue(), k -> new ArrayList<>())
+                    .add(entry.getKey());
+        }
+
+        return groupedByValue;
     }
 
     private List<KeywordCountGetResponse> getKeywordResponses(Long novelId) {
