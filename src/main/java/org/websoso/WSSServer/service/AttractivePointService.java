@@ -16,7 +16,7 @@ import org.websoso.WSSServer.exception.attractivePoint.exception.InvalidAttracti
 @Transactional
 public class AttractivePointService {
 
-    protected AttractivePoint createAndGetAttractivePoint(List<String> request, UserNovel userNovel) {
+    protected static AttractivePoint createAndGetAttractivePoint(List<String> request, UserNovel userNovel) {
         AttractivePoint attractivePoint = AttractivePoint.create(userNovel);
 
         for (String point : request) {
