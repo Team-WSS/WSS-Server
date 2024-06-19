@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.Flag.Y;
 import static org.websoso.WSSServer.exception.attractivePoint.AttractivePointErrorCode.INVALID_ATTRACTIVE_POINT;
 
 import java.util.List;
@@ -8,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
 import org.websoso.WSSServer.domain.UserNovel;
-import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.exception.attractivePoint.exception.InvalidAttractivePointException;
 
 @Service
@@ -21,11 +21,11 @@ public class AttractivePointService {
 
         for (String point : request) {
             switch (point.toLowerCase()) {
-                case "universe" -> attractivePoint.setUniverse(Flag.Y);
-                case "vibe" -> attractivePoint.setVibe(Flag.Y);
-                case "material" -> attractivePoint.setMaterial(Flag.Y);
-                case "character" -> attractivePoint.setCharacters(Flag.Y);
-                case "relationship" -> attractivePoint.setRelationship(Flag.Y);
+                case "universe" -> attractivePoint.setUniverse(Y);
+                case "vibe" -> attractivePoint.setVibe(Y);
+                case "material" -> attractivePoint.setMaterial(Y);
+                case "character" -> attractivePoint.setCharacters(Y);
+                case "relationship" -> attractivePoint.setRelationship(Y);
                 default -> throw new InvalidAttractivePointException(INVALID_ATTRACTIVE_POINT,
                         "invalid attractive point provided in the request");
             }

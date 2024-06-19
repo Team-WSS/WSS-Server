@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.Flag.Y;
 import static org.websoso.WSSServer.exception.keyword.KeywordErrorCode.KEYWORD_NOT_FOUND;
 import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND;
@@ -21,7 +22,6 @@ import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserStatistics;
-import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
@@ -173,19 +173,19 @@ public class UserNovelService {
 
     private void increaseStatisticsByAttractivePoint(AttractivePoint attractivePoint,
                                                      NovelStatistics novelStatistics) {
-        if (attractivePoint.getUniverse() == Flag.Y) {
+        if (attractivePoint.getUniverse() == Y) {
             novelStatistics.increaseField("universeCount");
         }
-        if (attractivePoint.getVibe() == Flag.Y) {
+        if (attractivePoint.getVibe() == Y) {
             novelStatistics.increaseField("vibeCount");
         }
-        if (attractivePoint.getMaterial() == Flag.Y) {
+        if (attractivePoint.getMaterial() == Y) {
             novelStatistics.increaseField("materialCount");
         }
-        if (attractivePoint.getCharacters() == Flag.Y) {
+        if (attractivePoint.getCharacters() == Y) {
             novelStatistics.increaseField("charactersCount");
         }
-        if (attractivePoint.getRelationship() == Flag.Y) {
+        if (attractivePoint.getRelationship() == Y) {
             novelStatistics.increaseField("relationshipCount");
         }
     }
