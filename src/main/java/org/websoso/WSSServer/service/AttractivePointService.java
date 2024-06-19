@@ -5,6 +5,7 @@ import static org.websoso.WSSServer.exception.attractivePoint.AttractivePointErr
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.Flag;
@@ -12,6 +13,7 @@ import org.websoso.WSSServer.exception.attractivePoint.exception.InvalidAttracti
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AttractivePointService {
 
     protected static AttractivePoint createAndGetAttractivePoint(List<String> request, UserNovel userNovel) {
