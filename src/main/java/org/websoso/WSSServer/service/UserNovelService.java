@@ -38,6 +38,7 @@ import org.websoso.WSSServer.repository.UserStatisticsRepository;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserNovelService {
 
     private final UserNovelRepository userNovelRepository;
@@ -47,7 +48,6 @@ public class UserNovelService {
     private final NovelKeywordsRepository novelKeywordsRepository;
     private final KeywordRepository keywordRepository;
 
-    @Transactional
     public void createUserNovel(User user, UserNovelCreateRequest request) {
 
         Novel novel = novelRepository.findById(request.novelId())
