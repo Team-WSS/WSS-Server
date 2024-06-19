@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Block;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.domain.common.Role;
 import org.websoso.WSSServer.dto.block.BlockGetResponse;
 import org.websoso.WSSServer.dto.block.BlocksGetResponse;
 import org.websoso.WSSServer.exception.block.exception.AdminBlockRestrictionException;
@@ -33,12 +32,10 @@ public class BlockService {
     private final AvatarService avatarService;
     private final BlockRepository blockRepository;
 
-    private static final Role ADMIN_ROLE = ADMIN;
-
     @Transactional
     public void block(User blocker, Long blockedId) {
         User blockedUser = userService.getUserOrException(blockedId);
-        if (blockedUser.getRole() == ADMIN_ROLE) {
+        if (blockedUser.getRole() == ADMIN) {
             throw new AdminBlockRestrictionException(CANNOT_ADMIN_BLOCK, "user requested to be blocked is ADMIN");
         }
 
