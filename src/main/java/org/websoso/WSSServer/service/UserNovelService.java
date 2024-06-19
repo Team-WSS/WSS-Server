@@ -109,8 +109,8 @@ public class UserNovelService {
         }
     }
 
-    private static void increaseStatisticsByReadStatus(ReadStatus readStatus, UserStatistics userStatistics,
-                                                       NovelStatistics novelStatistics) {
+    private void increaseStatisticsByReadStatus(ReadStatus readStatus, UserStatistics userStatistics,
+                                                NovelStatistics novelStatistics) {
         switch (readStatus) {
             case WATCHING -> {
                 userStatistics.increaseField("watchingNovelCount");
@@ -127,8 +127,8 @@ public class UserNovelService {
         }
     }
 
-    private static void increaseStatisticsByNovelGenre(List<NovelGenre> novelGenres, Float userNovelRating,
-                                                       UserStatistics userStatistics) {
+    private void increaseStatisticsByNovelGenre(List<NovelGenre> novelGenres, Float userNovelRating,
+                                                UserStatistics userStatistics) {
         for (NovelGenre novelGenre : novelGenres) {
             switch (novelGenre.getGenre().getGenreName()) {
                 case "로맨스" -> {
@@ -171,8 +171,8 @@ public class UserNovelService {
         }
     }
 
-    private static void increaseStatisticsByAttractivePoint(AttractivePoint attractivePoint,
-                                                            NovelStatistics novelStatistics) {
+    private void increaseStatisticsByAttractivePoint(AttractivePoint attractivePoint,
+                                                     NovelStatistics novelStatistics) {
         if (attractivePoint.getUniverse() == Flag.Y) {
             novelStatistics.increaseField("universeCount");
         }
