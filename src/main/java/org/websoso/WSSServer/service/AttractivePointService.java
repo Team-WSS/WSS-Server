@@ -5,10 +5,10 @@ import static org.websoso.WSSServer.exception.attractivePoint.AttractivePointErr
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
-import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.exception.attractivePoint.exception.InvalidAttractivePointException;
 
 @Service
@@ -16,9 +16,7 @@ import org.websoso.WSSServer.exception.attractivePoint.exception.InvalidAttracti
 @Transactional
 public class AttractivePointService {
 
-    protected static AttractivePoint createAndGetAttractivePoint(List<String> request, UserNovel userNovel) {
-        AttractivePoint attractivePoint = AttractivePoint.create(userNovel);
-
+    public static void setAttractivePoint(AttractivePoint attractivePoint, List<String> request) {
         for (String point : request) {
             switch (point.toLowerCase()) {
                 case "universe" -> attractivePoint.setUniverse(Y);
@@ -30,6 +28,5 @@ public class AttractivePointService {
                         "invalid attractive point provided in the request");
             }
         }
-        return attractivePoint;
     }
 }
