@@ -62,13 +62,11 @@ public class UserNovelService {
                 request.userNovelRating(),
                 request.startDate() != null ? convertToLocalDate(request.startDate()) : null,
                 request.endDate() != null ? convertToLocalDate(request.endDate()) : null,
-                null,
                 user,
                 novel));
 
         AttractivePoint attractivePoint = AttractivePointService.createAndGetAttractivePoint(request.attractivePoints(),
                 userNovel);
-        userNovel.setAttractivePoint(attractivePoint);
 
         for (Integer keywordId : request.keywordIds()) {
             Keyword keyword = keywordRepository.findById(keywordId).orElseThrow(
