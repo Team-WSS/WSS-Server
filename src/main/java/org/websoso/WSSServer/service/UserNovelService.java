@@ -29,6 +29,7 @@ import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
 import org.websoso.WSSServer.exception.userStatistics.exception.InvalidUserStatisticsException;
+import org.websoso.WSSServer.repository.AttractivePointRepository;
 import org.websoso.WSSServer.repository.KeywordRepository;
 import org.websoso.WSSServer.repository.NovelKeywordsRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
@@ -47,6 +48,7 @@ public class UserNovelService {
     private final NovelStatisticsRepository novelStatisticsRepository;
     private final NovelKeywordsRepository novelKeywordsRepository;
     private final KeywordRepository keywordRepository;
+    private final AttractivePointRepository attractivePointRepository;
 
     public void createUserNovel(User user, UserNovelCreateRequest request) {
 
@@ -65,8 +67,8 @@ public class UserNovelService {
                 user,
                 novel));
 
-        AttractivePoint attractivePoint = AttractivePointService.createAndGetAttractivePoint(request.attractivePoints(),
-                userNovel);
+        AttractivePoint attractivePoint = attractivePointRepository.save(AttractivePoint.create(userNovel));
+        AttractivePointService.setAttractivePoint(attractivePoint, request.attractivePoints());
 
         for (Integer keywordId : request.keywordIds()) {
             Keyword keyword = keywordRepository.findById(keywordId).orElseThrow(
