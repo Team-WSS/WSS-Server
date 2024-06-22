@@ -15,11 +15,12 @@ import org.websoso.WSSServer.repository.KeywordRepository;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class KeywordService {
 
     private final KeywordRepository keywordRepository;
 
+    @Transactional(readOnly = true)
     public KeywordByCategoryGetResponse searchKeywordByCategory(String query) {
         List<CategoryGetResponse> categories = Arrays.stream(KeywordCategory.values())
                 .map(category -> CategoryGetResponse.of(category, sortByCategory(category, searchKeyword(query))))
