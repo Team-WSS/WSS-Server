@@ -42,7 +42,7 @@ public record FeedGetResponse(
                 userBasicInfo.userId(),
                 userBasicInfo.nickname(),
                 userBasicInfo.avatarImage(),
-                feed.getCreatedDate().format(DateTimeFormatter.ofPattern("M월 d일")), // TODO : 형식 포맷팅
+                feed.getCreatedDate().format(DateTimeFormatter.ofPattern("M월 d일")),
                 feed.getFeedContent(),
                 feed.getLikeCount(),
                 isLiked,
