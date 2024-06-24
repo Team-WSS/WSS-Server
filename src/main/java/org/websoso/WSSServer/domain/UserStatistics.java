@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
-import java.lang.reflect.Field;
 import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -180,28 +179,6 @@ public class UserStatistics {
 
     public void increaseMyNovelRatingSum(float rating) {
         this.myNovelRatingSum = Optional.ofNullable(this.myNovelRatingSum).orElse(0f) + rating;
-    }
-
-    public void increaseField(String fieldName) {
-        try {
-            Field field = this.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            Integer currentValue = (Integer) field.get(this);
-            field.set(this, currentValue + 1);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException("Field not found or not accessible", e);
-        }
-    }
-
-    public void increaseFieldByAmount(String fieldName, float amount) {
-        try {
-            Field field = this.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            Float currentValue = (Float) field.get(this);
-            field.set(this, currentValue + amount);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException("Field not found or not accessible", e);
-        }
     }
 
 }
