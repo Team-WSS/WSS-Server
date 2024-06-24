@@ -113,15 +113,15 @@ public class UserNovelService {
                                                 NovelStatistics novelStatistics) {
         switch (readStatus) {
             case WATCHING -> {
-                userStatistics.increaseField("watchingNovelCount");
+                userStatistics.increaseWatchingNovelCount();
                 novelStatistics.increaseWatchingCount();
             }
             case WATCHED -> {
-                userStatistics.increaseField("watchedNovelCount");
+                userStatistics.increaseWatchedNovelCount();
                 novelStatistics.increaseWatchedCount();
             }
             case QUIT -> {
-                userStatistics.increaseField("quitNovelCount");
+                userStatistics.increaseQuitNovelCount();
                 novelStatistics.increaseQuitCount();
             }
         }
@@ -132,40 +132,40 @@ public class UserNovelService {
         for (NovelGenre novelGenre : novelGenres) {
             switch (novelGenre.getGenre().getGenreName()) {
                 case "로맨스" -> {
-                    userStatistics.increaseField("roNovelNovelCount");
-                    userStatistics.increaseFieldByAmount("roNovelRatingSum", userNovelRating);
+                    userStatistics.increaseRoNovelNovelCount();
+                    userStatistics.increaseRoNovelRatingSum(userNovelRating);
                 }
                 case "로판" -> {
-                    userStatistics.increaseField("rfNovelNovelCount");
-                    userStatistics.increaseFieldByAmount("rfNovelRatingSum", userNovelRating);
+                    userStatistics.increaseRfNovelNovelCount();
+                    userStatistics.increaseRfNovelRatingSum(userNovelRating);
                 }
                 case "BL" -> {
-                    userStatistics.increaseField("blNovelNovelCount");
-                    userStatistics.increaseFieldByAmount("blNovelRatingSum", userNovelRating);
+                    userStatistics.increaseBlNovelNovelCount();
+                    userStatistics.increaseBlNovelRatingSum(userNovelRating);
                 }
                 case "판타지" -> {
-                    userStatistics.increaseField("faNovelNovelCount");
-                    userStatistics.increaseFieldByAmount("faNovelRatingSum", userNovelRating);
+                    userStatistics.increaseFaNovelNovelCount();
+                    userStatistics.increaseFaNovelRatingSum(userNovelRating);
                 }
                 case "현판" -> {
-                    userStatistics.increaseField("mfNovelNovelCount");
-                    userStatistics.increaseFieldByAmount("mfNovelRatingSum", userNovelRating);
+                    userStatistics.increaseMfNovelNovelCount();
+                    userStatistics.increaseMfNovelRatingSum(userNovelRating);
                 }
                 case "무협" -> {
-                    userStatistics.increaseField("wuNovelNovelCount");
-                    userStatistics.increaseFieldByAmount("wuNovelRatingSum", userNovelRating);
+                    userStatistics.increaseWuNovelNovelCount();
+                    userStatistics.increaseWuNovelRatingSum(userNovelRating);
                 }
                 case "라노벨" -> {
-                    userStatistics.increaseField("lnNovelNovelCount");
-                    userStatistics.increaseFieldByAmount("lnNovelRatingSum", userNovelRating);
+                    userStatistics.increaseLnNovelNovelCount();
+                    userStatistics.increaseLnNovelRatingSum(userNovelRating);
                 }
                 case "드라마" -> {
-                    userStatistics.increaseField("drNovelNovelCount");
-                    userStatistics.increaseFieldByAmount("drNovelRatingSum", userNovelRating);
+                    userStatistics.increaseDrNovelNovelCount();
+                    userStatistics.increaseDrNovelRatingSum(userNovelRating);
                 }
                 case "미스터리" -> {
-                    userStatistics.increaseField("myNovelNovelCount");
-                    userStatistics.increaseFieldByAmount("myNovelNovelCount", userNovelRating);
+                    userStatistics.increaseMyNovelNovelCount();
+                    userStatistics.increaseMyNovelRatingSum(userNovelRating);
                 }
             }
         }
