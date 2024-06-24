@@ -114,15 +114,15 @@ public class UserNovelService {
         switch (readStatus) {
             case WATCHING -> {
                 userStatistics.increaseField("watchingNovelCount");
-                novelStatistics.increaseField("watchingCount");
+                novelStatistics.increaseWatchingCount();
             }
             case WATCHED -> {
                 userStatistics.increaseField("watchedNovelCount");
-                novelStatistics.increaseField("watchedCount");
+                novelStatistics.increaseWatchedCount();
             }
             case QUIT -> {
                 userStatistics.increaseField("quitNovelCount");
-                novelStatistics.increaseField("quitCount");
+                novelStatistics.increaseQuitCount();
             }
         }
     }
@@ -174,19 +174,19 @@ public class UserNovelService {
     private void increaseStatisticsByAttractivePoint(AttractivePoint attractivePoint,
                                                      NovelStatistics novelStatistics) {
         if (attractivePoint.getUniverse() == Y) {
-            novelStatistics.increaseField("universeCount");
+            novelStatistics.increaseUniverseCount();
         }
         if (attractivePoint.getVibe() == Y) {
-            novelStatistics.increaseField("vibeCount");
+            novelStatistics.increaseVibeCount();
         }
         if (attractivePoint.getMaterial() == Y) {
-            novelStatistics.increaseField("materialCount");
+            novelStatistics.increaseMaterialCount();
         }
         if (attractivePoint.getCharacters() == Y) {
-            novelStatistics.increaseField("charactersCount");
+            novelStatistics.increaseCharactersCount();
         }
         if (attractivePoint.getRelationship() == Y) {
-            novelStatistics.increaseField("relationshipCount");
+            novelStatistics.increaseRelationshipCount();
         }
     }
 
