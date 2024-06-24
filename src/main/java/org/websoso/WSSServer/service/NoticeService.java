@@ -20,13 +20,12 @@ import org.websoso.WSSServer.repository.NoticeRepository;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class NoticeService {
 
     private final NoticeRepository noticeRepository;
     private static final Role ADMIN_ROLE = ADMIN;
 
-    @Transactional
     public void createNotice(User user, NoticePostRequest noticePostRequest) {
         validateAuthorization(user);
         noticeRepository.save(Notice.builder()
@@ -36,7 +35,6 @@ public class NoticeService {
                 .build());
     }
 
-    @Transactional
     public void editNotice(User user, Long noticeId, NoticeEditRequest noticeEditRequest) {
         validateAuthorization(user);
         Notice notice = getNoticeOrException(noticeId);
@@ -51,12 +49,12 @@ public class NoticeService {
         }
     }
 
+    @Transactional(readOnly = true)
     public NoticesGetResponse getNotices(User user) {
         List<Notice> notices = noticeRepository.findByUserId(user.getUserId());
         return NoticesGetResponse.of(notices);
     }
 
-    @Transactional
     public void deleteNotice(User user, Long noticeId) {
         validateAuthorization(user);
         Notice notice = getNoticeOrException(noticeId);

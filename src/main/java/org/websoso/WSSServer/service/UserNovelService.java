@@ -80,7 +80,8 @@ public class UserNovelService {
         increaseStatistics(user, novel, request, attractivePoint);
     }
 
-    protected UserNovel getUserNovelOrNull(User user, Novel novel) {
+    @Transactional(readOnly = true)
+    public UserNovel getUserNovelOrNull(User user, Novel novel) {
         if (user == null) {
             return null;
         }
