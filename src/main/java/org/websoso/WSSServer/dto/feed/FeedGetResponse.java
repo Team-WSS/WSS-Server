@@ -34,8 +34,7 @@ public record FeedGetResponse(
         if (novel != null) {
             title = novel.getTitle();
             novelRatingCount = novel.getNovelRatingCount();
-            novelRating = novelRatingCount == 0 ? 0.0f
-                    : Math.round((novel.getNovelRatingSum() / (float) novelRatingCount) * 10) / 10.0f;
+            novelRating = calculateNovelRating(novel.getNovelRatingSum(), novelRatingCount);
         }
 
         return new FeedGetResponse(
@@ -57,4 +56,12 @@ public record FeedGetResponse(
                 isMyFeed
         );
     }
+
+    private static Float calculateNovelRating(Float novelRatingSum, Integer novelRatingCount) {
+        if (novelRatingCount == 0) {
+            return 0.0f;
+        }
+        return Math.round((novelRatingSum / (float) novelRatingCount) * 10) / 10.0f;
+    }
+
 }
