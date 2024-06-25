@@ -69,8 +69,8 @@ public class BlockService {
         blockRepository.delete(block);
     }
 
-    public Boolean isBlockedRelationship(Long firstUserId, Long secondUserId) {
-        return blockRepository.findByTwoUserId(firstUserId, secondUserId).isPresent();
+    public boolean isBlockedRelationship(Long firstUserId, Long secondUserId) {
+        return blockRepository.existsByTwoUserId(firstUserId, secondUserId);
     }
 
 }
