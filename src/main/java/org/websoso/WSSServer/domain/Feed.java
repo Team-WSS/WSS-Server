@@ -48,7 +48,7 @@ public class Feed extends BaseEntity {
     @Column
     private Long novelId;
 
-    @Column(columnDefinition = "Boolean", nullable = false)
+    @Column(columnDefinition = "Boolean default false", nullable = false)
     private Boolean isSpoiler;
 
     @Column(columnDefinition = "int default 0", nullable = false)
