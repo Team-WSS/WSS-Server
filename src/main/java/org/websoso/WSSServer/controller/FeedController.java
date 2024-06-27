@@ -91,11 +91,9 @@ public class FeedController {
     public ResponseEntity<FeedGetResponse> getFeed(Principal principal,
                                                    @PathVariable("feedId") Long feedId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        FeedGetResponse response = feedService.getFeedById(user, feedId);
-
         return ResponseEntity
                 .status(OK)
-                .body(response);
+                .body(feedService.getFeedById(user, feedId));
     }
 
 }
