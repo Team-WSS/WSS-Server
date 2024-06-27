@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
+import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
@@ -161,6 +162,15 @@ public class FeedController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
+    }
+
+    @GetMapping("/{feedId}/comments")
+    public ResponseEntity<CommentsGetResponse> getComments(Principal principal,
+                                                           @PathVariable("feedId") Long feedId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(feedService.getComments(user, feedId));
     }
 
 }

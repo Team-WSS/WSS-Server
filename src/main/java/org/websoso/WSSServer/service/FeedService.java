@@ -17,6 +17,7 @@ import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
+import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedInfo;
@@ -167,6 +168,18 @@ public class FeedService {
         }
 
         commentService.deleteComment(user.getUserId(), feed, commentId);
+    }
+
+    @Transactional(readOnly = true)
+    public CommentsGetResponse getComments(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
+
+        if (!feed.getUser().equals(user)) {
+            checkHiddenFeed(feed);
+            checkBlockedRelationship(feed.getUser(), user);
+        }
+
+        return commentService.getComments(user, feed);
     }
 
     private Feed getFeedOrException(Long feedId) {
