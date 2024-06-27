@@ -4,8 +4,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -14,10 +12,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import org.websoso.WSSServer.domain.common.Flag;
 
 @Entity
 @Getter
@@ -32,30 +28,20 @@ public class AttractivePoint {
     @Column(nullable = false)
     private Long attractivePointId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag universe;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean universe;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag vibe;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean vibe;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag material;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean material;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag characters;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean characters;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag relationship;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean relationship;
 
     @OneToOne
     @JoinColumn(name = "user_novel_id", nullable = false)
