@@ -16,9 +16,7 @@ import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 import org.websoso.WSSServer.domain.common.BaseEntity;
-import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 
 @Entity
@@ -31,10 +29,8 @@ public class UserNovel extends BaseEntity {
     @Column(nullable = false)
     private Long userNovelId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isInterest;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isInterest;
 
     @Enumerated(EnumType.STRING)
     @Column
