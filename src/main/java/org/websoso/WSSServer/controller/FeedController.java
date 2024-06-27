@@ -2,12 +2,14 @@ package org.websoso.WSSServer.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
+import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.service.FeedService;
@@ -84,6 +87,15 @@ public class FeedController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
+    }
+
+    @GetMapping("/{feedId}/comments")
+    public ResponseEntity<CommentsGetResponse> getComments(Principal principal,
+                                                           @PathVariable("feedId") Long feedId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(feedService.getComments(user, feedId));
     }
 
     @PostMapping("/{feedId}/comments")

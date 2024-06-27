@@ -13,6 +13,7 @@ import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
+import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
@@ -127,6 +128,18 @@ public class FeedService {
         commentService.deleteComment(user.getUserId(), feed, commentId);
 
         feed.decrementCommentCount();
+    }
+
+    @Transactional(readOnly = true)
+    public CommentsGetResponse getComments(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
+
+        if (!feed.getUser().equals(user)) {
+            isHiddenFeed(feed);
+            isBlockedRelationship(feed.getUser(), user);
+        }
+
+        return commentService.getComments(user, feed);
     }
 
     private Feed getFeedOrException(Long feedId) {
