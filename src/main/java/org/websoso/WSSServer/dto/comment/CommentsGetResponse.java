@@ -6,9 +6,9 @@ public record CommentsGetResponse(
         Integer commentsCount,
         List<CommentGetResponse> comments
 ) {
-    public static CommentsGetResponse of(List<CommentGetResponse> comments) {
+    public static CommentsGetResponse of(Integer commentsCount, List<CommentGetResponse> comments) {
         return new CommentsGetResponse(
-                comments.size(),
+                commentsCount,
                 comments
         );
     }

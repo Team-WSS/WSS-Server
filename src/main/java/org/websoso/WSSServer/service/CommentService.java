@@ -54,18 +54,19 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public CommentsGetResponse getComments(User user, Feed feed) {
-        List<CommentGetResponse> comments = new ArrayList<>();
+        List<Comment> comments = feed.getComments();
+        List<CommentGetResponse> responses = new ArrayList<>();
 
-        for (Comment comment : feed.getComments()) {
+        for (Comment comment : comments) {
             User createdUser = userService.getUserOrException(comment.getUserId());
             if (comment.getIsHidden() || isBlocked(createdUser, user)) {
                 continue;
             }
-            comments.add(CommentGetResponse.of(getUserBasicInfo(createdUser), comment,
+            responses.add(CommentGetResponse.of(getUserBasicInfo(createdUser), comment,
                     isUserCommentOwner(createdUser, user)));
         }
 
-        return CommentsGetResponse.of(comments);
+        return CommentsGetResponse.of(comments.size(), responses);
     }
 
     private Comment getCommentOrException(Long commentId) {
