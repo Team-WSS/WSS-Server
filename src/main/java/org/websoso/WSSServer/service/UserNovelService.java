@@ -16,7 +16,7 @@ public class UserNovelService {
     private final UserNovelRepository userNovelRepository;
 
     @Transactional(readOnly = true)
-    protected UserNovel getUserNovelOrNull(User user, Novel novel) {
+    public UserNovel getUserNovelOrNull(User user, Novel novel) {
         if (user == null) {
             return null;
         }
