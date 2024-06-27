@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.domain.common.Flag.Y;
 import static org.websoso.WSSServer.exception.keyword.KeywordErrorCode.KEYWORD_NOT_FOUND;
 import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND;
@@ -174,19 +173,19 @@ public class UserNovelService {
 
     private void increaseStatisticsByAttractivePoint(AttractivePoint attractivePoint,
                                                      NovelStatistics novelStatistics) {
-        if (attractivePoint.getUniverse() == Y) {
+        if (attractivePoint.getUniverse()) {
             novelStatistics.increaseUniverseCount();
         }
-        if (attractivePoint.getVibe() == Y) {
+        if (attractivePoint.getVibe()) {
             novelStatistics.increaseVibeCount();
         }
-        if (attractivePoint.getMaterial() == Y) {
+        if (attractivePoint.getMaterial()) {
             novelStatistics.increaseMaterialCount();
         }
-        if (attractivePoint.getCharacters() == Y) {
+        if (attractivePoint.getCharacters()) {
             novelStatistics.increaseCharactersCount();
         }
-        if (attractivePoint.getRelationship() == Y) {
+        if (attractivePoint.getRelationship()) {
             novelStatistics.increaseRelationshipCount();
         }
     }
