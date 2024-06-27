@@ -12,6 +12,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
@@ -34,6 +35,7 @@ import org.websoso.WSSServer.repository.PlatformRepository;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class NovelService {
 
     private final NovelRepository novelRepository;
@@ -43,6 +45,7 @@ public class NovelService {
     private final NovelStatisticsService novelStatisticsService;
     private final UserNovelService userNovelService;
 
+    @Transactional(readOnly = true)
     public NovelGetResponse1 getNovelInfo1(User user, Long novelId) {
         Novel novel = getNovelOrException(novelId);
         List<NovelGenre> novelGenres = novel.getNovelGenres();
@@ -55,6 +58,7 @@ public class NovelService {
         );
     }
 
+    @Transactional(readOnly = true)
     public Novel getNovelOrException(Long novelId) {
         return novelRepository.findById(novelId)
                 .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND,

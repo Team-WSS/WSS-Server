@@ -32,6 +32,7 @@ public class UserService {
         return NicknameValidation.of(true);
     }
 
+    @Transactional(readOnly = true)
     public LoginResponse login(Long userId) {
         User user = getUserOrException(userId);
 
@@ -46,6 +47,7 @@ public class UserService {
         return EmailGetResponse.of(user.getEmail());
     }
 
+    @Transactional(readOnly = true)
     public User getUserOrException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() ->
                 new InvalidUserException(USER_NOT_FOUND, "user with the given id was not found"));
