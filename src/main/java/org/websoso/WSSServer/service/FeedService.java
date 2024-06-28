@@ -100,8 +100,8 @@ public class FeedService {
     public FeedGetResponse getFeedById(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 
-        isHiddenFeed(feed);
-        isBlockedRelationship(feed.getUser(), user);
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
 
         UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
         Novel novel = getLinkedNovelOrNull(feed.getNovelId());
@@ -117,13 +117,13 @@ public class FeedService {
                 new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
     }
 
-    private void isHiddenFeed(Feed feed) {
+    private void checkHiddenFeed(Feed feed) {
         if (feed.getIsHidden()) {
             throw new CustomFeedException(HIDDEN_FEED_ACCESS, "Cannot access hidden feed.");
         }
     }
 
-    private void isBlockedRelationship(User createdFeedUser, User user) {
+    private void checkBlockedRelationship(User createdFeedUser, User user) {
         if (blockService.isBlockedRelationship(user.getUserId(), createdFeedUser.getUserId())) {
             throw new CustomFeedException(BLOCKED_USER_ACCESS,
                     "cannot access this feed because either you or the feed author has blocked the other.");
