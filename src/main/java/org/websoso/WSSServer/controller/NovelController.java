@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
+import org.websoso.WSSServer.dto.novel.NovelGetResponse2;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserService;
 
@@ -33,5 +34,13 @@ public class NovelController {
                 .status(OK)
                 .body(novelService.getNovelInfo1(userService.getUserOrException(Long.valueOf(principal.getName())),
                         novelId));
+    }
+
+    // TODO 이름 변경(작품 정보 조회 뷰에서 하단, 정보탭 부분)
+    @GetMapping("/{novelId}/info")
+    public ResponseEntity<NovelGetResponse2> getNovelInfo2(@PathVariable Long novelId) {
+        return ResponseEntity
+                .status(OK)
+                .body(novelService.getNovelInfo2(novelId));
     }
 }
