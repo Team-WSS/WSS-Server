@@ -26,8 +26,6 @@ import org.websoso.WSSServer.dto.novel.NovelGetResponse2;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
 import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
 import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
-import org.websoso.WSSServer.exception.platform.PlatformErrorCode;
-import org.websoso.WSSServer.exception.platform.exception.InvalidPlatformException;
 import org.websoso.WSSServer.repository.KeywordRepository;
 import org.websoso.WSSServer.repository.NovelKeywordRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
@@ -52,7 +50,7 @@ public class NovelService {
         return NovelGetResponse1.of(
                 novel,
                 userNovelService.getUserNovelOrNull(user, novel),
-                novelStatisticsService.getNovelStatisticsOrException(novel),
+                novelStatisticsService.getNovelStatisticsOrException(novel),//TODO
                 getNovelGenreNames(novelGenres),
                 getRandomNovelGenreImage(novelGenres)
         );
@@ -77,7 +75,7 @@ public class NovelService {
 
     public NovelGetResponse2 getNovelInfo2(Long novelId) {
         Novel novel = getNovelOrException(novelId);
-        NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
+        NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);//TODO
         return NovelGetResponse2.of(
                 novel,
                 novelStatistics,
@@ -89,10 +87,6 @@ public class NovelService {
 
     private List<PlatformGetResponse> getPlatformResponses(Novel novel) {
         List<Platform> platforms = platformRepository.findAllByNovel(novel);
-        if (platforms.isEmpty()) {
-            throw new InvalidPlatformException(PlatformErrorCode.PLATFORM_NOT_FOUND,
-                    "platform with the given novel is not found");
-        }
         return platforms.stream().map(PlatformGetResponse::of).collect(Collectors.toList());
     }
 
