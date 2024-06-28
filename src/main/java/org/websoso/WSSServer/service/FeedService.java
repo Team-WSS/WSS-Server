@@ -51,7 +51,7 @@ public class FeedService {
         Feed feed = getFeedOrException(feedId);
 
         feed.validateUserAuthorization(user, UPDATE);
-        
+
         if (feed.isNovelChanged(request.novelId())) {
             if (feed.isNovelLinked()) {
                 novelStatisticsService.decreaseNovelFeedCount(novelService.getNovelOrException(feed.getNovelId()));
@@ -93,6 +93,18 @@ public class FeedService {
         feed.unLike(unLikeUserId);
     }
 
+    @Transactional(readOnly = true)
+    public CommentsGetResponse getComments(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
+
+        if (!feed.getUser().equals(user)) {
+            isHiddenFeed(feed);
+            isBlockedRelationship(feed.getUser(), user);
+        }
+
+        return commentService.getComments(user, feed);
+    }
+
     public void createComment(User user, Long feedId, CommentCreateRequest request) {
         Feed feed = getFeedOrException(feedId);
 
@@ -128,18 +140,6 @@ public class FeedService {
         commentService.deleteComment(user.getUserId(), feed, commentId);
 
         feed.decrementCommentCount();
-    }
-
-    @Transactional(readOnly = true)
-    public CommentsGetResponse getComments(User user, Long feedId) {
-        Feed feed = getFeedOrException(feedId);
-
-        if (!feed.getUser().equals(user)) {
-            isHiddenFeed(feed);
-            isBlockedRelationship(feed.getUser(), user);
-        }
-
-        return commentService.getComments(user, feed);
     }
 
     private Feed getFeedOrException(Long feedId) {
