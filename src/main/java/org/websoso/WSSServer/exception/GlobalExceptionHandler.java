@@ -26,8 +26,6 @@ import org.websoso.WSSServer.exception.novel.NovelErrorCode;
 import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
 import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
-import org.websoso.WSSServer.exception.platform.PlatformErrorCode;
-import org.websoso.WSSServer.exception.platform.exception.InvalidPlatformException;
 import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
@@ -128,15 +126,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(novelStatisticsErrorCode.getStatusCode())
                 .body(new ErrorResult(novelStatisticsErrorCode.getCode(), novelStatisticsErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(InvalidPlatformException.class)
-    public ResponseEntity<ErrorResult> InvalidPlatformExceptionHandler(InvalidPlatformException e) {
-        log.error("[InvalidPlatformException] exception", e);
-        PlatformErrorCode platformErrorCode = e.getPlatformErrorCode();
-        return ResponseEntity
-                .status(platformErrorCode.getStatusCode())
-                .body(new ErrorResult(platformErrorCode.getCode(), platformErrorCode.getDescription()));
     }
 
     @ExceptionHandler(AlreadyBlockedException.class)
