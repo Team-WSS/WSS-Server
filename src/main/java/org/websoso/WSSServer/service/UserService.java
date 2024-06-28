@@ -11,7 +11,7 @@ import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.User.LoginResponse;
 import org.websoso.WSSServer.dto.User.NicknameValidation;
-import org.websoso.WSSServer.dto.user.EmailGetResponse;
+import org.websoso.WSSServer.dto.User.EmailGetResponse;
 import org.websoso.WSSServer.exception.user.exception.DuplicatedNicknameException;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
 import org.websoso.WSSServer.repository.UserRepository;
