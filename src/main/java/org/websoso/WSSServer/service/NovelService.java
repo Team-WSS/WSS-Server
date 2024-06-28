@@ -50,7 +50,7 @@ public class NovelService {
         return NovelGetResponse1.of(
                 novel,
                 userNovelService.getUserNovelOrNull(user, novel),
-                novelStatisticsService.getNovelStatisticsOrException(novel),//TODO
+                novelStatisticsService.getNovelStatisticsOrException(novel),
                 getNovelGenreNames(novelGenres),
                 getRandomNovelGenreImage(novelGenres)
         );
@@ -75,7 +75,7 @@ public class NovelService {
 
     public NovelGetResponse2 getNovelInfo2(Long novelId) {
         Novel novel = getNovelOrException(novelId);
-        NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);//TODO
+        NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
         return NovelGetResponse2.of(
                 novel,
                 novelStatistics,
