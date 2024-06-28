@@ -28,6 +28,27 @@ public class CommentService {
     private final AvatarService avatarService;
     private final BlockService blockService;
 
+    @Transactional(readOnly = true)
+    public CommentsGetResponse getComments(User user, Feed feed) {
+        List<Comment> comments = feed.getComments();
+        List<CommentGetResponse> responses = new ArrayList<>();
+
+        for (Comment comment : comments) {
+            User createdUser = userService.getUserOrException(comment.getUserId());
+            if (comment.getIsHidden() || isBlocked(createdUser, user)) {
+                continue;
+            }
+            responses.add(
+                    CommentGetResponse.of(
+                            getUserInformation(createdUser),
+                            comment,
+                            isUserCommentOwner(createdUser, user)
+                    ));
+        }
+
+        return CommentsGetResponse.of(comments.size(), responses);
+    }
+
     public void createComment(Long userId, Feed feed, String commentContent) {
         commentRepository.save(Comment.create(userId, feed, commentContent));
     }
@@ -50,23 +71,6 @@ public class CommentService {
         comment.validateUserAuthorization(userId, DELETE);
 
         commentRepository.delete(comment);
-    }
-
-    @Transactional(readOnly = true)
-    public CommentsGetResponse getComments(User user, Feed feed) {
-        List<Comment> comments = feed.getComments();
-        List<CommentGetResponse> responses = new ArrayList<>();
-
-        for (Comment comment : comments) {
-            User createdUser = userService.getUserOrException(comment.getUserId());
-            if (comment.getIsHidden() || isBlocked(createdUser, user)) {
-                continue;
-            }
-            responses.add(CommentGetResponse.of(getUserInformation(createdUser), comment,
-                    isUserCommentOwner(createdUser, user)));
-        }
-
-        return CommentsGetResponse.of(comments.size(), responses);
     }
 
     private Comment getCommentOrException(Long commentId) {
