@@ -98,8 +98,8 @@ public class FeedService {
         Feed feed = getFeedOrException(feedId);
 
         if (!feed.getUser().equals(user)) {
-            isHiddenFeed(feed);
-            isBlockedRelationship(feed.getUser(), user);
+            checkHiddenFeed(feed);
+            checkBlockedRelationship(feed.getUser(), user);
         }
 
         return commentService.getComments(user, feed);
@@ -109,8 +109,8 @@ public class FeedService {
         Feed feed = getFeedOrException(feedId);
 
         if (!feed.getUser().equals(user)) {
-            isHiddenFeed(feed);
-            isBlockedRelationship(feed.getUser(), user);
+            checkHiddenFeed(feed);
+            checkBlockedRelationship(feed.getUser(), user);
         }
 
         commentService.createComment(user.getUserId(), feed, request.commentContent());
@@ -122,8 +122,8 @@ public class FeedService {
         Feed feed = getFeedOrException(feedId);
 
         if (!feed.getUser().equals(user)) {
-            isHiddenFeed(feed);
-            isBlockedRelationship(feed.getUser(), user);
+            checkHiddenFeed(feed);
+            checkBlockedRelationship(feed.getUser(), user);
         }
 
         commentService.updateComment(user.getUserId(), feed, commentId, request.commentContent());
@@ -133,8 +133,8 @@ public class FeedService {
         Feed feed = getFeedOrException(feedId);
 
         if (!feed.getUser().equals(user)) {
-            isHiddenFeed(feed);
-            isBlockedRelationship(feed.getUser(), user);
+            checkHiddenFeed(feed);
+            checkBlockedRelationship(feed.getUser(), user);
         }
 
         commentService.deleteComment(user.getUserId(), feed, commentId);
@@ -147,13 +147,13 @@ public class FeedService {
                 new InvalidFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
     }
 
-    private void isHiddenFeed(Feed feed) {
+    private void checkHiddenFeed(Feed feed) {
         if (feed.getIsHidden()) {
             throw new InvalidFeedException(HIDDEN_FEED_ACCESS, "Cannot access hidden feed.");
         }
     }
 
-    private void isBlockedRelationship(User createdFeedUser, User user) {
+    private void checkBlockedRelationship(User createdFeedUser, User user) {
         if (blockService.isBlockedRelationship(user.getUserId(), createdFeedUser.getUserId())) {
             throw new InvalidFeedException(BLOCKED_USER_ACCESS,
                     "cannot access this feed because either you or the feed author has blocked the other.");
