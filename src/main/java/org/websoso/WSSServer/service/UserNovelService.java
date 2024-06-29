@@ -143,33 +143,15 @@ public class UserNovelService {
     private void increaseStatisticsByNovelGenre(List<NovelGenre> novelGenres, UserStatistics userStatistics) {
         for (NovelGenre novelGenre : novelGenres) {
             switch (novelGenre.getGenre().getGenreName()) {
-                case "로맨스" -> {
-                    userStatistics.increaseRoNovelNovelCount();
-                }
-                case "로판" -> {
-                    userStatistics.increaseRfNovelNovelCount();
-                }
-                case "BL" -> {
-                    userStatistics.increaseBlNovelNovelCount();
-                }
-                case "판타지" -> {
-                    userStatistics.increaseFaNovelNovelCount();
-                }
-                case "현판" -> {
-                    userStatistics.increaseMfNovelNovelCount();
-                }
-                case "무협" -> {
-                    userStatistics.increaseWuNovelNovelCount();
-                }
-                case "라노벨" -> {
-                    userStatistics.increaseLnNovelNovelCount();
-                }
-                case "드라마" -> {
-                    userStatistics.increaseDrNovelNovelCount();
-                }
-                case "미스터리" -> {
-                    userStatistics.increaseMyNovelNovelCount();
-                }
+                case "로맨스" -> userStatistics.increaseRoNovelNovelCount();
+                case "로판" -> userStatistics.increaseRfNovelNovelCount();
+                case "BL" -> userStatistics.increaseBlNovelNovelCount();
+                case "판타지" -> userStatistics.increaseFaNovelNovelCount();
+                case "현판" -> userStatistics.increaseMfNovelNovelCount();
+                case "무협" -> userStatistics.increaseWuNovelNovelCount();
+                case "라노벨" -> userStatistics.increaseLnNovelNovelCount();
+                case "드라마" -> userStatistics.increaseDrNovelNovelCount();
+                case "미스터리" -> userStatistics.increaseMyNovelNovelCount();
             }
         }
     }
