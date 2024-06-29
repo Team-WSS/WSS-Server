@@ -83,7 +83,7 @@ public class UserNovelService {
             throw new NovelAlreadyRegisteredException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
         }
 
-        UserNovel userNovel = userNovelRepository.save(UserNovel.create(null, null, null, null, user, novel));
+        UserNovel userNovel = userNovelRepository.save(UserNovel.create(null, 0.0f, null, null, user, novel));
 
         attractivePointRepository.save(AttractivePoint.create(userNovel));
 
