@@ -69,7 +69,7 @@ public class NovelService {
         UserNovel userNovel = userNovelService.getUserNovelOrNull(user, novel);
 
         if (userNovel != null && userNovel.getIsInterest() == Flag.Y) {
-            throw new InvalidNovelException(ALREADY_INTERESTED, "already interested the novel");
+            throw new InvalidNovelException(ALREADY_INTERESTED, "already registered as interested");
         }
 
         if (userNovel == null) {
