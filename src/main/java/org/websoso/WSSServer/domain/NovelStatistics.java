@@ -9,12 +9,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
-import java.lang.reflect.Field;
+import java.util.Optional;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 
+@DynamicInsert
+@DynamicUpdate
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -59,15 +64,13 @@ public class NovelStatistics {
     @JoinColumn(name = "novel_id", nullable = false)
     private Novel novel;
 
-    public void increaseField(String fieldName) {
-        try {
-            Field field = this.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            Integer currentValue = (Integer) field.get(this);
-            field.set(this, currentValue + 1);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException("Field not found or not accessible", e);
-        }
+    @Builder
+    public NovelStatistics(Novel novel) {
+        this.novel = novel;
+    }
+
+    public void increaseNovelFeedCount() {
+        this.novelFeedCount = Optional.ofNullable(this.novelFeedCount).orElse(0) + 1;
     }
 
     public void decreaseNovelFeedCount() {
@@ -76,6 +79,42 @@ public class NovelStatistics {
         }
 
         this.novelFeedCount--;
+    }
+
+    public void increaseWatchingCount() {
+        this.watchingCount = Optional.ofNullable(this.watchingCount).orElse(0) + 1;
+    }
+
+    public void increaseInterestCount() {
+        this.interestCount = Optional.ofNullable(this.interestCount).orElse(0) + 1;
+    }
+
+    public void increaseWatchedCount() {
+        this.watchedCount = Optional.ofNullable(this.watchedCount).orElse(0) + 1;
+    }
+
+    public void increaseQuitCount() {
+        this.quitCount = Optional.ofNullable(this.quitCount).orElse(0) + 1;
+    }
+
+    public void increaseUniverseCount() {
+        this.universeCount = Optional.ofNullable(this.universeCount).orElse(0) + 1;
+    }
+
+    public void increaseVibeCount() {
+        this.vibeCount = Optional.ofNullable(this.vibeCount).orElse(0) + 1;
+    }
+
+    public void increaseMaterialCount() {
+        this.materialCount = Optional.ofNullable(this.materialCount).orElse(0) + 1;
+    }
+
+    public void increaseCharactersCount() {
+        this.charactersCount = Optional.ofNullable(this.charactersCount).orElse(0) + 1;
+    }
+
+    public void increaseRelationshipCount() {
+        this.relationshipCount = Optional.ofNullable(this.relationshipCount).orElse(0) + 1;
     }
 
 }

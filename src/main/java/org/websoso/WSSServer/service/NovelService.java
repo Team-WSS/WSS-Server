@@ -23,6 +23,7 @@ import org.websoso.WSSServer.repository.NovelRepository;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class NovelService {
 
     private final NovelRepository novelRepository;
@@ -30,6 +31,7 @@ public class NovelService {
     private final UserNovelService userNovelService;
     private final UserStatisticsService userStatisticsService;
 
+    @Transactional(readOnly = true)
     public NovelGetResponse1 getNovelInfo1(User user, Long novelId) {
         Novel novel = getNovelOrException(novelId);
         List<NovelGenre> novelGenres = novel.getNovelGenres();
@@ -42,7 +44,8 @@ public class NovelService {
         );
     }
 
-    private Novel getNovelOrException(Long novelId) {
+    @Transactional(readOnly = true)
+    public Novel getNovelOrException(Long novelId) {
         return novelRepository.findById(novelId)
                 .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND,
                         "novel with the given id is not found"));
@@ -80,8 +83,8 @@ public class NovelService {
         }
 
         userNovel.setIsInterest(Flag.Y);
-        novelStatistics.increaseField("interestCount");
-        userStatistics.increaseField("interestNovelCount");
+        novelStatistics.increaseInterestCount();
+        userStatistics.increaseInterestNovelCount();
 
         for (String genreName : genreNames) {
 
@@ -98,7 +101,6 @@ public class NovelService {
                 default -> throw new IllegalArgumentException("Unknown genre: " + genreName);
             };
 
-            userStatistics.increaseField(fieldName);
         }
     }
 

@@ -19,6 +19,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -125,6 +126,14 @@ public class Feed extends BaseEntity {
 
         this.likeUsers = this.likeUsers.replace(unLikeUserIdFormatted, "");
         this.likeCount--;
+    }
+
+    public boolean isNovelLinked() {
+        return this.novelId != null;
+    }
+
+    public boolean isNovelChanged(Long novelId) {
+        return !Objects.equals(this.novelId, novelId);
     }
 
 }

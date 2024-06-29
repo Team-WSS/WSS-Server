@@ -8,6 +8,7 @@ import org.websoso.WSSServer.domain.UserStatistics;
 
 @Repository
 public interface UserStatisticsRepository extends JpaRepository<UserStatistics, Long> {
+
     Optional<UserStatistics> findByUser(User user);
 
 }
