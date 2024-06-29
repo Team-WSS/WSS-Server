@@ -79,6 +79,19 @@ public class UserNovelService {
         increaseStatistics(user, novel, request, attractivePoint);
     }
 
+    public UserNovel createUserNovelByInterest(User user, Novel novel) {
+
+        if (getUserNovelOrNull(user, novel) != null) {
+            throw new NovelAlreadyRegisteredException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
+        }
+
+        UserNovel userNovel = userNovelRepository.save(UserNovel.create(null, null, null, null, user, novel));
+
+        attractivePointRepository.save(AttractivePoint.create(userNovel));
+
+        return userNovel;
+    }
+
     @Transactional(readOnly = true)
     public UserNovel getUserNovelOrNull(User user, Novel novel) {
         if (user == null) {
