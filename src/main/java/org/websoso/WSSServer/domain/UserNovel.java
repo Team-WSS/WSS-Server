@@ -14,7 +14,6 @@ import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.BaseEntity;
@@ -23,7 +22,6 @@ import org.websoso.WSSServer.domain.common.ReadStatus;
 
 @Entity
 @Getter
-@Setter
 @DynamicInsert
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserNovel extends BaseEntity {
@@ -72,6 +70,10 @@ public class UserNovel extends BaseEntity {
     public static UserNovel create(ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,
                                    User user, Novel novel) {
         return new UserNovel(status, userNovelRating, startDate, endDate, user, novel);
+    }
+
+    public void setIsInterest(Flag isInterest) {
+        this.isInterest = isInterest;
     }
 
 }
