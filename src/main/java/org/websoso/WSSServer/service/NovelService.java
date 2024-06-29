@@ -61,46 +61,45 @@ public class NovelService {
         return novelGenres.get(random.nextInt(novelGenres.size())).getGenre().getGenreImage();
     }
 
-    @Transactional
     public void registerAsInterest(User user, Long novelId) {
 
         Novel novel = getNovelOrException(novelId);
         UserNovel userNovel = userNovelService.getUserNovelOrNull(user, novel);
+
+        if (userNovel != null && userNovel.getIsInterest() == Flag.Y) {
+            throw new InvalidNovelException(ALREADY_INTERESTED, "already interested the novel");
+        }
+
+        if (userNovel == null) {
+            userNovel = userNovelService.createUserNovelByInterest(user, novel);
+        }
+
         NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
         UserStatistics userStatistics = userStatisticsService.getUserStatisticsOrException(user);
+
+        userNovel.setIsInterest(Flag.Y);
+        novelStatistics.increaseInterestCount();
+        userStatistics.increaseInterestNovelCount();
+
         List<String> genreNames = novel.getNovelGenres()
                 .stream()
                 .map(NovelGenre::getGenre)
                 .map(Genre::getGenreName)
                 .toList();
 
-        if (userNovel.getIsInterest() == Flag.Y) {
-            throw new InvalidNovelException(ALREADY_INTERESTED, "already interested the novel");
-        }
-
-        if (userNovel != null) {
-            // TODO 서재 등록
-        }
-
-        userNovel.setIsInterest(Flag.Y);
-        novelStatistics.increaseInterestCount();
-        userStatistics.increaseInterestNovelCount();
-
         for (String genreName : genreNames) {
-
-            String fieldName = switch (genreName) { // TODO genreName 확인 필요
-                case "로맨스" -> "roNovelNovelCount";
-                case "로판" -> "rfNovelNovelCount";
-                case "BL" -> "blNovelNovelCount";
-                case "판타지" -> "faNovelNovelCount";
-                case "현판" -> "mfNovelNovelCount";
-                case "무협" -> "wuNovelNovelCount";
-                case "라노벨" -> "lnNovelNovelCount";
-                case "드라마" -> "drNovelNovelCount";
-                case "미스터리" -> "myNovelNovelCount";
-                default -> throw new IllegalArgumentException("Unknown genre: " + genreName);
-            };
-
+            switch (genreName) {
+                case "로맨스" -> userStatistics.increaseRoNovelNovelCount();
+                case "로판" -> userStatistics.increaseRfNovelNovelCount();
+                case "BL" -> userStatistics.increaseBlNovelNovelCount();
+                case "판타지" -> userStatistics.increaseFaNovelNovelCount();
+                case "현판" -> userStatistics.increaseMfNovelNovelCount();
+                case "무협" -> userStatistics.increaseWuNovelNovelCount();
+                case "라노벨" -> userStatistics.increaseLnNovelNovelCount();
+                case "드라마" -> userStatistics.increaseDrNovelNovelCount();
+                case "미스터리" -> userStatistics.increaseMyNovelNovelCount();
+                default -> throw new IllegalArgumentException("Unknown genre: " + genreName); //TODO
+            }
         }
     }
 
