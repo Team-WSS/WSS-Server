@@ -118,7 +118,7 @@ public class UserNovelService {
         if (request.userNovelRating() != 0.0f) {
             novel.increaseNovelRatingCount();
             novel.increaseNovelRatingSum(request.userNovelRating());
-            increaseStatisticsByNovelGenre(novel.getNovelGenres(), request.userNovelRating(), userStatistics);
+            increaseStatisticsByNovelGenre(novel.getNovelGenres(), userStatistics);
         }
     }
 
@@ -140,8 +140,7 @@ public class UserNovelService {
         }
     }
 
-    private void increaseStatisticsByNovelGenre(List<NovelGenre> novelGenres, Float userNovelRating,
-                                                UserStatistics userStatistics) {
+    private void increaseStatisticsByNovelGenre(List<NovelGenre> novelGenres, UserStatistics userStatistics) {
         for (NovelGenre novelGenre : novelGenres) {
             switch (novelGenre.getGenre().getGenreName()) {
                 case "로맨스" -> {
@@ -175,8 +174,7 @@ public class UserNovelService {
         }
     }
 
-    private void increaseStatisticsByAttractivePoint(AttractivePoint attractivePoint,
-                                                     NovelStatistics novelStatistics) {
+    private void increaseStatisticsByAttractivePoint(AttractivePoint attractivePoint, NovelStatistics novelStatistics) {
         if (attractivePoint.getUniverse()) {
             novelStatistics.increaseUniverseCount();
         }
