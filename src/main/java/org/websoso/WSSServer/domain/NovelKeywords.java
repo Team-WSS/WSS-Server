@@ -28,4 +28,14 @@ public class NovelKeywords {
 
     @Column
     private Long userId;
+
+    private NovelKeywords(Long novelId, Integer keywordId, Long userId) {
+        this.novelId = novelId;
+        this.keywordId = keywordId;
+        this.userId = userId;
+    }
+
+    public static NovelKeywords create(Long novelId, Integer keywordId, Long userId) {
+        return new NovelKeywords(novelId, keywordId, userId);
+    }
 }
