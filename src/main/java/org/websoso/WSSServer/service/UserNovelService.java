@@ -133,39 +133,30 @@ public class UserNovelService {
             switch (novelGenre.getGenre().getGenreName()) {
                 case "로맨스" -> {
                     userStatistics.increaseRoNovelNovelCount();
-                    userStatistics.increaseRoNovelRatingSum(userNovelRating);
                 }
                 case "로판" -> {
                     userStatistics.increaseRfNovelNovelCount();
-                    userStatistics.increaseRfNovelRatingSum(userNovelRating);
                 }
                 case "BL" -> {
                     userStatistics.increaseBlNovelNovelCount();
-                    userStatistics.increaseBlNovelRatingSum(userNovelRating);
                 }
                 case "판타지" -> {
                     userStatistics.increaseFaNovelNovelCount();
-                    userStatistics.increaseFaNovelRatingSum(userNovelRating);
                 }
                 case "현판" -> {
                     userStatistics.increaseMfNovelNovelCount();
-                    userStatistics.increaseMfNovelRatingSum(userNovelRating);
                 }
                 case "무협" -> {
                     userStatistics.increaseWuNovelNovelCount();
-                    userStatistics.increaseWuNovelRatingSum(userNovelRating);
                 }
                 case "라노벨" -> {
                     userStatistics.increaseLnNovelNovelCount();
-                    userStatistics.increaseLnNovelRatingSum(userNovelRating);
                 }
                 case "드라마" -> {
                     userStatistics.increaseDrNovelNovelCount();
-                    userStatistics.increaseDrNovelRatingSum(userNovelRating);
                 }
                 case "미스터리" -> {
                     userStatistics.increaseMyNovelNovelCount();
-                    userStatistics.increaseMyNovelRatingSum(userNovelRating);
                 }
             }
         }
