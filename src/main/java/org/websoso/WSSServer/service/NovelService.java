@@ -71,37 +71,37 @@ public class NovelService {
             throw new InvalidNovelException(ALREADY_INTERESTED, "already registered as interested");
         }
 
-        if (userNovel == null) {
-            userNovel = userNovelService.createUserNovelByInterest(user, novel);
-        }
-
         NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
         UserStatistics userStatistics = userStatisticsService.getUserStatisticsOrException(user);
+
+        if (userNovel == null) {
+            userNovel = userNovelService.createUserNovelByInterest(user, novel);
+
+            List<String> genreNames = novel.getNovelGenres()
+                    .stream()
+                    .map(NovelGenre::getGenre)
+                    .map(Genre::getGenreName)
+                    .toList();
+
+            for (String genreName : genreNames) {
+                switch (genreName) {
+                    case "로맨스" -> userStatistics.increaseRoNovelNovelCount();
+                    case "로판" -> userStatistics.increaseRfNovelNovelCount();
+                    case "BL" -> userStatistics.increaseBlNovelNovelCount();
+                    case "판타지" -> userStatistics.increaseFaNovelNovelCount();
+                    case "현판" -> userStatistics.increaseMfNovelNovelCount();
+                    case "무협" -> userStatistics.increaseWuNovelNovelCount();
+                    case "라노벨" -> userStatistics.increaseLnNovelNovelCount();
+                    case "드라마" -> userStatistics.increaseDrNovelNovelCount();
+                    case "미스터리" -> userStatistics.increaseMyNovelNovelCount();
+                    default -> throw new InvalidGenreException(GENRE_NOT_FOUND, "cannot find corresponding genre");
+                }
+            }
+        }
 
         userNovel.setIsInterest(true);
         novelStatistics.increaseInterestCount();
         userStatistics.increaseInterestNovelCount();
-
-        List<String> genreNames = novel.getNovelGenres()
-                .stream()
-                .map(NovelGenre::getGenre)
-                .map(Genre::getGenreName)
-                .toList();
-
-        for (String genreName : genreNames) {
-            switch (genreName) {
-                case "로맨스" -> userStatistics.increaseRoNovelNovelCount();
-                case "로판" -> userStatistics.increaseRfNovelNovelCount();
-                case "BL" -> userStatistics.increaseBlNovelNovelCount();
-                case "판타지" -> userStatistics.increaseFaNovelNovelCount();
-                case "현판" -> userStatistics.increaseMfNovelNovelCount();
-                case "무협" -> userStatistics.increaseWuNovelNovelCount();
-                case "라노벨" -> userStatistics.increaseLnNovelNovelCount();
-                case "드라마" -> userStatistics.increaseDrNovelNovelCount();
-                case "미스터리" -> userStatistics.increaseMyNovelNovelCount();
-                default -> throw new InvalidGenreException(GENRE_NOT_FOUND, "cannot find corresponding genre");
-            }
-        }
     }
 
 }
