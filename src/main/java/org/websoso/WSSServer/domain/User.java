@@ -53,10 +53,8 @@ public class User {
     @Column(columnDefinition = "tinyint default 1", nullable = false)
     private Byte avatarId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'Y'")
-    private Flag isProfilePublic;
+    @Column(columnDefinition = "Boolean default true", nullable = false)
+    private Boolean isProfilePublic;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
