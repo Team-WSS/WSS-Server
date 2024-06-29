@@ -1,10 +1,6 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.keyword.KeywordErrorCode.KEYWORD_NOT_FOUND;
-import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
-import static org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND;
 import static org.websoso.WSSServer.exception.userNovel.UserNovelErrorCode.USER_NOVEL_ALREADY_EXISTS;
-import static org.websoso.WSSServer.exception.userStatistics.UserStatisticsErrorCode.USER_STATISTICS_NOT_FOUND;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -23,18 +19,10 @@ import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
-import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
-import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
-import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
-import org.websoso.WSSServer.exception.userStatistics.exception.InvalidUserStatisticsException;
 import org.websoso.WSSServer.repository.AttractivePointRepository;
-import org.websoso.WSSServer.repository.KeywordRepository;
 import org.websoso.WSSServer.repository.NovelKeywordsRepository;
-import org.websoso.WSSServer.repository.NovelRepository;
-import org.websoso.WSSServer.repository.NovelStatisticsRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
-import org.websoso.WSSServer.repository.UserStatisticsRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -42,17 +30,16 @@ import org.websoso.WSSServer.repository.UserStatisticsRepository;
 public class UserNovelService {
 
     private final UserNovelRepository userNovelRepository;
-    private final NovelRepository novelRepository;
-    private final UserStatisticsRepository userStatisticsRepository;
-    private final NovelStatisticsRepository novelStatisticsRepository;
     private final NovelKeywordsRepository novelKeywordsRepository;
-    private final KeywordRepository keywordRepository;
     private final AttractivePointRepository attractivePointRepository;
+    private final NovelService novelService;
+    private final UserStatisticsService userStatisticsService;
+    private final NovelStatisticsService novelStatisticsService;
+    private final KeywordService keywordService;
 
     public void createUserNovel(User user, UserNovelCreateRequest request) {
 
-        Novel novel = novelRepository.findById(request.novelId())
-                .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
+        Novel novel = novelService.getNovelOrException(request.novelId());
 
         if (getUserNovelOrNull(user, novel) != null) {
             throw new NovelAlreadyRegisteredException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
@@ -70,8 +57,7 @@ public class UserNovelService {
         AttractivePointService.setAttractivePoint(attractivePoint, request.attractivePoints());
 
         for (Integer keywordId : request.keywordIds()) {
-            Keyword keyword = keywordRepository.findById(keywordId).orElseThrow(
-                    () -> new InvalidKeywordException(KEYWORD_NOT_FOUND, "keyword with the given id is not found"));
+            Keyword keyword = keywordService.getKeywordOrException(keywordId);
             novelKeywordsRepository.save(
                     NovelKeywords.create(novel.getNovelId(), keyword.getKeywordId(), user.getUserId()));
         }
@@ -106,12 +92,8 @@ public class UserNovelService {
 
     private void increaseStatistics(User user, Novel novel, UserNovelCreateRequest request,
                                     AttractivePoint attractivePoint) {
-        UserStatistics userStatistics = userStatisticsRepository.findByUser(user).orElseThrow(
-                () -> new InvalidUserStatisticsException(USER_STATISTICS_NOT_FOUND,
-                        "user statistics with the given user is not found"));
-        NovelStatistics novelStatistics = novelStatisticsRepository.findByNovel(novel).orElseThrow(
-                () -> new InvalidNovelStatisticsException(NOVEL_STATISTICS_NOT_FOUND,
-                        "novel statistics with the given novel is not found"));
+        UserStatistics userStatistics = userStatisticsService.getUserStatisticsOrException(user);
+        NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
 
         increaseStatisticsByReadStatus(request.status(), userStatistics, novelStatistics);
         increaseStatisticsByAttractivePoint(attractivePoint, novelStatistics);
