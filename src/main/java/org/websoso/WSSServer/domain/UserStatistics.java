@@ -36,31 +36,31 @@ public class UserStatistics {
     private Integer quitNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer roNovelNovelCount;
+    private Integer roNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer rfNovelNovelCount;
+    private Integer rfNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer blNovelNovelCount;
+    private Integer blNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer faNovelNovelCount;
+    private Integer faNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer mfNovelNovelCount;
+    private Integer mfNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer wuNovelNovelCount;
+    private Integer wuNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer lnNovelNovelCount;
+    private Integer lnNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer drNovelNovelCount;
+    private Integer drNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer myNovelNovelCount;
+    private Integer myNovelCount;
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -82,40 +82,40 @@ public class UserStatistics {
         this.quitNovelCount = Optional.ofNullable(this.quitNovelCount).orElse(0) + 1;
     }
 
-    public void increaseRoNovelNovelCount() {
-        this.roNovelNovelCount = Optional.ofNullable(this.roNovelNovelCount).orElse(0) + 1;
+    public void increaseRoNovelCount() {
+        this.roNovelCount = Optional.ofNullable(this.roNovelCount).orElse(0) + 1;
     }
 
-    public void increaseRfNovelNovelCount() {
-        this.rfNovelNovelCount = Optional.ofNullable(this.rfNovelNovelCount).orElse(0) + 1;
+    public void increaseRfNovelCount() {
+        this.rfNovelCount = Optional.ofNullable(this.rfNovelCount).orElse(0) + 1;
     }
 
-    public void increaseBlNovelNovelCount() {
-        this.blNovelNovelCount = Optional.ofNullable(this.blNovelNovelCount).orElse(0) + 1;
+    public void increaseBlNovelCount() {
+        this.blNovelCount = Optional.ofNullable(this.blNovelCount).orElse(0) + 1;
     }
 
-    public void increaseFaNovelNovelCount() {
-        this.faNovelNovelCount = Optional.ofNullable(this.faNovelNovelCount).orElse(0) + 1;
+    public void increaseFaNovelCount() {
+        this.faNovelCount = Optional.ofNullable(this.faNovelCount).orElse(0) + 1;
     }
 
-    public void increaseMfNovelNovelCount() {
-        this.mfNovelNovelCount = Optional.ofNullable(this.mfNovelNovelCount).orElse(0) + 1;
+    public void increaseMfNovelCount() {
+        this.mfNovelCount = Optional.ofNullable(this.mfNovelCount).orElse(0) + 1;
     }
 
-    public void increaseWuNovelNovelCount() {
-        this.wuNovelNovelCount = Optional.ofNullable(this.wuNovelNovelCount).orElse(0) + 1;
+    public void increaseWuNovelCount() {
+        this.wuNovelCount = Optional.ofNullable(this.wuNovelCount).orElse(0) + 1;
     }
 
-    public void increaseLnNovelNovelCount() {
-        this.lnNovelNovelCount = Optional.ofNullable(this.lnNovelNovelCount).orElse(0) + 1;
+    public void increaseLnNovelCount() {
+        this.lnNovelCount = Optional.ofNullable(this.lnNovelCount).orElse(0) + 1;
     }
 
-    public void increaseDrNovelNovelCount() {
-        this.drNovelNovelCount = Optional.ofNullable(this.drNovelNovelCount).orElse(0) + 1;
+    public void increaseDrNovelCount() {
+        this.drNovelCount = Optional.ofNullable(this.drNovelCount).orElse(0) + 1;
     }
 
-    public void increaseMyNovelNovelCount() {
-        this.myNovelNovelCount = Optional.ofNullable(this.myNovelNovelCount).orElse(0) + 1;
+    public void increaseMyNovelCount() {
+        this.myNovelCount = Optional.ofNullable(this.myNovelCount).orElse(0) + 1;
     }
 
 }
