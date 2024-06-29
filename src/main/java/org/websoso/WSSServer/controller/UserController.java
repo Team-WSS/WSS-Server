@@ -16,6 +16,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.User.LoginResponse;
 import org.websoso.WSSServer.dto.User.NicknameValidation;
 import org.websoso.WSSServer.dto.user.EmailGetResponse;
+import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.service.UserService;
 import org.websoso.WSSServer.validation.NicknameConstraint;
 
@@ -42,6 +43,14 @@ public class UserController {
         return ResponseEntity
                 .status(OK)
                 .body(userService.getEmail(user));
+    }
+
+    @GetMapping("/profile-status")
+    public ResponseEntity<ProfileStatusResponse> getProfileStatus(Principal principal) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(userService.getProfileStatus(user));
     }
 
     @PostMapping("/login")
