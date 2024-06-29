@@ -17,7 +17,6 @@ import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserStatistics;
-import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
 import org.websoso.WSSServer.exception.genre.exception.InvalidGenreException;
 import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
@@ -68,7 +67,7 @@ public class NovelService {
         Novel novel = getNovelOrException(novelId);
         UserNovel userNovel = userNovelService.getUserNovelOrNull(user, novel);
 
-        if (userNovel != null && userNovel.getIsInterest() == Flag.Y) {
+        if (userNovel != null && userNovel.getIsInterest()) {
             throw new InvalidNovelException(ALREADY_INTERESTED, "already registered as interested");
         }
 
@@ -79,7 +78,7 @@ public class NovelService {
         NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
         UserStatistics userStatistics = userStatisticsService.getUserStatisticsOrException(user);
 
-        userNovel.setIsInterest(Flag.Y);
+        userNovel.setIsInterest(true);
         novelStatistics.increaseInterestCount();
         userStatistics.increaseInterestNovelCount();
 
