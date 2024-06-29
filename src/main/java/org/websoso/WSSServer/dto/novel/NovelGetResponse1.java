@@ -1,11 +1,12 @@
 package org.websoso.WSSServer.dto.novel;
 
+import static org.websoso.WSSServer.domain.common.Flag.Y;
+
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.domain.UserNovel;
-import org.websoso.WSSServer.domain.common.Flag;
 
 // TODO 이름 변경(작품 정보 조회 뷰에서 상단, 기본정보를 제공하는 부분)
 public record NovelGetResponse1(
@@ -37,7 +38,7 @@ public record NovelGetResponse1(
                     novel.getNovelImage(),
                     novelGenres,
                     novelGenreImage,
-                    novel.getIsCompleted().equals(Flag.Y),
+                    novel.getIsCompleted().equals(Y),
                     novel.getAuthor(),
                     novelStatistics.getInterestCount(),
                     novelRating,
@@ -56,7 +57,7 @@ public record NovelGetResponse1(
                 novel.getNovelImage(),
                 novelGenres,
                 novelGenreImage,
-                novel.getIsCompleted().equals(Flag.Y),
+                novel.getIsCompleted().equals(Y),
                 novel.getAuthor(),
                 novelStatistics.getInterestCount(),
                 novelRating,
@@ -70,7 +71,7 @@ public record NovelGetResponse1(
                 userNovel.getEndDate() != null ? userNovel.getEndDate()
                         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
                         : null,
-                userNovel.getIsInterest().equals(Flag.Y)
+                userNovel.getIsInterest().equals(Y)
         );
     }
 }

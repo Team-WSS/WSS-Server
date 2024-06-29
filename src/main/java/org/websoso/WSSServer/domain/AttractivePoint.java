@@ -4,8 +4,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -13,11 +11,15 @@ import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
-import org.websoso.WSSServer.domain.common.Flag;
+import lombok.Setter;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Getter
+@Setter
+@DynamicInsert
+@DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AttractivePoint {
 
@@ -26,32 +28,30 @@ public class AttractivePoint {
     @Column(nullable = false)
     private Long attractivePointId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag universe;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean universe;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag vibe;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean vibe;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag material;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean material;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag characters;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean characters;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag relationship;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean relationship;
 
     @OneToOne
     @JoinColumn(name = "user_novel_id", nullable = false)
     private UserNovel userNovel;
+
+    private AttractivePoint(UserNovel userNovel) {
+        this.userNovel = userNovel;
+    }
+
+    public static AttractivePoint create(UserNovel userNovel) {
+        return new AttractivePoint(userNovel);
+    }
 }
