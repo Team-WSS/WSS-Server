@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.exception.genre.GenreErrorCode.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.novel.NovelErrorCode.ALREADY_INTERESTED;
 import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
 
@@ -18,6 +19,7 @@ import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
+import org.websoso.WSSServer.exception.genre.exception.InvalidGenreException;
 import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.repository.NovelRepository;
 
@@ -98,7 +100,7 @@ public class NovelService {
                 case "라노벨" -> userStatistics.increaseLnNovelNovelCount();
                 case "드라마" -> userStatistics.increaseDrNovelNovelCount();
                 case "미스터리" -> userStatistics.increaseMyNovelNovelCount();
-                default -> throw new IllegalArgumentException("Unknown genre: " + genreName); //TODO
+                default -> throw new InvalidGenreException(GENRE_NOT_FOUND, "cannot find corresponding genre");
             }
         }
     }
