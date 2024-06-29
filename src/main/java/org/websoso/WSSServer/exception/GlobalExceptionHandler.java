@@ -19,6 +19,8 @@ import org.websoso.WSSServer.exception.category.exception.InvalidCategoryExcepti
 import org.websoso.WSSServer.exception.common.ErrorResult;
 import org.websoso.WSSServer.exception.feed.FeedErrorCode;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
+import org.websoso.WSSServer.exception.genre.GenreErrorCode;
+import org.websoso.WSSServer.exception.genre.exception.InvalidGenreException;
 import org.websoso.WSSServer.exception.keyword.KeywordErrorCode;
 import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
 import org.websoso.WSSServer.exception.notice.NoticeErrorCode;
@@ -241,5 +243,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(blockErrorCode.getStatusCode())
                 .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidGenreException.class)
+    public ResponseEntity<ErrorResult> InvalidGenreExceptionHandler(InvalidGenreException e) {
+        log.error("[InvalidGenreException] exception ", e);
+        GenreErrorCode genreErrorCode = e.getGenreErrorCode();
+        return ResponseEntity
+                .status(genreErrorCode.getStatusCode())
+                .body(new ErrorResult(genreErrorCode.getCode(), genreErrorCode.getDescription()));
     }
 }
