@@ -12,6 +12,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.User.LoginResponse;
 import org.websoso.WSSServer.dto.User.NicknameValidation;
 import org.websoso.WSSServer.dto.user.EmailGetResponse;
+import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.exception.user.exception.DuplicatedNicknameException;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
 import org.websoso.WSSServer.repository.UserRepository;
@@ -45,6 +46,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public EmailGetResponse getEmail(User user) {
         return EmailGetResponse.of(user.getEmail());
+    }
+
+    @Transactional(readOnly = true)
+    public ProfileStatusResponse getProfileStatus(User user) {
+        return ProfileStatusResponse.of(user.getIsProfilePublic());
     }
 
     @Transactional(readOnly = true)
