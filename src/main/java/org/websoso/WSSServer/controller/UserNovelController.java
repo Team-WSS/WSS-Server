@@ -5,7 +5,6 @@ import static org.springframework.http.HttpStatus.CREATED;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +25,7 @@ public class UserNovelController {
 
     @PostMapping
     public ResponseEntity<Void> createUserNovel(Principal principal,
-                                                @Valid @RequestBody UserNovelCreateRequest request){
+                                                @Valid @RequestBody UserNovelCreateRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userNovelService.createUserNovel(user, request);
 

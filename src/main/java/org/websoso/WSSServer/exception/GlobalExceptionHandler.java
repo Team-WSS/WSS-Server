@@ -19,6 +19,8 @@ import org.websoso.WSSServer.exception.category.exception.InvalidCategoryExcepti
 import org.websoso.WSSServer.exception.common.ErrorResult;
 import org.websoso.WSSServer.exception.feed.FeedErrorCode;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
+import org.websoso.WSSServer.exception.genre.GenreErrorCode;
+import org.websoso.WSSServer.exception.genre.exception.InvalidGenreException;
 import org.websoso.WSSServer.exception.keyword.KeywordErrorCode;
 import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
 import org.websoso.WSSServer.exception.notice.NoticeErrorCode;
@@ -37,6 +39,8 @@ import org.websoso.WSSServer.exception.user.exception.UserNotFoundException;
 import org.websoso.WSSServer.exception.userNovel.UserNovelErrorCode;
 import org.websoso.WSSServer.exception.userNovel.exception.InvalidReadStatusException;
 import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
+import org.websoso.WSSServer.exception.userStatistics.UserStatisticsErrorCode;
+import org.websoso.WSSServer.exception.userStatistics.exception.InvalidUserStatisticsException;
 
 @Slf4j
 @RestControllerAdvice
@@ -131,6 +135,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(novelStatisticsErrorCode.getStatusCode())
                 .body(new ErrorResult(novelStatisticsErrorCode.getCode(), novelStatisticsErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidUserStatisticsException.class)
+    public ResponseEntity<ErrorResult> InvalidUserStatisticsExceptionHandler(InvalidUserStatisticsException e) {
+        log.error("[InvalidUserStatisticsException] exception", e);
+        UserStatisticsErrorCode userStatisticsErrorCode = e.getUserStatisticsErrorCode();
+        return ResponseEntity
+                .status(userStatisticsErrorCode.getStatusCode())
+                .body(new ErrorResult(userStatisticsErrorCode.getCode(), userStatisticsErrorCode.getDescription()));
     }
 
     @ExceptionHandler(NovelAlreadyRegisteredException.class)
@@ -230,5 +243,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(blockErrorCode.getStatusCode())
                 .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidGenreException.class)
+    public ResponseEntity<ErrorResult> InvalidGenreExceptionHandler(InvalidGenreException e) {
+        log.error("[InvalidGenreException] exception ", e);
+        GenreErrorCode genreErrorCode = e.getGenreErrorCode();
+        return ResponseEntity
+                .status(genreErrorCode.getStatusCode())
+                .body(new ErrorResult(genreErrorCode.getCode(), genreErrorCode.getDescription()));
     }
 }

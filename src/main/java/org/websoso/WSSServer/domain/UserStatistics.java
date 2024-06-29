@@ -36,58 +36,31 @@ public class UserStatistics {
     private Integer quitNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer roNovelNovelCount;
-
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float roNovelRatingSum;
+    private Integer roNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer rfNovelNovelCount;
-
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float rfNovelRatingSum;
+    private Integer rfNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer blNovelNovelCount;
-
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float blNovelRatingSum;
+    private Integer blNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer faNovelNovelCount;
-
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float faNovelRatingSum;
+    private Integer faNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer mfNovelNovelCount;
-
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float mfNovelRatingSum;
+    private Integer mfNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer wuNovelNovelCount;
-
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float wuNovelRatingSum;
+    private Integer wuNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer lnNovelNovelCount;
-
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float lnNovelRatingSum;
+    private Integer lnNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer drNovelNovelCount;
-
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float drNovelRatingSum;
+    private Integer drNovelCount;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private Integer myNovelNovelCount;
-
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private Float myNovelRatingSum;
+    private Integer myNovelCount;
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -109,76 +82,40 @@ public class UserStatistics {
         this.quitNovelCount = Optional.ofNullable(this.quitNovelCount).orElse(0) + 1;
     }
 
-    public void increaseRoNovelNovelCount() {
-        this.roNovelNovelCount = Optional.ofNullable(this.roNovelNovelCount).orElse(0) + 1;
+    public void increaseRoNovelCount() {
+        this.roNovelCount = Optional.ofNullable(this.roNovelCount).orElse(0) + 1;
     }
 
-    public void increaseRoNovelRatingSum(float rating) {
-        this.roNovelRatingSum = Optional.ofNullable(this.roNovelRatingSum).orElse(0f) + rating;
+    public void increaseRfNovelCount() {
+        this.rfNovelCount = Optional.ofNullable(this.rfNovelCount).orElse(0) + 1;
     }
 
-    public void increaseRfNovelNovelCount() {
-        this.rfNovelNovelCount = Optional.ofNullable(this.rfNovelNovelCount).orElse(0) + 1;
+    public void increaseBlNovelCount() {
+        this.blNovelCount = Optional.ofNullable(this.blNovelCount).orElse(0) + 1;
     }
 
-    public void increaseRfNovelRatingSum(float rating) {
-        this.rfNovelRatingSum = Optional.ofNullable(this.rfNovelRatingSum).orElse(0f) + rating;
+    public void increaseFaNovelCount() {
+        this.faNovelCount = Optional.ofNullable(this.faNovelCount).orElse(0) + 1;
     }
 
-    public void increaseBlNovelNovelCount() {
-        this.blNovelNovelCount = Optional.ofNullable(this.blNovelNovelCount).orElse(0) + 1;
+    public void increaseMfNovelCount() {
+        this.mfNovelCount = Optional.ofNullable(this.mfNovelCount).orElse(0) + 1;
     }
 
-    public void increaseBlNovelRatingSum(float rating) {
-        this.blNovelRatingSum = Optional.ofNullable(this.blNovelRatingSum).orElse(0f) + rating;
+    public void increaseWuNovelCount() {
+        this.wuNovelCount = Optional.ofNullable(this.wuNovelCount).orElse(0) + 1;
     }
 
-    public void increaseFaNovelNovelCount() {
-        this.faNovelNovelCount = Optional.ofNullable(this.faNovelNovelCount).orElse(0) + 1;
+    public void increaseLnNovelCount() {
+        this.lnNovelCount = Optional.ofNullable(this.lnNovelCount).orElse(0) + 1;
     }
 
-    public void increaseFaNovelRatingSum(float rating) {
-        this.faNovelRatingSum = Optional.ofNullable(this.faNovelRatingSum).orElse(0f) + rating;
+    public void increaseDrNovelCount() {
+        this.drNovelCount = Optional.ofNullable(this.drNovelCount).orElse(0) + 1;
     }
 
-    public void increaseMfNovelNovelCount() {
-        this.mfNovelNovelCount = Optional.ofNullable(this.mfNovelNovelCount).orElse(0) + 1;
-    }
-
-    public void increaseMfNovelRatingSum(float rating) {
-        this.mfNovelRatingSum = Optional.ofNullable(this.mfNovelRatingSum).orElse(0f) + rating;
-    }
-
-    public void increaseWuNovelNovelCount() {
-        this.wuNovelNovelCount = Optional.ofNullable(this.wuNovelNovelCount).orElse(0) + 1;
-    }
-
-    public void increaseWuNovelRatingSum(float rating) {
-        this.wuNovelRatingSum = Optional.ofNullable(this.wuNovelRatingSum).orElse(0f) + rating;
-    }
-
-    public void increaseLnNovelNovelCount() {
-        this.lnNovelNovelCount = Optional.ofNullable(this.lnNovelNovelCount).orElse(0) + 1;
-    }
-
-    public void increaseLnNovelRatingSum(float rating) {
-        this.lnNovelRatingSum = Optional.ofNullable(this.lnNovelRatingSum).orElse(0f) + rating;
-    }
-
-    public void increaseDrNovelNovelCount() {
-        this.drNovelNovelCount = Optional.ofNullable(this.drNovelNovelCount).orElse(0) + 1;
-    }
-
-    public void increaseDrNovelRatingSum(float rating) {
-        this.drNovelRatingSum = Optional.ofNullable(this.drNovelRatingSum).orElse(0f) + rating;
-    }
-
-    public void increaseMyNovelNovelCount() {
-        this.myNovelNovelCount = Optional.ofNullable(this.myNovelNovelCount).orElse(0) + 1;
-    }
-
-    public void increaseMyNovelRatingSum(float rating) {
-        this.myNovelRatingSum = Optional.ofNullable(this.myNovelRatingSum).orElse(0f) + rating;
+    public void increaseMyNovelCount() {
+        this.myNovelCount = Optional.ofNullable(this.myNovelCount).orElse(0) + 1;
     }
 
 }
