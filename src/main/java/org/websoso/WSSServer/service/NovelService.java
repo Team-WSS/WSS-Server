@@ -34,6 +34,13 @@ public class NovelService {
     private final UserStatisticsService userStatisticsService;
 
     @Transactional(readOnly = true)
+    public Novel getNovelOrException(Long novelId) {
+        return novelRepository.findById(novelId)
+                .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND,
+                        "novel with the given id is not found"));
+    }
+
+    @Transactional(readOnly = true)
     public NovelGetResponse1 getNovelInfo1(User user, Long novelId) {
         Novel novel = getNovelOrException(novelId);
         List<NovelGenre> novelGenres = novel.getNovelGenres();
@@ -44,13 +51,6 @@ public class NovelService {
                 getNovelGenreNames(novelGenres),
                 getRandomNovelGenreImage(novelGenres)
         );
-    }
-
-    @Transactional(readOnly = true)
-    public Novel getNovelOrException(Long novelId) {
-        return novelRepository.findById(novelId)
-                .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND,
-                        "novel with the given id is not found"));
     }
 
     private String getNovelGenreNames(List<NovelGenre> novelGenres) {

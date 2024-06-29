@@ -17,6 +17,13 @@ public class NovelStatisticsService {
 
     private final NovelStatisticsRepository novelStatisticsRepository;
 
+    @Transactional(readOnly = true)
+    public NovelStatistics getNovelStatisticsOrException(Novel novel) {
+        return novelStatisticsRepository.findByNovel(novel).orElseThrow(
+                () -> new InvalidNovelStatisticsException(NOVEL_STATISTICS_NOT_FOUND,
+                        "novel statistics with the given novel is not found"));
+    }
+
     public void increaseNovelFeedCount(Novel novel) {
         NovelStatistics novelStatistics = novelStatisticsRepository.findByNovel(novel)
                 .orElseGet(() -> createNovelStatistics(novel));
@@ -36,13 +43,6 @@ public class NovelStatisticsService {
         NovelStatistics novelStatistics = getNovelStatisticsOrException(novel);
 
         novelStatistics.decreaseNovelFeedCount();
-    }
-
-    @Transactional(readOnly = true)
-    public NovelStatistics getNovelStatisticsOrException(Novel novel) {
-        return novelStatisticsRepository.findByNovel(novel).orElseThrow(
-                () -> new InvalidNovelStatisticsException(NOVEL_STATISTICS_NOT_FOUND,
-                        "novel statistics with the given novel is not found"));
     }
 
 }
