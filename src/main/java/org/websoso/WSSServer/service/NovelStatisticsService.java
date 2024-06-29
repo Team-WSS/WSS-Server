@@ -39,7 +39,7 @@ public class NovelStatisticsService {
     }
 
     @Transactional(readOnly = true)
-    protected NovelStatistics getNovelStatisticsOrException(Novel novel) {
+    public NovelStatistics getNovelStatisticsOrException(Novel novel) {
         return novelStatisticsRepository.findByNovel(novel).orElseThrow(
                 () -> new InvalidNovelStatisticsException(NOVEL_STATISTICS_NOT_FOUND,
                         "novel statistics with the given novel is not found"));
