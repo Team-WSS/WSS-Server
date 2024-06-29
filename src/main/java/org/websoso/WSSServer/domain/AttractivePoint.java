@@ -49,6 +49,11 @@ public class AttractivePoint {
 
     private AttractivePoint(UserNovel userNovel) {
         this.userNovel = userNovel;
+        this.universe = false;
+        this.vibe = false;
+        this.material = false;
+        this.characters = false;
+        this.relationship = false;
     }
 
     public static AttractivePoint create(UserNovel userNovel) {
