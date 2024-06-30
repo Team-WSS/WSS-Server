@@ -6,9 +6,9 @@ import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
 
 @Getter
 @AllArgsConstructor
-public class InvalidNovelStatisticsException extends RuntimeException {
+public class CustomNovelStatisticsException extends RuntimeException {
 
-    public InvalidNovelStatisticsException(NovelStatisticsErrorCode novelStatisticsErrorCode, String message) {
+    public CustomNovelStatisticsException(NovelStatisticsErrorCode novelStatisticsErrorCode, String message) {
         super(message);
         this.novelStatisticsErrorCode = novelStatisticsErrorCode;
     }

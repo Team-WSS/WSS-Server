@@ -25,7 +25,7 @@ import org.websoso.WSSServer.exception.notice.exception.CustomNoticeException;
 import org.websoso.WSSServer.exception.novel.NovelErrorCode;
 import org.websoso.WSSServer.exception.novel.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
-import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
+import org.websoso.WSSServer.exception.novelStatistics.exception.CustomNovelStatisticsException;
 import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.CustomUserException;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
@@ -122,8 +122,8 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResult(novelErrorCode.getCode(), novelErrorCode.getDescription()));
     }
 
-    @ExceptionHandler(InvalidNovelStatisticsException.class)
-    public ResponseEntity<ErrorResult> InvalidNovelStatisticsExceptionHandler(InvalidNovelStatisticsException e) {
+    @ExceptionHandler(CustomNovelStatisticsException.class)
+    public ResponseEntity<ErrorResult> InvalidNovelStatisticsExceptionHandler(CustomNovelStatisticsException e) {
         log.error("[InvalidNovelStatisticsException] exception", e);
         NovelStatisticsErrorCode novelStatisticsErrorCode = e.getNovelStatisticsErrorCode();
         return ResponseEntity

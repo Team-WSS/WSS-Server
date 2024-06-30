@@ -16,7 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
+import org.websoso.WSSServer.exception.novelStatistics.exception.CustomNovelStatisticsException;
 
 @DynamicInsert
 @DynamicUpdate
@@ -75,7 +75,7 @@ public class NovelStatistics {
 
     public void decreaseNovelFeedCount() {
         if (this.novelFeedCount <= 0) {
-            throw new InvalidNovelStatisticsException(INVALID_NOVEL_FEED_COUNT, "invalid novel feed count");
+            throw new CustomNovelStatisticsException(INVALID_NOVEL_FEED_COUNT, "invalid novel feed count");
         }
 
         this.novelFeedCount--;
