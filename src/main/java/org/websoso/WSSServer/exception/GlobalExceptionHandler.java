@@ -21,8 +21,6 @@ import org.websoso.WSSServer.exception.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.keyword.KeywordErrorCode;
 import org.websoso.WSSServer.exception.keyword.exception.CustomKeywordException;
 import org.websoso.WSSServer.exception.notice.NoticeErrorCode;
-import org.websoso.WSSServer.exception.notice.exception.ForbiddenNoticeManipulationException;
-import org.websoso.WSSServer.exception.notice.exception.NoticeNotFoundException;
 import org.websoso.WSSServer.exception.novel.NovelErrorCode;
 import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
@@ -103,25 +101,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(feedErrorCode.getStatusCode())
                 .body(new ErrorResult(feedErrorCode.getCode(), feedErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(ForbiddenNoticeManipulationException.class)
-    public ResponseEntity<ErrorResult> ForbiddenNoticeManipulationExceptionHandler(
-            ForbiddenNoticeManipulationException e) {
-        log.error("[ForbiddenNoticeManipulationException] exception ", e);
-        NoticeErrorCode noticeErrorCode = e.getNoticeErrorCode();
-        return ResponseEntity
-                .status(noticeErrorCode.getStatusCode())
-                .body(new ErrorResult(noticeErrorCode.getCode(), noticeErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(NoticeNotFoundException.class)
-    public ResponseEntity<ErrorResult> NoticeNotFoundExceptionHandler(NoticeNotFoundException e) {
-        log.error("[NoticeNotFoundException] exception ", e);
-        NoticeErrorCode noticeErrorCode = e.getNoticeErrorCode();
-        return ResponseEntity
-                .status(noticeErrorCode.getStatusCode())
-                .body(new ErrorResult(noticeErrorCode.getCode(), noticeErrorCode.getDescription()));
     }
 
     @ExceptionHandler(InvalidNovelException.class)

@@ -14,8 +14,6 @@ import org.websoso.WSSServer.domain.common.Role;
 import org.websoso.WSSServer.dto.notice.NoticeEditRequest;
 import org.websoso.WSSServer.dto.notice.NoticePostRequest;
 import org.websoso.WSSServer.dto.notice.NoticesGetResponse;
-import org.websoso.WSSServer.exception.notice.exception.ForbiddenNoticeManipulationException;
-import org.websoso.WSSServer.exception.notice.exception.NoticeNotFoundException;
 import org.websoso.WSSServer.repository.NoticeRepository;
 
 @Service
