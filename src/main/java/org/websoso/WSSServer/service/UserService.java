@@ -11,6 +11,7 @@ import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.User.LoginResponse;
 import org.websoso.WSSServer.dto.User.NicknameValidation;
+import org.websoso.WSSServer.dto.user.EditProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.EmailGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.exception.user.exception.DuplicatedNicknameException;
@@ -51,6 +52,10 @@ public class UserService {
     @Transactional(readOnly = true)
     public ProfileStatusResponse getProfileStatus(User user) {
         return ProfileStatusResponse.of(user.getIsProfilePublic());
+    }
+
+    public void editProfileStatus(User user, EditProfileStatusResponse editProfileStatusResponse) {
+        user.updateProfileStatus(editProfileStatusResponse.isProfilePublic());
     }
 
     @Transactional(readOnly = true)
