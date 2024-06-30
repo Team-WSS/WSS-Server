@@ -29,7 +29,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.domain.common.Flag;
-import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
+import org.websoso.WSSServer.exception.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 
 @Getter
@@ -106,7 +106,7 @@ public class Feed extends BaseEntity {
         String likeUserIdFormatted = "{" + likeUserId + "}";
 
         if (this.likeUsers.contains(likeUserIdFormatted)) {
-            throw new InvalidFeedException(ALREADY_LIKED, "already liked feed");
+            throw new CustomFeedException(ALREADY_LIKED, "already liked feed");
         }
 
         this.likeUsers += likeUserIdFormatted;
@@ -117,11 +117,11 @@ public class Feed extends BaseEntity {
         String unLikeUserIdFormatted = "{" + unLikeUserId + "}";
 
         if (!this.likeUsers.contains(unLikeUserIdFormatted)) {
-            throw new InvalidFeedException(LIKE_USER_NOT_FOUND, "user has not liked this feed");
+            throw new CustomFeedException(LIKE_USER_NOT_FOUND, "user has not liked this feed");
         }
 
         if (this.likeCount <= 0) {
-            throw new InvalidFeedException(INVALID_LIKE_COUNT, "invalid like count");
+            throw new CustomFeedException(INVALID_LIKE_COUNT, "invalid like count");
         }
 
         this.likeUsers = this.likeUsers.replace(unLikeUserIdFormatted, "");

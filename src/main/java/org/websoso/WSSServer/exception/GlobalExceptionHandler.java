@@ -17,7 +17,7 @@ import org.websoso.WSSServer.exception.category.CategoryErrorCode;
 import org.websoso.WSSServer.exception.category.exception.CustomCategoryException;
 import org.websoso.WSSServer.exception.common.ErrorResult;
 import org.websoso.WSSServer.exception.feed.FeedErrorCode;
-import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
+import org.websoso.WSSServer.exception.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.keyword.KeywordErrorCode;
 import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
 import org.websoso.WSSServer.exception.notice.NoticeErrorCode;
@@ -96,8 +96,8 @@ public class GlobalExceptionHandler {
                         e.getBindingResult().getAllErrors().get(0).getDefaultMessage()));
     }
 
-    @ExceptionHandler(InvalidFeedException.class)
-    public ResponseEntity<ErrorResult> InvalidFeedExceptionHandler(InvalidFeedException e) {
+    @ExceptionHandler(CustomFeedException.class)
+    public ResponseEntity<ErrorResult> InvalidFeedExceptionHandler(CustomFeedException e) {
         log.error("[InvalidFeedException] exception ", e);
         FeedErrorCode feedErrorCode = e.getFeedErrorCode();
         return ResponseEntity
