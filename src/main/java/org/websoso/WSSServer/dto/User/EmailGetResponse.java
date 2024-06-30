@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.dto.user;
+package org.websoso.WSSServer.dto.User;
 
 public record EmailGetResponse(
          String email
