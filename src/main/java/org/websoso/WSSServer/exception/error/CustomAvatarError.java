@@ -18,4 +18,3 @@ public enum CustomAvatarError implements ICustomError {
     private final String description;
     private final HttpStatus statusCode;
 }
-

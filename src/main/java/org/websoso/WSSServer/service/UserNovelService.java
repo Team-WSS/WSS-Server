@@ -23,19 +23,11 @@ import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
-<<<<<<< HEAD
 import org.websoso.WSSServer.exception.exception.CustomKeywordException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomNovelStatisticsException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserStatisticsException;
-=======
-import org.websoso.WSSServer.exception.keyword.exception.CustomKeywordException;
-import org.websoso.WSSServer.exception.novel.exception.CustomNovelException;
-import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
-import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
-import org.websoso.WSSServer.exception.userStatistics.exception.InvalidUserStatisticsException;
->>>>>>> c00f879 ([MERGE] git rebase dev)
 import org.websoso.WSSServer.repository.AttractivePointRepository;
 import org.websoso.WSSServer.repository.KeywordRepository;
 import org.websoso.WSSServer.repository.NovelKeywordsRepository;
