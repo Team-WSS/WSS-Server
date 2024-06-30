@@ -26,6 +26,7 @@ import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.exception.keyword.exception.CustomKeywordException;
 import org.websoso.WSSServer.exception.novel.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.exception.CustomNovelStatisticsException;
+import org.websoso.WSSServer.exception.userNovel.exception.CustomUserNovelException;
 import org.websoso.WSSServer.exception.userStatistics.exception.InvalidUserStatisticsException;
 import org.websoso.WSSServer.repository.AttractivePointRepository;
 import org.websoso.WSSServer.repository.KeywordRepository;
@@ -54,7 +55,7 @@ public class UserNovelService {
                 .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
 
         if (getUserNovelOrNull(user, novel) != null) {
-            throw new NovelAlreadyRegisteredException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
+            throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
         }
 
         UserNovel userNovel = userNovelRepository.save(UserNovel.create(
