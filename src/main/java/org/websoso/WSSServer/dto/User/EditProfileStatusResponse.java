@@ -4,6 +4,6 @@ import jakarta.validation.constraints.NotNull;
 
 public record EditProfileStatusResponse(
         @NotNull
-        boolean isProfilePublic
+        Boolean isProfilePublic
 ) {
 }
