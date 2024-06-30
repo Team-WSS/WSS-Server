@@ -9,6 +9,8 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.websoso.WSSServer.exception.attractivePoint.AttractivePointErrorCode;
+import org.websoso.WSSServer.exception.attractivePoint.exception.CustomAttractivePointException;
 import org.websoso.WSSServer.exception.avatar.AvatarErrorCode;
 import org.websoso.WSSServer.exception.avatar.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.block.BlockErrorCode;
@@ -29,28 +31,13 @@ import org.websoso.WSSServer.exception.novelStatistics.exception.CustomNovelStat
 import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.CustomUserException;
 import org.websoso.WSSServer.exception.userNovel.UserNovelErrorCode;
+import org.websoso.WSSServer.exception.userNovel.exception.CustomUserNovelException;
+import org.websoso.WSSServer.exception.userStatistics.UserStatisticsErrorCode;
+import org.websoso.WSSServer.exception.userStatistics.exception.CustomUserStatisticsException;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-    @ExceptionHandler(CustomCategoryException.class)
-    public ResponseEntity<ErrorResult> InvalidCategoryExceptionHandler(CustomCategoryException e) {
-        log.error("[InvalidCategoryException] exception ", e);
-        CategoryErrorCode categoryErrorCode = e.getCategoryErrorCode();
-        return ResponseEntity
-                .status(categoryErrorCode.getStatusCode())
-                .body(new ErrorResult(categoryErrorCode.getCode(), categoryErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(CustomBlockException.class)
-    public ResponseEntity<ErrorResult> AvatarNotFoundExceptionHandler(CustomBlockException e) {
-        log.error("[AvatarNotFoundException] exception ", e);
-        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
-        return ResponseEntity
-                .status(blockErrorCode.getStatusCode())
-                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
-    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResult> InvalidRequestBodyExceptionHandler(MethodArgumentNotValidException e) {
@@ -61,59 +48,6 @@ public class GlobalExceptionHandler {
                         e.getBindingResult().getAllErrors().get(0).getDefaultMessage()));
     }
 
-    @ExceptionHandler(CustomFeedException.class)
-    public ResponseEntity<ErrorResult> InvalidFeedExceptionHandler(CustomFeedException e) {
-        log.error("[InvalidFeedException] exception ", e);
-        FeedErrorCode feedErrorCode = e.getFeedErrorCode();
-        return ResponseEntity
-                .status(feedErrorCode.getStatusCode())
-                .body(new ErrorResult(feedErrorCode.getCode(), feedErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(CustomNoticeException.class)
-    public ResponseEntity<ErrorResult> NoticeNotFoundExceptionHandler(CustomNoticeException e) {
-        log.error("[CustomNoticeException] exception ", e);
-        NoticeErrorCode noticeErrorCode = e.getNoticeErrorCode();
-        return ResponseEntity
-                .status(noticeErrorCode.getStatusCode())
-                .body(new ErrorResult(noticeErrorCode.getCode(), noticeErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(CustomNovelException.class)
-    public ResponseEntity<ErrorResult> InvalidNovelExceptionHandler(CustomNovelException e) {
-        log.error("[InvalidNovelException] exception ", e);
-        NovelErrorCode novelErrorCode = e.getNovelErrorCode();
-        return ResponseEntity
-                .status(novelErrorCode.getStatusCode())
-                .body(new ErrorResult(novelErrorCode.getCode(), novelErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(CustomNovelStatisticsException.class)
-    public ResponseEntity<ErrorResult> InvalidNovelStatisticsExceptionHandler(CustomNovelStatisticsException e) {
-        log.error("[InvalidNovelStatisticsException] exception", e);
-        NovelStatisticsErrorCode novelStatisticsErrorCode = e.getNovelStatisticsErrorCode();
-        return ResponseEntity
-                .status(novelStatisticsErrorCode.getStatusCode())
-                .body(new ErrorResult(novelStatisticsErrorCode.getCode(), novelStatisticsErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(CustomKeywordException.class)
-    public ResponseEntity<ErrorResult> InvalidKeywordExceptionHandler(CustomKeywordException e) {
-        log.error("[InvalidKeywordException] exception", e);
-        KeywordErrorCode keywordErrorCode = e.getKeywordErrorCode();
-        return ResponseEntity
-                .status(keywordErrorCode.getStatusCode())
-                .body(new ErrorResult(keywordErrorCode.getCode(), keywordErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(CustomAvatarException.class)
-    public ResponseEntity<ErrorResult> AvatarNotFoundExceptionHandler(CustomAvatarException e) {
-        log.error("[AvatarNotFoundException] exception ", e);
-        AvatarErrorCode avatarErrorCode = e.getAvatarErrorCode();
-        return ResponseEntity
-                .status(avatarErrorCode.getStatusCode())
-                .body(new ErrorResult(avatarErrorCode.getCode(), avatarErrorCode.getDescription()));
-    }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResult> HttpMessageNotReadableExceptionHandler(HttpMessageNotReadableException e) {
@@ -123,6 +57,87 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResult(BAD_REQUEST.name(), "잘못된 JSON 형식입니다."));
     }
 
+    @ExceptionHandler(CustomAttractivePointException.class)
+    public ResponseEntity<ErrorResult> CustomAttractivePointExceptionHandler(CustomAttractivePointException e) {
+        log.error("[CustomAttractivePointException] exception ", e);
+        AttractivePointErrorCode attractivePointErrorCode = e.getAttractivePointErrorCode();
+        return ResponseEntity
+                .status(attractivePointErrorCode.getStatusCode())
+                .body(new ErrorResult(attractivePointErrorCode.getCode(), attractivePointErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(CustomAvatarException.class)
+    public ResponseEntity<ErrorResult> CustomAvatarExceptionHandler(CustomAvatarException e) {
+        log.error("[CustomAvatarException] exception ", e);
+        AvatarErrorCode avatarErrorCode = e.getAvatarErrorCode();
+        return ResponseEntity
+                .status(avatarErrorCode.getStatusCode())
+                .body(new ErrorResult(avatarErrorCode.getCode(), avatarErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(CustomBlockException.class)
+    public ResponseEntity<ErrorResult> CustomBlockExceptionHandler(CustomBlockException e) {
+        log.error("[CustomBlockException] exception ", e);
+        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
+        return ResponseEntity
+                .status(blockErrorCode.getStatusCode())
+                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(CustomCategoryException.class)
+    public ResponseEntity<ErrorResult> CustomCategoryExceptionHandler(CustomCategoryException e) {
+        log.error("[CustomCategoryException] exception ", e);
+        CategoryErrorCode categoryErrorCode = e.getCategoryErrorCode();
+        return ResponseEntity
+                .status(categoryErrorCode.getStatusCode())
+                .body(new ErrorResult(categoryErrorCode.getCode(), categoryErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(CustomFeedException.class)
+    public ResponseEntity<ErrorResult> CustomFeedExceptionHandler(CustomFeedException e) {
+        log.error("[CustomFeedException] exception ", e);
+        FeedErrorCode feedErrorCode = e.getFeedErrorCode();
+        return ResponseEntity
+                .status(feedErrorCode.getStatusCode())
+                .body(new ErrorResult(feedErrorCode.getCode(), feedErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(CustomKeywordException.class)
+    public ResponseEntity<ErrorResult> CustomKeywordExceptionHandler(CustomKeywordException e) {
+        log.error("[CustomKeywordException] exception", e);
+        KeywordErrorCode keywordErrorCode = e.getKeywordErrorCode();
+        return ResponseEntity
+                .status(keywordErrorCode.getStatusCode())
+                .body(new ErrorResult(keywordErrorCode.getCode(), keywordErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(CustomNoticeException.class)
+    public ResponseEntity<ErrorResult> CustomNoticeExceptionHandler(CustomNoticeException e) {
+        log.error("[CustomNoticeException] exception ", e);
+        NoticeErrorCode noticeErrorCode = e.getNoticeErrorCode();
+        return ResponseEntity
+                .status(noticeErrorCode.getStatusCode())
+                .body(new ErrorResult(noticeErrorCode.getCode(), noticeErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(CustomNovelException.class)
+    public ResponseEntity<ErrorResult> CustomNovelExceptionHandler(CustomNovelException e) {
+        log.error("[CustomNovelException] exception ", e);
+        NovelErrorCode novelErrorCode = e.getNovelErrorCode();
+        return ResponseEntity
+                .status(novelErrorCode.getStatusCode())
+                .body(new ErrorResult(novelErrorCode.getCode(), novelErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(CustomNovelStatisticsException.class)
+    public ResponseEntity<ErrorResult> CustomNovelStatisticsExceptionHandler(CustomNovelStatisticsException e) {
+        log.error("[CustomNovelStatisticsException] exception", e);
+        NovelStatisticsErrorCode novelStatisticsErrorCode = e.getNovelStatisticsErrorCode();
+        return ResponseEntity
+                .status(novelStatisticsErrorCode.getStatusCode())
+                .body(new ErrorResult(novelStatisticsErrorCode.getCode(), novelStatisticsErrorCode.getDescription()));
+    }
+
     @ExceptionHandler(CustomUserException.class)
     public ResponseEntity<ErrorResult> CustomUserExceptionHandler(CustomUserException e) {
         log.error("[CustomUserException] exception ", e);
@@ -130,5 +145,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(userErrorCode.getStatusCode())
                 .body(new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(CustomUserNovelException.class)
+    public ResponseEntity<ErrorResult> CustomUserNovelExceptionHandler(CustomUserNovelException e) {
+        log.error("[CustomUserNovelException] exception ", e);
+        UserNovelErrorCode userNovelErrorCode = e.getUserNovelErrorCode();
+        return ResponseEntity
+                .status(userNovelErrorCode.getStatusCode())
+                .body(new ErrorResult(userNovelErrorCode.getCode(), userNovelErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(CustomUserStatisticsException.class)
+    public ResponseEntity<ErrorResult> CustomUserStatisticsExceptionHandler(CustomUserStatisticsException e) {
+        log.error("[CustomUserStatisticsException] exception ", e);
+        UserStatisticsErrorCode userStatisticsErrorCode = e.getUserStatisticsErrorCode();
+        return ResponseEntity
+                .status(userStatisticsErrorCode.getStatusCode())
+                .body(new ErrorResult(userStatisticsErrorCode.getCode(), userStatisticsErrorCode.getDescription()));
     }
 }
