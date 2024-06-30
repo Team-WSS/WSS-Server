@@ -1,12 +1,12 @@
 package org.websoso.WSSServer.validation;
 
-import static org.websoso.WSSServer.exception.block.BlockErrorCode.INVALID_BLOCK_ID;
+import static org.websoso.WSSServer.exception.error.BlockErrorCode.INVALID_BLOCK_ID;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.exception.block.exception.CustomBlockException;
+import org.websoso.WSSServer.exception.exception.CustomBlockException;
 
 @Component
 @AllArgsConstructor

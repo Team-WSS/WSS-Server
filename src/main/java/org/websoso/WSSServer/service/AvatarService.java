@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.avatar.AvatarErrorCode.AVATAR_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.AvatarErrorCode.AVATAR_NOT_FOUND;
 
 import java.util.List;
 import java.util.Random;
@@ -12,7 +12,7 @@ import org.websoso.WSSServer.domain.AvatarLine;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.avatar.AvatarGetResponse;
 import org.websoso.WSSServer.dto.avatar.AvatarsGetResponse;
-import org.websoso.WSSServer.exception.avatar.exception.CustomAvatarException;
+import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.repository.AvatarRepository;
 
 @Service

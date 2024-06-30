@@ -1,13 +1,13 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.attractivePoint.AttractivePointErrorCode.INVALID_ATTRACTIVE_POINT;
+import static org.websoso.WSSServer.exception.error.AttractivePointErrorCode.INVALID_ATTRACTIVE_POINT;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
-import org.websoso.WSSServer.exception.attractivePoint.exception.CustomAttractivePointException;
+import org.websoso.WSSServer.exception.exception.CustomAttractivePointException;
 
 @Service
 @RequiredArgsConstructor

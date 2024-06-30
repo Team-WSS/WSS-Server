@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.NovelErrorCode.NOVEL_NOT_FOUND;
 
 import java.util.List;
 import java.util.Random;
@@ -12,7 +12,7 @@ import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
-import org.websoso.WSSServer.exception.novel.exception.CustomNovelException;
+import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.repository.NovelRepository;
 
 @Service

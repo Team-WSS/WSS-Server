@@ -2,10 +2,10 @@ package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
-import static org.websoso.WSSServer.exception.feed.FeedErrorCode.ALREADY_LIKED;
-import static org.websoso.WSSServer.exception.feed.FeedErrorCode.INVALID_LIKE_COUNT;
-import static org.websoso.WSSServer.exception.feed.FeedErrorCode.LIKE_USER_NOT_FOUND;
-import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_AUTHORIZED;
+import static org.websoso.WSSServer.exception.error.FeedErrorCode.ALREADY_LIKED;
+import static org.websoso.WSSServer.exception.error.FeedErrorCode.INVALID_LIKE_COUNT;
+import static org.websoso.WSSServer.exception.error.FeedErrorCode.LIKE_USER_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.UserErrorCode.INVALID_AUTHORIZED;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,8 +29,8 @@ import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.domain.common.Flag;
-import org.websoso.WSSServer.exception.feed.exception.CustomFeedException;
-import org.websoso.WSSServer.exception.user.exception.CustomUserException;
+import org.websoso.WSSServer.exception.exception.CustomFeedException;
+import org.websoso.WSSServer.exception.exception.CustomUserException;
 
 @Getter
 @DynamicInsert

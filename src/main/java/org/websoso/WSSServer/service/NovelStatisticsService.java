@@ -1,13 +1,13 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelStatistics;
-import org.websoso.WSSServer.exception.novelStatistics.exception.CustomNovelStatisticsException;
+import org.websoso.WSSServer.exception.exception.CustomNovelStatisticsException;
 import org.websoso.WSSServer.repository.NovelStatisticsRepository;
 
 @Service

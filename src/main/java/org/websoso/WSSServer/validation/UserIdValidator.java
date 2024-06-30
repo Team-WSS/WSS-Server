@@ -1,13 +1,13 @@
 package org.websoso.WSSServer.validation;
 
-import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_USER_ID;
-import static org.websoso.WSSServer.exception.user.UserErrorCode.USER_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.UserErrorCode.INVALID_USER_ID;
+import static org.websoso.WSSServer.exception.error.UserErrorCode.USER_NOT_FOUND;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.exception.user.exception.CustomUserException;
+import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Component

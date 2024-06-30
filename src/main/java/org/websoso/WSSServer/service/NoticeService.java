@@ -1,8 +1,8 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Role.ADMIN;
-import static org.websoso.WSSServer.exception.notice.NoticeErrorCode.NOTICE_FORBIDDEN;
-import static org.websoso.WSSServer.exception.notice.NoticeErrorCode.NOTICE_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.NoticeErrorCode.NOTICE_FORBIDDEN;
+import static org.websoso.WSSServer.exception.error.NoticeErrorCode.NOTICE_NOT_FOUND;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import org.websoso.WSSServer.domain.common.Role;
 import org.websoso.WSSServer.dto.notice.NoticeEditRequest;
 import org.websoso.WSSServer.dto.notice.NoticePostRequest;
 import org.websoso.WSSServer.dto.notice.NoticesGetResponse;
-import org.websoso.WSSServer.exception.notice.exception.CustomNoticeException;
+import org.websoso.WSSServer.exception.exception.CustomNoticeException;
 import org.websoso.WSSServer.repository.NoticeRepository;
 
 @Service

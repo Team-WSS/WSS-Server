@@ -1,8 +1,8 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.user.UserErrorCode.DUPLICATED_NICKNAME;
-import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_PROFILE_STATUS;
-import static org.websoso.WSSServer.exception.user.UserErrorCode.USER_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.UserErrorCode.DUPLICATED_NICKNAME;
+import static org.websoso.WSSServer.exception.error.UserErrorCode.INVALID_PROFILE_STATUS;
+import static org.websoso.WSSServer.exception.error.UserErrorCode.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import org.websoso.WSSServer.dto.user.EmailGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
-import org.websoso.WSSServer.exception.user.exception.CustomUserException;
+import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Service

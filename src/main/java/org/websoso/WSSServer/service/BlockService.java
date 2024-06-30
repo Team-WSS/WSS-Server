@@ -1,11 +1,11 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Role.ADMIN;
-import static org.websoso.WSSServer.exception.block.BlockErrorCode.ALREADY_BLOCKED;
-import static org.websoso.WSSServer.exception.block.BlockErrorCode.BLOCK_NOT_FOUND;
-import static org.websoso.WSSServer.exception.block.BlockErrorCode.CANNOT_ADMIN_BLOCK;
-import static org.websoso.WSSServer.exception.block.BlockErrorCode.INVALID_AUTHORIZED_BLOCK;
-import static org.websoso.WSSServer.exception.block.BlockErrorCode.SELF_BLOCKED;
+import static org.websoso.WSSServer.exception.error.BlockErrorCode.ALREADY_BLOCKED;
+import static org.websoso.WSSServer.exception.error.BlockErrorCode.BLOCK_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.BlockErrorCode.CANNOT_ADMIN_BLOCK;
+import static org.websoso.WSSServer.exception.error.BlockErrorCode.INVALID_AUTHORIZED_BLOCK;
+import static org.websoso.WSSServer.exception.error.BlockErrorCode.SELF_BLOCKED;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import org.websoso.WSSServer.domain.Block;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.block.BlockGetResponse;
 import org.websoso.WSSServer.dto.block.BlocksGetResponse;
-import org.websoso.WSSServer.exception.block.exception.CustomBlockException;
+import org.websoso.WSSServer.exception.exception.CustomBlockException;
 import org.websoso.WSSServer.repository.BlockRepository;
 
 @Service

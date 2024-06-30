@@ -1,16 +1,16 @@
 package org.websoso.WSSServer.validation;
 
-import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_NICKNAME_BLANK;
-import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_NICKNAME_LENGTH;
-import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_NICKNAME_NULL;
-import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_NICKNAME_PATTERN;
-import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_NICKNAME_START_OR_END_WITH_BLANK;
+import static org.websoso.WSSServer.exception.error.UserErrorCode.INVALID_NICKNAME_BLANK;
+import static org.websoso.WSSServer.exception.error.UserErrorCode.INVALID_NICKNAME_LENGTH;
+import static org.websoso.WSSServer.exception.error.UserErrorCode.INVALID_NICKNAME_NULL;
+import static org.websoso.WSSServer.exception.error.UserErrorCode.INVALID_NICKNAME_PATTERN;
+import static org.websoso.WSSServer.exception.error.UserErrorCode.INVALID_NICKNAME_START_OR_END_WITH_BLANK;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.exception.user.exception.CustomUserException;
+import org.websoso.WSSServer.exception.exception.CustomUserException;
 
 @Component
 public class NicknameValidator implements ConstraintValidator<NicknameConstraint, String> {

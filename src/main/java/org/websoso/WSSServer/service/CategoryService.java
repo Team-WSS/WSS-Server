@@ -12,8 +12,8 @@ import static org.websoso.WSSServer.domain.common.CategoryName.RO;
 import static org.websoso.WSSServer.domain.common.CategoryName.WU;
 import static org.websoso.WSSServer.domain.common.Flag.N;
 import static org.websoso.WSSServer.domain.common.Flag.Y;
-import static org.websoso.WSSServer.exception.category.CategoryErrorCode.CATEGORY_NOT_FOUND;
-import static org.websoso.WSSServer.exception.category.CategoryErrorCode.INVALID_CATEGORY_FORMAT;
+import static org.websoso.WSSServer.exception.error.CategoryErrorCode.CATEGORY_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CategoryErrorCode.INVALID_CATEGORY_FORMAT;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +25,7 @@ import org.websoso.WSSServer.domain.Category.CategoryBuilder;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.common.CategoryName;
 import org.websoso.WSSServer.domain.common.Flag;
-import org.websoso.WSSServer.exception.category.exception.CustomCategoryException;
+import org.websoso.WSSServer.exception.exception.CustomCategoryException;
 import org.websoso.WSSServer.repository.CategoryRepository;
 
 @Service

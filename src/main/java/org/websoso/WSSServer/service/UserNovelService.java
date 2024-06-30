@@ -1,10 +1,10 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.keyword.KeywordErrorCode.KEYWORD_NOT_FOUND;
-import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
-import static org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND;
-import static org.websoso.WSSServer.exception.userNovel.UserNovelErrorCode.USER_NOVEL_ALREADY_EXISTS;
-import static org.websoso.WSSServer.exception.userStatistics.UserStatisticsErrorCode.USER_STATISTICS_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.KeywordErrorCode.KEYWORD_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.NovelErrorCode.NOVEL_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.UserNovelErrorCode.USER_NOVEL_ALREADY_EXISTS;
+import static org.websoso.WSSServer.exception.error.UserStatisticsErrorCode.USER_STATISTICS_NOT_FOUND;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -23,11 +23,11 @@ import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
-import org.websoso.WSSServer.exception.keyword.exception.CustomKeywordException;
-import org.websoso.WSSServer.exception.novel.exception.CustomNovelException;
-import org.websoso.WSSServer.exception.novelStatistics.exception.CustomNovelStatisticsException;
-import org.websoso.WSSServer.exception.userNovel.exception.CustomUserNovelException;
-import org.websoso.WSSServer.exception.userStatistics.exception.CustomUserStatisticsException;
+import org.websoso.WSSServer.exception.exception.CustomKeywordException;
+import org.websoso.WSSServer.exception.exception.CustomNovelException;
+import org.websoso.WSSServer.exception.exception.CustomNovelStatisticsException;
+import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
+import org.websoso.WSSServer.exception.exception.CustomUserStatisticsException;
 import org.websoso.WSSServer.repository.AttractivePointRepository;
 import org.websoso.WSSServer.repository.KeywordRepository;
 import org.websoso.WSSServer.repository.NovelKeywordsRepository;
