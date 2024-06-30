@@ -71,4 +71,8 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<UserNovel> userNovels = new ArrayList<>();
+
+    public void updateProfileStatus(Boolean profileStatus) {
+        this.isProfilePublic = profileStatus;
+    }
 }
