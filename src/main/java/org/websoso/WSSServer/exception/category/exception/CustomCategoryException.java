@@ -6,9 +6,9 @@ import org.websoso.WSSServer.exception.category.CategoryErrorCode;
 
 @Getter
 @AllArgsConstructor
-public class InvalidCategoryException extends RuntimeException {
+public class CustomCategoryException extends RuntimeException {
 
-    public InvalidCategoryException(CategoryErrorCode categoryErrorCode, String message) {
+    public CustomCategoryException(CategoryErrorCode categoryErrorCode, String message) {
         super(message);
         this.categoryErrorCode = categoryErrorCode;
     }

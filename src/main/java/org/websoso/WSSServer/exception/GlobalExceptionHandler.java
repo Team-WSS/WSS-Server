@@ -14,7 +14,7 @@ import org.websoso.WSSServer.exception.avatar.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.block.BlockErrorCode;
 import org.websoso.WSSServer.exception.block.exception.CustomBlockException;
 import org.websoso.WSSServer.exception.category.CategoryErrorCode;
-import org.websoso.WSSServer.exception.category.exception.InvalidCategoryException;
+import org.websoso.WSSServer.exception.category.exception.CustomCategoryException;
 import org.websoso.WSSServer.exception.common.ErrorResult;
 import org.websoso.WSSServer.exception.feed.FeedErrorCode;
 import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
@@ -60,8 +60,8 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription()));
     }
 
-    @ExceptionHandler(InvalidCategoryException.class)
-    public ResponseEntity<ErrorResult> InvalidCategoryExceptionHandler(InvalidCategoryException e) {
+    @ExceptionHandler(CustomCategoryException.class)
+    public ResponseEntity<ErrorResult> InvalidCategoryExceptionHandler(CustomCategoryException e) {
         log.error("[InvalidCategoryException] exception ", e);
         CategoryErrorCode categoryErrorCode = e.getCategoryErrorCode();
         return ResponseEntity

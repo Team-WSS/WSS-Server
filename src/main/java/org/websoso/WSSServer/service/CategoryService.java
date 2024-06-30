@@ -25,7 +25,7 @@ import org.websoso.WSSServer.domain.Category.CategoryBuilder;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.common.CategoryName;
 import org.websoso.WSSServer.domain.common.Flag;
-import org.websoso.WSSServer.exception.category.exception.InvalidCategoryException;
+import org.websoso.WSSServer.exception.category.exception.CustomCategoryException;
 import org.websoso.WSSServer.repository.CategoryRepository;
 
 @Service
@@ -46,7 +46,7 @@ public class CategoryService {
 
     public void updateCategory(Feed feed, List<String> relevantCategories) {
         Long categoryId = categoryRepository.findByFeed(feed).orElseThrow(() ->
-                        new InvalidCategoryException(CATEGORY_NOT_FOUND, "Category for the given feed was not found"))
+                        new CustomCategoryException(CATEGORY_NOT_FOUND, "Category for the given feed was not found"))
                 .getCategoryId();
 
         CategoryBuilder builder = Category.builder()
@@ -79,7 +79,7 @@ public class CategoryService {
         List<String> categoryNames = Arrays.stream(CategoryName.values()).map(CategoryName::getValue).toList();
 
         if (!categoryNames.containsAll(relevantCategories)) {
-            throw new InvalidCategoryException(INVALID_CATEGORY_FORMAT, "invalid category format");
+            throw new CustomCategoryException(INVALID_CATEGORY_FORMAT, "invalid category format");
         }
     }
 
