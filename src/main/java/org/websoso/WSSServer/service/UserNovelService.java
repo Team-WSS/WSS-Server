@@ -24,7 +24,7 @@ import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.exception.keyword.exception.CustomKeywordException;
-import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
+import org.websoso.WSSServer.exception.novel.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
 import org.websoso.WSSServer.exception.userStatistics.exception.InvalidUserStatisticsException;
@@ -52,7 +52,7 @@ public class UserNovelService {
     public void createUserNovel(User user, UserNovelCreateRequest request) {
 
         Novel novel = novelRepository.findById(request.novelId())
-                .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
+                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
 
         if (getUserNovelOrNull(user, novel) != null) {
             throw new NovelAlreadyRegisteredException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");

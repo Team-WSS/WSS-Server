@@ -6,9 +6,9 @@ import org.websoso.WSSServer.exception.novel.NovelErrorCode;
 
 @Getter
 @AllArgsConstructor
-public class InvalidNovelException extends RuntimeException {
+public class CustomNovelException extends RuntimeException {
 
-    public InvalidNovelException(NovelErrorCode novelErrorCode, String message) {
+    public CustomNovelException(NovelErrorCode novelErrorCode, String message) {
         super(message);
         this.novelErrorCode = novelErrorCode;
     }

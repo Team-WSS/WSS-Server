@@ -23,7 +23,7 @@ import org.websoso.WSSServer.exception.keyword.exception.CustomKeywordException;
 import org.websoso.WSSServer.exception.notice.NoticeErrorCode;
 import org.websoso.WSSServer.exception.notice.exception.CustomNoticeException;
 import org.websoso.WSSServer.exception.novel.NovelErrorCode;
-import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
+import org.websoso.WSSServer.exception.novel.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
 import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 import org.websoso.WSSServer.exception.user.UserErrorCode;
@@ -113,8 +113,8 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResult(noticeErrorCode.getCode(), noticeErrorCode.getDescription()));
     }
 
-    @ExceptionHandler(InvalidNovelException.class)
-    public ResponseEntity<ErrorResult> InvalidNovelExceptionHandler(InvalidNovelException e) {
+    @ExceptionHandler(CustomNovelException.class)
+    public ResponseEntity<ErrorResult> InvalidNovelExceptionHandler(CustomNovelException e) {
         log.error("[InvalidNovelException] exception ", e);
         NovelErrorCode novelErrorCode = e.getNovelErrorCode();
         return ResponseEntity

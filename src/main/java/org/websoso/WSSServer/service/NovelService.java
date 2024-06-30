@@ -12,7 +12,7 @@ import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
-import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
+import org.websoso.WSSServer.exception.novel.exception.CustomNovelException;
 import org.websoso.WSSServer.repository.NovelRepository;
 
 @Service
@@ -40,7 +40,7 @@ public class NovelService {
     @Transactional(readOnly = true)
     public Novel getNovelOrException(Long novelId) {
         return novelRepository.findById(novelId)
-                .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND,
+                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
                         "novel with the given id is not found"));
     }
 
