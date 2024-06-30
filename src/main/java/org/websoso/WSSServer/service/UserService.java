@@ -29,7 +29,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public NicknameValidation isNicknameAvailable(String nickname) {
         if (userRepository.existsByNickname(nickname)) {
-            throw new DuplicatedNicknameException(DUPLICATED_NICKNAME, "nickname is duplicated.");
+            throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
         }
         return NicknameValidation.of(true);
     }
@@ -64,7 +64,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public User getUserOrException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() ->
-                new InvalidUserException(USER_NOT_FOUND, "user with the given id was not found"));
+                new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
     }
 
 }

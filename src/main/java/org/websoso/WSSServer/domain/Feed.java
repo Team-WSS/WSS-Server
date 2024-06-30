@@ -30,6 +30,7 @@ import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.exception.feed.exception.CustomFeedException;
+import org.websoso.WSSServer.exception.user.exception.CustomUserException;
 
 @Getter
 @DynamicInsert
@@ -96,7 +97,7 @@ public class Feed extends BaseEntity {
 
     public void validateUserAuthorization(User user, Action action) {
         if (!this.user.equals(user)) {
-            throw new InvalidAuthorizedException(INVALID_AUTHORIZED,
+            throw new CustomUserException(INVALID_AUTHORIZED,
                     "only the author can " + action.getDescription() + " the feed");
         }
     }
