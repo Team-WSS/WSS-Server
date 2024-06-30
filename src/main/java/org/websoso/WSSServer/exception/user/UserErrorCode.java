@@ -22,7 +22,8 @@ public enum UserErrorCode implements IErrorCode {
     USER_NOT_FOUND("USER-006", "해당 ID를 가진 사용자를 찾을 수 없습니다.", NOT_FOUND),
     INVALID_AUTHORIZED("USER-007", "사용자에게 권한이 없습니다.", FORBIDDEN),
     INVALID_USER_ID("USER-008", "유효하지 않은 ID입니다.", BAD_REQUEST),
-    DUPLICATED_NICKNAME("USER-009", "중복된 닉네임입니다.", CONFLICT);
+    DUPLICATED_NICKNAME("USER-009", "중복된 닉네임입니다.", CONFLICT),
+    INVALID_PROFILE_STATUS("USER-010", "프로필 상태는 이미 설정된 값과 동일합니다.", BAD_REQUEST);
 
     private final String code;
     private final String description;

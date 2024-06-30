@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.user.UserErrorCode.DUPLICATED_NICKNAME;
+import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.user.UserErrorCode.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.websoso.WSSServer.dto.User.NicknameValidation;
 import org.websoso.WSSServer.dto.user.EditProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.EmailGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
+import org.websoso.WSSServer.exception.user.exception.CustomUserException;
 import org.websoso.WSSServer.exception.user.exception.DuplicatedNicknameException;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
 import org.websoso.WSSServer.repository.UserRepository;
@@ -55,6 +57,9 @@ public class UserService {
     }
 
     public void editProfileStatus(User user, EditProfileStatusResponse editProfileStatusResponse) {
+        if (user.getIsProfilePublic().equals(editProfileStatusResponse.isProfilePublic())) {
+            throw new CustomUserException(INVALID_PROFILE_STATUS, "profile status with given is already set");
+        }
         user.updateProfileStatus(editProfileStatusResponse.isProfilePublic());
     }
 

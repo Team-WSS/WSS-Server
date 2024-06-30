@@ -30,6 +30,7 @@ import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
 import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 import org.websoso.WSSServer.exception.user.UserErrorCode;
+import org.websoso.WSSServer.exception.user.exception.CustomUserException;
 import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
@@ -209,5 +210,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(BAD_REQUEST)
                 .body(new ErrorResult(BAD_REQUEST.name(), "잘못된 JSON 형식입니다."));
+    }
+
+    @ExceptionHandler(CustomUserException.class)
+    public ResponseEntity<ErrorResult> CustomUserExceptionHandler(CustomUserException e) {
+        log.error("[CustomUserException] exception ", e);
+        UserErrorCode userErrorCode = e.getUserErrorCode();
+        return ResponseEntity
+                .status(userErrorCode.getStatusCode())
+                .body(new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription()));
     }
 }
