@@ -21,6 +21,7 @@ import org.websoso.WSSServer.exception.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.keyword.KeywordErrorCode;
 import org.websoso.WSSServer.exception.keyword.exception.CustomKeywordException;
 import org.websoso.WSSServer.exception.notice.NoticeErrorCode;
+import org.websoso.WSSServer.exception.notice.exception.CustomNoticeException;
 import org.websoso.WSSServer.exception.novel.NovelErrorCode;
 import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
@@ -101,6 +102,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(feedErrorCode.getStatusCode())
                 .body(new ErrorResult(feedErrorCode.getCode(), feedErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(CustomNoticeException.class)
+    public ResponseEntity<ErrorResult> NoticeNotFoundExceptionHandler(CustomNoticeException e) {
+        log.error("[CustomNoticeException] exception ", e);
+        NoticeErrorCode noticeErrorCode = e.getNoticeErrorCode();
+        return ResponseEntity
+                .status(noticeErrorCode.getStatusCode())
+                .body(new ErrorResult(noticeErrorCode.getCode(), noticeErrorCode.getDescription()));
     }
 
     @ExceptionHandler(InvalidNovelException.class)
