@@ -29,8 +29,6 @@ import org.websoso.WSSServer.exception.novelStatistics.exception.CustomNovelStat
 import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.CustomUserException;
 import org.websoso.WSSServer.exception.userNovel.UserNovelErrorCode;
-import org.websoso.WSSServer.exception.userNovel.exception.InvalidReadStatusException;
-import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
 
 @Slf4j
 @RestControllerAdvice
@@ -97,24 +95,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(novelStatisticsErrorCode.getStatusCode())
                 .body(new ErrorResult(novelStatisticsErrorCode.getCode(), novelStatisticsErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(NovelAlreadyRegisteredException.class)
-    public ResponseEntity<ErrorResult> NovelAlreadyRegisteredExceptionHandler(NovelAlreadyRegisteredException e) {
-        log.error("[NovelAlreadyRegisteredException] exception", e);
-        UserNovelErrorCode userNovelErrorCode = e.getUserNovelErrorCode();
-        return ResponseEntity
-                .status(userNovelErrorCode.getStatusCode())
-                .body(new ErrorResult(userNovelErrorCode.getCode(), userNovelErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(InvalidReadStatusException.class)
-    public ResponseEntity<ErrorResult> InvalidReadStatusExceptionHandler(InvalidReadStatusException e) {
-        log.error("[InvalidReadStatusException] exception", e);
-        UserNovelErrorCode userNovelErrorCode = e.getUserNovelErrorCode();
-        return ResponseEntity
-                .status(userNovelErrorCode.getStatusCode())
-                .body(new ErrorResult(userNovelErrorCode.getCode(), userNovelErrorCode.getDescription()));
     }
 
     @ExceptionHandler(CustomKeywordException.class)
