@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.dto.Keyword;
+package org.websoso.WSSServer.dto.keyword;
 
 import java.util.List;
 
