@@ -6,7 +6,6 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.exception.block.exception.InvalidBlockIdException;
 
 @Component
 @AllArgsConstructor

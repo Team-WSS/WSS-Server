@@ -16,11 +16,6 @@ import org.websoso.WSSServer.domain.Block;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.block.BlockGetResponse;
 import org.websoso.WSSServer.dto.block.BlocksGetResponse;
-import org.websoso.WSSServer.exception.block.exception.AdminBlockRestrictionException;
-import org.websoso.WSSServer.exception.block.exception.AlreadyBlockedException;
-import org.websoso.WSSServer.exception.block.exception.BlockNotFoundException;
-import org.websoso.WSSServer.exception.block.exception.InvalidAuthorizedBlockException;
-import org.websoso.WSSServer.exception.block.exception.SelfBlockedException;
 import org.websoso.WSSServer.repository.BlockRepository;
 
 @Service
