@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
-import org.websoso.WSSServer.exception.attractivePoint.exception.InvalidAttractivePointException;
+import org.websoso.WSSServer.exception.attractivePoint.exception.CustomAttractivePointException;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +22,7 @@ public class AttractivePointService {
                 case "material" -> attractivePoint.setMaterial(true);
                 case "character" -> attractivePoint.setCharacters(true);
                 case "relationship" -> attractivePoint.setRelationship(true);
-                default -> throw new InvalidAttractivePointException(INVALID_ATTRACTIVE_POINT,
+                default -> throw new CustomAttractivePointException(INVALID_ATTRACTIVE_POINT,
                         "invalid attractive point provided in the request");
             }
         }

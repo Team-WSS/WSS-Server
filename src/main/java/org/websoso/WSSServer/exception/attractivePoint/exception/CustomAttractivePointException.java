@@ -6,9 +6,9 @@ import org.websoso.WSSServer.exception.attractivePoint.AttractivePointErrorCode;
 
 @Getter
 @AllArgsConstructor
-public class InvalidAttractivePointException extends RuntimeException {
+public class CustomAttractivePointException extends RuntimeException {
 
-    public InvalidAttractivePointException(AttractivePointErrorCode attractivePointErrorCode, String message) {
+    public CustomAttractivePointException(AttractivePointErrorCode attractivePointErrorCode, String message) {
         super(message);
         this.attractivePointErrorCode = attractivePointErrorCode;
     }
