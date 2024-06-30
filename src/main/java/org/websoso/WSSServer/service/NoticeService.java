@@ -14,6 +14,7 @@ import org.websoso.WSSServer.domain.common.Role;
 import org.websoso.WSSServer.dto.notice.NoticeEditRequest;
 import org.websoso.WSSServer.dto.notice.NoticePostRequest;
 import org.websoso.WSSServer.dto.notice.NoticesGetResponse;
+import org.websoso.WSSServer.exception.notice.exception.CustomNoticeException;
 import org.websoso.WSSServer.repository.NoticeRepository;
 
 @Service
@@ -42,7 +43,7 @@ public class NoticeService {
 
     private static void validateAuthorization(User user) {
         if (user.getRole() != ADMIN_ROLE) {
-            throw new ForbiddenNoticeManipulationException(NOTICE_FORBIDDEN,
+            throw new CustomNoticeException(NOTICE_FORBIDDEN,
                     "user who tried to create or modify or delete the notice is not ADMIN");
         }
     }
@@ -61,6 +62,6 @@ public class NoticeService {
 
     private Notice getNoticeOrException(Long noticeId) {
         return noticeRepository.findById(noticeId).orElseThrow(() ->
-                new NoticeNotFoundException(NOTICE_NOT_FOUND, "notice with given noticeId was not found"));
+                new CustomNoticeException(NOTICE_NOT_FOUND, "notice with given noticeId was not found"));
     }
 }
