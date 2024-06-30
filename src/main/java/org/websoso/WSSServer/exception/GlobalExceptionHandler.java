@@ -1,8 +1,11 @@
 package org.websoso.WSSServer.exception;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -198,5 +201,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(blockErrorCode.getStatusCode())
                 .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResult> HttpMessageNotReadableExceptionHandler(HttpMessageNotReadableException e) {
+        log.error("[HttpMessageNotReadableException] exception ", e);
+        return ResponseEntity
+                .status(BAD_REQUEST)
+                .body(new ErrorResult(BAD_REQUEST.name(), "잘못된 JSON 형식입니다."));
     }
 }
