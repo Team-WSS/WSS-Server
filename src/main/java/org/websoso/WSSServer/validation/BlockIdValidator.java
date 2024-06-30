@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.websoso.WSSServer.exception.block.exception.CustomBlockException;
 
 @Component
 @AllArgsConstructor
@@ -18,7 +19,7 @@ public class BlockIdValidator implements ConstraintValidator<BlockIdConstraint, 
     @Override
     public boolean isValid(Long blockId, ConstraintValidatorContext constraintValidatorContext) {
         if (blockId <= 0) {
-            throw new InvalidBlockIdException(INVALID_BLOCK_ID, "given blockId is an invalid value");
+            throw new CustomBlockException(INVALID_BLOCK_ID, "given blockId is an invalid value");
         }
 
         return true;

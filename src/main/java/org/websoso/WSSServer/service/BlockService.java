@@ -16,6 +16,7 @@ import org.websoso.WSSServer.domain.Block;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.block.BlockGetResponse;
 import org.websoso.WSSServer.dto.block.BlocksGetResponse;
+import org.websoso.WSSServer.exception.block.exception.CustomBlockException;
 import org.websoso.WSSServer.repository.BlockRepository;
 
 @Service
@@ -31,16 +32,16 @@ public class BlockService {
     public void block(User blocker, Long blockedId) {
         User blockedUser = userService.getUserOrException(blockedId);
         if (blockedUser.getRole() == ADMIN) {
-            throw new AdminBlockRestrictionException(CANNOT_ADMIN_BLOCK, "user requested to be blocked is ADMIN");
+            throw new CustomBlockException(CANNOT_ADMIN_BLOCK, "user requested to be blocked is ADMIN");
         }
 
         Long blockingId = blocker.getUserId();
         if (blockingId.equals(blockedId)) {
-            throw new SelfBlockedException(SELF_BLOCKED, "cannot block yourself");
+            throw new CustomBlockException(SELF_BLOCKED, "cannot block yourself");
         }
 
         if (blockRepository.existsByBlockingIdAndBlockedId(blockingId, blockedId)) {
-            throw new AlreadyBlockedException(ALREADY_BLOCKED, "account has already been blocked");
+            throw new CustomBlockException(ALREADY_BLOCKED, "account has already been blocked");
         }
 
         blockRepository.save(Block.create(blockingId, blockedId));
@@ -60,9 +61,9 @@ public class BlockService {
     @Transactional
     public void deleteBlock(User user, Long blockId) {
         Block block = blockRepository.findById(blockId).orElseThrow(() ->
-                new BlockNotFoundException(BLOCK_NOT_FOUND, "block with the given blockId was not found"));
+                new CustomBlockException(BLOCK_NOT_FOUND, "block with the given blockId was not found"));
         if (!block.getBlockingId().equals(user.getUserId())) {
-            throw new InvalidAuthorizedBlockException(INVALID_AUTHORIZED_BLOCK,
+            throw new CustomBlockException(INVALID_AUTHORIZED_BLOCK,
                     "block with the given blockId is not from user with the given userId");
         }
         blockRepository.delete(block);
