@@ -23,7 +23,7 @@ import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
-import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
+import org.websoso.WSSServer.exception.keyword.exception.CustomKeywordException;
 import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
 import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
@@ -71,7 +71,7 @@ public class UserNovelService {
 
         for (Integer keywordId : request.keywordIds()) {
             Keyword keyword = keywordRepository.findById(keywordId).orElseThrow(
-                    () -> new InvalidKeywordException(KEYWORD_NOT_FOUND, "keyword with the given id is not found"));
+                    () -> new CustomKeywordException(KEYWORD_NOT_FOUND, "keyword with the given id is not found"));
             novelKeywordsRepository.save(
                     NovelKeywords.create(novel.getNovelId(), keyword.getKeywordId(), user.getUserId()));
         }

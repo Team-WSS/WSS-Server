@@ -19,7 +19,7 @@ import org.websoso.WSSServer.exception.common.ErrorResult;
 import org.websoso.WSSServer.exception.feed.FeedErrorCode;
 import org.websoso.WSSServer.exception.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.keyword.KeywordErrorCode;
-import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
+import org.websoso.WSSServer.exception.keyword.exception.CustomKeywordException;
 import org.websoso.WSSServer.exception.notice.NoticeErrorCode;
 import org.websoso.WSSServer.exception.notice.exception.ForbiddenNoticeManipulationException;
 import org.websoso.WSSServer.exception.notice.exception.NoticeNotFoundException;
@@ -160,8 +160,8 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResult(userNovelErrorCode.getCode(), userNovelErrorCode.getDescription()));
     }
 
-    @ExceptionHandler(InvalidKeywordException.class)
-    public ResponseEntity<ErrorResult> InvalidKeywordExceptionHandler(InvalidKeywordException e) {
+    @ExceptionHandler(CustomKeywordException.class)
+    public ResponseEntity<ErrorResult> InvalidKeywordExceptionHandler(CustomKeywordException e) {
         log.error("[InvalidKeywordException] exception", e);
         KeywordErrorCode keywordErrorCode = e.getKeywordErrorCode();
         return ResponseEntity
