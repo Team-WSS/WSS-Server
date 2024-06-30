@@ -10,7 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.websoso.WSSServer.exception.avatar.AvatarErrorCode;
-import org.websoso.WSSServer.exception.avatar.exception.AvatarNotFoundException;
+import org.websoso.WSSServer.exception.avatar.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.block.BlockErrorCode;
 import org.websoso.WSSServer.exception.block.exception.AlreadyBlockedException;
 import org.websoso.WSSServer.exception.block.exception.BlockNotFoundException;
@@ -182,8 +182,8 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
     }
 
-    @ExceptionHandler(AvatarNotFoundException.class)
-    public ResponseEntity<ErrorResult> AvatarNotFoundExceptionHandler(AvatarNotFoundException e) {
+    @ExceptionHandler(CustomAvatarException.class)
+    public ResponseEntity<ErrorResult> AvatarNotFoundExceptionHandler(CustomAvatarException e) {
         log.error("[AvatarNotFoundException] exception ", e);
         AvatarErrorCode avatarErrorCode = e.getAvatarErrorCode();
         return ResponseEntity

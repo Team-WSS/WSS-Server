@@ -12,7 +12,7 @@ import org.websoso.WSSServer.domain.AvatarLine;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.avatar.AvatarGetResponse;
 import org.websoso.WSSServer.dto.avatar.AvatarsGetResponse;
-import org.websoso.WSSServer.exception.avatar.exception.AvatarNotFoundException;
+import org.websoso.WSSServer.exception.avatar.exception.CustomAvatarException;
 import org.websoso.WSSServer.repository.AvatarRepository;
 
 @Service
@@ -26,7 +26,7 @@ public class AvatarService {
     @Transactional(readOnly = true)
     public Avatar getAvatarOrException(Byte avatarId) {
         return avatarRepository.findById(avatarId).orElseThrow(() ->
-                new AvatarNotFoundException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
+                new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
     }
 
     @Transactional(readOnly = true)

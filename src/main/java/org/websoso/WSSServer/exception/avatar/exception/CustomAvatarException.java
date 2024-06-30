@@ -6,9 +6,9 @@ import org.websoso.WSSServer.exception.avatar.AvatarErrorCode;
 
 @Getter
 @AllArgsConstructor
-public class AvatarNotFoundException extends RuntimeException {
+public class CustomAvatarException extends RuntimeException {
 
-    public AvatarNotFoundException(AvatarErrorCode avatarErrorCode, String message) {
+    public CustomAvatarException(AvatarErrorCode avatarErrorCode, String message) {
         super(message);
         this.avatarErrorCode = avatarErrorCode;
     }
