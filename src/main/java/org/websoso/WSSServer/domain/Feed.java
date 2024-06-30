@@ -30,7 +30,6 @@ import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.exception.feed.exception.CustomFeedException;
-import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
 
 @Getter
 @DynamicInsert

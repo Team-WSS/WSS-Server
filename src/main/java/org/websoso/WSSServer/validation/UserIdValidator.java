@@ -7,8 +7,6 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.exception.user.exception.InvalidUserIdException;
-import org.websoso.WSSServer.exception.user.exception.UserNotFoundException;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Component

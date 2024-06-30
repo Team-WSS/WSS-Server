@@ -10,7 +10,6 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
 
 @Component
 public class NicknameValidator implements ConstraintValidator<NicknameConstraint, String> {

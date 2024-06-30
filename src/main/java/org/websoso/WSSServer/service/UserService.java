@@ -16,8 +16,6 @@ import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.exception.user.exception.CustomUserException;
-import org.websoso.WSSServer.exception.user.exception.DuplicatedNicknameException;
-import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Service

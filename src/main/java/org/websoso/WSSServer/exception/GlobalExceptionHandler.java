@@ -28,11 +28,6 @@ import org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode;
 import org.websoso.WSSServer.exception.novelStatistics.exception.CustomNovelStatisticsException;
 import org.websoso.WSSServer.exception.user.UserErrorCode;
 import org.websoso.WSSServer.exception.user.exception.CustomUserException;
-import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
-import org.websoso.WSSServer.exception.user.exception.InvalidNicknameException;
-import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
-import org.websoso.WSSServer.exception.user.exception.InvalidUserIdException;
-import org.websoso.WSSServer.exception.user.exception.UserNotFoundException;
 import org.websoso.WSSServer.exception.userNovel.UserNovelErrorCode;
 import org.websoso.WSSServer.exception.userNovel.exception.InvalidReadStatusException;
 import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
@@ -41,24 +36,6 @@ import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegistere
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(InvalidNicknameException.class)
-    public ResponseEntity<ErrorResult> InvalidNicknameExceptionHandler(InvalidNicknameException e) {
-        log.error("[InvalidNicknameException] exception ", e);
-        UserErrorCode userErrorCode = e.getUserErrorCode();
-        return ResponseEntity
-                .status(userErrorCode.getStatusCode())
-                .body(new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(InvalidUserException.class)
-    public ResponseEntity<ErrorResult> InvalidUserExceptionHandler(InvalidUserException e) {
-        log.error("[InvalidUserException] exception ", e);
-        UserErrorCode userErrorCode = e.getUserErrorCode();
-        return ResponseEntity
-                .status(userErrorCode.getStatusCode())
-                .body(new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription()));
-    }
-
     @ExceptionHandler(CustomCategoryException.class)
     public ResponseEntity<ErrorResult> InvalidCategoryExceptionHandler(CustomCategoryException e) {
         log.error("[InvalidCategoryException] exception ", e);
@@ -66,15 +43,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(categoryErrorCode.getStatusCode())
                 .body(new ErrorResult(categoryErrorCode.getCode(), categoryErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(InvalidAuthorizedException.class)
-    public ResponseEntity<ErrorResult> InvalidUserAuthorizedExceptionHandler(InvalidAuthorizedException e) {
-        log.error("[InvalidAuthorizedException] exception ", e);
-        UserErrorCode userErrorCode = e.getUserErrorCode();
-        return ResponseEntity
-                .status(userErrorCode.getStatusCode())
-                .body(new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription()));
     }
 
     @ExceptionHandler(CustomBlockException.class)
@@ -165,24 +133,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(avatarErrorCode.getStatusCode())
                 .body(new ErrorResult(avatarErrorCode.getCode(), avatarErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(InvalidUserIdException.class)
-    public ResponseEntity<ErrorResult> InvalidUserIdExceptionHandler(InvalidUserIdException e) {
-        log.error("[InvalidUserIdException] exception ", e);
-        UserErrorCode userErrorCode = e.getUserErrorCode();
-        return ResponseEntity
-                .status(userErrorCode.getStatusCode())
-                .body(new ErrorResult((userErrorCode.getCode()), userErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResult> UserNotFoundExceptionHandler(UserNotFoundException e) {
-        log.error("[UserNotFoundException] exception ", e);
-        UserErrorCode userErrorCode = e.getUserErrorCode();
-        return ResponseEntity
-                .status(userErrorCode.getStatusCode())
-                .body(new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription()));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
