@@ -6,9 +6,9 @@ import org.websoso.WSSServer.exception.userStatistics.UserStatisticsErrorCode;
 
 @Getter
 @AllArgsConstructor
-public class InvalidUserStatisticsException extends RuntimeException {
+public class CustomUserStatisticsException extends RuntimeException {
 
-    public InvalidUserStatisticsException(UserStatisticsErrorCode userStatisticsErrorCode, String message) {
+    public CustomUserStatisticsException(UserStatisticsErrorCode userStatisticsErrorCode, String message) {
         super(message);
         this.userStatisticsErrorCode = userStatisticsErrorCode;
     }

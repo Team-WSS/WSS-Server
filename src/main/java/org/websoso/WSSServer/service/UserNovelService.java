@@ -27,7 +27,7 @@ import org.websoso.WSSServer.exception.keyword.exception.CustomKeywordException;
 import org.websoso.WSSServer.exception.novel.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.exception.CustomNovelStatisticsException;
 import org.websoso.WSSServer.exception.userNovel.exception.CustomUserNovelException;
-import org.websoso.WSSServer.exception.userStatistics.exception.InvalidUserStatisticsException;
+import org.websoso.WSSServer.exception.userStatistics.exception.CustomUserStatisticsException;
 import org.websoso.WSSServer.repository.AttractivePointRepository;
 import org.websoso.WSSServer.repository.KeywordRepository;
 import org.websoso.WSSServer.repository.NovelKeywordsRepository;
@@ -94,7 +94,7 @@ public class UserNovelService {
     private void increaseStatistics(User user, Novel novel, UserNovelCreateRequest request,
                                     AttractivePoint attractivePoint) {
         UserStatistics userStatistics = userStatisticsRepository.findByUser(user).orElseThrow(
-                () -> new InvalidUserStatisticsException(USER_STATISTICS_NOT_FOUND,
+                () -> new CustomUserStatisticsException(USER_STATISTICS_NOT_FOUND,
                         "user statistics with the given user is not found"));
         NovelStatistics novelStatistics = novelStatisticsRepository.findByNovel(novel).orElseThrow(
                 () -> new CustomNovelStatisticsException(NOVEL_STATISTICS_NOT_FOUND,
