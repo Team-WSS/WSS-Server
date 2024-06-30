@@ -159,24 +159,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResult(keywordErrorCode.getCode(), keywordErrorCode.getDescription()));
     }
 
-    @ExceptionHandler(AlreadyBlockedException.class)
-    public ResponseEntity<ErrorResult> AlreadyBlockedExceptionHandler(AlreadyBlockedException e) {
-        log.error("[AlreadyBlockedException] exception ", e);
-        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
-        return ResponseEntity
-                .status(blockErrorCode.getStatusCode())
-                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(SelfBlockedException.class)
-    public ResponseEntity<ErrorResult> SelfBlockedExceptionHandler(SelfBlockedException e) {
-        log.error("[SelfBlockedException] exception ", e);
-        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
-        return ResponseEntity
-                .status(blockErrorCode.getStatusCode())
-                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
-    }
-
     @ExceptionHandler(CustomAvatarException.class)
     public ResponseEntity<ErrorResult> AvatarNotFoundExceptionHandler(CustomAvatarException e) {
         log.error("[AvatarNotFoundException] exception ", e);
@@ -184,15 +166,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(avatarErrorCode.getStatusCode())
                 .body(new ErrorResult(avatarErrorCode.getCode(), avatarErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(BlockNotFoundException.class)
-    public ResponseEntity<ErrorResult> BlockNotFoundExceptionHandler(BlockNotFoundException e) {
-        log.error("[BlockNotFoundException] exception ", e);
-        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
-        return ResponseEntity
-                .status(blockErrorCode.getStatusCode())
-                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
     }
 
     @ExceptionHandler(InvalidUserIdException.class)
@@ -211,24 +184,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(userErrorCode.getStatusCode())
                 .body(new ErrorResult(userErrorCode.getCode(), userErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(InvalidBlockIdException.class)
-    public ResponseEntity<ErrorResult> InvalidBlockIdExceptionHandler(InvalidBlockIdException e) {
-        log.error("[InvalidBlockIdException] exception ", e);
-        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
-        return ResponseEntity
-                .status(blockErrorCode.getStatusCode())
-                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
-    }
-
-    @ExceptionHandler(InvalidAuthorizedBlockException.class)
-    public ResponseEntity<ErrorResult> InvalidAuthorizedBlockExceptionHandler(InvalidAuthorizedBlockException e) {
-        log.error("[InvalidAuthorizedBlockException] exception ", e);
-        BlockErrorCode blockErrorCode = e.getBlockErrorCode();
-        return ResponseEntity
-                .status(blockErrorCode.getStatusCode())
-                .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
