@@ -2,16 +2,16 @@ package org.websoso.WSSServer.exception.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.websoso.WSSServer.exception.error.UserStatisticsErrorCode;
+import org.websoso.WSSServer.exception.error.CustomUserStatisticsError;
 
 @Getter
 @AllArgsConstructor
 public class CustomUserStatisticsException extends RuntimeException {
 
-    public CustomUserStatisticsException(UserStatisticsErrorCode userStatisticsErrorCode, String message) {
+    public CustomUserStatisticsException(CustomUserStatisticsError customUserStatisticsError, String message) {
         super(message);
-        this.userStatisticsErrorCode = userStatisticsErrorCode;
+        this.customUserStatisticsError = customUserStatisticsError;
     }
 
-    private UserStatisticsErrorCode userStatisticsErrorCode;
+    private CustomUserStatisticsError customUserStatisticsError;
 }

@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.error.NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomNovelStatisticsError.NOVEL_STATISTICS_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

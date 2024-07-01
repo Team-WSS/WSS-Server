@@ -2,16 +2,16 @@ package org.websoso.WSSServer.exception.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.websoso.WSSServer.exception.error.AttractivePointErrorCode;
+import org.websoso.WSSServer.exception.error.CustomAttractivePointError;
 
 @Getter
 @AllArgsConstructor
 public class CustomAttractivePointException extends RuntimeException {
 
-    public CustomAttractivePointException(AttractivePointErrorCode attractivePointErrorCode, String message) {
+    public CustomAttractivePointException(CustomAttractivePointError customAttractivePointError, String message) {
         super(message);
-        this.attractivePointErrorCode = attractivePointErrorCode;
+        this.customAttractivePointError = customAttractivePointError;
     }
 
-    private AttractivePointErrorCode attractivePointErrorCode;
+    private CustomAttractivePointError customAttractivePointError;
 }

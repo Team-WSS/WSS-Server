@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.validation;
 
-import static org.websoso.WSSServer.exception.error.BlockErrorCode.INVALID_BLOCK_ID;
+import static org.websoso.WSSServer.exception.error.CustomBlockError.INVALID_BLOCK_ID;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

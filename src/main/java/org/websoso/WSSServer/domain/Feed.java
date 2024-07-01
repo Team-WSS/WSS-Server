@@ -2,10 +2,10 @@ package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
-import static org.websoso.WSSServer.exception.error.FeedErrorCode.ALREADY_LIKED;
-import static org.websoso.WSSServer.exception.error.FeedErrorCode.INVALID_LIKE_COUNT;
-import static org.websoso.WSSServer.exception.error.FeedErrorCode.LIKE_USER_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.UserErrorCode.INVALID_AUTHORIZED;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_LIKED;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.INVALID_LIKE_COUNT;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.LIKE_USER_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.error.NovelErrorCode.NOVEL_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 
 import java.util.List;
 import java.util.Random;

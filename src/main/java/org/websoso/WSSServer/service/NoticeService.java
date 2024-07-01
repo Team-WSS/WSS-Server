@@ -1,8 +1,8 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Role.ADMIN;
-import static org.websoso.WSSServer.exception.error.NoticeErrorCode.NOTICE_FORBIDDEN;
-import static org.websoso.WSSServer.exception.error.NoticeErrorCode.NOTICE_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomNoticeError.NOTICE_FORBIDDEN;
+import static org.websoso.WSSServer.exception.error.CustomNoticeError.NOTICE_NOT_FOUND;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;

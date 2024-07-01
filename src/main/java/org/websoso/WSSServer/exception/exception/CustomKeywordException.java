@@ -2,16 +2,16 @@ package org.websoso.WSSServer.exception.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.websoso.WSSServer.exception.error.KeywordErrorCode;
+import org.websoso.WSSServer.exception.error.CustomKeywordError;
 
 @Getter
 @AllArgsConstructor
 public class CustomKeywordException extends RuntimeException {
 
-    public CustomKeywordException(KeywordErrorCode keywordErrorCode, String message) {
+    public CustomKeywordException(CustomKeywordError customKeywordError, String message) {
         super(message);
-        this.keywordErrorCode = keywordErrorCode;
+        this.customKeywordError = customKeywordError;
     }
 
-    private KeywordErrorCode keywordErrorCode;
+    private CustomKeywordError customKeywordError;
 }

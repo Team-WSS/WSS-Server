@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.validation;
 
-import static org.websoso.WSSServer.exception.error.UserErrorCode.INVALID_USER_ID;
-import static org.websoso.WSSServer.exception.error.UserErrorCode.USER_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_USER_ID;
+import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

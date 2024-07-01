@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.exception.error;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import lombok.AllArgsConstructor;
@@ -10,13 +9,12 @@ import org.websoso.WSSServer.exception.common.IErrorCode;
 
 @AllArgsConstructor
 @Getter
-public enum CategoryErrorCode implements IErrorCode {
+public enum CustomKeywordError implements IErrorCode {
 
-    INVALID_CATEGORY_FORMAT("CATEGORY-001", "카테고리 형식이 잘못되었습니다.", BAD_REQUEST),
-    CATEGORY_NOT_FOUND("CATEGORY-002", "피드에 카테고리가 존재하지 않습니다.", NOT_FOUND);
+    KEYWORD_NOT_FOUND("KEYWORD-001", "해당 ID를 가진 키워드를 찾을 수 없습니다.", NOT_FOUND);
 
     private final String code;
     private final String description;
     private final HttpStatus statusCode;
-    
+
 }

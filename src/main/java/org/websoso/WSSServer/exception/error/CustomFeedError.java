@@ -11,7 +11,7 @@ import org.websoso.WSSServer.exception.common.IErrorCode;
 
 @Getter
 @AllArgsConstructor
-public enum FeedErrorCode implements IErrorCode {
+public enum CustomFeedError implements IErrorCode {
 
     FEED_NOT_FOUND("FEED-001", "해당 ID를 가진 피드를 찾을 수 없습니다.", NOT_FOUND),
     ALREADY_LIKED("FEED-002", "이미 해당 피드에 좋아요를 눌렀습니다.", CONFLICT),

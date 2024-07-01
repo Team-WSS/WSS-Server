@@ -2,16 +2,16 @@ package org.websoso.WSSServer.exception.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.websoso.WSSServer.exception.error.AvatarErrorCode;
+import org.websoso.WSSServer.exception.error.CustomAvatarError;
 
 @Getter
 @AllArgsConstructor
 public class CustomAvatarException extends RuntimeException {
 
-    public CustomAvatarException(AvatarErrorCode avatarErrorCode, String message) {
+    public CustomAvatarException(CustomAvatarError customAvatarError, String message) {
         super(message);
-        this.avatarErrorCode = avatarErrorCode;
+        this.customAvatarError = customAvatarError;
     }
 
-    private AvatarErrorCode avatarErrorCode;
+    private CustomAvatarError customAvatarError;
 }

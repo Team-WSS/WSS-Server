@@ -2,16 +2,16 @@ package org.websoso.WSSServer.exception.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.websoso.WSSServer.exception.error.UserErrorCode;
+import org.websoso.WSSServer.exception.error.CustomUserError;
 
 @Getter
 @AllArgsConstructor
 public class CustomUserException extends RuntimeException{
 
-    public CustomUserException(UserErrorCode userErrorCode, String message) {
+    public CustomUserException(CustomUserError customUserError, String message) {
         super(message);
-        this.userErrorCode = userErrorCode;
+        this.customUserError = customUserError;
     }
 
-    private UserErrorCode userErrorCode;
+    private CustomUserError customUserError;
 }

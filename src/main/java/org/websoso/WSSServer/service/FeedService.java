@@ -4,7 +4,7 @@ import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.domain.common.Flag.N;
 import static org.websoso.WSSServer.domain.common.Flag.Y;
-import static org.websoso.WSSServer.exception.error.FeedErrorCode.FEED_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

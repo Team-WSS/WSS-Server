@@ -9,7 +9,7 @@ import org.websoso.WSSServer.exception.common.IErrorCode;
 
 @Getter
 @AllArgsConstructor
-public enum AttractivePointErrorCode implements IErrorCode {
+public enum CustomAttractivePointError implements IErrorCode {
 
     INVALID_ATTRACTIVE_POINT("ATTRACTIVE_POINT-001", "해당 매력포인트는 존재하지 않습니다.", BAD_REQUEST);
 

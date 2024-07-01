@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.error.AttractivePointErrorCode.INVALID_ATTRACTIVE_POINT;
+import static org.websoso.WSSServer.exception.error.CustomAttractivePointError.INVALID_ATTRACTIVE_POINT;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;

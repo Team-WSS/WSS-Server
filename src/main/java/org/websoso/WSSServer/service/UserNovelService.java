@@ -1,10 +1,10 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.error.KeywordErrorCode.KEYWORD_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.NovelErrorCode.NOVEL_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.UserNovelErrorCode.USER_NOVEL_ALREADY_EXISTS;
-import static org.websoso.WSSServer.exception.error.UserStatisticsErrorCode.USER_STATISTICS_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomKeywordError.KEYWORD_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomNovelStatisticsError.NOVEL_STATISTICS_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
+import static org.websoso.WSSServer.exception.error.CustomUserStatisticsError.USER_STATISTICS_NOT_FOUND;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

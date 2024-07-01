@@ -1,11 +1,11 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Role.ADMIN;
-import static org.websoso.WSSServer.exception.error.BlockErrorCode.ALREADY_BLOCKED;
-import static org.websoso.WSSServer.exception.error.BlockErrorCode.BLOCK_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.BlockErrorCode.CANNOT_ADMIN_BLOCK;
-import static org.websoso.WSSServer.exception.error.BlockErrorCode.INVALID_AUTHORIZED_BLOCK;
-import static org.websoso.WSSServer.exception.error.BlockErrorCode.SELF_BLOCKED;
+import static org.websoso.WSSServer.exception.error.CustomBlockError.ALREADY_BLOCKED;
+import static org.websoso.WSSServer.exception.error.CustomBlockError.BLOCK_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomBlockError.CANNOT_ADMIN_BLOCK;
+import static org.websoso.WSSServer.exception.error.CustomBlockError.INVALID_AUTHORIZED_BLOCK;
+import static org.websoso.WSSServer.exception.error.CustomBlockError.SELF_BLOCKED;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;

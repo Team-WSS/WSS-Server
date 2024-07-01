@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.error.AvatarErrorCode.AVATAR_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 
 import java.util.List;
 import java.util.Random;

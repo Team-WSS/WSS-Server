@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
-import static org.websoso.WSSServer.exception.error.NovelStatisticsErrorCode.INVALID_NOVEL_FEED_COUNT;
+import static org.websoso.WSSServer.exception.error.CustomNovelStatisticsError.INVALID_NOVEL_FEED_COUNT;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
