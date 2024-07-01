@@ -35,12 +35,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AbstractCustomException.class)
-    public <T extends AbstractCustomException> ResponseEntity<ErrorResult> CustomExceptionHandler(T e) {
+    public ResponseEntity<ErrorResult> CustomExceptionHandler(AbstractCustomException e) {
         log.error("[{}] exception ", e.getClass().getSimpleName(), e);
         ICustomError iCustomError = e.getICustomError();
         return ResponseEntity
                 .status(iCustomError.getStatusCode())
                 .body(new ErrorResult(iCustomError.getCode(), iCustomError.getDescription()));
     }
-
 }
