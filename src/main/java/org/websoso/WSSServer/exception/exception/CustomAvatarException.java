@@ -1,17 +1,13 @@
 package org.websoso.WSSServer.exception.exception;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.websoso.WSSServer.exception.common.AbstractCustomException;
 import org.websoso.WSSServer.exception.error.CustomAvatarError;
 
 @Getter
-@AllArgsConstructor
-public class CustomAvatarException extends RuntimeException {
+public class CustomAvatarException extends AbstractCustomException {
 
     public CustomAvatarException(CustomAvatarError customAvatarError, String message) {
-        super(message);
-        this.customAvatarError = customAvatarError;
+        super(customAvatarError, message);
     }
-
-    private CustomAvatarError customAvatarError;
 }

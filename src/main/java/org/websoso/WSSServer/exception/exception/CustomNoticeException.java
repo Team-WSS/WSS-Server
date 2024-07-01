@@ -1,17 +1,13 @@
 package org.websoso.WSSServer.exception.exception;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.websoso.WSSServer.exception.common.AbstractCustomException;
 import org.websoso.WSSServer.exception.error.CustomNoticeError;
 
 @Getter
-@AllArgsConstructor
-public class CustomNoticeException extends RuntimeException {
+public class CustomNoticeException extends AbstractCustomException {
 
     public CustomNoticeException(CustomNoticeError customNoticeError, String message) {
-        super(message);
-        this.customNoticeError = customNoticeError;
+        super(customNoticeError, message);
     }
-
-    private CustomNoticeError customNoticeError;
 }

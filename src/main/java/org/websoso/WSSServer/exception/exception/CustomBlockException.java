@@ -1,17 +1,13 @@
 package org.websoso.WSSServer.exception.exception;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.websoso.WSSServer.exception.common.AbstractCustomException;
 import org.websoso.WSSServer.exception.error.CustomBlockError;
 
 @Getter
-@AllArgsConstructor
-public class CustomBlockException extends RuntimeException{
+public class CustomBlockException extends AbstractCustomException {
 
     public CustomBlockException(CustomBlockError customBlockError, String message) {
-        super(message);
-        this.customBlockError = customBlockError;
+        super(customBlockError, message);
     }
-
-    private CustomBlockError customBlockError;
 }

@@ -1,17 +1,13 @@
 package org.websoso.WSSServer.exception.exception;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.websoso.WSSServer.exception.common.AbstractCustomException;
 import org.websoso.WSSServer.exception.error.CustomNovelError;
 
 @Getter
-@AllArgsConstructor
-public class CustomNovelException extends RuntimeException {
+public class CustomNovelException extends AbstractCustomException {
 
     public CustomNovelException(CustomNovelError customNovelError, String message) {
-        super(message);
-        this.customNovelError = customNovelError;
+        super(customNovelError, message);
     }
-
-    private CustomNovelError customNovelError;
 }
