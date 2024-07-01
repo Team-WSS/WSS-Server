@@ -6,5 +6,4 @@ import org.websoso.WSSServer.domain.Avatar;
 
 @Repository
 public interface AvatarRepository extends JpaRepository<Avatar, Byte> {
-
 }

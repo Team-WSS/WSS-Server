@@ -21,6 +21,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.domain.common.Role;
+import org.websoso.WSSServer.dto.User.UserBasicInfo;
 
 @Entity
 @Getter
@@ -74,4 +75,9 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<UserNovel> userNovels = new ArrayList<>();
+
+    public UserBasicInfo getUserBasicInfo(String avatarImage) {
+        return UserBasicInfo.of(this.getUserId(), this.getNickname(), avatarImage);
+    }
+
 }
