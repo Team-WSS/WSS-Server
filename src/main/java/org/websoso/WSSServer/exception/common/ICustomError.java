@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.exception.common;
 
-public interface IErrorCode {
+public interface ICustomError {
     
     String getCode();
 

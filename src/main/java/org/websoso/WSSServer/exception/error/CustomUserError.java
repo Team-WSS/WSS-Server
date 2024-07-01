@@ -8,11 +8,11 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
-import org.websoso.WSSServer.exception.common.IErrorCode;
+import org.websoso.WSSServer.exception.common.ICustomError;
 
 @AllArgsConstructor
 @Getter
-public enum CustomUserError implements IErrorCode {
+public enum CustomUserError implements ICustomError {
 
     INVALID_NICKNAME_NULL("USER-001", "닉네임은 null일 수 없습니다.", BAD_REQUEST),
     INVALID_NICKNAME_BLANK("USER-002", "닉네임은 빈칸일 수 없습니다.", BAD_REQUEST),

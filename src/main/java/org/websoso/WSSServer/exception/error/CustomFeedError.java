@@ -7,11 +7,11 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
-import org.websoso.WSSServer.exception.common.IErrorCode;
+import org.websoso.WSSServer.exception.common.ICustomError;
 
 @Getter
 @AllArgsConstructor
-public enum CustomFeedError implements IErrorCode {
+public enum CustomFeedError implements ICustomError {
 
     FEED_NOT_FOUND("FEED-001", "해당 ID를 가진 피드를 찾을 수 없습니다.", NOT_FOUND),
     ALREADY_LIKED("FEED-002", "이미 해당 피드에 좋아요를 눌렀습니다.", CONFLICT),

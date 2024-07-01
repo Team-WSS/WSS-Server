@@ -8,11 +8,11 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
-import org.websoso.WSSServer.exception.common.IErrorCode;
+import org.websoso.WSSServer.exception.common.ICustomError;
 
 @AllArgsConstructor
 @Getter
-public enum CustomBlockError implements IErrorCode {
+public enum CustomBlockError implements ICustomError {
 
     ALREADY_BLOCKED("BLOCK-001", "이미 차단한 계정입니다.", CONFLICT),
     SELF_BLOCKED("BLOCK-002", "본인을 차단할 수 없습니다.", BAD_REQUEST),

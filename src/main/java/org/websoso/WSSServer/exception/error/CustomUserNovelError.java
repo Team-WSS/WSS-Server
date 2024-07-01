@@ -6,11 +6,11 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
-import org.websoso.WSSServer.exception.common.IErrorCode;
+import org.websoso.WSSServer.exception.common.ICustomError;
 
 @AllArgsConstructor
 @Getter
-public enum CustomUserNovelError implements IErrorCode {
+public enum CustomUserNovelError implements ICustomError {
 
     USER_NOVEL_ALREADY_EXISTS("USER_NOVEL-001", "이미 서재에 등록된 작품입니다.", CONFLICT),
     INVALID_READ_STATUS("USER_NOVEL-002", "바르지 않은 읽기 상태입니다.", NOT_FOUND);
