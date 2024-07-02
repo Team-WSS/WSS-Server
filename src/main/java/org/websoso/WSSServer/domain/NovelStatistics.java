@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
-import static org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode.INVALID_NOVEL_FEED_COUNT;
+import static org.websoso.WSSServer.exception.error.CustomNovelStatisticsError.INVALID_NOVEL_FEED_COUNT;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,7 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
+import org.websoso.WSSServer.exception.exception.CustomNovelStatisticsException;
 
 @DynamicInsert
 @DynamicUpdate
@@ -75,7 +75,7 @@ public class NovelStatistics {
 
     public void decreaseNovelFeedCount() {
         if (this.novelFeedCount <= 0) {
-            throw new InvalidNovelStatisticsException(INVALID_NOVEL_FEED_COUNT, "invalid novel feed count");
+            throw new CustomNovelStatisticsException(INVALID_NOVEL_FEED_COUNT, "invalid novel feed count");
         }
 
         this.novelFeedCount--;

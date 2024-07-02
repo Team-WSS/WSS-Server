@@ -4,7 +4,7 @@ import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.domain.common.Flag.N;
 import static org.websoso.WSSServer.domain.common.Flag.Y;
-import static org.websoso.WSSServer.exception.feed.FeedErrorCode.FEED_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
-import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
+import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.repository.FeedRepository;
 
 @Service
@@ -90,7 +90,7 @@ public class FeedService {
 
     private Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() ->
-                new InvalidFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
+                new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
     }
 
 }
