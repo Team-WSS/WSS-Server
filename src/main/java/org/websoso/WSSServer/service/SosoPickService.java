@@ -19,26 +19,28 @@ import org.websoso.WSSServer.repository.UserNovelRepository;
 @Transactional
 public class SosoPickService {
 
+    private static final int PAGE_SIZE = 20;
+    private static final int SOSO_PICK_SIZE = 20;
+
     private final UserNovelRepository userNovelRepository;
 
     @Transactional(readOnly = true)
     public SosoPickGetResponse getSosoPick() {
-        int pageSize = 20;
-        Pageable pageable = PageRequest.of(0, pageSize);
+        Pageable pageable = PageRequest.of(0, PAGE_SIZE);
         Set<Novel> novels = new LinkedHashSet<>();
 
-        while (novels.size() < 10) {
+        while (novels.size() < SOSO_PICK_SIZE) {
             List<UserNovel> userNovels = userNovelRepository.findByOrderByCreatedDateDesc(pageable).getContent();
             for (UserNovel userNovel : userNovels) {
-                if (novels.size() >= 10) {
+                if (novels.size() >= SOSO_PICK_SIZE) {
                     break;
                 }
                 novels.add(userNovel.getNovel());
             }
-            if (userNovels.size() < pageSize) {
+            if (userNovels.size() < PAGE_SIZE) {
                 break;
             }
-            pageable = PageRequest.of(pageable.getPageNumber() + 1, pageSize);
+            pageable = PageRequest.of(pageable.getPageNumber() + 1, PAGE_SIZE);
         }
 
         List<SosoPickNovelGetResponse> sosoPickNovels = novels.stream().map(SosoPickNovelGetResponse::of).toList();
