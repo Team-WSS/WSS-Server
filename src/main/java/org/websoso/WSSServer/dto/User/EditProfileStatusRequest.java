@@ -2,7 +2,7 @@ package org.websoso.WSSServer.dto.user;
 
 import jakarta.validation.constraints.NotNull;
 
-public record EditProfileStatusResponse(
+public record EditProfileStatusRequest(
         @NotNull
         Boolean isProfilePublic
 ) {

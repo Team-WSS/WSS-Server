@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.dto.user.EditProfileStatusResponse;
+import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.EmailGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
@@ -59,9 +59,9 @@ public class UserController {
 
     @PatchMapping("/profile-status")
     public ResponseEntity<Void> editProfileStatus(Principal principal,
-                                                  @Valid @RequestBody EditProfileStatusResponse editProfileStatusResponse) {
+                                                  @Valid @RequestBody EditProfileStatusRequest editProfileStatusRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        userService.editProfileStatus(user, editProfileStatusResponse);
+        userService.editProfileStatus(user, editProfileStatusRequest);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

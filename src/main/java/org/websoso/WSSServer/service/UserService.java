@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.dto.user.EditProfileStatusResponse;
+import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.EmailGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
@@ -56,11 +56,11 @@ public class UserService {
         return ProfileStatusResponse.of(user.getIsProfilePublic());
     }
 
-    public void editProfileStatus(User user, EditProfileStatusResponse editProfileStatusResponse) {
-        if (user.getIsProfilePublic().equals(editProfileStatusResponse.isProfilePublic())) {
+    public void editProfileStatus(User user, EditProfileStatusRequest editProfileStatusRequest) {
+        if (user.getIsProfilePublic().equals(editProfileStatusRequest.isProfilePublic())) {
             throw new CustomUserException(INVALID_PROFILE_STATUS, "profile status with given is already set");
         }
-        user.updateProfileStatus(editProfileStatusResponse.isProfilePublic());
+        user.updateProfileStatus(editProfileStatusRequest.isProfilePublic());
     }
 
     @Transactional(readOnly = true)
