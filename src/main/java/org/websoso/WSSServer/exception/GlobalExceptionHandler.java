@@ -36,6 +36,7 @@ import org.websoso.WSSServer.exception.user.exception.InvalidUserIdException;
 import org.websoso.WSSServer.exception.user.exception.UserNotFoundException;
 import org.websoso.WSSServer.exception.userNovel.UserNovelErrorCode;
 import org.websoso.WSSServer.exception.userNovel.exception.InvalidReadStatusException;
+import org.websoso.WSSServer.exception.userNovel.exception.InvalidUserNovelException;
 import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
 
 @Slf4j
@@ -230,5 +231,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(blockErrorCode.getStatusCode())
                 .body(new ErrorResult(blockErrorCode.getCode(), blockErrorCode.getDescription()));
+    }
+
+    @ExceptionHandler(InvalidUserNovelException.class)
+    public ResponseEntity<ErrorResult> InvalidUserNovelExceptionHandler(InvalidUserNovelException e) {
+        log.error("[InvalidUserNovelException] exception ", e);
+        UserNovelErrorCode userNovelErrorCode = e.getUserNovelErrorCode();
+        return ResponseEntity
+                .status(userNovelErrorCode.getStatusCode())
+                .body(new ErrorResult(userNovelErrorCode.getCode(), userNovelErrorCode.getDescription()));
     }
 }
