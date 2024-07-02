@@ -4,10 +4,12 @@ import static org.websoso.WSSServer.exception.keyword.KeywordErrorCode.KEYWORD_N
 import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND;
 import static org.websoso.WSSServer.exception.userNovel.UserNovelErrorCode.USER_NOVEL_ALREADY_EXISTS;
+import static org.websoso.WSSServer.exception.userNovel.UserNovelErrorCode.USER_NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.userStatistics.UserStatisticsErrorCode.USER_STATISTICS_NOT_FOUND;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,10 +24,13 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.domain.common.ReadStatus;
+import org.websoso.WSSServer.dto.Keyword.KeywordGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
+import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
 import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
 import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
+import org.websoso.WSSServer.exception.userNovel.exception.InvalidUserNovelException;
 import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
 import org.websoso.WSSServer.exception.userStatistics.exception.InvalidUserStatisticsException;
 import org.websoso.WSSServer.repository.AttractivePointRepository;
@@ -48,6 +53,7 @@ public class UserNovelService {
     private final NovelKeywordsRepository novelKeywordsRepository;
     private final KeywordRepository keywordRepository;
     private final AttractivePointRepository attractivePointRepository;
+    private final AttractivePointService attractivePointService;
 
     public void createUserNovel(User user, UserNovelCreateRequest request) {
 
@@ -188,6 +194,49 @@ public class UserNovelService {
         if (attractivePoint.getRelationship()) {
             novelStatistics.increaseRelationshipCount();
         }
+    }
+
+    @Transactional(readOnly = true)
+    public UserNovelGetResponse getUserNovelInfo(User user, Novel novel) {
+
+        UserNovel userNovel = getUserNovelOrNull(user, novel);
+        if (userNovel == null) {
+            throw new InvalidUserNovelException(USER_NOVEL_NOT_FOUND,
+                    "user novel with the given user and novel is not found");
+        }
+
+        List<String> attractivePoints = getString(attractivePointService.getAttractivePointOrException(userNovel));
+
+        List<NovelKeywords> novelKeywords = novelKeywordsRepository.findByNovelIdAndUserId(novel.getNovelId(),
+                user.getUserId());
+        List<KeywordGetResponse> keywords = new ArrayList<>();
+        for (NovelKeywords novelKeyword : novelKeywords) {
+            Keyword keyword = keywordRepository.findById(novelKeyword.getKeywordId()).orElseThrow(
+                    () -> new InvalidKeywordException(KEYWORD_NOT_FOUND, "keyword with the given id is not found"));
+            keywords.add(KeywordGetResponse.of(keyword));
+        }
+
+        return UserNovelGetResponse.of(userNovel, attractivePoints, keywords);
+    }
+
+    private List<String> getString(AttractivePoint attractivePoint) {
+        List<String> attractivePoints = new ArrayList<>();
+        if (attractivePoint.getUniverse()) {
+            attractivePoints.add("universe");
+        }
+        if (attractivePoint.getVibe()) {
+            attractivePoints.add("vibe");
+        }
+        if (attractivePoint.getMaterial()) {
+            attractivePoints.add("material");
+        }
+        if (attractivePoint.getCharacters()) {
+            attractivePoints.add("character");
+        }
+        if (attractivePoint.getRelationship()) {
+            attractivePoints.add("relationship");
+        }
+        return attractivePoints;
     }
 
 }
