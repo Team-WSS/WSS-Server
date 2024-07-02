@@ -20,7 +20,7 @@ import org.websoso.WSSServer.repository.UserNovelRepository;
 public class SosoPickService {
 
     private static final int PAGE_SIZE = 20;
-    private static final int SOSO_PICK_SIZE = 20;
+    private static final int SOSO_PICK_SIZE = 10;
 
     private final UserNovelRepository userNovelRepository;
 
