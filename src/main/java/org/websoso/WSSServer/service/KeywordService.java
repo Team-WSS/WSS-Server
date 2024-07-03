@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.common.KeywordCategory;
-import org.websoso.WSSServer.dto.Keyword.CategoryGetResponse;
-import org.websoso.WSSServer.dto.Keyword.KeywordByCategoryGetResponse;
-import org.websoso.WSSServer.dto.Keyword.KeywordGetResponse;
+import org.websoso.WSSServer.dto.keyword.CategoryGetResponse;
+import org.websoso.WSSServer.dto.keyword.KeywordByCategoryGetResponse;
+import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
 import org.websoso.WSSServer.repository.KeywordRepository;
 

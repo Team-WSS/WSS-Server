@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.dto.User;
+package org.websoso.WSSServer.dto.user;
 
 public record NicknameValidation(
         boolean isValid
