@@ -79,13 +79,13 @@ public class NovelService {
         return NovelGetResponse2.of(
                 novel,
                 novelStatistics,
-                getPlatformResponses(novel),
+                getPlatforms(novel),
                 getAttractivePoints(novelStatistics),
-                getKeywordResponses(novelId)
+                getKeywords(novelId)
         );
     }
 
-    private List<PlatformGetResponse> getPlatformResponses(Novel novel) {
+    private List<PlatformGetResponse> getPlatforms(Novel novel) {
         List<Platform> platforms = platformRepository.findAllByNovel(novel);
         return platforms.stream().map(PlatformGetResponse::of).collect(Collectors.toList());
     }
@@ -146,7 +146,7 @@ public class NovelService {
         return groupedByValue;
     }
 
-    private List<KeywordCountGetResponse> getKeywordResponses(Long novelId) {
+    private List<KeywordCountGetResponse> getKeywords(Long novelId) {
         List<NovelKeywords> novelKeywords = novelKeywordRepository.findAllByNovelId(novelId);
 
         if (novelKeywords.isEmpty()) {
