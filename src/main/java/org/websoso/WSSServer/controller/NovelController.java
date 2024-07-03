@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
+import org.websoso.WSSServer.dto.novel.NovelGetResponse2;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserService;
 
@@ -38,6 +39,14 @@ public class NovelController {
                         novelId));
     }
 
+    // TODO 이름 변경(작품 정보 조회 뷰에서 하단, 정보탭 부분)
+    @GetMapping("/{novelId}/info")
+    public ResponseEntity<NovelGetResponse2> getNovelInfo2(@PathVariable Long novelId) {
+        return ResponseEntity
+                .status(OK)
+                .body(novelService.getNovelInfo2(novelId));
+    }
+
     @PostMapping("/{novelId}/is-interest")
     public ResponseEntity<Void> registerAsInterest(Principal principal,
                                                    @PathVariable("novelId") Long novelId) {
@@ -49,5 +58,4 @@ public class NovelController {
                 .status(NO_CONTENT)
                 .build();
     }
-
 }

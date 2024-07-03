@@ -1,7 +1,5 @@
 package org.websoso.WSSServer.dto.novel;
 
-import static org.websoso.WSSServer.domain.common.Flag.Y;
-
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import org.websoso.WSSServer.domain.Novel;
@@ -38,13 +36,13 @@ public record NovelGetResponse1(
                     novel.getNovelImage(),
                     novelGenres,
                     novelGenreImage,
-                    novel.getIsCompleted().equals(Y),
+                    novel.getIsCompleted(),
                     novel.getAuthor(),
                     novelStatistics.getInterestCount(),
                     novelRating,
                     novel.getNovelRatingCount(),
                     novelStatistics.getNovelFeedCount(),
-                    0f,
+                    0.0f,
                     null,
                     null,
                     null,
@@ -57,7 +55,7 @@ public record NovelGetResponse1(
                 novel.getNovelImage(),
                 novelGenres,
                 novelGenreImage,
-                novel.getIsCompleted().equals(Y),
+                novel.getIsCompleted(),
                 novel.getAuthor(),
                 novelStatistics.getInterestCount(),
                 novelRating,
@@ -71,7 +69,7 @@ public record NovelGetResponse1(
                 userNovel.getEndDate() != null ? userNovel.getEndDate()
                         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")))
                         : null,
-                userNovel.getIsInterest().equals(Y)
+                userNovel.getIsInterest()
         );
     }
 }
