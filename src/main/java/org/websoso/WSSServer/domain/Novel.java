@@ -57,4 +57,21 @@ public class Novel {
 
     @OneToMany(mappedBy = "novel")
     private List<NovelGenre> novelGenres = new ArrayList<>();
+
+    public void increaseNovelRatingCount() {
+        this.novelRatingCount++;
+    }
+
+    public void decreaseNovelRatingCount() {
+        this.novelRatingCount--;
+    }
+
+    public void increaseNovelRatingSum(float rating) {
+        this.novelRatingSum += rating;
+    }
+
+    public void decreaseNovelRatingSum(float rating) {
+        this.novelRatingSum -= rating;
+    }
+
 }

@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.user.UserErrorCode.DUPLICATED_NICKNAME;
+import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.user.UserErrorCode.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
@@ -9,9 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.dto.User.LoginResponse;
-import org.websoso.WSSServer.dto.User.NicknameValidation;
+import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.EmailGetResponse;
+import org.websoso.WSSServer.dto.user.LoginResponse;
+import org.websoso.WSSServer.dto.user.NicknameValidation;
+import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
+import org.websoso.WSSServer.exception.user.exception.CustomUserException;
 import org.websoso.WSSServer.exception.user.exception.DuplicatedNicknameException;
 import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
 import org.websoso.WSSServer.repository.UserRepository;
@@ -45,6 +49,18 @@ public class UserService {
     @Transactional(readOnly = true)
     public EmailGetResponse getEmail(User user) {
         return EmailGetResponse.of(user.getEmail());
+    }
+
+    @Transactional(readOnly = true)
+    public ProfileStatusResponse getProfileStatus(User user) {
+        return ProfileStatusResponse.of(user.getIsProfilePublic());
+    }
+
+    public void editProfileStatus(User user, EditProfileStatusRequest editProfileStatusRequest) {
+        if (user.getIsProfilePublic().equals(editProfileStatusRequest.isProfilePublic())) {
+            throw new CustomUserException(INVALID_PROFILE_STATUS, "profile status with given is already set");
+        }
+        user.updateProfileStatus(editProfileStatusRequest.isProfilePublic());
     }
 
     @Transactional(readOnly = true)

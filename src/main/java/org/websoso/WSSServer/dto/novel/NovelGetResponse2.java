@@ -3,7 +3,7 @@ package org.websoso.WSSServer.dto.novel;
 import java.util.List;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelStatistics;
-import org.websoso.WSSServer.dto.Keyword.KeywordCountGetResponse;
+import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
 
 public record NovelGetResponse2(

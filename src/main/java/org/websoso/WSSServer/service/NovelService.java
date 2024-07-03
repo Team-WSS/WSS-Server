@@ -20,7 +20,7 @@ import org.websoso.WSSServer.domain.NovelKeywords;
 import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.domain.Platform;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.dto.Keyword.KeywordCountGetResponse;
+import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse2;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;

@@ -81,4 +81,40 @@ public class NovelStatistics {
         this.novelFeedCount--;
     }
 
+    public void increaseWatchingCount() {
+        this.watchingCount = Optional.ofNullable(this.watchingCount).orElse(0) + 1;
+    }
+
+    public void increaseInterestCount() {
+        this.interestCount = Optional.ofNullable(this.interestCount).orElse(0) + 1;
+    }
+
+    public void increaseWatchedCount() {
+        this.watchedCount = Optional.ofNullable(this.watchedCount).orElse(0) + 1;
+    }
+
+    public void increaseQuitCount() {
+        this.quitCount = Optional.ofNullable(this.quitCount).orElse(0) + 1;
+    }
+
+    public void increaseUniverseCount() {
+        this.universeCount = Optional.ofNullable(this.universeCount).orElse(0) + 1;
+    }
+
+    public void increaseVibeCount() {
+        this.vibeCount = Optional.ofNullable(this.vibeCount).orElse(0) + 1;
+    }
+
+    public void increaseMaterialCount() {
+        this.materialCount = Optional.ofNullable(this.materialCount).orElse(0) + 1;
+    }
+
+    public void increaseCharactersCount() {
+        this.charactersCount = Optional.ofNullable(this.charactersCount).orElse(0) + 1;
+    }
+
+    public void increaseRelationshipCount() {
+        this.relationshipCount = Optional.ofNullable(this.relationshipCount).orElse(0) + 1;
+    }
+
 }

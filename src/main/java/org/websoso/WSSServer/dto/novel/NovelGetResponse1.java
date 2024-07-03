@@ -42,7 +42,7 @@ public record NovelGetResponse1(
                     novelRating,
                     novel.getNovelRatingCount(),
                     novelStatistics.getNovelFeedCount(),
-                    0f,
+                    0.0f,
                     null,
                     null,
                     null,
