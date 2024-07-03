@@ -28,6 +28,7 @@ public class SecurityConfig {
             "/users/nickname/check",
             "/actuator/health",
             "/novels/{novelId}",
+            "/novels/{novelId}/info",
             "/soso-picks"
     };
 
