@@ -24,6 +24,9 @@ public class Platform {
     @Column(columnDefinition = "varchar(10)", nullable = false)
     private String platformName;
 
+    @Column(columnDefinition = "text", nullable = false)
+    private String platformImage;
+
     @Column(nullable = false)
     private String platformUrl;
 

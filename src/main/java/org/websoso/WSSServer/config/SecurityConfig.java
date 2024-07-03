@@ -15,7 +15,6 @@ import org.websoso.WSSServer.config.jwt.CustomAccessDeniedHandler;
 import org.websoso.WSSServer.config.jwt.CustomJwtAuthenticationEntryPoint;
 import org.websoso.WSSServer.config.jwt.JwtAuthenticationFilter;
 
-
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -28,7 +27,8 @@ public class SecurityConfig {
             "/users/login",
             "/users/nickname/check",
             "/actuator/health",
-            "/novels/{novelId}"
+            "/novels/{novelId}",
+            "/novels/{novelId}/info"
     };
 
     @Bean
