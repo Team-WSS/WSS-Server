@@ -18,7 +18,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.domain.common.Role;
 
@@ -53,10 +52,8 @@ public class User {
     @Column(columnDefinition = "tinyint default 1", nullable = false)
     private Byte avatarId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'Y'")
-    private Flag isProfilePublic;
+    @Column(columnDefinition = "Boolean default true", nullable = false)
+    private Boolean isProfilePublic;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -74,4 +71,8 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<UserNovel> userNovels = new ArrayList<>();
+
+    public void updateProfileStatus(Boolean profileStatus) {
+        this.isProfilePublic = profileStatus;
+    }
 }
