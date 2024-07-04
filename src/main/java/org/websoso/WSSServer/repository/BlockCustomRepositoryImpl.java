@@ -3,11 +3,11 @@ package org.websoso.WSSServer.repository;
 import static org.websoso.WSSServer.domain.QBlock.block;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class BlockCustomRepositoryImpl implements BlockCustomRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
