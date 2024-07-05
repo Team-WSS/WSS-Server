@@ -2,7 +2,7 @@ package org.websoso.WSSServer.dto.userNovel;
 
 import java.util.List;
 import org.websoso.WSSServer.domain.UserNovel;
-import org.websoso.WSSServer.dto.Keyword.KeywordGetResponse;
+import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 
 public record UserNovelGetResponse(
         String novelTitle,
