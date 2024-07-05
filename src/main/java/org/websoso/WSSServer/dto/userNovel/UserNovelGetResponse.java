@@ -17,9 +17,9 @@ public record UserNovelGetResponse(
                                           List<KeywordGetResponse> keywords) {
         return new UserNovelGetResponse(
                 userNovel.getNovel().getTitle(),
-                userNovel.getStatus() != null ? userNovel.getStatus().getName() : null,
-                userNovel.getStartDate() != null ? userNovel.getStartDate().toString() : null,
-                userNovel.getEndDate() != null ? userNovel.getEndDate().toString() : null,
+                userNovel.getStatus() == null ? null : userNovel.getStatus().getName(),
+                userNovel.getStartDate() == null ? null : userNovel.getStartDate().toString(),
+                userNovel.getEndDate() == null ? null : userNovel.getEndDate().toString(),
                 userNovel.getUserNovelRating(),
                 attractivePoints,
                 keywords
