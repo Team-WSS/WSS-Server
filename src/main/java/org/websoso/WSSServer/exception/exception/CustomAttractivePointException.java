@@ -10,3 +10,4 @@ public class CustomAttractivePointException extends AbstractCustomException {
     public CustomAttractivePointException(CustomAttractivePointError customAttractivePointError, String message) {
         super(customAttractivePointError, message);
     }
+}
