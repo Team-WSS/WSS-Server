@@ -205,7 +205,7 @@ public class UserNovelService {
                     "user novel with the given user and novel is not found");
         }
 
-        List<String> attractivePoints = getString(attractivePointService.getAttractivePointOrException(userNovel));
+        List<String> attractivePoints = extractAttractivePoints(attractivePointService.getAttractivePointOrException(userNovel));
 
         List<NovelKeywords> novelKeywords = novelKeywordsRepository.findByNovelIdAndUserId(novel.getNovelId(),
                 user.getUserId());
@@ -219,7 +219,7 @@ public class UserNovelService {
         return UserNovelGetResponse.of(userNovel, attractivePoints, keywords);
     }
 
-    private List<String> getString(AttractivePoint attractivePoint) {
+    private List<String> extractAttractivePoints(AttractivePoint attractivePoint) {
         List<String> attractivePoints = new ArrayList<>();
         if (attractivePoint.getUniverse()) {
             attractivePoints.add("universe");
