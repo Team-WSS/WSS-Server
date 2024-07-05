@@ -38,4 +38,3 @@ out/
 
 ## application.yml ##
 *.yml
-import.sql
