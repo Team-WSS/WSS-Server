@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.attractivePoint.AttractivePointErrorCode.ATTRACTIVE_POINT_NOT_FOUND;
-import static org.websoso.WSSServer.exception.attractivePoint.AttractivePointErrorCode.INVALID_ATTRACTIVE_POINT;
+import static org.websoso.WSSServer.exception.error.CustomAttractivePointError.ATTRACTIVE_POINT_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomAttractivePointError.INVALID_ATTRACTIVE_POINT;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
 import org.websoso.WSSServer.domain.UserNovel;
-import org.websoso.WSSServer.exception.attractivePoint.exception.InvalidAttractivePointException;
+import org.websoso.WSSServer.exception.exception.CustomAttractivePointException;
 import org.websoso.WSSServer.repository.AttractivePointRepository;
 
 @Service
@@ -22,7 +22,7 @@ public class AttractivePointService {
     @Transactional(readOnly = true)
     public AttractivePoint getAttractivePointOrException(UserNovel userNovel) {
         return attractivePointRepository.findByUserNovel(userNovel)
-                .orElseThrow(() -> new InvalidAttractivePointException(ATTRACTIVE_POINT_NOT_FOUND,
+                .orElseThrow(() -> new CustomAttractivePointException(ATTRACTIVE_POINT_NOT_FOUND,
                         "attractive point with the given user novel is not found"));
     }
 
@@ -34,7 +34,7 @@ public class AttractivePointService {
                 case "material" -> attractivePoint.setMaterial(true);
                 case "character" -> attractivePoint.setCharacters(true);
                 case "relationship" -> attractivePoint.setRelationship(true);
-                default -> throw new InvalidAttractivePointException(INVALID_ATTRACTIVE_POINT,
+                default -> throw new CustomAttractivePointException(INVALID_ATTRACTIVE_POINT,
                         "invalid attractive point provided in the request");
             }
         }

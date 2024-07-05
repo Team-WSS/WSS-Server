@@ -12,8 +12,8 @@ import static org.websoso.WSSServer.domain.common.CategoryName.RO;
 import static org.websoso.WSSServer.domain.common.CategoryName.WU;
 import static org.websoso.WSSServer.domain.common.Flag.N;
 import static org.websoso.WSSServer.domain.common.Flag.Y;
-import static org.websoso.WSSServer.exception.category.CategoryErrorCode.CATEGORY_NOT_FOUND;
-import static org.websoso.WSSServer.exception.category.CategoryErrorCode.INVALID_CATEGORY_FORMAT;
+import static org.websoso.WSSServer.exception.error.CustomCategoryError.CATEGORY_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomCategoryError.INVALID_CATEGORY_FORMAT;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +25,7 @@ import org.websoso.WSSServer.domain.Category.CategoryBuilder;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.common.CategoryName;
 import org.websoso.WSSServer.domain.common.Flag;
-import org.websoso.WSSServer.exception.category.exception.InvalidCategoryException;
+import org.websoso.WSSServer.exception.exception.CustomCategoryException;
 import org.websoso.WSSServer.repository.CategoryRepository;
 
 @Service
@@ -46,7 +46,7 @@ public class CategoryService {
 
     public void updateCategory(Feed feed, List<String> relevantCategories) {
         Long categoryId = categoryRepository.findByFeed(feed).orElseThrow(() ->
-                        new InvalidCategoryException(CATEGORY_NOT_FOUND, "Category for the given feed was not found"))
+                        new CustomCategoryException(CATEGORY_NOT_FOUND, "Category for the given feed was not found"))
                 .getCategoryId();
 
         CategoryBuilder builder = Category.builder()
@@ -79,7 +79,7 @@ public class CategoryService {
         List<String> categoryNames = Arrays.stream(CategoryName.values()).map(CategoryName::getValue).toList();
 
         if (!categoryNames.containsAll(relevantCategories)) {
-            throw new InvalidCategoryException(INVALID_CATEGORY_FORMAT, "invalid category format");
+            throw new CustomCategoryException(INVALID_CATEGORY_FORMAT, "invalid category format");
         }
     }
 
