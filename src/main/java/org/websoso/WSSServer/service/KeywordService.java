@@ -1,5 +1,7 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.exception.error.CustomKeywordError.KEYWORD_NOT_FOUND;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,6 +13,7 @@ import org.websoso.WSSServer.domain.common.KeywordCategory;
 import org.websoso.WSSServer.dto.keyword.CategoryGetResponse;
 import org.websoso.WSSServer.dto.keyword.KeywordByCategoryGetResponse;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
+import org.websoso.WSSServer.exception.exception.CustomKeywordException;
 import org.websoso.WSSServer.repository.KeywordRepository;
 
 @Service
@@ -19,6 +22,13 @@ import org.websoso.WSSServer.repository.KeywordRepository;
 public class KeywordService {
 
     private final KeywordRepository keywordRepository;
+
+    @Transactional(readOnly = true)
+    public Keyword getKeywordOrException(Integer keywordId) {
+        return keywordRepository.findById(keywordId)
+                .orElseThrow(() -> new CustomKeywordException(KEYWORD_NOT_FOUND,
+                        "keyword with the given id is not found"));
+    }
 
     @Transactional(readOnly = true)
     public KeywordByCategoryGetResponse searchKeywordByCategory(String query) {

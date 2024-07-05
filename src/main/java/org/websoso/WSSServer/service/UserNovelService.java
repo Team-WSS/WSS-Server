@@ -1,10 +1,7 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.error.CustomKeywordError.KEYWORD_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.CustomNovelStatisticsError.NOVEL_STATISTICS_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
-import static org.websoso.WSSServer.exception.error.CustomUserStatisticsError.USER_STATISTICS_NOT_FOUND;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -23,31 +20,33 @@ import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
-import org.websoso.WSSServer.exception.exception.CustomKeywordException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
-import org.websoso.WSSServer.exception.exception.CustomNovelStatisticsException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
-import org.websoso.WSSServer.exception.exception.CustomUserStatisticsException;
 import org.websoso.WSSServer.repository.AttractivePointRepository;
-import org.websoso.WSSServer.repository.KeywordRepository;
 import org.websoso.WSSServer.repository.NovelKeywordsRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
-import org.websoso.WSSServer.repository.NovelStatisticsRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
-import org.websoso.WSSServer.repository.UserStatisticsRepository;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class UserNovelService {
 
-    private final UserNovelRepository userNovelRepository;
     private final NovelRepository novelRepository;
-    private final UserStatisticsRepository userStatisticsRepository;
-    private final NovelStatisticsRepository novelStatisticsRepository;
+    private final UserNovelRepository userNovelRepository;
     private final NovelKeywordsRepository novelKeywordsRepository;
-    private final KeywordRepository keywordRepository;
     private final AttractivePointRepository attractivePointRepository;
+    private final UserStatisticsService userStatisticsService;
+    private final NovelStatisticsService novelStatisticsService;
+    private final KeywordService keywordService;
+
+    @Transactional(readOnly = true)
+    public UserNovel getUserNovelOrNull(User user, Novel novel) {
+        if (user == null) {
+            return null;
+        }
+        return userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
+    }
 
     public void createUserNovel(User user, UserNovelCreateRequest request) {
 
@@ -70,8 +69,7 @@ public class UserNovelService {
         AttractivePointService.setAttractivePoint(attractivePoint, request.attractivePoints());
 
         for (Integer keywordId : request.keywordIds()) {
-            Keyword keyword = keywordRepository.findById(keywordId).orElseThrow(
-                    () -> new CustomKeywordException(KEYWORD_NOT_FOUND, "keyword with the given id is not found"));
+            Keyword keyword = keywordService.getKeywordOrException(keywordId);
             novelKeywordsRepository.save(
                     NovelKeywords.create(novel.getNovelId(), keyword.getKeywordId(), user.getUserId()));
         }
@@ -79,12 +77,17 @@ public class UserNovelService {
         increaseStatistics(user, novel, request, attractivePoint);
     }
 
-    @Transactional(readOnly = true)
-    public UserNovel getUserNovelOrNull(User user, Novel novel) {
-        if (user == null) {
-            return null;
+    public UserNovel createUserNovelByInterest(User user, Novel novel) {
+
+        if (getUserNovelOrNull(user, novel) != null) {
+            throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
         }
-        return userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
+
+        UserNovel userNovel = userNovelRepository.save(UserNovel.create(null, 0.0f, null, null, user, novel));
+
+        attractivePointRepository.save(AttractivePoint.create(userNovel));
+
+        return userNovel;
     }
 
     private LocalDate convertToLocalDate(String string) {
@@ -93,19 +96,16 @@ public class UserNovelService {
 
     private void increaseStatistics(User user, Novel novel, UserNovelCreateRequest request,
                                     AttractivePoint attractivePoint) {
-        UserStatistics userStatistics = userStatisticsRepository.findByUser(user).orElseThrow(
-                () -> new CustomUserStatisticsException(USER_STATISTICS_NOT_FOUND,
-                        "user statistics with the given user is not found"));
-        NovelStatistics novelStatistics = novelStatisticsRepository.findByNovel(novel).orElseThrow(
-                () -> new CustomNovelStatisticsException(NOVEL_STATISTICS_NOT_FOUND,
-                        "novel statistics with the given novel is not found"));
+
+        UserStatistics userStatistics = userStatisticsService.getUserStatisticsOrException(user);
+        NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
 
         increaseStatisticsByReadStatus(request.status(), userStatistics, novelStatistics);
         increaseStatisticsByAttractivePoint(attractivePoint, novelStatistics);
         if (request.userNovelRating() != 0.0f) {
             novel.increaseNovelRatingCount();
             novel.increaseNovelRatingSum(request.userNovelRating());
-            increaseStatisticsByNovelGenre(novel.getNovelGenres(), request.userNovelRating(), userStatistics);
+            increaseStatisticsByNovelGenre(novel.getNovelGenres(), userStatistics);
         }
     }
 
@@ -127,52 +127,23 @@ public class UserNovelService {
         }
     }
 
-    private void increaseStatisticsByNovelGenre(List<NovelGenre> novelGenres, Float userNovelRating,
-                                                UserStatistics userStatistics) {
+    private void increaseStatisticsByNovelGenre(List<NovelGenre> novelGenres, UserStatistics userStatistics) {
         for (NovelGenre novelGenre : novelGenres) {
             switch (novelGenre.getGenre().getGenreName()) {
-                case "로맨스" -> {
-                    userStatistics.increaseRoNovelNovelCount();
-                    userStatistics.increaseRoNovelRatingSum(userNovelRating);
-                }
-                case "로판" -> {
-                    userStatistics.increaseRfNovelNovelCount();
-                    userStatistics.increaseRfNovelRatingSum(userNovelRating);
-                }
-                case "BL" -> {
-                    userStatistics.increaseBlNovelNovelCount();
-                    userStatistics.increaseBlNovelRatingSum(userNovelRating);
-                }
-                case "판타지" -> {
-                    userStatistics.increaseFaNovelNovelCount();
-                    userStatistics.increaseFaNovelRatingSum(userNovelRating);
-                }
-                case "현판" -> {
-                    userStatistics.increaseMfNovelNovelCount();
-                    userStatistics.increaseMfNovelRatingSum(userNovelRating);
-                }
-                case "무협" -> {
-                    userStatistics.increaseWuNovelNovelCount();
-                    userStatistics.increaseWuNovelRatingSum(userNovelRating);
-                }
-                case "라노벨" -> {
-                    userStatistics.increaseLnNovelNovelCount();
-                    userStatistics.increaseLnNovelRatingSum(userNovelRating);
-                }
-                case "드라마" -> {
-                    userStatistics.increaseDrNovelNovelCount();
-                    userStatistics.increaseDrNovelRatingSum(userNovelRating);
-                }
-                case "미스터리" -> {
-                    userStatistics.increaseMyNovelNovelCount();
-                    userStatistics.increaseMyNovelRatingSum(userNovelRating);
-                }
+                case "로맨스" -> userStatistics.increaseRoNovelCount();
+                case "로판" -> userStatistics.increaseRfNovelCount();
+                case "BL" -> userStatistics.increaseBlNovelCount();
+                case "판타지" -> userStatistics.increaseFaNovelCount();
+                case "현판" -> userStatistics.increaseMfNovelCount();
+                case "무협" -> userStatistics.increaseWuNovelCount();
+                case "라노벨" -> userStatistics.increaseLnNovelCount();
+                case "드라마" -> userStatistics.increaseDrNovelCount();
+                case "미스터리" -> userStatistics.increaseMyNovelCount();
             }
         }
     }
 
-    private void increaseStatisticsByAttractivePoint(AttractivePoint attractivePoint,
-                                                     NovelStatistics novelStatistics) {
+    private void increaseStatisticsByAttractivePoint(AttractivePoint attractivePoint, NovelStatistics novelStatistics) {
         if (attractivePoint.getUniverse()) {
             novelStatistics.increaseUniverseCount();
         }
