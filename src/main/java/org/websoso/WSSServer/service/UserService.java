@@ -1,8 +1,8 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.user.UserErrorCode.DUPLICATED_NICKNAME;
-import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_PROFILE_STATUS;
-import static org.websoso.WSSServer.exception.user.UserErrorCode.USER_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
+import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_PROFILE_STATUS;
+import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,9 +15,7 @@ import org.websoso.WSSServer.dto.user.EmailGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
-import org.websoso.WSSServer.exception.user.exception.CustomUserException;
-import org.websoso.WSSServer.exception.user.exception.DuplicatedNicknameException;
-import org.websoso.WSSServer.exception.user.exception.InvalidUserException;
+import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Service
@@ -31,7 +29,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public NicknameValidation isNicknameAvailable(String nickname) {
         if (userRepository.existsByNickname(nickname)) {
-            throw new DuplicatedNicknameException(DUPLICATED_NICKNAME, "nickname is duplicated.");
+            throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
         }
         return NicknameValidation.of(true);
     }
@@ -66,7 +64,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public User getUserOrException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() ->
-                new InvalidUserException(USER_NOT_FOUND, "user with the given id was not found"));
+                new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
     }
 
 }

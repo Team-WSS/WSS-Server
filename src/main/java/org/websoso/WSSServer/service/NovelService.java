@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.keyword.KeywordErrorCode.KEYWORD_NOT_FOUND;
-import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomKeywordError.KEYWORD_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,8 +24,8 @@ import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse2;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
-import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
-import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
+import org.websoso.WSSServer.exception.exception.CustomKeywordException;
+import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.repository.KeywordRepository;
 import org.websoso.WSSServer.repository.NovelKeywordRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
@@ -59,7 +59,7 @@ public class NovelService {
     @Transactional(readOnly = true)
     public Novel getNovelOrException(Long novelId) {
         return novelRepository.findById(novelId)
-                .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND,
+                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
                         "novel with the given id is not found"));
     }
 
@@ -161,7 +161,7 @@ public class NovelService {
                 .limit(5)
                 .map(entry -> {
                     Keyword keyword = keywordRepository.findById(entry.getKey()).orElseThrow(
-                            () -> new InvalidKeywordException(KEYWORD_NOT_FOUND,
+                            () -> new CustomKeywordException(KEYWORD_NOT_FOUND,
                                     "keyword with the given id is not found"));
                     return KeywordCountGetResponse.of(keyword, entry.getValue().intValue());
                 })
