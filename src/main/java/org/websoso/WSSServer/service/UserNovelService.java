@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
-import static org.websoso.WSSServer.exception.userNovel.UserNovelErrorCode.USER_NOVEL_ALREADY_EXISTS;
+import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -20,8 +20,8 @@ import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
-import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
-import org.websoso.WSSServer.exception.userNovel.exception.NovelAlreadyRegisteredException;
+import org.websoso.WSSServer.exception.exception.CustomNovelException;
+import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.repository.AttractivePointRepository;
 import org.websoso.WSSServer.repository.NovelKeywordsRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
@@ -51,10 +51,10 @@ public class UserNovelService {
     public void createUserNovel(User user, UserNovelCreateRequest request) {
 
         Novel novel = novelRepository.findById(request.novelId())
-                .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
+                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
 
         if (getUserNovelOrNull(user, novel) != null) {
-            throw new NovelAlreadyRegisteredException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
+            throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
         }
 
         UserNovel userNovel = userNovelRepository.save(UserNovel.create(
@@ -80,7 +80,7 @@ public class UserNovelService {
     public UserNovel createUserNovelByInterest(User user, Novel novel) {
 
         if (getUserNovelOrNull(user, novel) != null) {
-            throw new NovelAlreadyRegisteredException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
+            throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
         }
 
         UserNovel userNovel = userNovelRepository.save(UserNovel.create(null, 0.0f, null, null, user, novel));
@@ -96,6 +96,7 @@ public class UserNovelService {
 
     private void increaseStatistics(User user, Novel novel, UserNovelCreateRequest request,
                                     AttractivePoint attractivePoint) {
+
         UserStatistics userStatistics = userStatisticsService.getUserStatisticsOrException(user);
         NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
 

@@ -1,9 +1,9 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.genre.GenreErrorCode.GENRE_NOT_FOUND;
-import static org.websoso.WSSServer.exception.keyword.KeywordErrorCode.KEYWORD_NOT_FOUND;
-import static org.websoso.WSSServer.exception.novel.NovelErrorCode.ALREADY_INTERESTED;
-import static org.websoso.WSSServer.exception.novel.NovelErrorCode.NOVEL_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomKeywordError.KEYWORD_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserNovelError.ALREADY_INTERESTED;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,9 +29,10 @@ import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse2;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
-import org.websoso.WSSServer.exception.genre.exception.InvalidGenreException;
-import org.websoso.WSSServer.exception.keyword.exception.InvalidKeywordException;
-import org.websoso.WSSServer.exception.novel.exception.InvalidNovelException;
+import org.websoso.WSSServer.exception.exception.CustomGenreException;
+import org.websoso.WSSServer.exception.exception.CustomKeywordException;
+import org.websoso.WSSServer.exception.exception.CustomNovelException;
+import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.repository.KeywordRepository;
 import org.websoso.WSSServer.repository.NovelKeywordRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
@@ -53,7 +54,7 @@ public class NovelService {
     @Transactional(readOnly = true)
     public Novel getNovelOrException(Long novelId) {
         return novelRepository.findById(novelId)
-                .orElseThrow(() -> new InvalidNovelException(NOVEL_NOT_FOUND,
+                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
                         "novel with the given id is not found"));
     }
 
@@ -86,7 +87,7 @@ public class NovelService {
         UserNovel userNovel = userNovelService.getUserNovelOrNull(user, novel);
 
         if (userNovel != null && userNovel.getIsInterest()) {
-            throw new InvalidNovelException(ALREADY_INTERESTED, "already registered as interested");
+            throw new CustomUserNovelException(ALREADY_INTERESTED, "already registered as interested");
         }
 
         NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
@@ -112,7 +113,7 @@ public class NovelService {
                     case "라노벨" -> userStatistics.increaseLnNovelCount();
                     case "드라마" -> userStatistics.increaseDrNovelCount();
                     case "미스터리" -> userStatistics.increaseMyNovelCount();
-                    default -> throw new InvalidGenreException(GENRE_NOT_FOUND, "cannot find corresponding genre");
+                    default -> throw new CustomGenreException(GENRE_NOT_FOUND, "cannot find corresponding genre");
                 }
             }
         }
@@ -210,7 +211,7 @@ public class NovelService {
                 .limit(5)
                 .map(entry -> {
                     Keyword keyword = keywordRepository.findById(entry.getKey()).orElseThrow(
-                            () -> new InvalidKeywordException(KEYWORD_NOT_FOUND,
+                            () -> new CustomKeywordException(KEYWORD_NOT_FOUND,
                                     "keyword with the given id is not found"));
                     return KeywordCountGetResponse.of(keyword, entry.getValue().intValue());
                 })
