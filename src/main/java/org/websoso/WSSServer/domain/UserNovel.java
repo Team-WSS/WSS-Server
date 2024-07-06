@@ -68,4 +68,8 @@ public class UserNovel extends BaseEntity {
         return new UserNovel(status, userNovelRating, startDate, endDate, user, novel);
     }
 
+    public void setIsInterest(Boolean isInterest) {
+        this.isInterest = isInterest;
+    }
+
 }

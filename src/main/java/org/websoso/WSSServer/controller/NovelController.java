@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.controller;
 
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import java.security.Principal;
@@ -7,8 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse2;
 import org.websoso.WSSServer.service.NovelService;
@@ -42,5 +45,17 @@ public class NovelController {
         return ResponseEntity
                 .status(OK)
                 .body(novelService.getNovelInfo2(novelId));
+    }
+
+    @PostMapping("/{novelId}/is-interest")
+    public ResponseEntity<Void> registerAsInterest(Principal principal,
+                                                   @PathVariable("novelId") Long novelId) {
+
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        novelService.registerAsInterest(user, novelId);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
     }
 }

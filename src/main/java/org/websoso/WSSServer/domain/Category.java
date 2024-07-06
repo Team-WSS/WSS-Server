@@ -4,8 +4,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -14,8 +12,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
-import org.websoso.WSSServer.domain.common.Flag;
 
 @Entity
 @Getter
@@ -27,63 +23,43 @@ public class Category {
     @Column(nullable = false)
     private Long categoryId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isRf;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isRf;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isRo;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isRo;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isFa;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isFa;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isMf;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isMf;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isDr;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isDr;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isLn;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isLn;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isWu;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isWu;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isMy;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isMy;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isBl;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isBl;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isEtc;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isEtc;
 
     @OneToOne
     @JoinColumn(name = "feed_id", nullable = false)
     private Feed feed;
 
     @Builder
-    public Category(Long categoryId, Flag isRf, Flag isRo, Flag isFa, Flag isMf, Flag isDr, Flag isLn, Flag isWu,
-                    Flag isMy, Flag isBl, Flag isEtc, Feed feed) {
+    public Category(Long categoryId, Boolean isRf, Boolean isRo, Boolean isFa, Boolean isMf, Boolean isDr, Boolean isLn,
+                    Boolean isWu, Boolean isMy, Boolean isBl, Boolean isEtc, Feed feed) {
         this.categoryId = categoryId;
         this.isRf = isRf;
         this.isRo = isRo;
@@ -97,5 +73,4 @@ public class Category {
         this.isEtc = isEtc;
         this.feed = feed;
     }
-
 }

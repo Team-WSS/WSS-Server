@@ -2,15 +2,13 @@ package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
-import static org.websoso.WSSServer.exception.feed.FeedErrorCode.ALREADY_LIKED;
-import static org.websoso.WSSServer.exception.feed.FeedErrorCode.INVALID_LIKE_COUNT;
-import static org.websoso.WSSServer.exception.feed.FeedErrorCode.LIKE_USER_NOT_FOUND;
-import static org.websoso.WSSServer.exception.user.UserErrorCode.INVALID_AUTHORIZED;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_LIKED;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.INVALID_LIKE_COUNT;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.LIKE_USER_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -24,13 +22,11 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.domain.common.BaseEntity;
-import org.websoso.WSSServer.domain.common.Flag;
-import org.websoso.WSSServer.exception.feed.exception.InvalidFeedException;
-import org.websoso.WSSServer.exception.user.exception.InvalidAuthorizedException;
+import org.websoso.WSSServer.exception.exception.CustomFeedException;
+import org.websoso.WSSServer.exception.exception.CustomUserException;
 
 @Getter
 @DynamicInsert
@@ -43,10 +39,8 @@ public class Feed extends BaseEntity {
     @Column(nullable = false)
     private Long feedId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isHidden;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isHidden;
 
     @Column(columnDefinition = "varchar(2000)", nullable = false)
     private String feedContent;
@@ -54,10 +48,8 @@ public class Feed extends BaseEntity {
     @Column
     private Long novelId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @ColumnDefault("'N'")
-    private Flag isSpoiler;
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isSpoiler;
 
     @Column(columnDefinition = "int default 0", nullable = false)
     private Integer likeCount;
@@ -82,14 +74,14 @@ public class Feed extends BaseEntity {
     private List<Comment> comments = new ArrayList<>();
 
     @Builder
-    public Feed(String feedContent, Flag isSpoiler, Long novelId, User user) {
+    public Feed(String feedContent, Boolean isSpoiler, Long novelId, User user) {
         this.feedContent = feedContent;
         this.isSpoiler = isSpoiler;
         this.novelId = novelId;
         this.user = user;
     }
 
-    public void updateFeed(String feedContent, Flag isSpoiler, Long novelId) {
+    public void updateFeed(String feedContent, Boolean isSpoiler, Long novelId) {
         this.feedContent = feedContent;
         this.isSpoiler = isSpoiler;
         this.novelId = novelId;
@@ -97,7 +89,7 @@ public class Feed extends BaseEntity {
 
     public void validateUserAuthorization(User user, Action action) {
         if (!this.user.equals(user)) {
-            throw new InvalidAuthorizedException(INVALID_AUTHORIZED,
+            throw new CustomUserException(INVALID_AUTHORIZED,
                     "only the author can " + action.getDescription() + " the feed");
         }
     }
@@ -106,7 +98,7 @@ public class Feed extends BaseEntity {
         String likeUserIdFormatted = "{" + likeUserId + "}";
 
         if (this.likeUsers.contains(likeUserIdFormatted)) {
-            throw new InvalidFeedException(ALREADY_LIKED, "already liked feed");
+            throw new CustomFeedException(ALREADY_LIKED, "already liked feed");
         }
 
         this.likeUsers += likeUserIdFormatted;
@@ -117,11 +109,11 @@ public class Feed extends BaseEntity {
         String unLikeUserIdFormatted = "{" + unLikeUserId + "}";
 
         if (!this.likeUsers.contains(unLikeUserIdFormatted)) {
-            throw new InvalidFeedException(LIKE_USER_NOT_FOUND, "user has not liked this feed");
+            throw new CustomFeedException(LIKE_USER_NOT_FOUND, "user has not liked this feed");
         }
 
         if (this.likeCount <= 0) {
-            throw new InvalidFeedException(INVALID_LIKE_COUNT, "invalid like count");
+            throw new CustomFeedException(INVALID_LIKE_COUNT, "invalid like count");
         }
 
         this.likeUsers = this.likeUsers.replace(unLikeUserIdFormatted, "");

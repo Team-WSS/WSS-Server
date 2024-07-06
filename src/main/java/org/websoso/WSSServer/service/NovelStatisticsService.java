@@ -1,13 +1,13 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.novelStatistics.NovelStatisticsErrorCode.NOVEL_STATISTICS_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomNovelStatisticsError.NOVEL_STATISTICS_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelStatistics;
-import org.websoso.WSSServer.exception.novelStatistics.exception.InvalidNovelStatisticsException;
+import org.websoso.WSSServer.exception.exception.CustomNovelStatisticsException;
 import org.websoso.WSSServer.repository.NovelStatisticsRepository;
 
 @Service
@@ -16,6 +16,13 @@ import org.websoso.WSSServer.repository.NovelStatisticsRepository;
 public class NovelStatisticsService {
 
     private final NovelStatisticsRepository novelStatisticsRepository;
+
+    @Transactional(readOnly = true)
+    public NovelStatistics getNovelStatisticsOrException(Novel novel) {
+        return novelStatisticsRepository.findByNovel(novel).orElseThrow(
+                () -> new CustomNovelStatisticsException(NOVEL_STATISTICS_NOT_FOUND,
+                        "novel statistics with the given novel is not found"));
+    }
 
     public void increaseNovelFeedCount(Novel novel) {
         NovelStatistics novelStatistics = novelStatisticsRepository.findByNovel(novel)
@@ -36,13 +43,6 @@ public class NovelStatisticsService {
         NovelStatistics novelStatistics = getNovelStatisticsOrException(novel);
 
         novelStatistics.decreaseNovelFeedCount();
-    }
-
-    @Transactional(readOnly = true)
-    protected NovelStatistics getNovelStatisticsOrException(Novel novel) {
-        return novelStatisticsRepository.findByNovel(novel).orElseThrow(
-                () -> new InvalidNovelStatisticsException(NOVEL_STATISTICS_NOT_FOUND,
-                        "novel statistics with the given novel is not found"));
     }
 
 }

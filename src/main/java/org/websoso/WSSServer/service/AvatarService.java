@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.avatar.AvatarErrorCode.AVATAR_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 
 import java.util.List;
 import java.util.Random;
@@ -12,7 +12,7 @@ import org.websoso.WSSServer.domain.AvatarLine;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.avatar.AvatarGetResponse;
 import org.websoso.WSSServer.dto.avatar.AvatarsGetResponse;
-import org.websoso.WSSServer.exception.avatar.exception.AvatarNotFoundException;
+import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.repository.AvatarRepository;
 
 @Service
@@ -26,7 +26,7 @@ public class AvatarService {
     @Transactional(readOnly = true)
     public Avatar getAvatarOrException(Byte avatarId) {
         return avatarRepository.findById(avatarId).orElseThrow(() ->
-                new AvatarNotFoundException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
+                new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
     }
 
     @Transactional(readOnly = true)
@@ -45,4 +45,5 @@ public class AvatarService {
         final int avatarLineSize = avatarLines.size();
         return avatarLines.get(random.nextInt(avatarLineSize));
     }
+
 }
