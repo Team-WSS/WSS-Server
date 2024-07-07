@@ -4,7 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
-import org.websoso.WSSServer.dto.User.UserBasicInfo;
+import org.websoso.WSSServer.dto.user.UserBasicInfo;
 
 public record FeedGetResponse(
         Long userId,

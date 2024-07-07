@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.domain.common.Role;
-import org.websoso.WSSServer.dto.User.UserBasicInfo;
+import org.websoso.WSSServer.dto.user.UserBasicInfo;
 
 @Entity
 @Getter
