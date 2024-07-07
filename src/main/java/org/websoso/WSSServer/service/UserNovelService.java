@@ -2,9 +2,11 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
+import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,7 +21,9 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.domain.common.ReadStatus;
+import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
+import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.repository.AttractivePointRepository;
@@ -36,6 +40,7 @@ public class UserNovelService {
     private final UserNovelRepository userNovelRepository;
     private final NovelKeywordsRepository novelKeywordsRepository;
     private final AttractivePointRepository attractivePointRepository;
+    private final AttractivePointService attractivePointService;
     private final UserStatisticsService userStatisticsService;
     private final NovelStatisticsService novelStatisticsService;
     private final KeywordService keywordService;
@@ -159,6 +164,49 @@ public class UserNovelService {
         if (attractivePoint.getRelationship()) {
             novelStatistics.increaseRelationshipCount();
         }
+    }
+
+    @Transactional(readOnly = true)
+    public UserNovelGetResponse getUserNovelInfo(User user, Novel novel) {
+
+        UserNovel userNovel = getUserNovelOrNull(user, novel);
+        if (userNovel == null) {
+            throw new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
+                    "user novel with the given user and novel is not found");
+        }
+
+        List<String> attractivePoints = extractAttractivePoints(
+                attractivePointService.getAttractivePointOrException(userNovel));
+
+        List<NovelKeywords> novelKeywords = novelKeywordsRepository.findByNovelIdAndUserId(novel.getNovelId(),
+                user.getUserId());
+        List<KeywordGetResponse> keywords = new ArrayList<>();
+        for (NovelKeywords novelKeyword : novelKeywords) {
+            Keyword keyword = keywordService.getKeywordOrException(novelKeyword.getKeywordId());
+            keywords.add(KeywordGetResponse.of(keyword));
+        }
+
+        return UserNovelGetResponse.of(userNovel, attractivePoints, keywords);
+    }
+
+    private List<String> extractAttractivePoints(AttractivePoint attractivePoint) {
+        List<String> attractivePoints = new ArrayList<>();
+        if (attractivePoint.getUniverse()) {
+            attractivePoints.add("universe");
+        }
+        if (attractivePoint.getVibe()) {
+            attractivePoints.add("vibe");
+        }
+        if (attractivePoint.getMaterial()) {
+            attractivePoints.add("material");
+        }
+        if (attractivePoint.getCharacters()) {
+            attractivePoints.add("character");
+        }
+        if (attractivePoint.getRelationship()) {
+            attractivePoints.add("relationship");
+        }
+        return attractivePoints;
     }
 
 }

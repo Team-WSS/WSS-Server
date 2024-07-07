@@ -1,17 +1,23 @@
 package org.websoso.WSSServer.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
+import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
+import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserNovelService;
 import org.websoso.WSSServer.service.UserService;
 
@@ -21,7 +27,17 @@ import org.websoso.WSSServer.service.UserService;
 public class UserNovelController {
 
     private final UserService userService;
+    private final NovelService novelService;
     private final UserNovelService userNovelService;
+
+    @GetMapping("/{novelId}")
+    public ResponseEntity<UserNovelGetResponse> getUserNovel(Principal principal, @PathVariable Long novelId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        Novel novel = novelService.getNovelOrException(novelId);
+        return ResponseEntity
+                .status(OK)
+                .body(userNovelService.getUserNovelInfo(user, novel));
+    }
 
     @PostMapping
     public ResponseEntity<Void> createUserNovel(Principal principal,
