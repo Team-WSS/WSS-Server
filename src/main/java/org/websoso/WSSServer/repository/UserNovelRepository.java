@@ -9,6 +9,7 @@ import org.websoso.WSSServer.domain.UserNovel;
 
 @Repository
 public interface UserNovelRepository extends JpaRepository<UserNovel, Long> {
+
     Optional<UserNovel> findByNovelAndUser(Novel novel, User user);
 
 }

@@ -45,4 +45,5 @@ public class AvatarService {
         final int avatarLineSize = avatarLines.size();
         return avatarLines.get(random.nextInt(avatarLineSize));
     }
+
 }

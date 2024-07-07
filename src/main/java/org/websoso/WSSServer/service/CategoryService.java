@@ -10,11 +10,10 @@ import static org.websoso.WSSServer.domain.common.CategoryName.MY;
 import static org.websoso.WSSServer.domain.common.CategoryName.RF;
 import static org.websoso.WSSServer.domain.common.CategoryName.RO;
 import static org.websoso.WSSServer.domain.common.CategoryName.WU;
-import static org.websoso.WSSServer.domain.common.Flag.N;
-import static org.websoso.WSSServer.domain.common.Flag.Y;
 import static org.websoso.WSSServer.exception.error.CustomCategoryError.CATEGORY_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomCategoryError.INVALID_CATEGORY_FORMAT;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,6 @@ import org.websoso.WSSServer.domain.Category;
 import org.websoso.WSSServer.domain.Category.CategoryBuilder;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.common.CategoryName;
-import org.websoso.WSSServer.domain.common.Flag;
 import org.websoso.WSSServer.exception.exception.CustomCategoryException;
 import org.websoso.WSSServer.repository.CategoryRepository;
 
@@ -58,20 +56,58 @@ public class CategoryService {
         categoryRepository.save(category);
     }
 
+    @Transactional(readOnly = true)
+    public List<String> getRelevantCategoryNames(Category category) {
+        List<String> relevantCategories = new ArrayList<>();
+
+        if (category.getIsRf()) {
+            relevantCategories.add(RF.getValue());
+        }
+        if (category.getIsRo()) {
+            relevantCategories.add(RO.getValue());
+        }
+        if (category.getIsFa()) {
+            relevantCategories.add(FA.getValue());
+        }
+        if (category.getIsMf()) {
+            relevantCategories.add(MF.getValue());
+        }
+        if (category.getIsDr()) {
+            relevantCategories.add(DR.getValue());
+        }
+        if (category.getIsLn()) {
+            relevantCategories.add(LN.getValue());
+        }
+        if (category.getIsWu()) {
+            relevantCategories.add(WU.getValue());
+        }
+        if (category.getIsMy()) {
+            relevantCategories.add(MY.getValue());
+        }
+        if (category.getIsBl()) {
+            relevantCategories.add(BL.getValue());
+        }
+        if (category.getIsEtc()) {
+            relevantCategories.add(ETC.getValue());
+        }
+
+        return relevantCategories;
+    }
+
     private Category setCategory(CategoryBuilder builder, List<String> relevantCategories) {
         validateCategory(relevantCategories);
 
         return builder
-                .isRf(getCategoryFlag(relevantCategories, RF))
-                .isRo(getCategoryFlag(relevantCategories, RO))
-                .isFa(getCategoryFlag(relevantCategories, FA))
-                .isMf(getCategoryFlag(relevantCategories, MF))
-                .isDr(getCategoryFlag(relevantCategories, DR))
-                .isLn(getCategoryFlag(relevantCategories, LN))
-                .isWu(getCategoryFlag(relevantCategories, WU))
-                .isMy(getCategoryFlag(relevantCategories, MY))
-                .isBl(getCategoryFlag(relevantCategories, BL))
-                .isEtc(getCategoryFlag(relevantCategories, ETC))
+                .isRf(isContainCategoryName(relevantCategories, RF))
+                .isRo(isContainCategoryName(relevantCategories, RO))
+                .isFa(isContainCategoryName(relevantCategories, FA))
+                .isMf(isContainCategoryName(relevantCategories, MF))
+                .isDr(isContainCategoryName(relevantCategories, DR))
+                .isLn(isContainCategoryName(relevantCategories, LN))
+                .isWu(isContainCategoryName(relevantCategories, WU))
+                .isMy(isContainCategoryName(relevantCategories, MY))
+                .isBl(isContainCategoryName(relevantCategories, BL))
+                .isEtc(isContainCategoryName(relevantCategories, ETC))
                 .build();
     }
 
@@ -83,8 +119,8 @@ public class CategoryService {
         }
     }
 
-    private Flag getCategoryFlag(List<String> relevantCategories, CategoryName categoryName) {
-        return relevantCategories.contains(categoryName.getValue()) ? Y : N;
+    private Boolean isContainCategoryName(List<String> relevantCategories, CategoryName categoryName) {
+        return relevantCategories.contains(categoryName.getValue());
     }
 
 }
