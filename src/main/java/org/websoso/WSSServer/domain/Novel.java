@@ -6,10 +6,10 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -40,23 +40,17 @@ public class Novel {
     @Column(columnDefinition = "Boolean default false", nullable = false)
     private Boolean isCompleted;
 
-    @Column(columnDefinition = "int default 0", nullable = false)
-    private Integer novelRatingCount;
-
-    @Column(columnDefinition = "float default 0.0", nullable = false)
-    private Float novelRatingSum;
-
-    @OneToOne(mappedBy = "novel", cascade = ALL)
-    private NovelStatistics novelStatistics;
-
-    @OneToMany(mappedBy = "novel")
+    @OneToMany(mappedBy = "novel", cascade = ALL, fetch = FetchType.LAZY)
     private List<UserNovel> userNovels = new ArrayList<>();
 
-    @OneToMany(mappedBy = "novel")
+    @OneToMany(mappedBy = "novel", cascade = ALL, fetch = FetchType.LAZY)
     private List<Platform> platforms = new ArrayList<>();
 
-    @OneToMany(mappedBy = "novel")
+    @OneToMany(mappedBy = "novel", cascade = ALL, fetch = FetchType.LAZY)
     private List<NovelGenre> novelGenres = new ArrayList<>();
+
+    @OneToMany(mappedBy = "novel", cascade = ALL, fetch = FetchType.LAZY)
+    private List<NovelKeyword> novelKeywords = new ArrayList<>();
 
     public void increaseNovelRatingCount() {
         this.novelRatingCount++;

@@ -1,25 +1,22 @@
 package org.websoso.WSSServer.domain;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Getter
-@Setter
-@DynamicInsert
-@DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AttractivePoint {
 
@@ -28,35 +25,10 @@ public class AttractivePoint {
     @Column(nullable = false)
     private Long attractivePointId;
 
-    @Column(columnDefinition = "Boolean default false", nullable = false)
-    private Boolean universe;
+    @Column(columnDefinition = "varchar(12)", nullable = false)
+    private String attractivePointName;
 
-    @Column(columnDefinition = "Boolean default false", nullable = false)
-    private Boolean vibe;
+    @OneToMany(mappedBy = "attractive_point", cascade = ALL, fetch = FetchType.LAZY)
+    private List<UserNovelAttractivePoint> userNovelAttractivePoints = new ArrayList<>();
 
-    @Column(columnDefinition = "Boolean default false", nullable = false)
-    private Boolean material;
-
-    @Column(columnDefinition = "Boolean default false", nullable = false)
-    private Boolean characters;
-
-    @Column(columnDefinition = "Boolean default false", nullable = false)
-    private Boolean relationship;
-
-    @OneToOne
-    @JoinColumn(name = "user_novel_id", nullable = false)
-    private UserNovel userNovel;
-
-    private AttractivePoint(UserNovel userNovel) {
-        this.userNovel = userNovel;
-        this.universe = false;
-        this.vibe = false;
-        this.material = false;
-        this.characters = false;
-        this.relationship = false;
-    }
-
-    public static AttractivePoint create(UserNovel userNovel) {
-        return new AttractivePoint(userNovel);
-    }
 }

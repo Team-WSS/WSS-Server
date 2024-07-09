@@ -6,11 +6,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,16 +61,13 @@ public class User {
     @ColumnDefault("'USER'")
     private Role role;
 
-    @OneToOne(mappedBy = "user", cascade = ALL)
-    private GenrePreference genrePreference;
+    @OneToMany(mappedBy = "user", cascade = ALL, fetch = FetchType.LAZY)
+    private List<GenrePreference> genrePreferences = new ArrayList<>();
 
-    @OneToOne(mappedBy = "user", cascade = ALL)
-    private UserStatistics userStatistics;
-
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Feed> feeds = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = ALL, fetch = FetchType.LAZY)
     private List<UserNovel> userNovels = new ArrayList<>();
 
     public void updateProfileStatus(Boolean profileStatus) {

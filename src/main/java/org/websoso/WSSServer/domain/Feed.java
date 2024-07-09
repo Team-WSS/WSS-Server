@@ -9,6 +9,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTH
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -51,27 +52,24 @@ public class Feed extends BaseEntity {
     @Column(columnDefinition = "Boolean default false", nullable = false)
     private Boolean isSpoiler;
 
-    @Column(columnDefinition = "int default 0", nullable = false)
-    private Integer likeCount;
-
-    @Column(columnDefinition = "int default 0", nullable = false)
-    private Integer commentCount;
-
-    @Column(columnDefinition = "varchar(1000) default ''", nullable = false)
-    private String likeUsers;
-
-    @OneToOne(mappedBy = "feed", cascade = ALL)
-    private PopularFeed popularFeed;
-
-    @OneToOne(mappedBy = "feed", cascade = ALL)
-    private Category category;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "feed", cascade = ALL)
+    @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    private PopularFeed popularFeed;
+
+    @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    private ReportedFeed reportedFeed;
+
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    private List<FeedCategory> feedCategories = new ArrayList<>();
+
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    private List<Like> likes = new ArrayList<>();
 
     @Builder
     public Feed(String feedContent, Boolean isSpoiler, Long novelId, User user) {

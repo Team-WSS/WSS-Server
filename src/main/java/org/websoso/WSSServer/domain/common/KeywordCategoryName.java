@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum KeywordCategory {
+public enum KeywordCategoryName {
     WORLDVIEW("세계관"),
     MATERIAL("소재"),
     CHARACTER("캐릭터"),

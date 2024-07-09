@@ -1,16 +1,21 @@
 package org.websoso.WSSServer.domain;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,13 +50,16 @@ public class UserNovel extends BaseEntity {
     @Column
     private LocalDate endDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "novel_id", nullable = false)
     private Novel novel;
+
+    @OneToMany(mappedBy = "user_novel", cascade = ALL, fetch = FetchType.LAZY)
+    private List<UserNovelAttractivePoint> userNovelAttractivePoints = new ArrayList<>();
 
     private UserNovel(ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate, User user,
                       Novel novel) {

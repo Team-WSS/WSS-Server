@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum CategoryName {
+
     RF("romanceFantasy"),
     RO("romance"),
     FA("fantasy"),
@@ -18,5 +19,5 @@ public enum CategoryName {
     ETC("etc");
 
     private final String value;
-    
+
 }

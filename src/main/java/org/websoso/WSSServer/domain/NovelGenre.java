@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.domain;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,11 +20,12 @@ public class NovelGenre {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long novelGenreId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "novel_id")
     private Novel novel;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "genre_id")
     private Genre genre;
+
 }

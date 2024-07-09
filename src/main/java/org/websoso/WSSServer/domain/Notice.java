@@ -43,4 +43,5 @@ public class Notice extends BaseEntity {
         this.noticeContent = noticeContent;
         this.userId = userId;
     }
+
 }

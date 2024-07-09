@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.domain;
 
-import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 import jakarta.persistence.Column;
@@ -10,36 +9,39 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.websoso.WSSServer.domain.common.BaseEntity;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Comment extends BaseEntity {
+public class NovelKeyword {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)
-    private Long commentId;
+    private Long novelKeywordId;
 
-    @Column(columnDefinition = "Boolean default false", nullable = false)
-    private Boolean isHidden;
-
-    @Column(columnDefinition = "varchar(100)", nullable = false)
-    private String commentContent;
-
-    @Column(nullable = false)
+    @Column
     private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "feed_id", nullable = false)
-    private Feed feed;
+    @JoinColumn(name = "novel_id", nullable = false)
+    private Novel novel;
 
-    @OneToOne(mappedBy = "comment", cascade = ALL, fetch = FetchType.LAZY)
-    private ReportedComment reportedComments;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "keyword_id", nullable = false)
+    private Keyword keyword;
 
+    private NovelKeyword(Novel novel, Keyword keyword, Long userId) {
+        this.novel = novel;
+        this.keyword = keyword;
+        this.userId = userId;
+    }
+
+    public static NovelKeyword create(Novel novel, Keyword keyword, Long userId) {
+        return new NovelKeyword(novel, keyword, userId);
+    }
+    
 }
