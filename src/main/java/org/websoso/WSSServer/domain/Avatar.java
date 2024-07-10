@@ -31,7 +31,7 @@ public class Avatar {
     @Column(columnDefinition = "varchar(100)", nullable = false)
     private String avatarImage;
 
-    @OneToMany(mappedBy = "avatar", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "avatar", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<AvatarLine> avatarLine = new ArrayList<>();
 
 }

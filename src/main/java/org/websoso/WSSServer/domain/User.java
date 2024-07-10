@@ -61,7 +61,7 @@ public class User {
     @ColumnDefault("'USER'")
     private Role role;
 
-    @OneToMany(mappedBy = "user", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<GenrePreference> genrePreferences = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)

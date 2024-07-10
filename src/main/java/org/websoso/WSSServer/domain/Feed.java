@@ -56,19 +56,19 @@ public class Feed extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private PopularFeed popularFeed;
 
     @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
     private ReportedFeed reportedFeed;
 
-    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<FeedCategory> feedCategories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Like> likes = new ArrayList<>();
 
     @Builder

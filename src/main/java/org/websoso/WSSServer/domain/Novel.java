@@ -43,10 +43,10 @@ public class Novel {
     @OneToMany(mappedBy = "novel", cascade = ALL, fetch = FetchType.LAZY)
     private List<UserNovel> userNovels = new ArrayList<>();
 
-    @OneToMany(mappedBy = "novel", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "novel", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Platform> platforms = new ArrayList<>();
 
-    @OneToMany(mappedBy = "novel", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "novel", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<NovelGenre> novelGenres = new ArrayList<>();
 
     @OneToMany(mappedBy = "novel", cascade = ALL, fetch = FetchType.LAZY)
