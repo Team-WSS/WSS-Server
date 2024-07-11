@@ -23,4 +23,9 @@ public class LikeService {
         likeRepository.deleteByUserIdAndFeed(user.getUserId(), feed);
     }
 
+    @Transactional(readOnly = true)
+    public boolean isUserLikedFeed(User user, Feed feed) {
+        return likeRepository.existsByUserIdAndFeed(user.getUserId(), feed);
+    }
+
 }

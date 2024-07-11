@@ -94,8 +94,8 @@ public class FeedService {
 
         UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
         Novel novel = getLinkedNovelOrNull(feed.getNovelId());
-        Boolean isLiked = isUserLikedFeed(feed.getLikeUsers(), user);
-        List<String> relevantCategories = categoryService.getRelevantCategoryNames(feed.getCategory());
+        Boolean isLiked = isUserLikedFeed(user, feed);
+        List<String> relevantCategories = feedCategoryService.getRelevantCategoryNames(feed.getFeedCategories());
         Boolean isMyFeed = isUserFeedOwner(feed.getUser(), user);
 
         return FeedGetResponse.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed);
@@ -126,16 +126,11 @@ public class FeedService {
     }
 
     private Novel getLinkedNovelOrNull(Long linkedNovelId) {
-        if (linkedNovelId == null) {
-            return null;
-        }
-
-        return novelService.getNovelOrException(linkedNovelId);
+        return likeService == null ? null : novelService.getNovelOrException(linkedNovelId);
     }
 
-    private Boolean isUserLikedFeed(String likeUsers, User user) {
-        String formattedLikeUser = String.format(LIKE_USER_PATTERN, user.getUserId());
-        return likeUsers.contains(formattedLikeUser);
+    private Boolean isUserLikedFeed(User user, Feed feed) {
+        return likeService.isUserLikedFeed(user, feed);
     }
 
     private Boolean isUserFeedOwner(User createdUser, User user) {

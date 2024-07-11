@@ -55,41 +55,10 @@ public class FeedCategoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<String> getRelevantCategoryNames(Category category) {
-        List<String> relevantCategories = new ArrayList<>();
-
-        if (category.getIsRf()) {
-            relevantCategories.add(RF.getValue());
-        }
-        if (category.getIsRo()) {
-            relevantCategories.add(RO.getValue());
-        }
-        if (category.getIsFa()) {
-            relevantCategories.add(FA.getValue());
-        }
-        if (category.getIsMf()) {
-            relevantCategories.add(MF.getValue());
-        }
-        if (category.getIsDr()) {
-            relevantCategories.add(DR.getValue());
-        }
-        if (category.getIsLn()) {
-            relevantCategories.add(LN.getValue());
-        }
-        if (category.getIsWu()) {
-            relevantCategories.add(WU.getValue());
-        }
-        if (category.getIsMy()) {
-            relevantCategories.add(MY.getValue());
-        }
-        if (category.getIsBl()) {
-            relevantCategories.add(BL.getValue());
-        }
-        if (category.getIsEtc()) {
-            relevantCategories.add(ETC.getValue());
-        }
-
-        return relevantCategories;
+    public List<String> getRelevantCategoryNames(List<FeedCategory> feedCategories) {
+        return feedCategories.stream()
+                .map(feedCategory -> feedCategory.getCategory().getCategoryName().getLabel())
+                .collect(Collectors.toList());
     }
 
 }

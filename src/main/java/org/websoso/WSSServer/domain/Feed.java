@@ -54,6 +54,12 @@ public class Feed extends BaseEntity {
     @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
     private List<FeedCategory> feedCategories = new ArrayList<>();
 
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    private List<Like> likes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    private List<Comment> comments = new ArrayList<>();
+
     @Builder
     public Feed(String feedContent, Boolean isSpoiler, Long novelId, User user) {
         this.feedContent = feedContent;

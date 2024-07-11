@@ -9,4 +9,6 @@ import org.websoso.WSSServer.domain.Like;
 public interface LikeRepository extends JpaRepository<Like, Long> {
 
     void deleteByUserIdAndFeed(Long userId, Feed feed);
+
+    boolean existsByUserIdAndFeed(Long userId, Feed feed);
 }
