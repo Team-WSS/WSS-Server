@@ -34,6 +34,7 @@ public class FeedService {
     private final AvatarService avatarService;
     private final BlockService blockService;
     private final LikeService likeService;
+    private final PopularFeedService popularFeedService;
 
     public void createFeed(User user, FeedCreateRequest request) {
         novelService.getNovelOrException(request.novelId());
@@ -73,10 +74,17 @@ public class FeedService {
 
     public void likeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
+        boolean isPopularFeed = false;
+
+        if (feed.getLikes().size() == 9) {
+            isPopularFeed = true;
+        }
 
         likeService.createLike(user, feed);
 
-        // TODO: 일정 수 이상 좋아요 받은 피드 인기 피드로 저장 로직 추가하기
+        if (isPopularFeed) {
+            popularFeedService.createPopularFeed(feed);
+        }
     }
 
     public void unLikeFeed(User user, Long feedId) {
