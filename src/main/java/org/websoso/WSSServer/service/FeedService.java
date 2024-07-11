@@ -34,7 +34,9 @@ public class FeedService {
     private final PopularFeedService popularFeedService;
 
     public void createFeed(User user, FeedCreateRequest request) {
-        novelService.getNovelOrException(request.novelId());
+        if (request.novelId() != null) {
+            novelService.getNovelOrException(request.novelId());
+        }
 
         Feed feed = Feed.builder()
                 .feedContent(request.feedContent())
@@ -71,6 +73,10 @@ public class FeedService {
 
     public void likeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
+
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
+
         boolean isPopularFeed = false;
 
         if (feed.getLikes().size() == 9) {
@@ -86,6 +92,9 @@ public class FeedService {
 
     public void unLikeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
+
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
 
         likeService.deleteLike(user, feed);
     }
