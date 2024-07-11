@@ -4,6 +4,7 @@ import static org.websoso.WSSServer.exception.error.CustomCategoryError.INVALID_
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Category;
 import org.websoso.WSSServer.domain.common.CategoryName;
 import org.websoso.WSSServer.exception.exception.CustomCategoryException;
@@ -11,10 +12,12 @@ import org.websoso.WSSServer.repository.CategoryRepository;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+    @Transactional(readOnly = true)
     public Category getCategory(String label) {
         return categoryRepository.findByCategoryName(CategoryName.of(label).name())
                 .orElseThrow(() -> new CustomCategoryException(INVALID_CATEGORY_FORMAT,
