@@ -29,6 +29,7 @@ import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.repository.AttractivePointRepository;
 import org.websoso.WSSServer.repository.NovelKeywordsRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
+import org.websoso.WSSServer.repository.UserNovelAttractivePointRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
 
 @Service
@@ -44,6 +45,7 @@ public class UserNovelService {
     private final UserStatisticsService userStatisticsService;
     private final NovelStatisticsService novelStatisticsService;
     private final KeywordService keywordService;
+    private final UserNovelAttractivePointRepository userNovelAttractivePointRepository;
 
     @Transactional(readOnly = true)
     public UserNovel getUserNovelOrNull(User user, Novel novel) {
@@ -88,11 +90,7 @@ public class UserNovelService {
             throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
         }
 
-        UserNovel userNovel = userNovelRepository.save(UserNovel.create(null, 0.0f, null, null, user, novel));
-
-        attractivePointRepository.save(AttractivePoint.create(userNovel));
-
-        return userNovel;
+        return userNovelRepository.save(UserNovel.create(null, 0.0f, null, null, user, novel));
     }
 
     private LocalDate convertToLocalDate(String string) {

@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomKeywordError.KEYWORD_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.ALREADY_INTERESTED;
@@ -15,7 +14,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
@@ -24,12 +22,10 @@ import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.domain.Platform;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
-import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
 import org.websoso.WSSServer.dto.novel.NovelGetResponse2;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
-import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomKeywordException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
@@ -90,37 +86,11 @@ public class NovelService {
             throw new CustomUserNovelException(ALREADY_INTERESTED, "already registered as interested");
         }
 
-        NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
-        UserStatistics userStatistics = userStatisticsService.getUserStatisticsOrException(user);
-
         if (userNovel == null) {
             userNovel = userNovelService.createUserNovelByInterest(user, novel);
-
-            List<String> genreNames = novel.getNovelGenres()
-                    .stream()
-                    .map(NovelGenre::getGenre)
-                    .map(Genre::getGenreName)
-                    .toList();
-
-            for (String genreName : genreNames) {
-                switch (genreName) {
-                    case "로맨스" -> userStatistics.increaseRoNovelCount();
-                    case "로판" -> userStatistics.increaseRfNovelCount();
-                    case "BL" -> userStatistics.increaseBlNovelCount();
-                    case "판타지" -> userStatistics.increaseFaNovelCount();
-                    case "현판" -> userStatistics.increaseMfNovelCount();
-                    case "무협" -> userStatistics.increaseWuNovelCount();
-                    case "라노벨" -> userStatistics.increaseLnNovelCount();
-                    case "드라마" -> userStatistics.increaseDrNovelCount();
-                    case "미스터리" -> userStatistics.increaseMyNovelCount();
-                    default -> throw new CustomGenreException(GENRE_NOT_FOUND, "cannot find corresponding genre");
-                }
-            }
         }
 
         userNovel.setIsInterest(true);
-        novelStatistics.increaseInterestCount();
-        userStatistics.increaseInterestNovelCount();
     }
 
     public NovelGetResponse2 getNovelInfo2(Long novelId) {
