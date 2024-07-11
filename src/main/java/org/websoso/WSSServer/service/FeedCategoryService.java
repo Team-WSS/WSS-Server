@@ -20,7 +20,7 @@ import org.websoso.WSSServer.repository.FeedCategoryRepository;
 public class FeedCategoryService {
 
     private final FeedCategoryRepository feedcategoryRepository;
-    private final Categoryservice categoryservice;
+    private final CategoryService categoryservice;
 
     public void createFeedCategory(Feed feed, List<String> relevantCategories) {
         for (String relevantCategory : relevantCategories) {

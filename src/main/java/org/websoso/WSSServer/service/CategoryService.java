@@ -11,7 +11,7 @@ import org.websoso.WSSServer.repository.CategoryRepository;
 
 @Service
 @RequiredArgsConstructor
-public class Categoryservice {
+public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
