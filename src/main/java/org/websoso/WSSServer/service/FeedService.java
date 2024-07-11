@@ -131,7 +131,10 @@ public class FeedService {
     }
 
     private Novel getLinkedNovelOrNull(Long linkedNovelId) {
-        return likeService == null ? null : novelService.getNovelOrException(linkedNovelId);
+        if (likeService == null) {
+            return null;
+        }
+        return novelService.getNovelOrException(linkedNovelId);
     }
 
     private Boolean isUserLikedFeed(User user, Feed feed) {
