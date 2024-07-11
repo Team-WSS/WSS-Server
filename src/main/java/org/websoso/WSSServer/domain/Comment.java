@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.domain;
 
-import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 import jakarta.persistence.Column;
@@ -10,7 +9,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,8 +36,5 @@ public class Comment extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feed_id", nullable = false)
     private Feed feed;
-
-    @OneToOne(mappedBy = "comment", cascade = ALL, fetch = FetchType.LAZY)
-    private ReportedComment reportedComments;
 
 }

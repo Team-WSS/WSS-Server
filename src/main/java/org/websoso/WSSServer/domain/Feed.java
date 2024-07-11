@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.domain;
 
-import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_LIKED;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.INVALID_LIKE_COUNT;
@@ -14,10 +13,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -55,21 +50,6 @@ public class Feed extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private PopularFeed popularFeed;
-
-    @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
-    private ReportedFeed reportedFeed;
-
-    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<FeedCategory> feedCategories = new ArrayList<>();
-
-    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Comment> comments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Like> likes = new ArrayList<>();
 
     @Builder
     public Feed(String feedContent, Boolean isSpoiler, Long novelId, User user) {
