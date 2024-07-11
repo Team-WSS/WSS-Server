@@ -15,10 +15,12 @@ import org.websoso.WSSServer.domain.AttractivePoint;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
+import org.websoso.WSSServer.domain.NovelKeyword;
 import org.websoso.WSSServer.domain.NovelKeywords;
 import org.websoso.WSSServer.domain.NovelStatistics;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
+import org.websoso.WSSServer.domain.UserNovelAttractivePoint;
 import org.websoso.WSSServer.domain.UserStatistics;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
@@ -27,7 +29,7 @@ import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.repository.AttractivePointRepository;
-import org.websoso.WSSServer.repository.NovelKeywordsRepository;
+import org.websoso.WSSServer.repository.NovelKeywordRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.UserNovelAttractivePointRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
@@ -46,6 +48,7 @@ public class UserNovelService {
     private final NovelStatisticsService novelStatisticsService;
     private final KeywordService keywordService;
     private final UserNovelAttractivePointRepository userNovelAttractivePointRepository;
+    private final NovelKeywordRepository novelKeywordRepository;
 
     @Transactional(readOnly = true)
     public UserNovel getUserNovelOrNull(User user, Novel novel) {
@@ -173,37 +176,27 @@ public class UserNovelService {
                     "user novel with the given user and novel is not found");
         }
 
-        List<String> attractivePoints = extractAttractivePoints(
-                attractivePointService.getAttractivePointOrException(userNovel));
+        List<String> attractivePoints = extractAttractivePoints(userNovel);
 
-        List<NovelKeywords> novelKeywords = novelKeywordsRepository.findByNovelIdAndUserId(novel.getNovelId(),
-                user.getUserId());
+        List<NovelKeyword> novelKeywords = novelKeywordRepository.findAllByNovelAndUserId(novel, user.getUserId());
         List<KeywordGetResponse> keywords = new ArrayList<>();
-        for (NovelKeywords novelKeyword : novelKeywords) {
-            Keyword keyword = keywordService.getKeywordOrException(novelKeyword.getKeywordId());
-            keywords.add(KeywordGetResponse.of(keyword));
+        for (NovelKeyword novelKeyword : novelKeywords) {
+            keywords.add(KeywordGetResponse.of(novelKeyword.getKeyword()));
         }
 
         return UserNovelGetResponse.of(userNovel, attractivePoints, keywords);
     }
 
-    private List<String> extractAttractivePoints(AttractivePoint attractivePoint) {
+    private List<String> extractAttractivePoints(UserNovel userNovel) {
+
+        List<UserNovelAttractivePoint> userNovelAttractivePoints = userNovelAttractivePointRepository.findAllByUserNovel(
+                userNovel);
         List<String> attractivePoints = new ArrayList<>();
-        if (attractivePoint.getUniverse()) {
-            attractivePoints.add("universe");
+
+        for (UserNovelAttractivePoint attractivePoint : userNovelAttractivePoints) {
+            attractivePoints.add(attractivePoint.getAttractivePoint().getAttractivePointName());
         }
-        if (attractivePoint.getVibe()) {
-            attractivePoints.add("vibe");
-        }
-        if (attractivePoint.getMaterial()) {
-            attractivePoints.add("material");
-        }
-        if (attractivePoint.getCharacters()) {
-            attractivePoints.add("character");
-        }
-        if (attractivePoint.getRelationship()) {
-            attractivePoints.add("relationship");
-        }
+
         return attractivePoints;
     }
 
