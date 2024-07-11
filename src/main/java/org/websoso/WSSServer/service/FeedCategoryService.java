@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Category;
@@ -55,6 +56,13 @@ public class FeedCategoryService {
         return feedCategories.stream()
                 .map(feedCategory -> feedCategory.getCategory().getCategoryName().getLabel())
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Feed> getFeedsByCategoryLabel(String categoryLabel, Long lastFeedId, PageRequest pageRequest) {
+        return feedcategoryRepository.findFeedByCategory(categoryservice.getCategory(categoryLabel), lastFeedId,
+                        pageRequest)
+                .getContent();
     }
 
 }
