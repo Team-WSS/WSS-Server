@@ -12,5 +12,5 @@ public enum KeywordCategoryName {
     RELATIONSHIP("관계"),
     VIBE("분위기");
 
-    private final String name;
+    private final String label;
 }

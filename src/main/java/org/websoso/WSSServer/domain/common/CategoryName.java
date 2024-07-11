@@ -18,6 +18,6 @@ public enum CategoryName {
     BL("BL"),
     ETC("etc");
 
-    private final String value;
+    private final String label;
 
 }
