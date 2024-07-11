@@ -1,29 +1,16 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.domain.common.CategoryName.BL;
-import static org.websoso.WSSServer.domain.common.CategoryName.DR;
-import static org.websoso.WSSServer.domain.common.CategoryName.ETC;
-import static org.websoso.WSSServer.domain.common.CategoryName.FA;
-import static org.websoso.WSSServer.domain.common.CategoryName.LN;
-import static org.websoso.WSSServer.domain.common.CategoryName.MF;
-import static org.websoso.WSSServer.domain.common.CategoryName.MY;
-import static org.websoso.WSSServer.domain.common.CategoryName.RF;
-import static org.websoso.WSSServer.domain.common.CategoryName.RO;
-import static org.websoso.WSSServer.domain.common.CategoryName.WU;
 import static org.websoso.WSSServer.exception.error.CustomCategoryError.CATEGORY_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.CustomCategoryError.INVALID_CATEGORY_FORMAT;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Category;
-import org.websoso.WSSServer.domain.Category.CategoryBuilder;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedCategory;
-import org.websoso.WSSServer.domain.common.CategoryName;
 import org.websoso.WSSServer.exception.exception.CustomCategoryException;
 import org.websoso.WSSServer.repository.FeedCategoryRepository;
 
@@ -41,27 +28,26 @@ public class FeedCategoryService {
         }
     }
 
-    public void createCategory(Feed feed, List<String> relevantCategories) {
-        CategoryBuilder builder = Category.builder()
-                .feed(feed);
+    public void updateFeedCategory(Feed feed, List<String> relevantCategories) {
+        Set<Category> categories = feedcategoryRepository.findByFeed(feed).orElseThrow(
+                        () -> new CustomCategoryException(CATEGORY_NOT_FOUND, "Category for the given feed was not found"))
+                .stream()
+                .map(FeedCategory::getCategory).collect(Collectors.toSet());
 
-        Category category = setCategory(builder, relevantCategories);
+        Set<Category> newCategories = relevantCategories.stream().map(categoryservice::getCategory)
+                .collect(Collectors.toSet());
 
-        categoryRepository.save(category);
-    }
+        for (Category newCategory : newCategories) {
+            if (categories.contains(newCategory)) { // 안바뀐 카테고리
+                categories.remove(newCategory);
+            } else { // 새롭게 들어온 카테고리
+                feedcategoryRepository.save(FeedCategory.create(feed, newCategory));
+            }
+        }
 
-    public void updateCategory(Feed feed, List<String> relevantCategories) {
-        Long categoryId = categoryRepository.findByFeed(feed).orElseThrow(() ->
-                        new CustomCategoryException(CATEGORY_NOT_FOUND, "Category for the given feed was not found"))
-                .getCategoryId();
-
-        CategoryBuilder builder = Category.builder()
-                .categoryId(categoryId)
-                .feed(feed);
-
-        Category category = setCategory(builder, relevantCategories);
-
-        categoryRepository.save(category);
+        for (Category category : categories) { // 기존에는 있었지만 안들어온 카테고리
+            feedcategoryRepository.deleteByCategory(category);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -100,35 +86,6 @@ public class FeedCategoryService {
         }
 
         return relevantCategories;
-    }
-
-    private Category setCategory(CategoryBuilder builder, List<String> relevantCategories) {
-        validateCategory(relevantCategories);
-
-        return builder
-                .isRf(isContainCategoryName(relevantCategories, RF))
-                .isRo(isContainCategoryName(relevantCategories, RO))
-                .isFa(isContainCategoryName(relevantCategories, FA))
-                .isMf(isContainCategoryName(relevantCategories, MF))
-                .isDr(isContainCategoryName(relevantCategories, DR))
-                .isLn(isContainCategoryName(relevantCategories, LN))
-                .isWu(isContainCategoryName(relevantCategories, WU))
-                .isMy(isContainCategoryName(relevantCategories, MY))
-                .isBl(isContainCategoryName(relevantCategories, BL))
-                .isEtc(isContainCategoryName(relevantCategories, ETC))
-                .build();
-    }
-
-    private void validateCategory(List<String> relevantCategories) {
-        List<String> categoryNames = Arrays.stream(CategoryName.values()).map(CategoryName::getValue).toList();
-
-        if (!categoryNames.containsAll(relevantCategories)) {
-            throw new CustomCategoryException(INVALID_CATEGORY_FORMAT, "invalid category format");
-        }
-    }
-
-    private Boolean isContainCategoryName(List<String> relevantCategories, CategoryName categoryName) {
-        return relevantCategories.contains(categoryName.getValue());
     }
 
 }

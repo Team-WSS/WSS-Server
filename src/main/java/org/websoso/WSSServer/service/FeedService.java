@@ -54,16 +54,11 @@ public class FeedService {
         feed.validateUserAuthorization(user, UPDATE);
 
         if (feed.isNovelChanged(request.novelId())) {
-            if (feed.isNovelLinked()) {
-                novelStatisticsService.decreaseNovelFeedCount(novelService.getNovelOrException(feed.getNovelId()));
-            }
-            if (request.novelId() != null) {
-                novelStatisticsService.increaseNovelFeedCount(novelService.getNovelOrException(request.novelId()));
-            }
+            novelService.getNovelOrException(feed.getNovelId());
         }
 
         feed.updateFeed(request.feedContent(), request.isSpoiler(), request.novelId());
-        categoryService.updateCategory(feed, request.relevantCategories());
+        feedCategoryService.updateFeedCategory(feed, request.relevantCategories());
     }
 
     public void deleteFeed(User user, Long feedId) {

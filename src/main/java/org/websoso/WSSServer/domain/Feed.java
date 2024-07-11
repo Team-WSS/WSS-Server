@@ -68,7 +68,7 @@ public class Feed extends BaseEntity {
     public void validateUserAuthorization(User user, Action action) {
         if (!this.user.equals(user)) {
             throw new CustomUserException(INVALID_AUTHORIZED,
-                    "only the author can " + action.getDescription() + " the feed");
+                    "only the author can " + action.getLabel() + " the feed");
         }
     }
 
