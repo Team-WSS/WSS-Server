@@ -33,6 +33,7 @@ public class FeedService {
     private final NovelService novelService;
     private final AvatarService avatarService;
     private final BlockService blockService;
+    private final LikeService likeService;
 
     public void createFeed(User user, FeedCreateRequest request) {
         novelService.getNovelOrException(request.novelId());
@@ -73,17 +74,15 @@ public class FeedService {
     public void likeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 
-        String likeUserId = String.valueOf(user.getUserId());
+        likeService.createLike(user, feed);
 
-        feed.addLike(likeUserId);
+        // TODO: 일정 수 이상 좋아요 받은 피드 인기 피드로 저장 로직 추가하기
     }
 
     public void unLikeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 
-        String unLikeUserId = String.valueOf(user.getUserId());
-
-        feed.unLike(unLikeUserId);
+        likeService.deleteLike(user, feed);
     }
 
     @Transactional(readOnly = true)

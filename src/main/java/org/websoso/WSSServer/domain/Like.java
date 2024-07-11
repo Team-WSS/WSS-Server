@@ -31,4 +31,14 @@ public class Like extends BaseEntity {
     @JoinColumn(name = "feed_id", nullable = false)
     private Feed feed;
 
+
+    private Like(Long userId, Feed feed) {
+        this.userId = userId;
+        this.feed = feed;
+    }
+
+    public static Like create(Long userId, Feed feed) {
+        return new Like(userId, feed);
+    }
+
 }

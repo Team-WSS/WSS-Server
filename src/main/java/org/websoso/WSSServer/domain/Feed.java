@@ -2,9 +2,6 @@ package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_LIKED;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.INVALID_LIKE_COUNT;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.LIKE_USER_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import jakarta.persistence.Column;
@@ -25,7 +22,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.domain.common.BaseEntity;
-import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 
 @Getter
@@ -77,36 +73,6 @@ public class Feed extends BaseEntity {
             throw new CustomUserException(INVALID_AUTHORIZED,
                     "only the author can " + action.getLabel() + " the feed");
         }
-    }
-
-    public void addLike(String likeUserId) {
-        String likeUserIdFormatted = "{" + likeUserId + "}";
-
-        if (this.likeUsers.contains(likeUserIdFormatted)) {
-            throw new CustomFeedException(ALREADY_LIKED, "already liked feed");
-        }
-
-        this.likeUsers += likeUserIdFormatted;
-        this.likeCount++;
-    }
-
-    public void unLike(String unLikeUserId) {
-        String unLikeUserIdFormatted = "{" + unLikeUserId + "}";
-
-        if (!this.likeUsers.contains(unLikeUserIdFormatted)) {
-            throw new CustomFeedException(LIKE_USER_NOT_FOUND, "user has not liked this feed");
-        }
-
-        if (this.likeCount <= 0) {
-            throw new CustomFeedException(INVALID_LIKE_COUNT, "invalid like count");
-        }
-
-        this.likeUsers = this.likeUsers.replace(unLikeUserIdFormatted, "");
-        this.likeCount--;
-    }
-
-    public boolean isNovelLinked() {
-        return this.novelId != null;
     }
 
     public boolean isNovelChanged(Long novelId) {
