@@ -38,14 +38,14 @@ public class FeedCategoryService {
                 .collect(Collectors.toSet());
 
         for (Category newCategory : newCategories) {
-            if (categories.contains(newCategory)) { // 안바뀐 카테고리
+            if (categories.contains(newCategory)) {
                 categories.remove(newCategory);
-            } else { // 새롭게 들어온 카테고리
+            } else {
                 feedcategoryRepository.save(FeedCategory.create(feed, newCategory));
             }
         }
 
-        for (Category category : categories) { // 기존에는 있었지만 안들어온 카테고리
+        for (Category category : categories) {
             feedcategoryRepository.deleteByCategory(category);
         }
     }
