@@ -1,5 +1,8 @@
 package org.websoso.WSSServer.domain.common;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -19,5 +22,12 @@ public enum CategoryName {
     ETC("etc");
 
     private final String label;
+
+    private static final Map<String, CategoryName> BY_LABEL =
+            Stream.of(values()).collect(Collectors.toMap(CategoryName::getLabel, e -> e));
+
+    public static CategoryName of(String label) {
+        return BY_LABEL.get(label);
+    }
 
 }

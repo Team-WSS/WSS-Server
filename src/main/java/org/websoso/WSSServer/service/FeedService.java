@@ -13,10 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
+import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.repository.FeedRepository;
 
@@ -28,13 +28,15 @@ public class FeedService {
     private static final String LIKE_USER_PATTERN = "{%s}";
 
     private final FeedRepository feedRepository;
-    private final CategoryService categoryService;
+    private final FeedCategoryService feedCategoryService;
     private final NovelStatisticsService novelStatisticsService;
     private final NovelService novelService;
     private final AvatarService avatarService;
     private final BlockService blockService;
 
     public void createFeed(User user, FeedCreateRequest request) {
+        novelService.getNovelOrException(request.novelId());
+
         Feed feed = Feed.builder()
                 .feedContent(request.feedContent())
                 .isSpoiler(request.isSpoiler())
@@ -42,12 +44,8 @@ public class FeedService {
                 .user(user)
                 .build();
 
-        if (request.novelId() != null) {
-            novelStatisticsService.increaseNovelFeedCount(novelService.getNovelOrException(request.novelId()));
-        }
-
         feedRepository.save(feed);
-        categoryService.createCategory(feed, request.relevantCategories());
+        feedCategoryService.createFeedCategory(feed, request.relevantCategories());
     }
 
     public void updateFeed(User user, Long feedId, FeedUpdateRequest request) {

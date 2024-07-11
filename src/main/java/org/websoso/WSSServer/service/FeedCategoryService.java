@@ -22,16 +22,24 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Category;
 import org.websoso.WSSServer.domain.Category.CategoryBuilder;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.FeedCategory;
 import org.websoso.WSSServer.domain.common.CategoryName;
 import org.websoso.WSSServer.exception.exception.CustomCategoryException;
-import org.websoso.WSSServer.repository.CategoryRepository;
+import org.websoso.WSSServer.repository.FeedCategoryRepository;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class CategoryService {
+public class FeedCategoryService {
 
-    private final CategoryRepository categoryRepository;
+    private final FeedCategoryRepository feedcategoryRepository;
+    private final Categoryservice categoryservice;
+
+    public void createFeedCategory(Feed feed, List<String> relevantCategories) {
+        for (String relevantCategory : relevantCategories) {
+            feedcategoryRepository.save(FeedCategory.create(feed, categoryservice.getCategory(relevantCategory)));
+        }
+    }
 
     public void createCategory(Feed feed, List<String> relevantCategories) {
         CategoryBuilder builder = Category.builder()

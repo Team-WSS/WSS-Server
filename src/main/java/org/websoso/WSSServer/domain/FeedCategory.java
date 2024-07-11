@@ -31,4 +31,12 @@ public class FeedCategory {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    private FeedCategory(Feed feed, Category category) {
+        this.feed = feed;
+        this.category = category;
+    }
+
+    public static FeedCategory create(Feed feed, Category category) {
+        return new FeedCategory(feed, category);
+    }
 }
