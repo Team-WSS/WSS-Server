@@ -50,10 +50,6 @@ public class FeedCategoryService {
         }
     }
 
-    public void deleteFeedCategoryByFeed(Feed feed) {
-        feedcategoryRepository.deleteAll(feed.getFeedCategories());
-    }
-
     @Transactional(readOnly = true)
     public List<String> getRelevantCategoryNames(List<FeedCategory> feedCategories) {
         return feedCategories.stream()

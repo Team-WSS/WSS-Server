@@ -68,7 +68,6 @@ public class FeedService {
         feed.validateUserAuthorization(user, DELETE);
 
         feedRepository.delete(feed);
-        feedCategoryService.deleteFeedCategoryByFeed(feed);
     }
 
     public void likeFeed(User user, Long feedId) {
