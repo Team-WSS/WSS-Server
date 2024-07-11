@@ -140,7 +140,7 @@ public class FeedService {
     }
 
     private Novel getLinkedNovelOrNull(Long linkedNovelId) {
-        if (likeService == null) {
+        if (linkedNovelId == null) {
             return null;
         }
         return novelService.getNovelOrException(linkedNovelId);
