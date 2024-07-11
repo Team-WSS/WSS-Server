@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.domain;
 
-import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_LIKED;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.INVALID_LIKE_COUNT;
@@ -9,14 +8,11 @@ import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTH
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -51,27 +47,9 @@ public class Feed extends BaseEntity {
     @Column(columnDefinition = "Boolean default false", nullable = false)
     private Boolean isSpoiler;
 
-    @Column(columnDefinition = "int default 0", nullable = false)
-    private Integer likeCount;
-
-    @Column(columnDefinition = "int default 0", nullable = false)
-    private Integer commentCount;
-
-    @Column(columnDefinition = "varchar(1000) default ''", nullable = false)
-    private String likeUsers;
-
-    @OneToOne(mappedBy = "feed", cascade = ALL)
-    private PopularFeed popularFeed;
-
-    @OneToOne(mappedBy = "feed", cascade = ALL)
-    private Category category;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    @OneToMany(mappedBy = "feed", cascade = ALL)
-    private List<Comment> comments = new ArrayList<>();
 
     @Builder
     public Feed(String feedContent, Boolean isSpoiler, Long novelId, User user) {

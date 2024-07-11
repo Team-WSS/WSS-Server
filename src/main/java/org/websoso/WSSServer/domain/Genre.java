@@ -5,9 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +16,7 @@ public class Genre {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long genreId;
+    private Byte genreId;
 
     @Column(columnDefinition = "varchar(4)", nullable = false)
     private String genreName;
@@ -27,6 +24,4 @@ public class Genre {
     @Column(columnDefinition = "text", nullable = false)
     private String genreImage;
 
-    @OneToMany(mappedBy = "genre")
-    private List<NovelGenre> novelGenres = new ArrayList<>();
 }

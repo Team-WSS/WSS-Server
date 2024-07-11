@@ -13,19 +13,14 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BasicProfile {
+public class KeywordCategory {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)
-    private Byte basicProfileId;
+    private Byte keywordCategoryId;
 
     @Column(columnDefinition = "varchar(10)", nullable = false)
-    private String basicProfileName;
+    private String keywordCategoryName;
 
-    @Column(columnDefinition = "varchar(50)", nullable = false)
-    private String basicProfileLine;
-
-    @Column(columnDefinition = "varchar(100)", nullable = false)
-    private String basicProfileImage;
 }

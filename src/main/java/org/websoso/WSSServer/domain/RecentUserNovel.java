@@ -23,4 +23,5 @@ public class RecentUserNovel extends BaseEntity {
 
     @Column(nullable = false)
     private Long novelId;
+
 }

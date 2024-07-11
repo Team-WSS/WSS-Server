@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Keyword;
-import org.websoso.WSSServer.domain.common.KeywordCategory;
+import org.websoso.WSSServer.domain.common.KeywordCategoryName;
 import org.websoso.WSSServer.dto.keyword.CategoryGetResponse;
 import org.websoso.WSSServer.dto.keyword.KeywordByCategoryGetResponse;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
@@ -32,7 +32,7 @@ public class KeywordService {
 
     @Transactional(readOnly = true)
     public KeywordByCategoryGetResponse searchKeywordByCategory(String query) {
-        List<CategoryGetResponse> categories = Arrays.stream(KeywordCategory.values())
+        List<CategoryGetResponse> categories = Arrays.stream(KeywordCategoryName.values())
                 .map(category -> CategoryGetResponse.of(category, sortByCategory(category, searchKeyword(query))))
                 .collect(Collectors.toList());
         return KeywordByCategoryGetResponse.of(categories);
@@ -56,8 +56,9 @@ public class KeywordService {
         return true;
     }
 
-    private List<KeywordGetResponse> sortByCategory(KeywordCategory keywordCategory, List<Keyword> searchedKeyword) {
-        return searchedKeyword.stream().filter(keyword -> keyword.getCategoryName().equals(keywordCategory))
+    private List<KeywordGetResponse> sortByCategory(KeywordCategoryName keywordCategoryName,
+                                                    List<Keyword> searchedKeyword) {
+        return searchedKeyword.stream().filter(keyword -> keyword.getCategoryName().equals(keywordCategoryName))
                 .map(KeywordGetResponse::of).collect(Collectors.toList());
     }
 }

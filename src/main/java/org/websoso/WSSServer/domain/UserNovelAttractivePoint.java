@@ -16,19 +16,28 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class GenrePreference {
+public class UserNovelAttractivePoint {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)
-    private Long genrePreferenceId;
+    private Long userNovelAttractivePointId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "user_novel_id", nullable = false)
+    private UserNovel userNovel;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "genre_id", nullable = false)
-    private Genre genre;
+    @JoinColumn(name = "attractive_point_id", nullable = false)
+    private AttractivePoint attractivePoint;
+
+    private UserNovelAttractivePoint(UserNovel userNovel, AttractivePoint attractivePoint) {
+        this.userNovel = userNovel;
+        this.attractivePoint = attractivePoint;
+    }
+
+    public static UserNovelAttractivePoint create(UserNovel userNovel, AttractivePoint attractivePoint) {
+        return new UserNovelAttractivePoint(userNovel, attractivePoint);
+    }
 
 }

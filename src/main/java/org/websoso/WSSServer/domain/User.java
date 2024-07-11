@@ -1,7 +1,5 @@
 package org.websoso.WSSServer.domain;
 
-import static jakarta.persistence.CascadeType.ALL;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,11 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -60,18 +54,6 @@ public class User {
     @Column(nullable = false)
     @ColumnDefault("'USER'")
     private Role role;
-
-    @OneToOne(mappedBy = "user", cascade = ALL)
-    private GenrePreference genrePreference;
-
-    @OneToOne(mappedBy = "user", cascade = ALL)
-    private UserStatistics userStatistics;
-
-    @OneToMany(mappedBy = "user")
-    private List<Feed> feeds = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user")
-    private List<UserNovel> userNovels = new ArrayList<>();
 
     public void updateProfileStatus(Boolean profileStatus) {
         this.isProfilePublic = profileStatus;

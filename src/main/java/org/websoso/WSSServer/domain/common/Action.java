@@ -9,6 +9,6 @@ public enum Action {
     UPDATE("update"),
     DELETE("delete");
 
-    private final String description;
+    private final String label;
 
 }
