@@ -66,11 +66,8 @@ public class FeedService {
 
         feed.validateUserAuthorization(user, DELETE);
 
-        if (feed.getNovelId() != null) {
-            novelStatisticsService.decreaseNovelFeedCount(novelService.getNovelOrException(feed.getNovelId()));
-        }
-
         feedRepository.delete(feed);
+        feedCategoryService.deleteFeedCategoryByFeed(feed);
     }
 
     public void likeFeed(User user, Long feedId) {
