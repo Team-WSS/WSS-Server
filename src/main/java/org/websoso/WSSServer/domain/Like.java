@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ import org.websoso.WSSServer.domain.common.BaseEntity;
 
 @Entity
 @Getter
+@Table(name = "`like`")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Like extends BaseEntity {
 
