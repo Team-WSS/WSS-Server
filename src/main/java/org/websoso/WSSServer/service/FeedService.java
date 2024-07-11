@@ -25,11 +25,8 @@ import org.websoso.WSSServer.repository.FeedRepository;
 @Transactional
 public class FeedService {
 
-    private static final String LIKE_USER_PATTERN = "{%s}";
-
     private final FeedRepository feedRepository;
     private final FeedCategoryService feedCategoryService;
-    private final NovelStatisticsService novelStatisticsService;
     private final NovelService novelService;
     private final AvatarService avatarService;
     private final BlockService blockService;
