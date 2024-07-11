@@ -21,7 +21,7 @@ public class Category {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)
-    private Long categoryId;
+    private Byte categoryId;
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "varchar(14)", nullable = false)

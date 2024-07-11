@@ -18,7 +18,7 @@ public class AttractivePoint {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)
-    private Long attractivePointId;
+    private Byte attractivePointId;
 
     @Column(columnDefinition = "varchar(12)", nullable = false)
     private String attractivePointName;

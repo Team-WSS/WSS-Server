@@ -18,7 +18,7 @@ public class KeywordCategory {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)
-    private Integer keywordCategoryId;
+    private Byte keywordCategoryId;
 
     @Column(columnDefinition = "varchar(10)", nullable = false)
     private String keywordCategoryName;

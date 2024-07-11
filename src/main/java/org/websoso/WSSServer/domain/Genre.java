@@ -16,7 +16,7 @@ public class Genre {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long genreId;
+    private Byte genreId;
 
     @Column(columnDefinition = "varchar(4)", nullable = false)
     private String genreName;
