@@ -1,9 +1,7 @@
 package org.websoso.WSSServer.domain;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_LIKED;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.INVALID_LIKE_COUNT;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.LIKE_USER_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import jakarta.persistence.Column;
@@ -13,6 +11,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -21,7 +22,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.domain.common.BaseEntity;
-import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 
 @Getter
@@ -51,6 +51,15 @@ public class Feed extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    private List<FeedCategory> feedCategories = new ArrayList<>();
+
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    private List<Like> likes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    private List<Comment> comments = new ArrayList<>();
+
     @Builder
     public Feed(String feedContent, Boolean isSpoiler, Long novelId, User user) {
         this.feedContent = feedContent;
@@ -68,38 +77,8 @@ public class Feed extends BaseEntity {
     public void validateUserAuthorization(User user, Action action) {
         if (!this.user.equals(user)) {
             throw new CustomUserException(INVALID_AUTHORIZED,
-                    "only the author can " + action.getDescription() + " the feed");
+                    "only the author can " + action.getLabel() + " the feed");
         }
-    }
-
-    public void addLike(String likeUserId) {
-        String likeUserIdFormatted = "{" + likeUserId + "}";
-
-        if (this.likeUsers.contains(likeUserIdFormatted)) {
-            throw new CustomFeedException(ALREADY_LIKED, "already liked feed");
-        }
-
-        this.likeUsers += likeUserIdFormatted;
-        this.likeCount++;
-    }
-
-    public void unLike(String unLikeUserId) {
-        String unLikeUserIdFormatted = "{" + unLikeUserId + "}";
-
-        if (!this.likeUsers.contains(unLikeUserIdFormatted)) {
-            throw new CustomFeedException(LIKE_USER_NOT_FOUND, "user has not liked this feed");
-        }
-
-        if (this.likeCount <= 0) {
-            throw new CustomFeedException(INVALID_LIKE_COUNT, "invalid like count");
-        }
-
-        this.likeUsers = this.likeUsers.replace(unLikeUserIdFormatted, "");
-        this.likeCount--;
-    }
-
-    public boolean isNovelLinked() {
-        return this.novelId != null;
     }
 
     public boolean isNovelChanged(Long novelId) {
