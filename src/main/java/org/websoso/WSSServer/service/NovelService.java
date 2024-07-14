@@ -24,8 +24,8 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.AttractivePointName;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
-import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
-import org.websoso.WSSServer.dto.novel.NovelGetResponse2;
+import org.websoso.WSSServer.dto.novel.NovelGetResponse_basic;
+import org.websoso.WSSServer.dto.novel.NovelGetResponse_infoTab;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
@@ -62,13 +62,13 @@ public class NovelService {
     }
 
     @Transactional(readOnly = true)
-    public NovelGetResponse1 getNovelInfo1(User user, Long novelId) {
+    public NovelGetResponse_basic getNovelInfo_basic(User user, Long novelId) {
         Novel novel = getNovelOrException(novelId);
         List<NovelGenre> novelGenres = novelGenreRepository.findAllByNovel(novel);
         Integer novelRatingCount = userNovelRepository.countByNovelAndUserNovelRatingNot(novel, 0.0f);
         Float novelRating = novelRatingCount == 0 ? 0.0f
                 : Math.round(userNovelRepository.sumUserNovelRatingByNovel(novel) / novelRatingCount * 10.0f) / 10.0f;
-        return NovelGetResponse1.of(
+        return NovelGetResponse_basic.of(
                 novel,
                 userNovelService.getUserNovelOrNull(user, novel),
                 getNovelGenreNames(novelGenres),
@@ -106,9 +106,9 @@ public class NovelService {
         userNovel.setIsInterest(true);
     }
 
-    public NovelGetResponse2 getNovelInfo2(Long novelId) {
+    public NovelGetResponse_infoTab getNovelInfo_infoTab(Long novelId) {
         Novel novel = getNovelOrException(novelId);
-        return NovelGetResponse2.of(
+        return NovelGetResponse_infoTab.of(
                 novel,
                 getPlatforms(novel),
                 getAttractivePoints(novel),

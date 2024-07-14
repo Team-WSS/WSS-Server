@@ -5,8 +5,7 @@ import java.util.Locale;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.UserNovel;
 
-// TODO 이름 변경(작품 정보 조회 뷰에서 상단, 기본정보를 제공하는 부분)
-public record NovelGetResponse1(
+public record NovelGetResponse_basic(
         Long userNovelId,
         String novelTitle,
         String novelImage,
@@ -24,11 +23,12 @@ public record NovelGetResponse1(
         String endDate,
         Boolean isUserNovelInterest
 ) {
-    public static NovelGetResponse1 of(Novel novel, UserNovel userNovel, String novelGenres, String novelGenreImage,
-                                       Integer interestCount, Float novelRating, Integer novelRatingCount,
-                                       Integer feedCount) {
+    public static NovelGetResponse_basic of(Novel novel, UserNovel userNovel, String novelGenres,
+                                            String novelGenreImage,
+                                            Integer interestCount, Float novelRating, Integer novelRatingCount,
+                                            Integer feedCount) {
         if (userNovel == null) {
-            return new NovelGetResponse1(
+            return new NovelGetResponse_basic(
                     null,
                     novel.getTitle(),
                     novel.getNovelImage(),
@@ -47,7 +47,7 @@ public record NovelGetResponse1(
                     false
             );
         }
-        return new NovelGetResponse1(
+        return new NovelGetResponse_basic(
                 userNovel.getUserNovelId(),
                 novel.getTitle(),
                 novel.getNovelImage(),
