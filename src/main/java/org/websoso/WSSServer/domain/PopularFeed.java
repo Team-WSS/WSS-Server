@@ -27,4 +27,12 @@ public class PopularFeed {
     @JoinColumn(name = "feed_id", nullable = false)
     private Feed feed;
 
+    private PopularFeed(Feed feed) {
+        this.feed = feed;
+    }
+
+    public static PopularFeed create(Feed feed) {
+        return new PopularFeed(feed);
+    }
+
 }

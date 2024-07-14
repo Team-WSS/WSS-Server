@@ -13,10 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
+import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.repository.FeedRepository;
 
@@ -25,16 +25,19 @@ import org.websoso.WSSServer.repository.FeedRepository;
 @Transactional
 public class FeedService {
 
-    private static final String LIKE_USER_PATTERN = "{%s}";
-
     private final FeedRepository feedRepository;
-    private final CategoryService categoryService;
-    private final NovelStatisticsService novelStatisticsService;
+    private final FeedCategoryService feedCategoryService;
     private final NovelService novelService;
     private final AvatarService avatarService;
     private final BlockService blockService;
+    private final LikeService likeService;
+    private final PopularFeedService popularFeedService;
 
     public void createFeed(User user, FeedCreateRequest request) {
+        if (request.novelId() != null) {
+            novelService.getNovelOrException(request.novelId());
+        }
+
         Feed feed = Feed.builder()
                 .feedContent(request.feedContent())
                 .isSpoiler(request.isSpoiler())
@@ -42,12 +45,8 @@ public class FeedService {
                 .user(user)
                 .build();
 
-        if (request.novelId() != null) {
-            novelStatisticsService.increaseNovelFeedCount(novelService.getNovelOrException(request.novelId()));
-        }
-
         feedRepository.save(feed);
-        categoryService.createCategory(feed, request.relevantCategories());
+        feedCategoryService.createFeedCategory(feed, request.relevantCategories());
     }
 
     public void updateFeed(User user, Long feedId, FeedUpdateRequest request) {
@@ -56,16 +55,11 @@ public class FeedService {
         feed.validateUserAuthorization(user, UPDATE);
 
         if (feed.isNovelChanged(request.novelId())) {
-            if (feed.isNovelLinked()) {
-                novelStatisticsService.decreaseNovelFeedCount(novelService.getNovelOrException(feed.getNovelId()));
-            }
-            if (request.novelId() != null) {
-                novelStatisticsService.increaseNovelFeedCount(novelService.getNovelOrException(request.novelId()));
-            }
+            novelService.getNovelOrException(feed.getNovelId());
         }
 
         feed.updateFeed(request.feedContent(), request.isSpoiler(), request.novelId());
-        categoryService.updateCategory(feed, request.relevantCategories());
+        feedCategoryService.updateFeedCategory(feed, request.relevantCategories());
     }
 
     public void deleteFeed(User user, Long feedId) {
@@ -73,27 +67,35 @@ public class FeedService {
 
         feed.validateUserAuthorization(user, DELETE);
 
-        if (feed.getNovelId() != null) {
-            novelStatisticsService.decreaseNovelFeedCount(novelService.getNovelOrException(feed.getNovelId()));
-        }
-
         feedRepository.delete(feed);
     }
 
     public void likeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 
-        String likeUserId = String.valueOf(user.getUserId());
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
 
-        feed.addLike(likeUserId);
+        boolean isPopularFeed = false;
+
+        if (feed.getLikes().size() == 9) {
+            isPopularFeed = true;
+        }
+
+        likeService.createLike(user, feed);
+
+        if (isPopularFeed) {
+            popularFeedService.createPopularFeed(feed);
+        }
     }
 
     public void unLikeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 
-        String unLikeUserId = String.valueOf(user.getUserId());
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
 
-        feed.unLike(unLikeUserId);
+        likeService.deleteLike(user, feed);
     }
 
     @Transactional(readOnly = true)
@@ -105,8 +107,8 @@ public class FeedService {
 
         UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
         Novel novel = getLinkedNovelOrNull(feed.getNovelId());
-        Boolean isLiked = isUserLikedFeed(feed.getLikeUsers(), user);
-        List<String> relevantCategories = categoryService.getRelevantCategoryNames(feed.getCategory());
+        Boolean isLiked = isUserLikedFeed(user, feed);
+        List<String> relevantCategories = feedCategoryService.getRelevantCategoryNames(feed.getFeedCategories());
         Boolean isMyFeed = isUserFeedOwner(feed.getUser(), user);
 
         return FeedGetResponse.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed);
@@ -140,13 +142,11 @@ public class FeedService {
         if (linkedNovelId == null) {
             return null;
         }
-
         return novelService.getNovelOrException(linkedNovelId);
     }
 
-    private Boolean isUserLikedFeed(String likeUsers, User user) {
-        String formattedLikeUser = String.format(LIKE_USER_PATTERN, user.getUserId());
-        return likeUsers.contains(formattedLikeUser);
+    private Boolean isUserLikedFeed(User user, Feed feed) {
+        return likeService.isUserLikedFeed(user, feed);
     }
 
     private Boolean isUserFeedOwner(User createdUser, User user) {

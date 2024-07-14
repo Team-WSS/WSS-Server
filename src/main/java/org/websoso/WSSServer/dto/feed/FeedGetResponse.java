@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
+import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 
 public record FeedGetResponse(
@@ -32,9 +33,13 @@ public record FeedGetResponse(
         Float novelRating = null;
 
         if (novel != null) {
+            List<UserNovel> userNovels = novel.getUserNovels().stream().filter(un -> un.getUserNovelRating() > 0.0)
+                    .toList();
             title = novel.getTitle();
-            novelRatingCount = novel.getNovelRatingCount();
-            novelRating = calculateNovelRating(novel.getNovelRatingSum(), novelRatingCount);
+            novelRatingCount = userNovels.size();
+            novelRating = calculateNovelRating(
+                    (float) userNovels.stream().map(UserNovel::getUserNovelRating).mapToDouble(d -> d).sum(),
+                    novelRatingCount);
         }
 
         return new FeedGetResponse(
@@ -43,9 +48,9 @@ public record FeedGetResponse(
                 userBasicInfo.avatarImage(),
                 feed.getCreatedDate().format(DateTimeFormatter.ofPattern("M월 d일")),
                 feed.getFeedContent(),
-                feed.getLikeCount(),
+                feed.getLikes().size(),
                 isLiked,
-                feed.getCommentCount(),
+                feed.getComments().size(),
                 feed.getNovelId(),
                 title,
                 novelRatingCount,
