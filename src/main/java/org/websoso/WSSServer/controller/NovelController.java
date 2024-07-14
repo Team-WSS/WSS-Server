@@ -25,7 +25,6 @@ public class NovelController {
     private final NovelService novelService;
     private final UserService userService;
 
-    // TODO 이름 변경(작품 정보 조회 뷰에서 상단, 기본정보를 제공하는 부분)
     @GetMapping("/{novelId}")
     public ResponseEntity<NovelGetResponse1> getNovelInfo_basic(Principal principal, @PathVariable Long novelId) {
         if (principal == null) {
@@ -39,7 +38,6 @@ public class NovelController {
                         novelId));
     }
 
-    // TODO 이름 변경(작품 정보 조회 뷰에서 하단, 정보탭 부분)
     @GetMapping("/{novelId}/info")
     public ResponseEntity<NovelGetResponse2> getNovelInfo_infoTab(@PathVariable Long novelId) {
         return ResponseEntity
