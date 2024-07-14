@@ -9,5 +9,6 @@ public enum ReadStatus {
     WATCHING("보는 중"),
     WATCHED("봤어요"),
     QUIT("하차");
+
     private final String label;
 }
