@@ -174,4 +174,14 @@ public class FeedController {
                 .body(feedService.getComments(user, feedId));
     }
 
+    @PostMapping("/{feedId}/spoiler")
+    public ResponseEntity<Void> reportFeedSpoiler(Principal principal,
+                                                  @PathVariable("feedId") Long feedId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.reportFeedSpoiler(user, feedId);
+
+        return ResponseEntity
+                .status(CREATED)
+                .build();
+    }
 }

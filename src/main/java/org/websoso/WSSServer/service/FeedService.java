@@ -5,6 +5,7 @@ import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER_ACCESS;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_NOT_ALLOWED;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class FeedService {
     private final LikeService likeService;
     private final PopularFeedService popularFeedService;
     private final CommentService commentService;
+    private final ReportedFeedService reportedFeedService;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
@@ -147,6 +149,19 @@ public class FeedService {
         Feed feed = getFeedOrException(feedId);
         validateFeedAccess(feed, user);
         return commentService.getComments(user, feed);
+    }
+
+    public void reportFeedSpoiler(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
+
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
+
+        if (isUserFeedOwner(feed.getUser(), user)) {
+            throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
+        }
+
+        reportedFeedService.createReportedFeed(feed, user);
     }
 
     private Feed getFeedOrException(Long feedId) {
