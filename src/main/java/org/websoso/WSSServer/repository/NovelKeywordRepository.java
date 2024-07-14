@@ -10,4 +10,7 @@ import org.websoso.WSSServer.domain.NovelKeyword;
 public interface NovelKeywordRepository extends JpaRepository<NovelKeyword, Long> {
 
     List<NovelKeyword> findAllByNovelAndUserId(Novel novel, Long userId);
+
+    List<NovelKeyword> findAllByNovel(Novel novel);
+
 }

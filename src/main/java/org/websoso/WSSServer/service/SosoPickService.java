@@ -16,11 +16,13 @@ import org.websoso.WSSServer.repository.NovelRepository;
 @Transactional
 public class SosoPickService {
 
+    private static final int SOSO_PICK_SIZE = 10;
+
     private final NovelRepository novelRepository;
 
     @Transactional(readOnly = true)
     public SosoPickGetResponse getSosoPick() {
-        Pageable pageable = PageRequest.of(0, 10);
+        Pageable pageable = PageRequest.of(0, SOSO_PICK_SIZE);
         List<SosoPickNovelGetResponse> sosoPickNovels = novelRepository.findSosoPick(pageable).stream()
                 .map(SosoPickNovelGetResponse::of).collect(Collectors.toList());
         return SosoPickGetResponse.of(sosoPickNovels);
