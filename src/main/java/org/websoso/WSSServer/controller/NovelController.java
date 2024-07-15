@@ -30,11 +30,11 @@ public class NovelController {
         if (principal == null) {
             return ResponseEntity
                     .status(OK)
-                    .body(novelService.getNovelInfo_basic(null, novelId));
+                    .body(novelService.getNovelInfoBasic(null, novelId));
         }
         return ResponseEntity
                 .status(OK)
-                .body(novelService.getNovelInfo_basic(userService.getUserOrException(Long.valueOf(principal.getName())),
+                .body(novelService.getNovelInfoBasic(userService.getUserOrException(Long.valueOf(principal.getName())),
                         novelId));
     }
 
@@ -42,7 +42,7 @@ public class NovelController {
     public ResponseEntity<NovelGetResponseInfoTab> getNovelInfoInfoTab(@PathVariable Long novelId) {
         return ResponseEntity
                 .status(OK)
-                .body(novelService.getNovelInfo_infoTab(novelId));
+                .body(novelService.getNovelInfoInfoTab(novelId));
     }
 
     @PostMapping("/{novelId}/is-interest")

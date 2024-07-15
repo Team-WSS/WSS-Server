@@ -62,7 +62,7 @@ public class NovelService {
     }
 
     @Transactional(readOnly = true)
-    public NovelGetResponseBasic getNovelInfo_basic(User user, Long novelId) {
+    public NovelGetResponseBasic getNovelInfoBasic(User user, Long novelId) {
         Novel novel = getNovelOrException(novelId);
         List<NovelGenre> novelGenres = novelGenreRepository.findAllByNovel(novel);
         Integer novelRatingCount = userNovelRepository.countByNovelAndUserNovelRatingNot(novel, 0.0f);
@@ -106,7 +106,7 @@ public class NovelService {
         userNovel.setIsInterest(true);
     }
 
-    public NovelGetResponseInfoTab getNovelInfo_infoTab(Long novelId) {
+    public NovelGetResponseInfoTab getNovelInfoInfoTab(Long novelId) {
         Novel novel = getNovelOrException(novelId);
         return NovelGetResponseInfoTab.of(
                 novel,
