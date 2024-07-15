@@ -139,7 +139,7 @@ public class FeedService {
                     .toList());
         }
 
-        return FeedsGetResponse.of(category, isLoadable, feedGetResponses);
+        return FeedsGetResponse.of(category == null ? DEFAULT_CATEGORY : category, isLoadable, feedGetResponses);
     }
 
     private Feed getFeedOrException(Long feedId) {
