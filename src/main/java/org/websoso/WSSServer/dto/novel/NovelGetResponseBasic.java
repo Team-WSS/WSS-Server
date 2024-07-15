@@ -3,7 +3,7 @@ package org.websoso.WSSServer.dto.novel;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.UserNovel;
 
-public record NovelGetResponse_basic(
+public record NovelGetResponseBasic(
         Long userNovelId,
         String novelTitle,
         String novelImage,
@@ -21,12 +21,12 @@ public record NovelGetResponse_basic(
         String endDate,
         Boolean isUserNovelInterest
 ) {
-    public static NovelGetResponse_basic of(Novel novel, UserNovel userNovel, String novelGenres,
-                                            String novelGenreImage,
-                                            Integer interestCount, Float novelRating, Integer novelRatingCount,
-                                            Integer feedCount) {
+    public static NovelGetResponseBasic of(Novel novel, UserNovel userNovel, String novelGenres,
+                                           String novelGenreImage,
+                                           Integer interestCount, Float novelRating, Integer novelRatingCount,
+                                           Integer feedCount) {
         if (userNovel == null) {
-            return new NovelGetResponse_basic(
+            return new NovelGetResponseBasic(
                     null,
                     novel.getTitle(),
                     novel.getNovelImage(),
@@ -45,7 +45,7 @@ public record NovelGetResponse_basic(
                     false
             );
         }
-        return new NovelGetResponse_basic(
+        return new NovelGetResponseBasic(
                 userNovel.getUserNovelId(),
                 novel.getTitle(),
                 novel.getNovelImage(),

@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.dto.novel.NovelGetResponse_basic;
-import org.websoso.WSSServer.dto.novel.NovelGetResponse_infoTab;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserService;
 
@@ -26,7 +26,7 @@ public class NovelController {
     private final UserService userService;
 
     @GetMapping("/{novelId}")
-    public ResponseEntity<NovelGetResponse_basic> getNovelInfo_basic(Principal principal, @PathVariable Long novelId) {
+    public ResponseEntity<NovelGetResponseBasic> getNovelInfo_basic(Principal principal, @PathVariable Long novelId) {
         if (principal == null) {
             return ResponseEntity
                     .status(OK)
@@ -39,7 +39,7 @@ public class NovelController {
     }
 
     @GetMapping("/{novelId}/info")
-    public ResponseEntity<NovelGetResponse_infoTab> getNovelInfo_infoTab(@PathVariable Long novelId) {
+    public ResponseEntity<NovelGetResponseInfoTab> getNovelInfo_infoTab(@PathVariable Long novelId) {
         return ResponseEntity
                 .status(OK)
                 .body(novelService.getNovelInfo_infoTab(novelId));

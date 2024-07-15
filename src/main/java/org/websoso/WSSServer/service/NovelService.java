@@ -24,8 +24,8 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.AttractivePointName;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
-import org.websoso.WSSServer.dto.novel.NovelGetResponse_basic;
-import org.websoso.WSSServer.dto.novel.NovelGetResponse_infoTab;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
@@ -62,13 +62,13 @@ public class NovelService {
     }
 
     @Transactional(readOnly = true)
-    public NovelGetResponse_basic getNovelInfo_basic(User user, Long novelId) {
+    public NovelGetResponseBasic getNovelInfo_basic(User user, Long novelId) {
         Novel novel = getNovelOrException(novelId);
         List<NovelGenre> novelGenres = novelGenreRepository.findAllByNovel(novel);
         Integer novelRatingCount = userNovelRepository.countByNovelAndUserNovelRatingNot(novel, 0.0f);
         Float novelRating = novelRatingCount == 0 ? 0.0f
                 : Math.round(userNovelRepository.sumUserNovelRatingByNovel(novel) / novelRatingCount * 10.0f) / 10.0f;
-        return NovelGetResponse_basic.of(
+        return NovelGetResponseBasic.of(
                 novel,
                 userNovelService.getUserNovelOrNull(user, novel),
                 getNovelGenreNames(novelGenres),
@@ -106,9 +106,9 @@ public class NovelService {
         userNovel.setIsInterest(true);
     }
 
-    public NovelGetResponse_infoTab getNovelInfo_infoTab(Long novelId) {
+    public NovelGetResponseInfoTab getNovelInfo_infoTab(Long novelId) {
         Novel novel = getNovelOrException(novelId);
-        return NovelGetResponse_infoTab.of(
+        return NovelGetResponseInfoTab.of(
                 novel,
                 getPlatforms(novel),
                 getAttractivePoints(novel),
