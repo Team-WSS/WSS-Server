@@ -182,7 +182,7 @@ public class FeedService {
     }
 
     private Boolean isNotBlocked(User createdFeedUser, User user) {
-        return user != null && !blockService.isBlockedRelationship(user.getUserId(), createdFeedUser.getUserId());
+        return user == null || !blockService.isBlockedRelationship(user.getUserId(), createdFeedUser.getUserId());
     }
 
     private FeedInfo createFeedInfo(Feed feed, User user) {
