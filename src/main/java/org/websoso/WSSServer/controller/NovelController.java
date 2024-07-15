@@ -26,7 +26,7 @@ public class NovelController {
     private final UserService userService;
 
     @GetMapping("/{novelId}")
-    public ResponseEntity<NovelGetResponseBasic> getNovelInfo_basic(Principal principal, @PathVariable Long novelId) {
+    public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(Principal principal, @PathVariable Long novelId) {
         if (principal == null) {
             return ResponseEntity
                     .status(OK)
@@ -39,7 +39,7 @@ public class NovelController {
     }
 
     @GetMapping("/{novelId}/info")
-    public ResponseEntity<NovelGetResponseInfoTab> getNovelInfo_infoTab(@PathVariable Long novelId) {
+    public ResponseEntity<NovelGetResponseInfoTab> getNovelInfoInfoTab(@PathVariable Long novelId) {
         return ResponseEntity
                 .status(OK)
                 .body(novelService.getNovelInfo_infoTab(novelId));
