@@ -19,6 +19,7 @@ import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserNovelService;
 import org.websoso.WSSServer.service.UserService;
@@ -53,11 +54,12 @@ public class UserNovelController {
     }
 
     @PutMapping("/{novelId}")
-    public ResponseEntity<Void> updateUserNovel(Principal principal, @PathVariable Long novelId) {
+    public ResponseEntity<Void> updateUserNovel(Principal principal, @PathVariable Long novelId,
+                                                @Valid @RequestBody UserNovelUpdateRequest request) {
 
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
-        userNovelService.updateUserNovel(user, novel);
+        userNovelService.updateUserNovel(user, novel, request);
 
         return ResponseEntity
                 .status(NO_CONTENT)
