@@ -9,7 +9,7 @@ public record CategoryGetResponse(
 ) {
     public static CategoryGetResponse of(KeywordCategoryName keywordCategoryName, List<KeywordGetResponse> keywords) {
         return new CategoryGetResponse(
-                keywordCategoryName.getName(),
+                keywordCategoryName.getLabel(),
                 keywords
         );
     }

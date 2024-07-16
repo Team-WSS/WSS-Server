@@ -6,4 +6,6 @@ import org.websoso.WSSServer.domain.Feed;
 
 @Repository
 public interface FeedRepository extends JpaRepository<Feed, Long> {
+
+    Integer countByNovelId(Long novelId);
 }

@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
-import org.websoso.WSSServer.dto.novel.NovelGetResponse2;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserService;
 
@@ -25,26 +25,24 @@ public class NovelController {
     private final NovelService novelService;
     private final UserService userService;
 
-    // TODO 이름 변경(작품 정보 조회 뷰에서 상단, 기본정보를 제공하는 부분)
     @GetMapping("/{novelId}")
-    public ResponseEntity<NovelGetResponse1> getNovelInfo1(Principal principal, @PathVariable Long novelId) {
+    public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(Principal principal, @PathVariable Long novelId) {
         if (principal == null) {
             return ResponseEntity
                     .status(OK)
-                    .body(novelService.getNovelInfo1(null, novelId));
+                    .body(novelService.getNovelInfoBasic(null, novelId));
         }
         return ResponseEntity
                 .status(OK)
-                .body(novelService.getNovelInfo1(userService.getUserOrException(Long.valueOf(principal.getName())),
+                .body(novelService.getNovelInfoBasic(userService.getUserOrException(Long.valueOf(principal.getName())),
                         novelId));
     }
 
-    // TODO 이름 변경(작품 정보 조회 뷰에서 하단, 정보탭 부분)
     @GetMapping("/{novelId}/info")
-    public ResponseEntity<NovelGetResponse2> getNovelInfo2(@PathVariable Long novelId) {
+    public ResponseEntity<NovelGetResponseInfoTab> getNovelInfoInfoTab(@PathVariable Long novelId) {
         return ResponseEntity
                 .status(OK)
-                .body(novelService.getNovelInfo2(novelId));
+                .body(novelService.getNovelInfoInfoTab(novelId));
     }
 
     @PostMapping("/{novelId}/is-interest")

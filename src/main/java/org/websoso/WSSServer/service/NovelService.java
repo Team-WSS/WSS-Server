@@ -1,7 +1,8 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.CustomKeywordError.KEYWORD_NOT_FOUND;
+import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
+import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
+import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.ALREADY_INTERESTED;
 
@@ -15,41 +16,43 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
-import org.websoso.WSSServer.domain.NovelKeywords;
-import org.websoso.WSSServer.domain.NovelStatistics;
-import org.websoso.WSSServer.domain.Platform;
+import org.websoso.WSSServer.domain.NovelKeyword;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
-import org.websoso.WSSServer.domain.UserStatistics;
+import org.websoso.WSSServer.domain.common.AttractivePointName;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
-import org.websoso.WSSServer.dto.novel.NovelGetResponse1;
-import org.websoso.WSSServer.dto.novel.NovelGetResponse2;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
-import org.websoso.WSSServer.exception.exception.CustomGenreException;
-import org.websoso.WSSServer.exception.exception.CustomKeywordException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
-import org.websoso.WSSServer.repository.KeywordRepository;
+import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.repository.NovelGenreRepository;
 import org.websoso.WSSServer.repository.NovelKeywordRepository;
+import org.websoso.WSSServer.repository.NovelPlatformRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
-import org.websoso.WSSServer.repository.PlatformRepository;
+import org.websoso.WSSServer.repository.UserNovelAttractivePointRepository;
+import org.websoso.WSSServer.repository.UserNovelRepository;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class NovelService {
 
+    private static final int ATTRACTIVE_POINT_SIZE = 3;
+    private static final int KEYWORD_SIZE = 5;
+
     private final NovelRepository novelRepository;
-    private final PlatformRepository platformRepository;
-    private final KeywordRepository keywordRepository;
     private final NovelKeywordRepository novelKeywordRepository;
-    private final NovelStatisticsService novelStatisticsService;
     private final UserNovelService userNovelService;
-    private final UserStatisticsService userStatisticsService;
+    private final UserNovelRepository userNovelRepository;
+    private final NovelPlatformRepository novelPlatformRepository;
+    private final UserNovelAttractivePointRepository userNovelAttractivePointRepository;
+    private final FeedRepository feedRepository;
+    private final NovelGenreRepository novelGenreRepository;
 
     @Transactional(readOnly = true)
     public Novel getNovelOrException(Long novelId) {
@@ -59,15 +62,21 @@ public class NovelService {
     }
 
     @Transactional(readOnly = true)
-    public NovelGetResponse1 getNovelInfo1(User user, Long novelId) {
+    public NovelGetResponseBasic getNovelInfoBasic(User user, Long novelId) {
         Novel novel = getNovelOrException(novelId);
-        List<NovelGenre> novelGenres = novel.getNovelGenres();
-        return NovelGetResponse1.of(
+        List<NovelGenre> novelGenres = novelGenreRepository.findAllByNovel(novel);
+        Integer novelRatingCount = userNovelRepository.countByNovelAndUserNovelRatingNot(novel, 0.0f);
+        Float novelRating = novelRatingCount == 0 ? 0.0f
+                : Math.round(userNovelRepository.sumUserNovelRatingByNovel(novel) / novelRatingCount * 10.0f) / 10.0f;
+        return NovelGetResponseBasic.of(
                 novel,
                 userNovelService.getUserNovelOrNull(user, novel),
-                novelStatisticsService.getNovelStatisticsOrException(novel),
                 getNovelGenreNames(novelGenres),
-                getRandomNovelGenreImage(novelGenres)
+                getRandomNovelGenreImage(novelGenres),
+                userNovelRepository.countByNovelAndIsInterestTrue(novel),
+                novelRating,
+                novelRatingCount,
+                feedRepository.countByNovelId(novelId)
         );
     }
 
@@ -90,64 +99,60 @@ public class NovelService {
             throw new CustomUserNovelException(ALREADY_INTERESTED, "already registered as interested");
         }
 
-        NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
-        UserStatistics userStatistics = userStatisticsService.getUserStatisticsOrException(user);
-
         if (userNovel == null) {
             userNovel = userNovelService.createUserNovelByInterest(user, novel);
-
-            List<String> genreNames = novel.getNovelGenres()
-                    .stream()
-                    .map(NovelGenre::getGenre)
-                    .map(Genre::getGenreName)
-                    .toList();
-
-            for (String genreName : genreNames) {
-                switch (genreName) {
-                    case "로맨스" -> userStatistics.increaseRoNovelCount();
-                    case "로판" -> userStatistics.increaseRfNovelCount();
-                    case "BL" -> userStatistics.increaseBlNovelCount();
-                    case "판타지" -> userStatistics.increaseFaNovelCount();
-                    case "현판" -> userStatistics.increaseMfNovelCount();
-                    case "무협" -> userStatistics.increaseWuNovelCount();
-                    case "라노벨" -> userStatistics.increaseLnNovelCount();
-                    case "드라마" -> userStatistics.increaseDrNovelCount();
-                    case "미스터리" -> userStatistics.increaseMyNovelCount();
-                    default -> throw new CustomGenreException(GENRE_NOT_FOUND, "cannot find corresponding genre");
-                }
-            }
         }
 
         userNovel.setIsInterest(true);
-        novelStatistics.increaseInterestCount();
-        userStatistics.increaseInterestNovelCount();
     }
 
-    public NovelGetResponse2 getNovelInfo2(Long novelId) {
+    public NovelGetResponseInfoTab getNovelInfoInfoTab(Long novelId) {
         Novel novel = getNovelOrException(novelId);
-        NovelStatistics novelStatistics = novelStatisticsService.getNovelStatisticsOrException(novel);
-        return NovelGetResponse2.of(
+        return NovelGetResponseInfoTab.of(
                 novel,
-                novelStatistics,
                 getPlatforms(novel),
-                getAttractivePoints(novelStatistics),
-                getKeywords(novelId)
+                getAttractivePoints(novel),
+                getKeywords(novel),
+                userNovelRepository.countByNovelAndStatus(novel, WATCHING),
+                userNovelRepository.countByNovelAndStatus(novel, WATCHED),
+                userNovelRepository.countByNovelAndStatus(novel, QUIT)
         );
     }
 
     private List<PlatformGetResponse> getPlatforms(Novel novel) {
-        List<Platform> platforms = platformRepository.findAllByNovel(novel);
-        return platforms.stream().map(PlatformGetResponse::of).collect(Collectors.toList());
+        return novelPlatformRepository.findAllByNovel(novel).stream().map(PlatformGetResponse::of)
+                .collect(Collectors.toList());
     }
 
-    private List<String> getAttractivePoints(NovelStatistics novelStatistics) {
-        Map<String, Integer> attractivePointsMap = makeAttractivePointsMapExcludingZero(novelStatistics);
+    private List<String> getAttractivePoints(Novel novel) {
 
-        if (attractivePointsMap.isEmpty()) {
+        Map<String, Integer> attractivePointMap = makeAttractivePointMapExcludingZero(novel);
+
+        if (attractivePointMap.isEmpty()) {
             return Collections.emptyList();
         }
 
-        Map<Integer, List<String>> groupedByValue = groupAttractivePointsByValue(attractivePointsMap);
+        return getTOP3AttractivePoints(attractivePointMap);
+    }
+
+    private Map<String, Integer> makeAttractivePointMapExcludingZero(Novel novel) {
+
+        Map<String, Integer> attractivePointMap = new HashMap<>();
+
+        for (AttractivePointName point : AttractivePointName.values()) {
+            attractivePointMap.put(point.getLabel(),
+                    userNovelAttractivePointRepository.countByUserNovel_NovelAndAttractivePoint_AttractivePointName(
+                            novel, point.getLabel()));
+        }
+
+        attractivePointMap.entrySet().removeIf(entry -> entry.getValue() == 0);
+
+        return attractivePointMap;
+    }
+
+    private List<String> getTOP3AttractivePoints(Map<String, Integer> attractivePointMap) {
+
+        Map<Integer, List<String>> groupedByValue = groupAttractivePointByValue(attractivePointMap);
 
         List<String> result = new ArrayList<>();
         List<Integer> sortedKeys = new ArrayList<>(groupedByValue.keySet());
@@ -157,12 +162,12 @@ public class NovelService {
 
         for (Integer key : sortedKeys) {
             List<String> items = groupedByValue.get(key);
-            if (result.size() + items.size() > 3) {
+            if (result.size() + items.size() > ATTRACTIVE_POINT_SIZE) {
                 Collections.shuffle(items, random);
-                items = items.subList(0, 3 - result.size());
+                items = items.subList(0, ATTRACTIVE_POINT_SIZE - result.size());
             }
             result.addAll(items);
-            if (result.size() >= 3) {
+            if (result.size() >= ATTRACTIVE_POINT_SIZE) {
                 break;
             }
         }
@@ -170,24 +175,10 @@ public class NovelService {
         return result;
     }
 
-    private Map<String, Integer> makeAttractivePointsMapExcludingZero(NovelStatistics novelStatistics) {
-        Map<String, Integer> attractivePointsMap = new HashMap<>();
-
-        attractivePointsMap.put("세계관", novelStatistics.getUniverseCount());
-        attractivePointsMap.put("분위기", novelStatistics.getVibeCount());
-        attractivePointsMap.put("소재", novelStatistics.getMaterialCount());
-        attractivePointsMap.put("캐릭터", novelStatistics.getCharactersCount());
-        attractivePointsMap.put("관계", novelStatistics.getRelationshipCount());
-
-        attractivePointsMap.entrySet().removeIf(entry -> entry.getValue() == 0);
-
-        return attractivePointsMap;
-    }
-
-    private Map<Integer, List<String>> groupAttractivePointsByValue(Map<String, Integer> attractivePointsMap) {
+    private Map<Integer, List<String>> groupAttractivePointByValue(Map<String, Integer> attractivePointMap) {
         Map<Integer, List<String>> groupedByValue = new HashMap<>();
 
-        for (Map.Entry<String, Integer> entry : attractivePointsMap.entrySet()) {
+        for (Map.Entry<String, Integer> entry : attractivePointMap.entrySet()) {
             groupedByValue
                     .computeIfAbsent(entry.getValue(), k -> new ArrayList<>())
                     .add(entry.getKey());
@@ -196,25 +187,21 @@ public class NovelService {
         return groupedByValue;
     }
 
-    private List<KeywordCountGetResponse> getKeywords(Long novelId) {
-        List<NovelKeywords> novelKeywords = novelKeywordRepository.findAllByNovelId(novelId);
+    private List<KeywordCountGetResponse> getKeywords(Novel novel) {
+
+        List<NovelKeyword> novelKeywords = novelKeywordRepository.findAllByNovel(novel);
 
         if (novelKeywords.isEmpty()) {
             return Collections.emptyList();
         }
 
-        Map<Integer, Long> keywordFrequencyMap = novelKeywords.stream()
-                .collect(Collectors.groupingBy(NovelKeywords::getKeywordId, Collectors.counting()));
+        Map<Keyword, Long> keywordFrequencyMap = novelKeywords.stream()
+                .collect(Collectors.groupingBy(NovelKeyword::getKeyword, Collectors.counting()));
 
         return keywordFrequencyMap.entrySet().stream()
-                .sorted(Map.Entry.<Integer, Long>comparingByValue().reversed())
-                .limit(5)
-                .map(entry -> {
-                    Keyword keyword = keywordRepository.findById(entry.getKey()).orElseThrow(
-                            () -> new CustomKeywordException(KEYWORD_NOT_FOUND,
-                                    "keyword with the given id is not found"));
-                    return KeywordCountGetResponse.of(keyword, entry.getValue().intValue());
-                })
+                .sorted(Map.Entry.<Keyword, Long>comparingByValue().reversed())
+                .limit(KEYWORD_SIZE)
+                .map(entry -> KeywordCountGetResponse.of(entry.getKey(), entry.getValue().intValue()))
                 .collect(Collectors.toList());
     }
 
