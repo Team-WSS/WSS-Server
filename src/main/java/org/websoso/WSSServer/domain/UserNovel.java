@@ -76,6 +76,7 @@ public class UserNovel extends BaseEntity {
     }
 
     public void deleteEvaluation() {
+        this.status = null;
         this.userNovelRating = 0.0f;
         this.startDate = null;
         this.endDate = null;
