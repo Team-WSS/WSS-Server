@@ -125,7 +125,7 @@ public class NovelService {
     }
 
     private Boolean isUserNovelOnlyByInterest(UserNovel userNovel) {
-        return userNovel.getStatus() != null;
+        return userNovel.getStatus() == null;
     }
 
     public NovelGetResponseInfoTab getNovelInfoInfoTab(Long novelId) {
