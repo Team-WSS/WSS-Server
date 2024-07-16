@@ -93,7 +93,11 @@ public class UserNovelService {
         List<NovelKeyword> novelKeywords = novelKeywordRepository.findAllByNovelAndUserId(novel, user.getUserId());
         novelKeywordRepository.deleteAll(novelKeywords);
 
-        userNovelRepository.delete(userNovel);
+        if (!userNovel.getIsInterest()) {
+            userNovelRepository.delete(userNovel);
+        }
+
+        userNovel.deleteEvaluation();
     }
 
     public UserNovel createUserNovelByInterest(User user, Novel novel) {
