@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_EVALUATED;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
 
@@ -84,6 +85,10 @@ public class UserNovelService {
         if (userNovel == null) {
             throw new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
                     "user novel with the given user and novel is not found");
+        }
+
+        if (userNovel.getStatus() == null) {
+            throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
         }
 
         List<UserNovelAttractivePoint> userNovelAttractivePoints = userNovelAttractivePointRepository.findAllByUserNovel(
