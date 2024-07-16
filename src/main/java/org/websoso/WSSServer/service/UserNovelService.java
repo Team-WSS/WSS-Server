@@ -77,6 +77,25 @@ public class UserNovelService {
 
     }
 
+    public void deleteUserNovel(User user, Novel novel) {
+
+        UserNovel userNovel = getUserNovelOrNull(user, novel);
+
+        if (userNovel == null) {
+            throw new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
+                    "user novel with the given user and novel is not found");
+        }
+
+        List<UserNovelAttractivePoint> userNovelAttractivePoints = userNovelAttractivePointRepository.findAllByUserNovel(
+                userNovel);
+        userNovelAttractivePointRepository.deleteAll(userNovelAttractivePoints);
+
+        List<NovelKeyword> novelKeywords = novelKeywordRepository.findAllByNovelAndUserId(novel, user.getUserId());
+        novelKeywordRepository.deleteAll(novelKeywords);
+
+        userNovelRepository.delete(userNovel);
+    }
+
     public UserNovel createUserNovelByInterest(User user, Novel novel) {
 
         if (getUserNovelOrNull(user, novel) != null) {
