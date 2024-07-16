@@ -34,19 +34,19 @@ public class UserNovelController {
     private final UserNovelService userNovelService;
 
     @GetMapping("/{novelId}")
-    public ResponseEntity<UserNovelGetResponse> getUserNovel(Principal principal, @PathVariable Long novelId) {
+    public ResponseEntity<UserNovelGetResponse> getEvaluation(Principal principal, @PathVariable Long novelId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
         return ResponseEntity
                 .status(OK)
-                .body(userNovelService.getUserNovelInfo(user, novel));
+                .body(userNovelService.getEvaluation(user, novel));
     }
 
     @PostMapping
-    public ResponseEntity<Void> createUserNovel(Principal principal,
-                                                @Valid @RequestBody UserNovelCreateRequest request) {
+    public ResponseEntity<Void> createEvaluation(Principal principal,
+                                                 @Valid @RequestBody UserNovelCreateRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        userNovelService.createUserNovel(user, request);
+        userNovelService.createEvaluation(user, request);
 
         return ResponseEntity
                 .status(CREATED)
@@ -54,12 +54,12 @@ public class UserNovelController {
     }
 
     @PutMapping("/{novelId}")
-    public ResponseEntity<Void> updateUserNovel(Principal principal, @PathVariable Long novelId,
-                                                @Valid @RequestBody UserNovelUpdateRequest request) {
+    public ResponseEntity<Void> updateEvaluation(Principal principal, @PathVariable Long novelId,
+                                                 @Valid @RequestBody UserNovelUpdateRequest request) {
 
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
-        userNovelService.updateUserNovel(user, novel, request);
+        userNovelService.updateEvaluation(user, novel, request);
 
         return ResponseEntity
                 .status(NO_CONTENT)

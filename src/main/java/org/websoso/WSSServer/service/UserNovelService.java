@@ -50,7 +50,7 @@ public class UserNovelService {
         return userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
     }
 
-    public void createUserNovel(User user, UserNovelCreateRequest request) {
+    public void createEvaluation(User user, UserNovelCreateRequest request) {
 
         Novel novel = novelRepository.findById(request.novelId())
                 .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
@@ -72,7 +72,7 @@ public class UserNovelService {
 
     }
 
-    public void updateUserNovel(User user, Novel novel, UserNovelUpdateRequest request) {
+    public void updateEvaluation(User user, Novel novel, UserNovelUpdateRequest request) {
 
         UserNovel userNovel = getUserNovelOrNull(user, novel);
 
@@ -85,10 +85,7 @@ public class UserNovelService {
             throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
         }
 
-        LocalDate startDate = request.startDate() == null ? null : convertToLocalDate(request.startDate());
-        LocalDate endDate = request.endDate() == null ? null : convertToLocalDate(request.endDate());
-
-        userNovel.updateUserNovel(request.userNovelRating(), request.status(), startDate, endDate);
+        updateUserNovel(userNovel, request);
 
         deletePreviousUserNovelAttractivePoints(userNovel);
         createUserNovelAttractivePoints(userNovel, request.attractivePoints());
@@ -96,6 +93,13 @@ public class UserNovelService {
         deletePreviousNovelKeywords(novel, user.getUserId());
         createNovelKeywords(novel, user.getUserId(), request.keywordIds());
 
+    }
+
+    private void updateUserNovel(UserNovel userNovel, UserNovelUpdateRequest request) {
+        LocalDate startDate = request.startDate() == null ? null : convertToLocalDate(request.startDate());
+        LocalDate endDate = request.endDate() == null ? null : convertToLocalDate(request.endDate());
+
+        userNovel.updateUserNovel(request.userNovelRating(), request.status(), startDate, endDate);
     }
 
     private void createUserNovelAttractivePoints(UserNovel userNovel, List<String> request) {
@@ -137,7 +141,7 @@ public class UserNovelService {
     }
 
     @Transactional(readOnly = true)
-    public UserNovelGetResponse getUserNovelInfo(User user, Novel novel) {
+    public UserNovelGetResponse getEvaluation(User user, Novel novel) {
 
         UserNovel userNovel = getUserNovelOrNull(user, novel);
         if (userNovel == null) {
