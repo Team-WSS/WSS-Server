@@ -35,7 +35,7 @@ public class AvatarService {
         List<Avatar> avatars = avatarRepository.findAll();
         List<AvatarGetResponse> avatarGetResponses = avatars.stream()
                 .map(avatar -> {
-                    List<AvatarLine> avatarLines = avatar.getAvatarLine();
+                    List<AvatarLine> avatarLines = avatar.getAvatarLines();
                     return AvatarGetResponse.of(avatar, getRandomAvatarLine(avatarLines), representativeAvatarId);
                 }).toList();
         return new AvatarsGetResponse(avatarGetResponses);
