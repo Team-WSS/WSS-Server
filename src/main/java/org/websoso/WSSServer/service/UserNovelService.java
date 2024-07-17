@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,12 +88,8 @@ public class UserNovelService {
         }
 
         updateUserNovel(userNovel, request);
-
-        deletePreviousUserNovelAttractivePoints(userNovel);
-        createUserNovelAttractivePoints(userNovel, request.attractivePoints());
-
-        deletePreviousNovelKeywords(novel, user.getUserId());
-        createNovelKeywords(novel, user.getUserId(), request.keywordIds());
+        updateUserNovelAttractivePoints(userNovel, request.attractivePoints());
+        updateNovelKeywords(novel, user.getUserId(), request.keywordIds());
 
     }
 
@@ -100,6 +98,38 @@ public class UserNovelService {
         LocalDate endDate = request.endDate() == null ? null : convertToLocalDate(request.endDate());
 
         userNovel.updateUserNovel(request.userNovelRating(), request.status(), startDate, endDate);
+    }
+
+    private void updateUserNovelAttractivePoints(UserNovel userNovel, List<String> request) {
+        Set<AttractivePoint> previousAttractivePoints = userNovelAttractivePointRepository.findAllByUserNovel(userNovel)
+                .stream().map(UserNovelAttractivePoint::getAttractivePoint).collect(Collectors.toSet());
+        for (String stringAttractivePoint : request) {
+            AttractivePoint attractivePoint = attractivePointService.getAttractivePointByString(stringAttractivePoint);
+            if (previousAttractivePoints.contains(attractivePoint)) {
+                previousAttractivePoints.remove(attractivePoint);
+            } else {
+                userNovelAttractivePointRepository.save(UserNovelAttractivePoint.create(userNovel, attractivePoint));
+            }
+        }
+        for (AttractivePoint attractivePoint : previousAttractivePoints) {
+            userNovelAttractivePointRepository.deleteByAttractivePointAndUserNovel(attractivePoint, userNovel);
+        }
+    }
+
+    private void updateNovelKeywords(Novel novel, Long userId, List<Integer> request) {
+        Set<Keyword> previousKeywords = novelKeywordRepository.findAllByNovelAndUserId(novel, userId).stream()
+                .map(NovelKeyword::getKeyword).collect(Collectors.toSet());
+        for (Integer keywordId : request) {
+            Keyword keyword = keywordService.getKeywordOrException(keywordId);
+            if (previousKeywords.contains(keyword)) {
+                previousKeywords.remove(keyword);
+            } else {
+                novelKeywordRepository.save(NovelKeyword.create(novel, keyword, userId));
+            }
+        }
+        for (Keyword keyword : previousKeywords) {
+            novelKeywordRepository.deleteByKeywordAndNovel(keyword, novel);
+        }
     }
 
     private void createUserNovelAttractivePoints(UserNovel userNovel, List<String> request) {
