@@ -13,7 +13,7 @@ import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.GenrePreference;
-import org.websoso.WSSServer.domain.GenrePreferenceRepository;
+import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.EmailGetResponse;
