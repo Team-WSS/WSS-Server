@@ -146,17 +146,6 @@ public class UserNovelService {
         }
     }
 
-    private void deletePreviousUserNovelAttractivePoints(UserNovel userNovel) {
-        List<UserNovelAttractivePoint> previousAttractivePoints = userNovelAttractivePointRepository.findAllByUserNovel(
-                userNovel);
-        userNovelAttractivePointRepository.deleteAll(previousAttractivePoints);
-    }
-
-    private void deletePreviousNovelKeywords(Novel novel, Long userId) {
-        List<NovelKeyword> previousNovelKeywords = novelKeywordRepository.findAllByNovelAndUserId(novel, userId);
-        novelKeywordRepository.deleteAll(previousNovelKeywords);
-    }
-
     public UserNovel createUserNovelByInterest(User user, Novel novel) {
 
         if (getUserNovelOrNull(user, novel) != null) {
