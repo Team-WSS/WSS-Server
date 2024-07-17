@@ -23,6 +23,6 @@ public interface FeedCategoryRepository extends JpaRepository<FeedCategory, Long
             + "AND (?2 = 0 OR fc.feed.feedId < ?2) "
             + "AND fc.feed.isHidden = false "
             + "ORDER BY fc.feed.feedId DESC")
-    Slice<Feed> findFeedByCategory(Category category, Long lastFeedId, PageRequest pageRequest);
+    Slice<Feed> findFeedsByCategory(Category category, Long lastFeedId, PageRequest pageRequest);
 
 }
