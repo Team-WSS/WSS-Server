@@ -1,8 +1,12 @@
 package org.websoso.WSSServer.repository;
 
 import java.util.List;
+import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.UserNovel;
@@ -15,6 +19,9 @@ public interface UserNovelAttractivePointRepository extends JpaRepository<UserNo
 
     Integer countByUserNovel_NovelAndAttractivePoint_AttractivePointName(Novel novel, String attractivePoint);
 
-    void deleteByAttractivePointAndUserNovel(AttractivePoint attractivePoint, UserNovel userNovel);
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM UserNovelAttractivePoint un WHERE un.userNovel = :userNovel AND un.attractivePoint IN :attractivePoints")
+    void deleteByAttractivePointsAndUserNovel(Set<AttractivePoint> attractivePoints, UserNovel userNovel);
 
 }

@@ -101,8 +101,12 @@ public class UserNovelService {
     }
 
     private void updateUserNovelAttractivePoints(UserNovel userNovel, List<String> request) {
+
         Set<AttractivePoint> previousAttractivePoints = userNovelAttractivePointRepository.findAllByUserNovel(userNovel)
-                .stream().map(UserNovelAttractivePoint::getAttractivePoint).collect(Collectors.toSet());
+                .stream()
+                .map(UserNovelAttractivePoint::getAttractivePoint)
+                .collect(Collectors.toSet());
+
         for (String stringAttractivePoint : request) {
             AttractivePoint attractivePoint = attractivePointService.getAttractivePointByString(stringAttractivePoint);
             if (previousAttractivePoints.contains(attractivePoint)) {
@@ -111,14 +115,18 @@ public class UserNovelService {
                 userNovelAttractivePointRepository.save(UserNovelAttractivePoint.create(userNovel, attractivePoint));
             }
         }
-        for (AttractivePoint attractivePoint : previousAttractivePoints) {
-            userNovelAttractivePointRepository.deleteByAttractivePointAndUserNovel(attractivePoint, userNovel);
-        }
+
+        userNovelAttractivePointRepository.deleteByAttractivePointsAndUserNovel(previousAttractivePoints, userNovel);
+
     }
 
     private void updateNovelKeywords(Novel novel, Long userId, List<Integer> request) {
-        Set<Keyword> previousKeywords = novelKeywordRepository.findAllByNovelAndUserId(novel, userId).stream()
-                .map(NovelKeyword::getKeyword).collect(Collectors.toSet());
+
+        Set<Keyword> previousKeywords = novelKeywordRepository.findAllByNovelAndUserId(novel, userId)
+                .stream()
+                .map(NovelKeyword::getKeyword)
+                .collect(Collectors.toSet());
+
         for (Integer keywordId : request) {
             Keyword keyword = keywordService.getKeywordOrException(keywordId);
             if (previousKeywords.contains(keyword)) {
@@ -127,9 +135,9 @@ public class UserNovelService {
                 novelKeywordRepository.save(NovelKeyword.create(novel, keyword, userId));
             }
         }
-        for (Keyword keyword : previousKeywords) {
-            novelKeywordRepository.deleteByKeywordAndNovel(keyword, novel);
-        }
+
+        novelKeywordRepository.deleteByKeywordsAndNovelAAndUserId(previousKeywords, novel, userId);
+
     }
 
     private void createUserNovelAttractivePoints(UserNovel userNovel, List<String> request) {
