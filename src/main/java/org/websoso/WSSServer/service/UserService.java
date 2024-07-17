@@ -80,7 +80,6 @@ public class UserService {
     @Transactional(readOnly = true)
     public MyProfileResponse getMyProfileInfo(User user) {
         Byte avatarId = user.getAvatarId();
-        System.out.println("avatarId = " + avatarId);
         Avatar avatar = avatarRepository.findById(avatarId)
                 .orElseThrow(
                         () -> new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
