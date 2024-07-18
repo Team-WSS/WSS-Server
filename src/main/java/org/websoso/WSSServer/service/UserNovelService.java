@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -137,15 +138,9 @@ public class UserNovelService {
     }
 
     private List<String> extractAttractivePoints(UserNovel userNovel) {
-
-        List<UserNovelAttractivePoint> userNovelAttractivePoints = userNovel.getUserNovelAttractivePoints();
-        List<String> attractivePoints = new ArrayList<>();
-
-        for (UserNovelAttractivePoint attractivePoint : userNovelAttractivePoints) {
-            attractivePoints.add(attractivePoint.getAttractivePoint().getAttractivePointName());
-        }
-
-        return attractivePoints;
+        return userNovel.getUserNovelAttractivePoints().stream()
+                .map(attractivePoint -> attractivePoint.getAttractivePoint().getAttractivePointName())
+                .collect(Collectors.toList());
     }
 
 }
