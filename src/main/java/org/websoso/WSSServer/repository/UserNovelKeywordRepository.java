@@ -9,8 +9,6 @@ import org.websoso.WSSServer.domain.UserNovelKeyword;
 @Repository
 public interface UserNovelKeywordRepository extends JpaRepository<UserNovelKeyword, Long> {
 
-    List<UserNovelKeyword> findAllByNovelAndUserId(Novel novel, Long userId);
-
-    List<UserNovelKeyword> findAllByNovel(Novel novel);
+    List<UserNovelKeyword> findAllByUserNovel_Novel(Novel novel);
 
 }
