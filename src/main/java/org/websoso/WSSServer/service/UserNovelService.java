@@ -91,9 +91,7 @@ public class UserNovelService {
             throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
         }
 
-        List<UserNovelAttractivePoint> userNovelAttractivePoints = userNovelAttractivePointRepository.findAllByUserNovel(
-                userNovel);
-        userNovelAttractivePointRepository.deleteAll(userNovelAttractivePoints);
+        userNovelAttractivePointRepository.deleteAll(userNovel.getUserNovelAttractivePoints());
 
         List<NovelKeyword> novelKeywords = novelKeywordRepository.findAllByNovelAndUserId(novel, user.getUserId());
         novelKeywordRepository.deleteAll(novelKeywords);
@@ -140,8 +138,7 @@ public class UserNovelService {
 
     private List<String> extractAttractivePoints(UserNovel userNovel) {
 
-        List<UserNovelAttractivePoint> userNovelAttractivePoints = userNovelAttractivePointRepository.findAllByUserNovel(
-                userNovel);
+        List<UserNovelAttractivePoint> userNovelAttractivePoints = userNovel.getUserNovelAttractivePoints();
         List<String> attractivePoints = new ArrayList<>();
 
         for (UserNovelAttractivePoint attractivePoint : userNovelAttractivePoints) {
