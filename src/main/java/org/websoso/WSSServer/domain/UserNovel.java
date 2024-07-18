@@ -63,6 +63,9 @@ public class UserNovel extends BaseEntity {
     @OneToMany(mappedBy = "userNovel", cascade = ALL, fetch = FetchType.LAZY)
     private List<UserNovelAttractivePoint> userNovelAttractivePoints = new ArrayList<>();
 
+    @OneToMany(mappedBy = "userNovel", cascade = ALL, fetch = FetchType.LAZY)
+    private List<UserNovelKeyword> userNovelKeywords = new ArrayList<>();
+
     private UserNovel(ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate, User user,
                       Novel novel) {
         this.status = status;
