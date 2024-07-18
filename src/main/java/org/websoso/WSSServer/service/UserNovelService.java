@@ -92,13 +92,12 @@ public class UserNovelService {
             throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
         }
 
-        userNovelAttractivePointRepository.deleteAll(userNovel.getUserNovelAttractivePoints());
-
         List<NovelKeyword> novelKeywords = novelKeywordRepository.findAllByNovelAndUserId(novel, user.getUserId());
         novelKeywordRepository.deleteAll(novelKeywords);
 
         if (userNovel.getIsInterest()) {
             userNovel.deleteEvaluation();
+            userNovelAttractivePointRepository.deleteAll(userNovel.getUserNovelAttractivePoints());
         } else {
             userNovelRepository.delete(userNovel);
         }
