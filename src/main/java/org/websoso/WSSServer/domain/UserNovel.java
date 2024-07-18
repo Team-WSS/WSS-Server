@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.domain;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 import jakarta.persistence.Column;
@@ -11,7 +12,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,6 +59,9 @@ public class UserNovel extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "novel_id", nullable = false)
     private Novel novel;
+
+    @OneToMany(mappedBy = "userNovel", cascade = ALL, fetch = FetchType.LAZY)
+    private List<UserNovelAttractivePoint> userNovelAttractivePoints = new ArrayList<>();
 
     private UserNovel(ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate, User user,
                       Novel novel) {
