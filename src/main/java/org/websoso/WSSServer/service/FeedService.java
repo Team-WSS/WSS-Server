@@ -140,10 +140,7 @@ public class FeedService {
     public void createComment(User user, Long feedId, CommentCreateRequest request) {
         Feed feed = getFeedOrException(feedId);
 
-        if (!feed.getUser().equals(user)) {
-            checkHiddenFeed(feed);
-            checkBlockedRelationship(feed.getUser(), user);
-        }
+        validateFeedAccess(feed, user);
 
         commentService.createComment(user.getUserId(), feed, request.commentContent());
     }
@@ -151,10 +148,7 @@ public class FeedService {
     public void updateComment(User user, Long feedId, Long commentId, CommentUpdateRequest request) {
         Feed feed = getFeedOrException(feedId);
 
-        if (!feed.getUser().equals(user)) {
-            checkHiddenFeed(feed);
-            checkBlockedRelationship(feed.getUser(), user);
-        }
+        validateFeedAccess(feed, user);
 
         commentService.updateComment(user.getUserId(), feed, commentId, request.commentContent());
     }
@@ -162,10 +156,7 @@ public class FeedService {
     public void deleteComment(User user, Long feedId, Long commentId) {
         Feed feed = getFeedOrException(feedId);
 
-        if (!feed.getUser().equals(user)) {
-            checkHiddenFeed(feed);
-            checkBlockedRelationship(feed.getUser(), user);
-        }
+        validateFeedAccess(feed, user);
 
         commentService.deleteComment(user.getUserId(), feed, commentId);
     }
@@ -174,10 +165,7 @@ public class FeedService {
     public CommentsGetResponse getComments(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
 
-        if (!feed.getUser().equals(user)) {
-            checkHiddenFeed(feed);
-            checkBlockedRelationship(feed.getUser(), user);
-        }
+        validateFeedAccess(feed, user);
 
         return commentService.getComments(user, feed);
     }
@@ -253,4 +241,12 @@ public class FeedService {
 
         return NovelGetResponseFeedTab.of(feeds.hasNext(), feedGetResponses);
     }
+
+    private void validateFeedAccess(Feed feed, User user) {
+        if (!feed.getUser().equals(user)) {
+            checkHiddenFeed(feed);
+            checkBlockedRelationship(feed.getUser(), user);
+        }
+    }
+
 }
