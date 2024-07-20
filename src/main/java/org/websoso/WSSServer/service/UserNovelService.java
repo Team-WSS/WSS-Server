@@ -42,6 +42,13 @@ public class UserNovelService {
     private final AttractivePointService attractivePointService;
 
     @Transactional(readOnly = true)
+    public UserNovel getUserNovelOrException(User user, Novel novel) {
+        return userNovelRepository.findByNovelAndUser(novel, user).orElseThrow(
+                () -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
+                        "user novel with the given user and novel is not found"));
+    }
+
+    @Transactional(readOnly = true)
     public UserNovel getUserNovelOrNull(User user, Novel novel) {
         if (user == null) {
             return null;
@@ -80,12 +87,7 @@ public class UserNovelService {
 
     public void deleteUserNovel(User user, Novel novel) {
 
-        UserNovel userNovel = getUserNovelOrNull(user, novel);
-
-        if (userNovel == null) {
-            throw new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
-                    "user novel with the given user and novel is not found");
-        }
+        UserNovel userNovel = getUserNovelOrException(user, novel);
 
         if (userNovel.getStatus() == null) {
             throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
@@ -117,12 +119,7 @@ public class UserNovelService {
     @Transactional(readOnly = true)
     public UserNovelGetResponse getUserNovelInfo(User user, Novel novel) {
 
-        UserNovel userNovel = getUserNovelOrNull(user, novel);
-
-        if (userNovel == null) {
-            throw new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
-                    "user novel with the given user and novel is not found");
-        }
+        UserNovel userNovel = getUserNovelOrException(user, novel);
 
         List<String> attractivePoints = getStringAttractivePoints(userNovel);
         List<KeywordGetResponse> keywords = getKeywordGetResponses(userNovel);
