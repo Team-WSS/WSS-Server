@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Category;
@@ -59,10 +60,9 @@ public class FeedCategoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<Feed> getFeedsByCategoryLabel(String categoryLabel, Long lastFeedId, PageRequest pageRequest) {
+    public Slice<Feed> getFeedsByCategoryLabel(String categoryLabel, Long lastFeedId, PageRequest pageRequest) {
         return feedcategoryRepository.findFeedsByCategory(categoryservice.getCategory(categoryLabel), lastFeedId,
-                        pageRequest)
-                .getContent();
+                pageRequest);
     }
 
 }

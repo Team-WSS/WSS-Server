@@ -6,10 +6,10 @@ import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
 
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
@@ -124,22 +124,15 @@ public class FeedService {
     public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size) {
         PageRequest pageRequest = PageRequest.of(DEFAULT_PAGE_NUMBER, size);
 
-        List<FeedInfo> feedGetResponses = new ArrayList<>();
-        boolean isLoadable = true;
+        Slice<Feed> feeds = findFeedsByCategoryLabel(category == null ? DEFAULT_CATEGORY : category,
+                lastFeedId, pageRequest);
 
-        while (isLoadable && feedGetResponses.size() < size) {
-            List<Feed> feeds = findFeedsByCategoryLabel(category == null ? DEFAULT_CATEGORY : category, lastFeedId,
-                    pageRequest);
-            lastFeedId = feeds.get(feeds.size() - 1).getFeedId();
-            isLoadable = feeds.size() == size;
+        List<FeedInfo> feedGetResponses = feeds.getContent().stream()
+                .filter(feed -> isNotBlocked(feed.getUser(), user))
+                .map(feed -> createFeedInfo(feed, user)).toList();
 
-            feedGetResponses.addAll(feeds.stream()
-                    .filter(feed -> isNotBlocked(feed.getUser(), user))
-                    .map(feed -> createFeedInfo(feed, user))
-                    .toList());
-        }
-
-        return FeedsGetResponse.of(category == null ? DEFAULT_CATEGORY : category, isLoadable, feedGetResponses);
+        return FeedsGetResponse.of(category == null ? DEFAULT_CATEGORY : category, feeds.hasNext(),
+                feedGetResponses);
     }
 
     private Feed getFeedOrException(Long feedId) {
@@ -195,9 +188,10 @@ public class FeedService {
         return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed);
     }
 
-    private List<Feed> findFeedsByCategoryLabel(String categoryLabel, Long lastFeedId, PageRequest pageRequest) {
+    private Slice<Feed> findFeedsByCategoryLabel(String categoryLabel, Long lastFeedId,
+                                                 PageRequest pageRequest) {
         if (categoryLabel.equals(DEFAULT_CATEGORY)) {
-            return feedRepository.findFeeds(lastFeedId, pageRequest).getContent();
+            return (feedRepository.findFeeds(lastFeedId, pageRequest));
         }
         return feedCategoryService.getFeedsByCategoryLabel(categoryLabel, lastFeedId, pageRequest);
     }
