@@ -16,32 +16,28 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class NovelKeyword {
+public class UserNovelKeyword {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)
     private Long novelKeywordId;
 
-    @Column
-    private Long userId;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "novel_id", nullable = false)
-    private Novel novel;
+    @JoinColumn(name = "user_novel_id", nullable = false)
+    private UserNovel userNovel;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "keyword_id", nullable = false)
     private Keyword keyword;
 
-    private NovelKeyword(Novel novel, Keyword keyword, Long userId) {
-        this.novel = novel;
+    private UserNovelKeyword(UserNovel userNovel, Keyword keyword) {
+        this.userNovel = userNovel;
         this.keyword = keyword;
-        this.userId = userId;
     }
 
-    public static NovelKeyword create(Novel novel, Keyword keyword, Long userId) {
-        return new NovelKeyword(novel, keyword, userId);
+    public static UserNovelKeyword create(UserNovel userNovel, Keyword keyword) {
+        return new UserNovelKeyword(userNovel, keyword);
     }
-    
+
 }

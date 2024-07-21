@@ -1,12 +1,14 @@
 package org.websoso.WSSServer.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,8 +34,10 @@ public class UserNovelController {
 
     @GetMapping("/{novelId}")
     public ResponseEntity<UserNovelGetResponse> getUserNovel(Principal principal, @PathVariable Long novelId) {
+
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
+
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserNovelInfo(user, novel));
@@ -42,11 +46,24 @@ public class UserNovelController {
     @PostMapping
     public ResponseEntity<Void> createUserNovel(Principal principal,
                                                 @Valid @RequestBody UserNovelCreateRequest request) {
+
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userNovelService.createUserNovel(user, request);
 
         return ResponseEntity
                 .status(CREATED)
+                .build();
+    }
+
+    @DeleteMapping("/{novelId}")
+    public ResponseEntity<Void> deleteUserNovel(Principal principal, @PathVariable Long novelId) {
+
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        Novel novel = novelService.getNovelOrException(novelId);
+        userNovelService.deleteUserNovel(user, novel);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
                 .build();
     }
 
