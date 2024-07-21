@@ -37,9 +37,10 @@ public class KeywordService {
 
     @Transactional(readOnly = true)
     public KeywordByCategoryGetResponse searchKeywordByCategory(String query) {
+        List<Keyword> searchedKeywords = searchKeyword(query);
         List<CategoryGetResponse> categories = Arrays.stream(KeywordCategoryName.values())
                 .map(category -> CategoryGetResponse.of(getKeywordCategory(category.getLabel()),
-                        sortByCategory(category, searchKeyword(query))))
+                        sortByCategory(category, searchedKeywords)))
                 .collect(Collectors.toList());
         return KeywordByCategoryGetResponse.of(categories);
     }
