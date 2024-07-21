@@ -6,6 +6,7 @@ import static org.springframework.http.HttpStatus.OK;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -56,4 +57,17 @@ public class NovelController {
                 .status(NO_CONTENT)
                 .build();
     }
+
+    @DeleteMapping("/{novelId}/is-interest")
+    public ResponseEntity<Void> unregisterAsInterest(Principal principal,
+                                                     @PathVariable("novelId") Long novelId) {
+
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        novelService.unregisterAsInterest(user, novelId);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
 }

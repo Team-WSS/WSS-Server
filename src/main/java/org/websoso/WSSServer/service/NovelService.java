@@ -5,6 +5,7 @@ import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.ALREADY_INTERESTED;
+import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_INTERESTED;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,6 +105,27 @@ public class NovelService {
         }
 
         userNovel.setIsInterest(true);
+    }
+
+    public void unregisterAsInterest(User user, Long novelId) {
+
+        Novel novel = getNovelOrException(novelId);
+        UserNovel userNovel = userNovelService.getUserNovelOrException(user, novel);
+
+        if (!userNovel.getIsInterest()) {
+            throw new CustomUserNovelException(NOT_INTERESTED, "not registered as interest");
+        }
+
+        userNovel.setIsInterest(false);
+
+        if (isUserNovelOnlyByInterest(userNovel)) {
+            userNovelRepository.delete(userNovel);
+        }
+
+    }
+
+    private Boolean isUserNovelOnlyByInterest(UserNovel userNovel) {
+        return userNovel.getStatus() == null;
     }
 
     public NovelGetResponseInfoTab getNovelInfoInfoTab(Long novelId) {
