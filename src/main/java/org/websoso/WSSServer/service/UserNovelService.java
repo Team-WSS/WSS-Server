@@ -7,7 +7,6 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NO
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,19 +16,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
-import org.websoso.WSSServer.domain.NovelKeyword;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelAttractivePoint;
+import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
-import org.websoso.WSSServer.repository.NovelKeywordRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.UserNovelAttractivePointRepository;
+import org.websoso.WSSServer.repository.UserNovelKeywordRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
 
 @Service
@@ -41,8 +40,15 @@ public class UserNovelService {
     private final UserNovelRepository userNovelRepository;
     private final KeywordService keywordService;
     private final UserNovelAttractivePointRepository userNovelAttractivePointRepository;
-    private final NovelKeywordRepository novelKeywordRepository;
+    private final UserNovelKeywordRepository userNovelKeywordRepository;
     private final AttractivePointService attractivePointService;
+
+    @Transactional(readOnly = true)
+    public UserNovel getUserNovelOrException(User user, Novel novel) {
+        return userNovelRepository.findByNovelAndUser(novel, user).orElseThrow(
+                () -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
+                        "user novel with the given user and novel is not found"));
+    }
 
     @Transactional(readOnly = true)
     public UserNovel getUserNovelOrNull(User user, Novel novel) {
@@ -70,7 +76,7 @@ public class UserNovelService {
                 novel));
 
         createUserNovelAttractivePoints(userNovel, request.attractivePoints());
-        createNovelKeywords(novel, user.getUserId(), request.keywordIds());
+        createNovelKeywords(userNovel, request.keywordIds());
 
     }
 
@@ -89,7 +95,7 @@ public class UserNovelService {
 
         updateUserNovel(userNovel, request);
         updateUserNovelAttractivePoints(userNovel, request.attractivePoints());
-        updateNovelKeywords(novel, user.getUserId(), request.keywordIds());
+        updateNovelKeywords(userNovel, request.keywordIds());
 
     }
 
@@ -102,7 +108,7 @@ public class UserNovelService {
 
     private void updateUserNovelAttractivePoints(UserNovel userNovel, List<String> request) {
 
-        Set<AttractivePoint> previousAttractivePoints = userNovelAttractivePointRepository.findAllByUserNovel(userNovel)
+        Set<AttractivePoint> previousAttractivePoints = userNovel.getUserNovelAttractivePoints()
                 .stream()
                 .map(UserNovelAttractivePoint::getAttractivePoint)
                 .collect(Collectors.toSet());
@@ -120,11 +126,11 @@ public class UserNovelService {
 
     }
 
-    private void updateNovelKeywords(Novel novel, Long userId, List<Integer> request) {
+    private void updateNovelKeywords(UserNovel userNovel, List<Integer> request) {
 
-        Set<Keyword> previousKeywords = novelKeywordRepository.findAllByNovelAndUserId(novel, userId)
+        Set<Keyword> previousKeywords = userNovel.getUserNovelKeywords()
                 .stream()
-                .map(NovelKeyword::getKeyword)
+                .map(UserNovelKeyword::getKeyword)
                 .collect(Collectors.toSet());
 
         for (Integer keywordId : request) {
@@ -132,11 +138,11 @@ public class UserNovelService {
             if (previousKeywords.contains(keyword)) {
                 previousKeywords.remove(keyword);
             } else {
-                novelKeywordRepository.save(NovelKeyword.create(novel, keyword, userId));
+                userNovelKeywordRepository.save(UserNovelKeyword.create(userNovel, keyword));
             }
         }
 
-        novelKeywordRepository.deleteByKeywordsAndNovelAAndUserId(previousKeywords, novel, userId);
+        userNovelKeywordRepository.deleteByKeywordsAndUserNovel(previousKeywords, userNovel);
 
     }
 
@@ -147,10 +153,28 @@ public class UserNovelService {
         }
     }
 
-    private void createNovelKeywords(Novel novel, Long userId, List<Integer> request) {
+    private void createNovelKeywords(UserNovel userNovel, List<Integer> request) {
         for (Integer keywordId : request) {
             Keyword keyword = keywordService.getKeywordOrException(keywordId);
-            novelKeywordRepository.save(NovelKeyword.create(novel, keyword, userId));
+            userNovelKeywordRepository.save(UserNovelKeyword.create(userNovel, keyword));
+        }
+
+    }
+
+    public void deleteUserNovel(User user, Novel novel) {
+
+        UserNovel userNovel = getUserNovelOrException(user, novel);
+
+        if (userNovel.getStatus() == null) {
+            throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
+        }
+
+        if (userNovel.getIsInterest()) {
+            userNovel.deleteEvaluation();
+            userNovelAttractivePointRepository.deleteAll(userNovel.getUserNovelAttractivePoints());
+            userNovelKeywordRepository.deleteAll(userNovel.getUserNovelKeywords());
+        } else {
+            userNovelRepository.delete(userNovel);
         }
     }
 
@@ -170,34 +194,24 @@ public class UserNovelService {
     @Transactional(readOnly = true)
     public UserNovelGetResponse getEvaluation(User user, Novel novel) {
 
-        UserNovel userNovel = getUserNovelOrNull(user, novel);
-        if (userNovel == null) {
-            throw new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
-                    "user novel with the given user and novel is not found");
-        }
+        UserNovel userNovel = getUserNovelOrException(user, novel);
 
-        List<String> attractivePoints = extractAttractivePoints(userNovel);
-
-        List<NovelKeyword> novelKeywords = novelKeywordRepository.findAllByNovelAndUserId(novel, user.getUserId());
-        List<KeywordGetResponse> keywords = new ArrayList<>();
-        for (NovelKeyword novelKeyword : novelKeywords) {
-            keywords.add(KeywordGetResponse.of(novelKeyword.getKeyword()));
-        }
+        List<String> attractivePoints = getStringAttractivePoints(userNovel);
+        List<KeywordGetResponse> keywords = getKeywordGetResponses(userNovel);
 
         return UserNovelGetResponse.of(userNovel, attractivePoints, keywords);
     }
 
-    private List<String> extractAttractivePoints(UserNovel userNovel) {
+    private List<String> getStringAttractivePoints(UserNovel userNovel) {
+        return userNovel.getUserNovelAttractivePoints().stream()
+                .map(attractivePoint -> attractivePoint.getAttractivePoint().getAttractivePointName())
+                .collect(Collectors.toList());
+    }
 
-        List<UserNovelAttractivePoint> userNovelAttractivePoints = userNovelAttractivePointRepository.findAllByUserNovel(
-                userNovel);
-        List<String> attractivePoints = new ArrayList<>();
-
-        for (UserNovelAttractivePoint attractivePoint : userNovelAttractivePoints) {
-            attractivePoints.add(attractivePoint.getAttractivePoint().getAttractivePointName());
-        }
-
-        return attractivePoints;
+    private List<KeywordGetResponse> getKeywordGetResponses(UserNovel userNovel) {
+        return userNovel.getUserNovelKeywords().stream()
+                .map(userNovelKeyword -> KeywordGetResponse.of(userNovelKeyword.getKeyword()))
+                .collect(Collectors.toList());
     }
 
 }

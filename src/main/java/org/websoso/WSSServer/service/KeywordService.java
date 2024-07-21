@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.exception.error.CustomKeywordCategoryError.KEYWORD_CATEGORY_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomKeywordError.KEYWORD_NOT_FOUND;
 
 import java.util.Arrays;
@@ -9,11 +10,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Keyword;
+import org.websoso.WSSServer.domain.KeywordCategory;
 import org.websoso.WSSServer.domain.common.KeywordCategoryName;
 import org.websoso.WSSServer.dto.keyword.CategoryGetResponse;
 import org.websoso.WSSServer.dto.keyword.KeywordByCategoryGetResponse;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
+import org.websoso.WSSServer.exception.exception.CustomKeywordCategoryException;
 import org.websoso.WSSServer.exception.exception.CustomKeywordException;
+import org.websoso.WSSServer.repository.KeywordCategoryRepository;
 import org.websoso.WSSServer.repository.KeywordRepository;
 
 @Service
@@ -22,6 +26,7 @@ import org.websoso.WSSServer.repository.KeywordRepository;
 public class KeywordService {
 
     private final KeywordRepository keywordRepository;
+    private final KeywordCategoryRepository keywordCategoryRepository;
 
     @Transactional(readOnly = true)
     public Keyword getKeywordOrException(Integer keywordId) {
@@ -32,10 +37,26 @@ public class KeywordService {
 
     @Transactional(readOnly = true)
     public KeywordByCategoryGetResponse searchKeywordByCategory(String query) {
+        List<Keyword> searchedKeywords = searchKeyword(query);
         List<CategoryGetResponse> categories = Arrays.stream(KeywordCategoryName.values())
-                .map(category -> CategoryGetResponse.of(category, sortByCategory(category, searchKeyword(query))))
+                .map(category -> CategoryGetResponse.of(getKeywordCategory(category.getLabel()),
+                        sortByCategory(category, searchedKeywords)))
                 .collect(Collectors.toList());
         return KeywordByCategoryGetResponse.of(categories);
+    }
+
+    private KeywordCategory getKeywordCategory(String keywordCategoryName) {
+        return keywordCategoryRepository.findByKeywordCategoryName(keywordCategoryName).orElseThrow(
+                () -> new CustomKeywordCategoryException(KEYWORD_CATEGORY_NOT_FOUND,
+                        "keyword category with the given name is not found"));
+    }
+
+    private List<KeywordGetResponse> sortByCategory(KeywordCategoryName keywordCategoryName,
+                                                    List<Keyword> searchedKeyword) {
+        return searchedKeyword.stream()
+                .filter(keyword -> keyword.getKeywordCategory().getKeywordCategoryName()
+                        .equals(keywordCategoryName.getLabel()))
+                .map(KeywordGetResponse::of).collect(Collectors.toList());
     }
 
     private List<Keyword> searchKeyword(String query) {
@@ -56,10 +77,4 @@ public class KeywordService {
         return true;
     }
 
-    private List<KeywordGetResponse> sortByCategory(KeywordCategoryName keywordCategoryName,
-                                                    List<Keyword> searchedKeyword) {
-        return searchedKeyword.stream().filter(keyword -> keyword.getKeywordCategory().getKeywordCategoryName()
-                        .equals(keywordCategoryName.getLabel()))
-                .map(KeywordGetResponse::of).collect(Collectors.toList());
-    }
 }

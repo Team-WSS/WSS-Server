@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,8 +36,10 @@ public class UserNovelController {
 
     @GetMapping("/{novelId}")
     public ResponseEntity<UserNovelGetResponse> getEvaluation(Principal principal, @PathVariable Long novelId) {
+
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
+
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getEvaluation(user, novel));
@@ -45,6 +48,7 @@ public class UserNovelController {
     @PostMapping
     public ResponseEntity<Void> createEvaluation(Principal principal,
                                                  @Valid @RequestBody UserNovelCreateRequest request) {
+
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userNovelService.createEvaluation(user, request);
 
@@ -60,6 +64,18 @@ public class UserNovelController {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
         userNovelService.updateEvaluation(user, novel, request);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @DeleteMapping("/{novelId}")
+    public ResponseEntity<Void> deleteUserNovel(Principal principal, @PathVariable Long novelId) {
+
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        Novel novel = novelService.getNovelOrException(novelId);
+        userNovelService.deleteUserNovel(user, novel);
 
         return ResponseEntity
                 .status(NO_CONTENT)

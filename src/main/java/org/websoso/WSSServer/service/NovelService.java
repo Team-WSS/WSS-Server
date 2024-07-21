@@ -5,6 +5,7 @@ import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.ALREADY_INTERESTED;
+import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_INTERESTED;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,9 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
-import org.websoso.WSSServer.domain.NovelKeyword;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
+import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.domain.common.AttractivePointName;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
@@ -31,10 +32,10 @@ import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.NovelGenreRepository;
-import org.websoso.WSSServer.repository.NovelKeywordRepository;
 import org.websoso.WSSServer.repository.NovelPlatformRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.UserNovelAttractivePointRepository;
+import org.websoso.WSSServer.repository.UserNovelKeywordRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
 
 @Service
@@ -46,13 +47,13 @@ public class NovelService {
     private static final int KEYWORD_SIZE = 5;
 
     private final NovelRepository novelRepository;
-    private final NovelKeywordRepository novelKeywordRepository;
     private final UserNovelService userNovelService;
     private final UserNovelRepository userNovelRepository;
     private final NovelPlatformRepository novelPlatformRepository;
     private final UserNovelAttractivePointRepository userNovelAttractivePointRepository;
     private final FeedRepository feedRepository;
     private final NovelGenreRepository novelGenreRepository;
+    private final UserNovelKeywordRepository userNovelKeywordRepository;
 
     @Transactional(readOnly = true)
     public Novel getNovelOrException(Long novelId) {
@@ -104,6 +105,27 @@ public class NovelService {
         }
 
         userNovel.setIsInterest(true);
+    }
+
+    public void unregisterAsInterest(User user, Long novelId) {
+
+        Novel novel = getNovelOrException(novelId);
+        UserNovel userNovel = userNovelService.getUserNovelOrException(user, novel);
+
+        if (!userNovel.getIsInterest()) {
+            throw new CustomUserNovelException(NOT_INTERESTED, "not registered as interest");
+        }
+
+        userNovel.setIsInterest(false);
+
+        if (isUserNovelOnlyByInterest(userNovel)) {
+            userNovelRepository.delete(userNovel);
+        }
+
+    }
+
+    private Boolean isUserNovelOnlyByInterest(UserNovel userNovel) {
+        return userNovel.getStatus() == null;
     }
 
     public NovelGetResponseInfoTab getNovelInfoInfoTab(Long novelId) {
@@ -189,14 +211,14 @@ public class NovelService {
 
     private List<KeywordCountGetResponse> getKeywords(Novel novel) {
 
-        List<NovelKeyword> novelKeywords = novelKeywordRepository.findAllByNovel(novel);
+        List<UserNovelKeyword> userNovelKeywords = userNovelKeywordRepository.findAllByUserNovel_Novel(novel);
 
-        if (novelKeywords.isEmpty()) {
+        if (userNovelKeywords.isEmpty()) {
             return Collections.emptyList();
         }
 
-        Map<Keyword, Long> keywordFrequencyMap = novelKeywords.stream()
-                .collect(Collectors.groupingBy(NovelKeyword::getKeyword, Collectors.counting()));
+        Map<Keyword, Long> keywordFrequencyMap = userNovelKeywords.stream()
+                .collect(Collectors.groupingBy(UserNovelKeyword::getKeyword, Collectors.counting()));
 
         return keywordFrequencyMap.entrySet().stream()
                 .sorted(Map.Entry.<Keyword, Long>comparingByValue().reversed())

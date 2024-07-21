@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.repository;
 
-import java.util.List;
 import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -14,8 +13,6 @@ import org.websoso.WSSServer.domain.UserNovelAttractivePoint;
 
 @Repository
 public interface UserNovelAttractivePointRepository extends JpaRepository<UserNovelAttractivePoint, Long> {
-
-    List<UserNovelAttractivePoint> findAllByUserNovel(UserNovel userNovel);
 
     Integer countByUserNovel_NovelAndAttractivePoint_AttractivePointName(Novel novel, String attractivePoint);
 

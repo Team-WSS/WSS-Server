@@ -7,20 +7,20 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.domain.AttractivePoint;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
-import org.websoso.WSSServer.domain.NovelKeyword;
+import org.websoso.WSSServer.domain.UserNovel;
+import org.websoso.WSSServer.domain.UserNovelKeyword;
 
 @Repository
-public interface NovelKeywordRepository extends JpaRepository<NovelKeyword, Long> {
+public interface UserNovelKeywordRepository extends JpaRepository<UserNovelKeyword, Long> {
 
-    List<NovelKeyword> findAllByNovelAndUserId(Novel novel, Long userId);
-
-    List<NovelKeyword> findAllByNovel(Novel novel);
+    List<UserNovelKeyword> findAllByUserNovel_Novel(Novel novel);
 
     @Modifying
     @Transactional
-    @Query("DELETE FROM NovelKeyword nk WHERE nk.keyword IN :keywords AND nk.novel = :novel AND nk.userId = :userId")
-    void deleteByKeywordsAndNovelAAndUserId(Set<Keyword> keywords, Novel novel, Long userId);
+    @Query("DELETE FROM UserNovelKeyword un WHERE un.userNovel = :userNovel AND un.keyword IN :keywords")
+    void deleteByKeywordsAndUserNovel(Set<Keyword> keywords, UserNovel userNovel);
 
 }
