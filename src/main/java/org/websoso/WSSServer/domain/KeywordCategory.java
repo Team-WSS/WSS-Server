@@ -23,4 +23,7 @@ public class KeywordCategory {
     @Column(columnDefinition = "varchar(10)", nullable = false)
     private String keywordCategoryName;
 
+    @Column(columnDefinition = "text", nullable = false)
+    private String keywordCategoryImage;
+
 }
