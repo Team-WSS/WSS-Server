@@ -110,9 +110,9 @@ public class NovelService {
     public void unregisterAsInterest(User user, Long novelId) {
 
         Novel novel = getNovelOrException(novelId);
-        UserNovel userNovel = userNovelService.getUserNovelOrNull(user, novel);
+        UserNovel userNovel = userNovelService.getUserNovelOrException(user, novel);
 
-        if (userNovel == null || !userNovel.getIsInterest()) {
+        if (!userNovel.getIsInterest()) {
             throw new CustomUserNovelException(NOT_INTERESTED, "not registered as interest");
         }
 
