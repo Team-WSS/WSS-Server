@@ -95,7 +95,7 @@ public class UserNovelService {
 
         updateUserNovel(userNovel, request);
         updateUserNovelAttractivePoints(userNovel, request.attractivePoints());
-        updateNovelKeywords(userNovel, request.keywordIds());
+        updateUserNovelKeywords(userNovel, request.keywordIds());
 
     }
 
@@ -126,7 +126,7 @@ public class UserNovelService {
 
     }
 
-    private void updateNovelKeywords(UserNovel userNovel, List<Integer> request) {
+    private void updateUserNovelKeywords(UserNovel userNovel, List<Integer> request) {
 
         Set<Keyword> previousKeywords = userNovel.getUserNovelKeywords()
                 .stream()
