@@ -20,9 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
-import org.websoso.WSSServer.domain.NovelKeyword;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
+import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.domain.common.AttractivePointName;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
@@ -32,10 +32,10 @@ import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.NovelGenreRepository;
-import org.websoso.WSSServer.repository.NovelKeywordRepository;
 import org.websoso.WSSServer.repository.NovelPlatformRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.UserNovelAttractivePointRepository;
+import org.websoso.WSSServer.repository.UserNovelKeywordRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
 
 @Service
@@ -47,13 +47,13 @@ public class NovelService {
     private static final int KEYWORD_SIZE = 5;
 
     private final NovelRepository novelRepository;
-    private final NovelKeywordRepository novelKeywordRepository;
     private final UserNovelService userNovelService;
     private final UserNovelRepository userNovelRepository;
     private final NovelPlatformRepository novelPlatformRepository;
     private final UserNovelAttractivePointRepository userNovelAttractivePointRepository;
     private final FeedRepository feedRepository;
     private final NovelGenreRepository novelGenreRepository;
+    private final UserNovelKeywordRepository userNovelKeywordRepository;
 
     @Transactional(readOnly = true)
     public Novel getNovelOrException(Long novelId) {
@@ -211,14 +211,14 @@ public class NovelService {
 
     private List<KeywordCountGetResponse> getKeywords(Novel novel) {
 
-        List<NovelKeyword> novelKeywords = novelKeywordRepository.findAllByNovel(novel);
+        List<UserNovelKeyword> userNovelKeywords = userNovelKeywordRepository.findAllByUserNovel_Novel(novel);
 
-        if (novelKeywords.isEmpty()) {
+        if (userNovelKeywords.isEmpty()) {
             return Collections.emptyList();
         }
 
-        Map<Keyword, Long> keywordFrequencyMap = novelKeywords.stream()
-                .collect(Collectors.groupingBy(NovelKeyword::getKeyword, Collectors.counting()));
+        Map<Keyword, Long> keywordFrequencyMap = userNovelKeywords.stream()
+                .collect(Collectors.groupingBy(UserNovelKeyword::getKeyword, Collectors.counting()));
 
         return keywordFrequencyMap.entrySet().stream()
                 .sorted(Map.Entry.<Keyword, Long>comparingByValue().reversed())
