@@ -90,6 +90,7 @@ public class UserController {
     public ResponseEntity<Void> registerUserInfo(Principal principal,
                                                  @RequestBody RegisterUserInfoRequest registerUserInfoRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        userService.registerUserInfo(user, registerUserInfoRequest);
         return ResponseEntity
                 .status(CREATED)
                 .build();

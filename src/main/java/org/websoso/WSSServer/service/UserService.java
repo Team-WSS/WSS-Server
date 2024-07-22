@@ -13,7 +13,6 @@ import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.GenrePreference;
-import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.EmailGetResponse;
@@ -21,9 +20,11 @@ import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
+import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.AvatarRepository;
+import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Service
@@ -85,5 +86,12 @@ public class UserService {
                         () -> new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
         List<GenrePreference> genrePreferences = genrePreferenceRepository.findByUser(user);
         return MyProfileResponse.of(user, avatar, genrePreferences);
+    }
+
+    public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
+        user.updateUserInfo(
+                registerUserInfoRequest.nickname(),
+                registerUserInfoRequest.gender(),
+                registerUserInfoRequest.birth());
     }
 }
