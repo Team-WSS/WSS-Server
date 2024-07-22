@@ -60,9 +60,10 @@ public class FeedCategoryService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<Feed> getFeedsByCategoryLabel(String categoryLabel, Long lastFeedId, PageRequest pageRequest) {
-        return feedcategoryRepository.findFeedsByCategory(categoryservice.getCategory(categoryLabel), lastFeedId,
-                pageRequest);
+    public Slice<Feed> getFeedsByCategoryLabel(String category, Long lastFeedId, Long userId,
+                                               PageRequest pageRequest) {
+        return feedcategoryRepository.findFeedsByCategory(categoryservice.getCategory(category), lastFeedId,
+                userId, pageRequest);
     }
 
 }
