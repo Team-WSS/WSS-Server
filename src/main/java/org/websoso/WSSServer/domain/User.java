@@ -62,7 +62,7 @@ public class User {
 
     public void updateUserInfo(RegisterUserInfoRequest registerUserInfoRequest) {
         this.nickname = registerUserInfoRequest.nickname();
-        this.gender = registerUserInfoRequest.gender();
+        this.gender = Gender.valueOf(registerUserInfoRequest.gender());
         this.birth = registerUserInfoRequest.birth();
     }
 
