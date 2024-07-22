@@ -122,13 +122,10 @@ public class FeedService {
 
     @Transactional(readOnly = true)
     public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size) {
-        PageRequest pageRequest = PageRequest.of(DEFAULT_PAGE_NUMBER, size);
-
         Slice<Feed> feeds = findFeedsByCategoryLabel(category == null ? DEFAULT_CATEGORY : category,
-                lastFeedId, pageRequest);
+                lastFeedId, user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
 
         List<FeedInfo> feedGetResponses = feeds.getContent().stream()
-                .filter(feed -> isNotBlocked(feed.getUser(), user))
                 .map(feed -> createFeedInfo(feed, user)).toList();
 
         return FeedsGetResponse.of(category == null ? DEFAULT_CATEGORY : category, feeds.hasNext(),
@@ -188,12 +185,12 @@ public class FeedService {
         return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed);
     }
 
-    private Slice<Feed> findFeedsByCategoryLabel(String categoryLabel, Long lastFeedId,
+    private Slice<Feed> findFeedsByCategoryLabel(String category, Long lastFeedId, Long userId,
                                                  PageRequest pageRequest) {
-        if (categoryLabel.equals(DEFAULT_CATEGORY)) {
-            return (feedRepository.findFeeds(lastFeedId, pageRequest));
+        if (category.equals(DEFAULT_CATEGORY)) {
+            return (feedRepository.findFeeds(lastFeedId, userId, pageRequest));
         }
-        return feedCategoryService.getFeedsByCategoryLabel(categoryLabel, lastFeedId, pageRequest);
+        return feedCategoryService.getFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest);
     }
 
 }

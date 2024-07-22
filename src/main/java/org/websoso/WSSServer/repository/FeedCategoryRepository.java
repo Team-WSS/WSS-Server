@@ -22,7 +22,9 @@ public interface FeedCategoryRepository extends JpaRepository<FeedCategory, Long
             + "WHERE fc.category = ?1 "
             + "AND (?2 = 0 OR fc.feed.feedId < ?2) "
             + "AND fc.feed.isHidden = false "
+            + "AND fc.feed.user.userId NOT IN (SELECT b.blockingId FROM Block b WHERE b.blockedId = ?3) "
+            + "AND fc.feed.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = ?3) "
             + "ORDER BY fc.feed.feedId DESC")
-    Slice<Feed> findFeedsByCategory(Category category, Long lastFeedId, PageRequest pageRequest);
+    Slice<Feed> findFeedsByCategory(Category category, Long lastFeedId, Long userId, PageRequest pageRequest);
 
 }
