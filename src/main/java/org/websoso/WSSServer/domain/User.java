@@ -59,6 +59,12 @@ public class User {
         this.isProfilePublic = profileStatus;
     }
 
+    public void updateUserInfo(String nickname, Gender gender, Year birth) {
+        this.nickname = nickname;
+        this.gender = gender;
+        this.birth = birth;
+    }
+
     public UserBasicInfo getUserBasicInfo(String avatarImage) {
         return UserBasicInfo.of(this.getUserId(), this.getNickname(), avatarImage);
     }
