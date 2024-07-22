@@ -123,7 +123,7 @@ public class FeedService {
     @Transactional(readOnly = true)
     public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size) {
         Slice<Feed> feeds = findFeedsByCategoryLabel(category == null ? DEFAULT_CATEGORY : category,
-                lastFeedId, user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
+                lastFeedId, user == null ? null : user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
 
         List<FeedInfo> feedGetResponses = feeds.getContent().stream()
                 .map(feed -> createFeedInfo(feed, user)).toList();
