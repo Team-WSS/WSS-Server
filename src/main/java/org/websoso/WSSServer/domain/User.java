@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.domain.common.Role;
+import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 
 @Entity
@@ -59,10 +60,10 @@ public class User {
         this.isProfilePublic = profileStatus;
     }
 
-    public void updateUserInfo(String nickname, Gender gender, Year birth) {
-        this.nickname = nickname;
-        this.gender = gender;
-        this.birth = birth;
+    public void updateUserInfo(RegisterUserInfoRequest registerUserInfoRequest) {
+        this.nickname = registerUserInfoRequest.nickname();
+        this.gender = registerUserInfoRequest.gender();
+        this.birth = registerUserInfoRequest.birth();
     }
 
     public UserBasicInfo getUserBasicInfo(String avatarImage) {

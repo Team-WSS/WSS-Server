@@ -89,9 +89,6 @@ public class UserService {
     }
 
     public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
-        user.updateUserInfo(
-                registerUserInfoRequest.nickname(),
-                registerUserInfoRequest.gender(),
-                registerUserInfoRequest.birth());
+        user.updateUserInfo(registerUserInfoRequest);
     }
 }
