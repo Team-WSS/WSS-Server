@@ -39,9 +39,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public NicknameValidation isNicknameAvailable(String nickname) {
-        if (userRepository.existsByNickname(nickname)) {
-            throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
-        }
+        validateNickname(nickname);
         return NicknameValidation.of(true);
     }
 
@@ -89,9 +87,13 @@ public class UserService {
     }
 
     public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
-        if (userRepository.existsByNickname(registerUserInfoRequest.nickname())) {
+        validateNickname(registerUserInfoRequest.nickname());
+        user.updateUserInfo(registerUserInfoRequest);
+    }
+
+    private void validateNickname(String nickname) {
+        if (userRepository.existsByNickname(nickname)) {
             throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
         }
-        user.updateUserInfo(registerUserInfoRequest);
     }
 }
