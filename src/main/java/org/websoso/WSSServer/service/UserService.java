@@ -89,6 +89,9 @@ public class UserService {
     }
 
     public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
+        if (userRepository.existsByNickname(registerUserInfoRequest.nickname())) {
+            throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
+        }
         user.updateUserInfo(registerUserInfoRequest);
     }
 }
