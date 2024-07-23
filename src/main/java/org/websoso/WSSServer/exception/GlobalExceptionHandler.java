@@ -1,8 +1,11 @@
 package org.websoso.WSSServer.exception;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -32,6 +35,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(BAD_REQUEST)
                 .body(new ErrorResult(BAD_REQUEST.name(), "잘못된 JSON 형식입니다."));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResult> DataIntegrityViolationExceptionHandler(DataIntegrityViolationException e) {
+        log.error("[DataIntegrityViolationException] exception ", e);
+        return ResponseEntity
+                .status(CONFLICT)
+                .body(new ErrorResult(DUPLICATED_NICKNAME.getCode(), DUPLICATED_NICKNAME.getDescription()));
     }
 
     @ExceptionHandler(AbstractCustomException.class)
