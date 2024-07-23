@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.validation;
 
+import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -11,7 +12,7 @@ import java.lang.annotation.Target;
 
 @Documented
 @Constraint(validatedBy = NicknameValidator.class)
-@Target({PARAMETER})
+@Target({PARAMETER, FIELD})
 @Retention(RUNTIME)
 public @interface NicknameConstraint {
 
