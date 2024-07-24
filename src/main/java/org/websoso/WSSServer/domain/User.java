@@ -70,7 +70,7 @@ public class User {
     public void updateUserInfo(RegisterUserInfoRequest registerUserInfoRequest) {
         this.nickname = registerUserInfoRequest.nickname();
         this.gender = Gender.valueOf(registerUserInfoRequest.gender());
-        this.birth = registerUserInfoRequest.birth();
+        this.birth = Year.of(registerUserInfoRequest.birth());
     }
 
     public UserBasicInfo getUserBasicInfo(String avatarImage) {
