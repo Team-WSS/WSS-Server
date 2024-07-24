@@ -28,7 +28,7 @@ public class RecentUserNovel extends BaseEntity {
         this.novelId = novelId;
     }
 
-    public static RecentUserNovel create(Long novelId) {
+    public static RecentUserNovel from(Long novelId) {
         return new RecentUserNovel(novelId);
     }
 }
