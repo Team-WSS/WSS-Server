@@ -1,17 +1,20 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.Avatar;
+import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
@@ -22,9 +25,11 @@ import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
+import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
+import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Service
@@ -36,6 +41,7 @@ public class UserService {
     private final JwtProvider jwtProvider;
     private final AvatarRepository avatarRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
+    private final GenreRepository genreRepository;
 
     @Transactional(readOnly = true)
     public NicknameValidation isNicknameAvailable(String nickname) {
@@ -89,6 +95,17 @@ public class UserService {
     public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
         validateNickname(registerUserInfoRequest.nickname());
         user.updateUserInfo(registerUserInfoRequest);
+
+        List<GenrePreference> preferGenres = registerUserInfoRequest.genrePreferences()
+                .stream()
+                .map(preferGenreName -> {
+                    Genre genre = genreRepository.findByGenreName(preferGenreName)
+                            .orElseThrow(() -> new CustomGenreException(GENRE_NOT_FOUND, "genre with tge given genreName is not found"));
+                    return GenrePreference.create(user, genre);
+                })
+                .collect(Collectors.toList());
+
+        genrePreferenceRepository.saveAll(preferGenres);
     }
 
     private void validateNickname(String nickname) {
