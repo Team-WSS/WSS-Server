@@ -44,7 +44,6 @@ public class GlobalExceptionHandler {
 
         String rootCauseMessage = Objects.requireNonNull(e.getRootCause()).getMessage();
         if (rootCauseMessage != null && rootCauseMessage.contains("UNIQUE_NICKNAME_CONSTRAINT")) {
-            System.out.println("rootCauseMessage = " + rootCauseMessage);
             return ResponseEntity
                     .status(CONFLICT)
                     .body(new ErrorResult(DUPLICATED_NICKNAME.getCode(), DUPLICATED_NICKNAME.getDescription()));
