@@ -22,7 +22,7 @@ import org.websoso.WSSServer.exception.common.ICustomError;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResult> InvalidRequestBodyExceptionHandler(MethodArgumentNotValidException e) {
+    public ResponseEntity<ErrorResult> MethodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
         log.error("[MethodArgumentNotValidException] exception ", e);
         HttpStatus httpStatus = HttpStatus.valueOf(e.getStatusCode().value());
         return ResponseEntity.status(httpStatus)
