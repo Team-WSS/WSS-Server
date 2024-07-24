@@ -24,4 +24,11 @@ public class RecentUserNovel extends BaseEntity {
     @Column(nullable = false)
     private Long novelId;
 
+    private RecentUserNovel(Long novelId) {
+        this.novelId = novelId;
+    }
+
+    public static RecentUserNovel create(Long novelId) {
+        return new RecentUserNovel(novelId);
+    }
 }
