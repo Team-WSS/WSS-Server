@@ -7,6 +7,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.Year;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -20,6 +22,11 @@ import org.websoso.WSSServer.dto.user.UserBasicInfo;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(uniqueConstraints = {
+        @UniqueConstraint(
+                name = "UNIQUE_NICKNAME_CONSTRAINT",
+                columnNames = "nickname")
+})
 public class User {
 
     @Id
@@ -27,7 +34,7 @@ public class User {
     @Column(nullable = false)
     private Long userId;
 
-    @Column(unique = true, columnDefinition = "varchar(10)", nullable = false)
+    @Column(columnDefinition = "varchar(10)", nullable = false)
     private String nickname;
     //TODO 일부 특수문자 제외, 앞뒤 공백 불가능
 
