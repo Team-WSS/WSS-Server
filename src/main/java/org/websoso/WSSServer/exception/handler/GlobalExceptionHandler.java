@@ -1,8 +1,12 @@
 package org.websoso.WSSServer.exception.handler;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
 
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -32,6 +36,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(BAD_REQUEST)
                 .body(new ErrorResult(BAD_REQUEST.name(), "잘못된 JSON 형식입니다."));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResult> DataIntegrityViolationExceptionHandler(DataIntegrityViolationException e) {
+        log.error("[DataIntegrityViolationException] exception ", e);
+
+        String rootCauseMessage = Objects.requireNonNull(e.getRootCause()).getMessage();
+        if (rootCauseMessage != null && rootCauseMessage.contains("UNIQUE_NICKNAME_CONSTRAINT")) {
+            System.out.println("rootCauseMessage = " + rootCauseMessage);
+            return ResponseEntity
+                    .status(CONFLICT)
+                    .body(new ErrorResult(DUPLICATED_NICKNAME.getCode(), DUPLICATED_NICKNAME.getDescription()));
+        }
+
+        return ResponseEntity
+                .status(CONFLICT)
+                .body(new ErrorResult(CONFLICT.name(), "DB 무결성 제약조건이 위반되었습니다."));
     }
 
     @ExceptionHandler(AbstractCustomException.class)
