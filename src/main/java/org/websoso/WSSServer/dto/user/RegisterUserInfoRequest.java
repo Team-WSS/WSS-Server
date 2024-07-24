@@ -19,7 +19,7 @@ public record RegisterUserInfoRequest(
         Integer birth,
         //TODO 날짜 상수화, 동적으로 가져와야 함
 
-        @NotNull
+        @NotNull(message = "선호 장르는 null일 수 없습니다.")
         List<String> genrePreferences
 ) {
 }
