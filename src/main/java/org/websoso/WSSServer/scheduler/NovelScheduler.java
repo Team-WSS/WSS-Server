@@ -21,11 +21,14 @@ public class NovelScheduler {
 
     @Scheduled(cron = "0 0 0 * * ?")
     public void updatePopularNovels() {
+        List<PopularNovel> yesterdayScheduledPopularNovels = popularNovelRepository.findAll();
+
         List<Long> topNovelIds = userNovelRepository.findTodayPopularNovelsId(PageRequest.of(0, 30));
         List<PopularNovel> popularNovels = topNovelIds.stream()
                 .map(PopularNovel::from)
                 .collect(Collectors.toList());
 
         popularNovelRepository.saveAll(popularNovels);
+        popularNovelRepository.deleteAll(yesterdayScheduledPopularNovels);
     }
 }
