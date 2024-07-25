@@ -73,13 +73,9 @@ public class NovelController {
 
     @GetMapping("/popular")
     public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(Principal principal) {
-        if (principal == null) {
-            return ResponseEntity
-                    .status(OK)
-                    .body();
-        }
+        //TODO 차단 관계에 있는 유저의 피드글 처리
         return ResponseEntity
                 .status(OK)
-                .body();
+                .body(novelService.getTodayPopularNovels());
     }
 }
