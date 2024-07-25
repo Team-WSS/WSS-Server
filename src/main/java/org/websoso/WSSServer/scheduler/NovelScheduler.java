@@ -23,9 +23,7 @@ public class NovelScheduler {
     public void updateRecentUserNovels() {
         List<Long> topNovelIds = userNovelRepository.findTodayPopularNovelsId(PageRequest.of(0, 30));
         List<RecentUserNovel> popularNovels = topNovelIds.stream()
-                .map(popularNovelId -> {
-                    return RecentUserNovel.from(popularNovelId);
-                })
+                .map(RecentUserNovel::from)
                 .collect(Collectors.toList());
 
         recentUserNovelRepository.saveAll(popularNovels);
