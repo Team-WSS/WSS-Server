@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
+import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserService;
 
@@ -70,4 +71,15 @@ public class NovelController {
                 .build();
     }
 
+    @GetMapping("/popular")
+    public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity
+                    .status(OK)
+                    .body();
+        }
+        return ResponseEntity
+                .status(OK)
+                .body();
+    }
 }
