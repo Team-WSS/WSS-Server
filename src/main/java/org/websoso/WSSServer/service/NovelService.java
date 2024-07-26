@@ -234,17 +234,31 @@ public class NovelService {
 
     @Transactional(readOnly = true)
     public PopularNovelsGetResponse getTodayPopularNovels() {
-        List<Long> popularNovelIds = new ArrayList<>(popularNovelRepository.findAll()
+        List<Long> popularNovelIds = getPopularNovelIds();
+        List<Long> selectedPopularNovelIds = getSelectedPopularNovelIds(popularNovelIds);
+        List<Novel> popularNovels = getSelectedPopularNovels(selectedPopularNovelIds);
+        return getPopularNovelsGetResponse(popularNovels);
+    }
+
+    private List<Long> getPopularNovelIds() {
+        return new ArrayList<>(popularNovelRepository.findAll()
                 .stream()
                 .map(PopularNovel::getNovelId)
                 .toList());
-        Collections.shuffle(popularNovelIds);
-        List<Long> selectedPopularNovelIds =
-                popularNovelIds.size() > 10
-                        ? popularNovelIds.subList(0, 10)
-                        : popularNovelIds;
+    }
 
-        List<Novel> popularNovels = novelRepository.findAllById(selectedPopularNovelIds);
+    private static List<Long> getSelectedPopularNovelIds(List<Long> popularNovelIds) {
+        Collections.shuffle(popularNovelIds);
+        return popularNovelIds.size() > 10
+                ? popularNovelIds.subList(0, 10)
+                : popularNovelIds;
+    }
+
+    private List<Novel> getSelectedPopularNovels(List<Long> selectedPopularNovelIds) {
+        return novelRepository.findAllById(selectedPopularNovelIds);
+    }
+
+    private static PopularNovelsGetResponse getPopularNovelsGetResponse(List<Novel> popularNovels) {
         List<PopularNovelGetResponse> popularNovelResponses = popularNovels.stream()
                 .map(PopularNovelGetResponse::of)
                 .toList();
