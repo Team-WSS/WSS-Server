@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
+import org.websoso.WSSServer.domain.PopularNovel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
@@ -28,12 +29,15 @@ import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
+import org.websoso.WSSServer.dto.popularNovel.PopularNovelGetResponse;
+import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.NovelGenreRepository;
 import org.websoso.WSSServer.repository.NovelPlatformRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
+import org.websoso.WSSServer.repository.PopularNovelRepository;
 import org.websoso.WSSServer.repository.UserNovelAttractivePointRepository;
 import org.websoso.WSSServer.repository.UserNovelKeywordRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
@@ -54,6 +58,7 @@ public class NovelService {
     private final FeedRepository feedRepository;
     private final NovelGenreRepository novelGenreRepository;
     private final UserNovelKeywordRepository userNovelKeywordRepository;
+    private final PopularNovelRepository popularNovelRepository;
 
     @Transactional(readOnly = true)
     public Novel getNovelOrException(Long novelId) {
@@ -227,4 +232,17 @@ public class NovelService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public PopularNovelsGetResponse getTodayPopularNovels() {
+        List<Long> popularNovelIds = new ArrayList<>(popularNovelRepository.findAll()
+                .stream()
+                .map(PopularNovel::getNovelId)
+                .toList());
+
+        List<Novel> popularNovels = novelRepository.findAllById(popularNovelIds);
+        List<PopularNovelGetResponse> popularNovelResponses = popularNovels.stream()
+                .map(PopularNovelGetResponse::of)
+                .toList();
+        return new PopularNovelsGetResponse(popularNovelResponses);
+    }
 }
