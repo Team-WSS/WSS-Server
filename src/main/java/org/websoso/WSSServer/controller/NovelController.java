@@ -78,7 +78,7 @@ public class NovelController {
             @RequestParam(required = false) List<String> genre,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Float novelRating,
-            @RequestParam(required = false) List<Long> keywordIds,
+            @RequestParam(required = false) List<Integer> keywordIds,
             @RequestParam Long lastNovelId,
             @RequestParam int size) {
 
