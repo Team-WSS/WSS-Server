@@ -238,8 +238,13 @@ public class NovelService {
                 .stream()
                 .map(PopularNovel::getNovelId)
                 .toList());
+        Collections.shuffle(popularNovelIds);
+        List<Long> selectedPopularNovelIds =
+                popularNovelIds.size() > 10
+                        ? popularNovelIds.subList(0, 10)
+                        : popularNovelIds;
 
-        List<Novel> popularNovels = novelRepository.findAllById(popularNovelIds);
+        List<Novel> popularNovels = novelRepository.findAllById(selectedPopularNovelIds);
         List<PopularNovelGetResponse> popularNovelResponses = popularNovels.stream()
                 .map(PopularNovelGetResponse::of)
                 .toList();
