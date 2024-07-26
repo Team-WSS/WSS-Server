@@ -76,7 +76,7 @@ public class NovelController {
     @GetMapping("/filtered")
     public ResponseEntity<FilteredNovelsGetResponse> getFilteredNovels(
             @RequestParam(required = false) List<String> genre,
-            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Boolean isCompleted,
             @RequestParam(required = false) Float novelRating,
             @RequestParam(required = false) List<Integer> keywordIds,
             @RequestParam Long lastNovelId,
@@ -84,7 +84,7 @@ public class NovelController {
 
         return ResponseEntity
                 .status(OK)
-                .body(novelService.getFilteredNovels(genre, status, novelRating, keywordIds, lastNovelId, size));
+                .body(novelService.getFilteredNovels(genre, isCompleted, novelRating, keywordIds, lastNovelId, size));
     }
 
 }
