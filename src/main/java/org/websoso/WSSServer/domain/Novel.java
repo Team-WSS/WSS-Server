@@ -5,6 +5,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -40,5 +41,8 @@ public class Novel {
 
     @OneToMany(mappedBy = "novel", fetch = LAZY)
     private List<UserNovel> userNovels = new ArrayList<>();
+
+    @OneToMany(mappedBy = "novel", fetch = FetchType.LAZY)
+    private List<NovelGenre> novelGenres = new ArrayList<>();
 
 }
