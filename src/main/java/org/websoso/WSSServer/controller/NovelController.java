@@ -4,6 +4,7 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import java.security.Principal;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,8 +12,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.service.NovelService;
@@ -68,6 +71,20 @@ public class NovelController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
+    }
+
+    @GetMapping("/filtered")
+    public ResponseEntity<FilteredNovelsGetResponse> getFilteredNovels(
+            @RequestParam(required = false) List<String> genre,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Float novelRating,
+            @RequestParam(required = false) List<Long> keywordIds,
+            @RequestParam Long lastNovelId,
+            @RequestParam int size) {
+
+        return ResponseEntity
+                .status(OK)
+                .body(novelService.getFilteredNovels(genre, status, novelRating, keywordIds, lastNovelId, size));
     }
 
 }
