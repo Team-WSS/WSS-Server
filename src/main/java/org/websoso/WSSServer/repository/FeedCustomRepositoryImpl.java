@@ -28,6 +28,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                         .groupBy(feed.feedId)
                         .orderBy(like.count().desc())
                         .fetchFirst())
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 }
