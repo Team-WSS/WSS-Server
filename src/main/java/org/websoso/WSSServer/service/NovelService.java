@@ -294,6 +294,9 @@ public class NovelService {
         List<PopularNovelGetResponse> popularNovelResponses = popularNovels.stream()
                 .map(novel -> {
                     Feed feed = feedMap.get(novel.getNovelId());
+                    if (feed == null) {
+                        return PopularNovelGetResponse.of(novel, null, null);
+                    }
                     Avatar avatar = avatarMap.get(feed.getUser().getAvatarId());
                     return PopularNovelGetResponse.of(novel, avatar, feed);
                 })

@@ -14,6 +14,16 @@ public record PopularNovelGetResponse(
 ) {
 
     public static PopularNovelGetResponse of(Novel novel, Avatar avatar, Feed feed) {
+        if (avatar == null && feed == null) {
+            return new PopularNovelGetResponse(
+                    novel.getNovelId(),
+                    novel.getTitle(),
+                    novel.getNovelImage(),
+                    null,
+                    null,
+                    null
+            );
+        }
         return new PopularNovelGetResponse(
                 novel.getNovelId(),
                 novel.getTitle(),
