@@ -79,12 +79,12 @@ public class NovelController {
             @RequestParam(required = false) Boolean isCompleted,
             @RequestParam(required = false) Float novelRating,
             @RequestParam(required = false) List<Integer> keywordIds,
-            @RequestParam Long lastNovelId,
+            @RequestParam int page,
             @RequestParam int size) {
 
         return ResponseEntity
                 .status(OK)
-                .body(novelService.getFilteredNovels(genre, isCompleted, novelRating, keywordIds, lastNovelId, size));
+                .body(novelService.getFilteredNovels(genre, isCompleted, novelRating, keywordIds, page, size));
     }
 
 }
