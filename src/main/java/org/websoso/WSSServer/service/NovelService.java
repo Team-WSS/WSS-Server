@@ -3,6 +3,7 @@ package org.websoso.WSSServer.service;
 import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
+import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.ALREADY_INTERESTED;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_INTERESTED;
@@ -15,8 +16,11 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
@@ -25,12 +29,16 @@ import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.domain.common.AttractivePointName;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
+import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
+import org.websoso.WSSServer.dto.novel.NovelGetResponsePreview;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
+import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.NovelGenreRepository;
 import org.websoso.WSSServer.repository.NovelPlatformRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
@@ -54,6 +62,8 @@ public class NovelService {
     private final FeedRepository feedRepository;
     private final NovelGenreRepository novelGenreRepository;
     private final UserNovelKeywordRepository userNovelKeywordRepository;
+    private final KeywordService keywordService;
+    private final GenreRepository genreRepository;
 
     @Transactional(readOnly = true)
     public Novel getNovelOrException(Long novelId) {
@@ -225,6 +235,49 @@ public class NovelService {
                 .limit(KEYWORD_SIZE)
                 .map(entry -> KeywordCountGetResponse.of(entry.getKey(), entry.getValue().intValue()))
                 .collect(Collectors.toList());
+    }
+
+    public FilteredNovelsGetResponse getFilteredNovels(List<String> genreNames, Boolean isCompleted, Float novelRating,
+                                                       List<Integer> keywordIds, int page, int size) {
+
+        List<Genre> genres = new ArrayList<>();
+        for (String genreName : genreNames) {
+            Genre genre = genreRepository.findByGenreName(genreName).orElseThrow(
+                    () -> new CustomGenreException(GENRE_NOT_FOUND, "genre with the given name is not found"));
+            genres.add(genre);
+        }
+
+        List<Keyword> keywords = new ArrayList<>();
+        for (Integer keywordId : keywordIds) {
+            Keyword keyword = keywordService.getKeywordOrException(keywordId);
+            keywords.add(keyword);
+        }
+
+        PageRequest pageRequest = PageRequest.of(page, size);
+
+        Page<Novel> novels = novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRating, keywords,
+                keywords.size());
+
+        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream().map(novel -> {
+
+            List<UserNovel> userNovels = userNovelRepository.findAllByNovel(novel);
+
+            long interestCount = userNovels.stream().filter(UserNovel::getIsInterest).count();
+            long novelRatingCount = userNovels.stream().filter(un -> un.getUserNovelRating() != 0.0f).count();
+            double novelRatingSum = userNovels.stream().filter(un -> un.getUserNovelRating() != 0.0f)
+                    .mapToDouble(UserNovel::getUserNovelRating).sum();
+            Float novelRatingAverage = novelRatingCount == 0 ? 0.0f
+                    : Math.round((float) (novelRatingSum / novelRatingCount) * 10.0f) / 10.0f;
+
+            return NovelGetResponsePreview.of(
+                    novel,
+                    (int) interestCount,
+                    novelRatingAverage,
+                    (int) novelRatingCount
+            );
+        }).collect(Collectors.toList());
+
+        return FilteredNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
     }
 
 }
