@@ -23,7 +23,7 @@ public interface NovelRepository extends JpaRepository<Novel, Long> {
             "WHERE (:genres IS NULL OR ng.genre IN :genres) " +
             "AND (:isCompleted IS NULL OR n.isCompleted = :isCompleted) " +
             "AND (:novelRating IS NULL OR " +
-            "(SELECT AVG(un.userNovelRating) FROM UserNovel un WHERE un.novel = n) >= :novelRating) " +
+            "(SELECT AVG(un.userNovelRating) FROM UserNovel un WHERE un.novel = n AND un.userNovelRating <> 0) >= :novelRating) " +
             "AND (:keywords IS NULL OR " +
             "(SELECT COUNT(unk.keyword) FROM UserNovelKeyword unk WHERE unk.userNovel.novel = n AND unk.keyword IN :keywords) = :keywordsSize) " +
             "ORDER BY (SELECT COUNT(un) FROM UserNovel un WHERE un.novel = n AND (un.isInterest = true OR un.status <> 'QUIT')) DESC")
