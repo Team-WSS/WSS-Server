@@ -7,7 +7,7 @@ import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.PopularFeed;
 
 @Repository
-public interface PopularFeedRepository extends JpaRepository<PopularFeed, Long> {
+public interface PopularFeedRepository extends JpaRepository<PopularFeed, Long>, PopularFeedCustomRepository {
 
     Boolean existsByFeed(Feed feed);
 
