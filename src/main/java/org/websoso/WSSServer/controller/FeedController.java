@@ -20,7 +20,9 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
+import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.service.FeedService;
+import org.websoso.WSSServer.service.PopularFeedService;
 import org.websoso.WSSServer.service.UserService;
 
 @RequestMapping("/feeds")
@@ -30,6 +32,7 @@ public class FeedController {
 
     private final FeedService feedService;
     private final UserService userService;
+    private final PopularFeedService popularFeedService;
 
     @PostMapping
     public ResponseEntity<Void> createFeed(Principal principal,
@@ -97,4 +100,11 @@ public class FeedController {
                 .body(feedService.getFeedById(user, feedId));
     }
 
+    @GetMapping("/popular")
+    public ResponseEntity<PopularFeedsGetResponse> getPopularFeeds(Principal principal) {
+        //TODO 차단 관계에 있는 유저의 피드글 처리
+        return ResponseEntity
+                .status(OK)
+                .body(popularFeedService.getPopularFeeds());
+    }
 }
