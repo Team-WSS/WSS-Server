@@ -138,6 +138,7 @@ public class NovelService {
         return userNovel.getStatus() == null;
     }
 
+    @Transactional(readOnly = true)
     public NovelGetResponseInfoTab getNovelInfoInfoTab(Long novelId) {
         Novel novel = getNovelOrException(novelId);
         return NovelGetResponseInfoTab.of(
@@ -237,6 +238,7 @@ public class NovelService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public FilteredNovelsGetResponse getFilteredNovels(List<String> genreNames, Boolean isCompleted, Float novelRating,
                                                        List<Integer> keywordIds, int page, int size) {
 
