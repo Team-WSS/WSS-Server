@@ -31,9 +31,11 @@ public class PopularFeedService {
         return getPopularFeedsGetResponse(popularFeedGetResponses);
     }
 
-    private static PopularFeedsGetResponse getPopularFeedsGetResponse(
-            List<PopularFeedGetResponse> popularFeedGetResponses) {
-        return new PopularFeedsGetResponse(popularFeedGetResponses);
+    private List<PopularFeed> findPopularFeeds(User user) {
+        if (user == null) {
+            return popularFeedRepository.findTop9ByOrderByPopularFeedIdDesc();
+        }
+        return popularFeedRepository.findTodayPopularFeeds(user.getUserId());
     }
 
     private static List<PopularFeedGetResponse> getPopularFeedGetResponses(List<PopularFeed> popularFeeds) {
@@ -48,10 +50,8 @@ public class PopularFeedService {
                 .toList();
     }
 
-    private List<PopularFeed> findPopularFeeds(User user) {
-        if (user == null) {
-            return popularFeedRepository.findTop9ByOrderByPopularFeedIdDesc();
-        }
-        return popularFeedRepository.findTodayPopularFeeds(user.getUserId());
+    private static PopularFeedsGetResponse getPopularFeedsGetResponse(
+            List<PopularFeedGetResponse> popularFeedGetResponses) {
+        return new PopularFeedsGetResponse(popularFeedGetResponses);
     }
 }
