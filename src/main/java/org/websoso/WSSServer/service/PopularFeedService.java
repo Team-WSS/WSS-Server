@@ -49,6 +49,9 @@ public class PopularFeedService {
     }
 
     private List<PopularFeed> findPopularFeeds(User user) {
+        if (user == null) {
+            return popularFeedRepository.findTop9ByOrderByPopularFeedIdDesc();
+        }
         return popularFeedRepository.findTodayPopularFeeds(user.getUserId());
     }
 }
