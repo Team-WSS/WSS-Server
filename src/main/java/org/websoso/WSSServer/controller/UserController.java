@@ -34,9 +34,10 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/nickname/check")
-    public ResponseEntity<NicknameValidation> checkNicknameAvailability(
-            @RequestParam("nickname")
-            @NicknameConstraint String nickname) {
+    public ResponseEntity<NicknameValidation> checkNicknameAvailability(Principal principal,
+                                                                        @RequestParam("nickname")
+                                                                        @NicknameConstraint String nickname) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userService.isNicknameAvailable(nickname));
