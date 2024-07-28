@@ -240,17 +240,27 @@ public class NovelService {
     public FilteredNovelsGetResponse getFilteredNovels(List<String> genreNames, Boolean isCompleted, Float novelRating,
                                                        List<Integer> keywordIds, int page, int size) {
 
-        List<Genre> genres = new ArrayList<>();
-        for (String genreName : genreNames) {
-            Genre genre = genreRepository.findByGenreName(genreName).orElseThrow(
-                    () -> new CustomGenreException(GENRE_NOT_FOUND, "genre with the given name is not found"));
-            genres.add(genre);
+        List<Genre> genres;
+        if (genreNames == null) {
+            genres = null;
+        } else {
+            genres = new ArrayList<>();
+            for (String genreName : genreNames) {
+                Genre genre = genreRepository.findByGenreName(genreName).orElseThrow(
+                        () -> new CustomGenreException(GENRE_NOT_FOUND, "genre with the given name is not found"));
+                genres.add(genre);
+            }
         }
 
-        List<Keyword> keywords = new ArrayList<>();
-        for (Integer keywordId : keywordIds) {
-            Keyword keyword = keywordService.getKeywordOrException(keywordId);
-            keywords.add(keyword);
+        List<Keyword> keywords;
+        if (keywordIds == null) {
+            keywords = null;
+        } else {
+            keywords = new ArrayList<>();
+            for (Integer keywordId : keywordIds) {
+                Keyword keyword = keywordService.getKeywordOrException(keywordId);
+                keywords.add(keyword);
+            }
         }
 
         PageRequest pageRequest = PageRequest.of(page, size);
