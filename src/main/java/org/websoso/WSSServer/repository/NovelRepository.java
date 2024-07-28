@@ -20,13 +20,13 @@ public interface NovelRepository extends JpaRepository<Novel, Long> {
 
     @Query("SELECT n FROM Novel n " +
             "JOIN n.novelGenres ng " +
-            "WHERE (:genres IS NULL OR ng.genre IN :genres) " +
+            "WHERE (:genres IS NULL OR ng.genre IN :genres) " +//TODO genres 리스트 여러개일때 오류
             "AND (:isCompleted IS NULL OR n.isCompleted = :isCompleted) " +
             "AND (:novelRating IS NULL OR " +
-            "(SELECT AVG(un.userNovelRating) FROM UserNovel un WHERE un.novel = n AND un.userNovelRating <> 0) >= :novelRating) " +
+            "(SELECT AVG(un.userNovelRating) FROM UserNovel un WHERE un.novel = n AND un.userNovelRating <> 0) >= :novelRating) " +//TODO 반올림 확인
             "AND (:keywords IS NULL OR " +
-            "(SELECT COUNT(unk.keyword) FROM UserNovelKeyword unk WHERE unk.userNovel.novel = n AND unk.keyword IN :keywords) = :keywordsSize) " +
-            "ORDER BY (SELECT COUNT(un) FROM UserNovel un WHERE un.novel = n AND (un.isInterest = true OR un.status <> 'QUIT')) DESC")
+            "(SELECT COUNT(unk.keyword) FROM UserNovelKeyword unk WHERE unk.userNovel.novel = n AND unk.keyword IN :keywords GROUP BY unk.userNovel.novel) = :keywordsSize) " +
+            "ORDER BY (SELECT COUNT(un) FROM UserNovel un WHERE un.novel = n AND (un.isInterest = true OR un.status <> 'QUIT')) DESC")//TODO
     Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRating,
                                    List<Keyword> keywords, Integer keywordsSize);
 
