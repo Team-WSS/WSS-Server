@@ -1,10 +1,13 @@
 package org.websoso.WSSServer.service;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.PopularFeed;
+import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
+import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.repository.PopularFeedRepository;
 
 @Service
@@ -20,4 +23,19 @@ public class PopularFeedService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public PopularFeedsGetResponse getPopularFeeds() {
+        List<PopularFeed> popularFeeds = popularFeedRepository.findTop9ByOrderByPopularFeedIdDesc();
+
+        List<PopularFeedGetResponse> popularFeedGetResponses = popularFeeds.stream()
+                .map(popularFeed -> new PopularFeedGetResponse(
+                        popularFeed.getFeed().getFeedId(),
+                        popularFeed.getFeed().getFeedContent(),
+                        popularFeed.getFeed().getLikes().size(),
+                        popularFeed.getFeed().getComments().size(),
+                        popularFeed.getFeed().getIsSpoiler()
+                ))
+                .toList();
+        return new PopularFeedsGetResponse(popularFeedGetResponses);
+    }
 }
