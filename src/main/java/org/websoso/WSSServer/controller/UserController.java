@@ -40,7 +40,7 @@ public class UserController {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body(userService.isNicknameAvailable(nickname));
+                .body(userService.isNicknameAvailable(user, nickname));
     }
 
     @GetMapping("/email")

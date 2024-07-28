@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_NICKNAME;
 import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
@@ -13,7 +14,6 @@ import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.GenrePreference;
-import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.EmailGetResponse;
@@ -24,6 +24,7 @@ import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.AvatarRepository;
+import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Service
@@ -37,7 +38,10 @@ public class UserService {
     private final GenrePreferenceRepository genrePreferenceRepository;
 
     @Transactional(readOnly = true)
-    public NicknameValidation isNicknameAvailable(String nickname) {
+    public NicknameValidation isNicknameAvailable(User user, String nickname) {
+        if (user.getNickname().equals(nickname)) {
+            throw new CustomUserException(ALREADY_SET_NICKNAME, "nickname with given is already set");
+        }
         if (userRepository.existsByNickname(nickname)) {
             throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
         }
