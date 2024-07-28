@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.PopularFeed;
+import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.repository.PopularFeedRepository;
@@ -24,8 +25,8 @@ public class PopularFeedService {
     }
 
     @Transactional(readOnly = true)
-    public PopularFeedsGetResponse getPopularFeeds() {
-        List<PopularFeed> popularFeeds = findPopularFeeds();
+    public PopularFeedsGetResponse getPopularFeeds(User user) {
+        List<PopularFeed> popularFeeds = findPopularFeeds(user);
         List<PopularFeedGetResponse> popularFeedGetResponses = getPopularFeedGetResponses(popularFeeds);
         return getPopularFeedsGetResponse(popularFeedGetResponses);
     }
@@ -47,7 +48,7 @@ public class PopularFeedService {
                 .toList();
     }
 
-    private List<PopularFeed> findPopularFeeds() {
-        return popularFeedRepository.findTop9ByOrderByPopularFeedIdDesc();
+    private List<PopularFeed> findPopularFeeds(User user) {
+        return popularFeedRepository.findTodayPopularFeeds(user.getUserId());
     }
 }
