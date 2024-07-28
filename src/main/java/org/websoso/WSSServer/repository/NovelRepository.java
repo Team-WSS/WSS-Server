@@ -20,11 +20,11 @@ public interface NovelRepository extends JpaRepository<Novel, Long> {
 
     @Query("SELECT n FROM Novel n " +
             "JOIN n.novelGenres ng " +
-            "WHERE (:genres IS NULL OR ng.genre IN :genres) " +
+            "WHERE (ng.genre IN :genres) " +
             "AND (:isCompleted IS NULL OR n.isCompleted = :isCompleted) " +
             "AND (:novelRating IS NULL OR " +
             "(SELECT AVG(un.userNovelRating) FROM UserNovel un WHERE un.novel = n AND un.userNovelRating <> 0) >= :novelRating) " +
-            "AND (:keywordsSize = 0 OR (:keywords) IS NULL OR " +
+            "AND (:keywordsSize = 0 OR " +
             "(SELECT COUNT(unk.keyword) FROM UserNovelKeyword unk WHERE unk.userNovel.novel = n AND unk.keyword IN :keywords GROUP BY unk.userNovel.novel) = :keywordsSize) " +
             "ORDER BY (SELECT COUNT(un) FROM UserNovel un WHERE un.novel = n AND (un.isInterest = true OR un.status <> 'QUIT')) DESC")
     Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRating,
