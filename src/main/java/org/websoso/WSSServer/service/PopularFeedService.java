@@ -25,9 +25,18 @@ public class PopularFeedService {
 
     @Transactional(readOnly = true)
     public PopularFeedsGetResponse getPopularFeeds() {
-        List<PopularFeed> popularFeeds = popularFeedRepository.findTop9ByOrderByPopularFeedIdDesc();
+        List<PopularFeed> popularFeeds = findPopularFeeds();
+        List<PopularFeedGetResponse> popularFeedGetResponses = getPopularFeedGetResponses(popularFeeds);
+        return getPopularFeedsGetResponse(popularFeedGetResponses);
+    }
 
-        List<PopularFeedGetResponse> popularFeedGetResponses = popularFeeds.stream()
+    private static PopularFeedsGetResponse getPopularFeedsGetResponse(
+            List<PopularFeedGetResponse> popularFeedGetResponses) {
+        return new PopularFeedsGetResponse(popularFeedGetResponses);
+    }
+
+    private static List<PopularFeedGetResponse> getPopularFeedGetResponses(List<PopularFeed> popularFeeds) {
+        return popularFeeds.stream()
                 .map(popularFeed -> new PopularFeedGetResponse(
                         popularFeed.getFeed().getFeedId(),
                         popularFeed.getFeed().getFeedContent(),
@@ -36,6 +45,9 @@ public class PopularFeedService {
                         popularFeed.getFeed().getIsSpoiler()
                 ))
                 .toList();
-        return new PopularFeedsGetResponse(popularFeedGetResponses);
+    }
+
+    private List<PopularFeed> findPopularFeeds() {
+        return popularFeedRepository.findTop9ByOrderByPopularFeedIdDesc();
     }
 }
