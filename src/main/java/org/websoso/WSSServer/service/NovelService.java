@@ -243,10 +243,9 @@ public class NovelService {
         PageRequest pageRequest = PageRequest.of(page, size);
         List<Genre> genres = getGenres(genreNames);
         List<Keyword> keywords = getKeywords(keywordIds);
-        Integer keywordSize = keywords.isEmpty() ? 0 : keywords.size();
 
         Page<Novel> novels = novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRating, keywords,
-                keywordSize);
+                keywords.size());
 
         List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream().map(this::convertToDTO)
                 .collect(Collectors.toList());
