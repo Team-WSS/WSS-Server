@@ -3,7 +3,6 @@ package org.websoso.WSSServer.service;
 import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
-import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.ALREADY_INTERESTED;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_INTERESTED;
@@ -34,11 +33,9 @@ import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.novel.NovelGetResponsePreview;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
-import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.repository.FeedRepository;
-import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.NovelGenreRepository;
 import org.websoso.WSSServer.repository.NovelPlatformRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
@@ -63,7 +60,7 @@ public class NovelService {
     private final NovelGenreRepository novelGenreRepository;
     private final UserNovelKeywordRepository userNovelKeywordRepository;
     private final KeywordService keywordService;
-    private final GenreRepository genreRepository;
+    private final GenreService genreService;
 
     @Transactional(readOnly = true)
     public Novel getNovelOrException(Long novelId) {
@@ -248,8 +245,7 @@ public class NovelService {
         } else {
             genres = new ArrayList<>();
             for (String genreName : genreNames) {
-                Genre genre = genreRepository.findByGenreName(genreName).orElseThrow(
-                        () -> new CustomGenreException(GENRE_NOT_FOUND, "genre with the given name is not found"));
+                Genre genre = genreService.getGenreOrException(genreName);
                 genres.add(genre);
             }
         }
