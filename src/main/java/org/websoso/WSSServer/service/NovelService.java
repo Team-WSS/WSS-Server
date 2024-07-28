@@ -27,6 +27,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.domain.common.AttractivePointName;
+import org.websoso.WSSServer.domain.common.GenreName;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
@@ -239,32 +240,35 @@ public class NovelService {
     public FilteredNovelsGetResponse getFilteredNovels(List<String> genreNames, Boolean isCompleted, Float novelRating,
                                                        List<Integer> keywordIds, int page, int size) {
 
-        List<Genre> genres;
-        if (genreNames == null) {
-            genres = null;
+        genreNames = genreNames == null ? Collections.emptyList() : genreNames;
+        keywordIds = keywordIds == null ? Collections.emptyList() : keywordIds;
+
+        List<Genre> genres = new ArrayList<>();
+        if (genreNames.isEmpty()) {
+            for (GenreName genreName : GenreName.values()) {
+                genres.add(genreService.getGenreOrException(genreName.getLabel()));
+            }
         } else {
-            genres = new ArrayList<>();
             for (String genreName : genreNames) {
                 Genre genre = genreService.getGenreOrException(genreName);
                 genres.add(genre);
             }
         }
 
-        List<Keyword> keywords;
-        if (keywordIds == null) {
-            keywords = null;
-        } else {
-            keywords = new ArrayList<>();
+        List<Keyword> keywords = new ArrayList<>();
+        if (!keywordIds.isEmpty()) {
             for (Integer keywordId : keywordIds) {
                 Keyword keyword = keywordService.getKeywordOrException(keywordId);
                 keywords.add(keyword);
             }
         }
 
+        Integer keywordSize = keywords.isEmpty() ? 0 : keywords.size();
+
         PageRequest pageRequest = PageRequest.of(page, size);
 
         Page<Novel> novels = novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRating, keywords,
-                keywords.size());
+                keywordSize);
 
         List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream().map(novel -> {
 
