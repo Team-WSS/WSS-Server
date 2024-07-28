@@ -102,9 +102,14 @@ public class FeedController {
 
     @GetMapping("/popular")
     public ResponseEntity<PopularFeedsGetResponse> getPopularFeeds(Principal principal) {
-        //TODO 차단 관계에 있는 유저의 피드글 처리
+        if (principal == null) {
+            return ResponseEntity
+                    .status(OK)
+                    .body(popularFeedService.getPopularFeeds(null));
+        }
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body(popularFeedService.getPopularFeeds());
+                .body(popularFeedService.getPopularFeeds(user));
     }
 }
