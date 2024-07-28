@@ -240,8 +240,23 @@ public class NovelService {
     public FilteredNovelsGetResponse getFilteredNovels(List<String> genreNames, Boolean isCompleted, Float novelRating,
                                                        List<Integer> keywordIds, int page, int size) {
 
+        PageRequest pageRequest = PageRequest.of(page, size);
+        List<Genre> genres = getGenres(genreNames);
+        List<Keyword> keywords = getKeywords(keywordIds);
+        Integer keywordSize = keywords.isEmpty() ? 0 : keywords.size();
+
+        Page<Novel> novels = novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRating, keywords,
+                keywordSize);
+
+        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream().map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        return FilteredNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
+    }
+
+    private List<Genre> getGenres(List<String> genreNames) {
+
         genreNames = genreNames == null ? Collections.emptyList() : genreNames;
-        keywordIds = keywordIds == null ? Collections.emptyList() : keywordIds;
 
         List<Genre> genres = new ArrayList<>();
         if (genreNames.isEmpty()) {
@@ -254,6 +269,12 @@ public class NovelService {
                 genres.add(genre);
             }
         }
+        return genres;
+    }
+
+    private List<Keyword> getKeywords(List<Integer> keywordIds) {
+
+        keywordIds = keywordIds == null ? Collections.emptyList() : keywordIds;
 
         List<Keyword> keywords = new ArrayList<>();
         if (!keywordIds.isEmpty()) {
@@ -263,33 +284,26 @@ public class NovelService {
             }
         }
 
-        Integer keywordSize = keywords.isEmpty() ? 0 : keywords.size();
+        return keywords;
+    }
 
-        PageRequest pageRequest = PageRequest.of(page, size);
+    private NovelGetResponsePreview convertToDTO(Novel novel) {
 
-        Page<Novel> novels = novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRating, keywords,
-                keywordSize);
+        List<UserNovel> userNovels = userNovelRepository.findAllByNovel(novel);
 
-        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream().map(novel -> {
+        long interestCount = userNovels.stream().filter(UserNovel::getIsInterest).count();
+        long novelRatingCount = userNovels.stream().filter(un -> un.getUserNovelRating() != 0.0f).count();
+        double novelRatingSum = userNovels.stream().filter(un -> un.getUserNovelRating() != 0.0f)
+                .mapToDouble(UserNovel::getUserNovelRating).sum();
+        Float novelRatingAverage = novelRatingCount == 0 ? 0.0f
+                : Math.round((float) (novelRatingSum / novelRatingCount) * 10.0f) / 10.0f;
 
-            List<UserNovel> userNovels = userNovelRepository.findAllByNovel(novel);
-
-            long interestCount = userNovels.stream().filter(UserNovel::getIsInterest).count();
-            long novelRatingCount = userNovels.stream().filter(un -> un.getUserNovelRating() != 0.0f).count();
-            double novelRatingSum = userNovels.stream().filter(un -> un.getUserNovelRating() != 0.0f)
-                    .mapToDouble(UserNovel::getUserNovelRating).sum();
-            Float novelRatingAverage = novelRatingCount == 0 ? 0.0f
-                    : Math.round((float) (novelRatingSum / novelRatingCount) * 10.0f) / 10.0f;
-
-            return NovelGetResponsePreview.of(
-                    novel,
-                    (int) interestCount,
-                    novelRatingAverage,
-                    (int) novelRatingCount
-            );
-        }).collect(Collectors.toList());
-
-        return FilteredNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
+        return NovelGetResponsePreview.of(
+                novel,
+                (int) interestCount,
+                novelRatingAverage,
+                (int) novelRatingCount
+        );
     }
 
 }
