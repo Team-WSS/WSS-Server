@@ -22,6 +22,8 @@ import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
+import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
+import org.websoso.WSSServer.service.UserNovelService;
 import org.websoso.WSSServer.service.UserService;
 import org.websoso.WSSServer.validation.NicknameConstraint;
 
@@ -32,6 +34,7 @@ import org.websoso.WSSServer.validation.NicknameConstraint;
 public class UserController {
 
     private final UserService userService;
+    private final UserNovelService userNovelService;
 
     @GetMapping("/nickname/check")
     public ResponseEntity<NicknameValidation> checkNicknameAvailability(
@@ -82,5 +85,13 @@ public class UserController {
         return ResponseEntity
                 .status(OK)
                 .body(userService.getMyProfileInfo(user));
+    }
+
+    @GetMapping("/user-novel-stats")
+    public ResponseEntity<UserNovelCountGetResponse> getUserNovelStatistics(Principal principal) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(userNovelService.getUserNovelStatistics(user));
     }
 }
