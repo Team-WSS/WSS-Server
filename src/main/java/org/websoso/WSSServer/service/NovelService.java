@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Keyword;
@@ -27,6 +29,8 @@ import org.websoso.WSSServer.domain.common.AttractivePointName;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
+import org.websoso.WSSServer.dto.novel.NovelGetResponsePreview;
+import org.websoso.WSSServer.dto.novel.SearchedNovelsGetResponse;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
@@ -225,6 +229,38 @@ public class NovelService {
                 .limit(KEYWORD_SIZE)
                 .map(entry -> KeywordCountGetResponse.of(entry.getKey(), entry.getValue().intValue()))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public SearchedNovelsGetResponse searchNovels(String query, int page, int size) {
+
+        PageRequest pageRequest = PageRequest.of(page, size);
+
+        Page<Novel> novels = novelRepository.findSearchedNovels(pageRequest, query);
+
+        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream().map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        return SearchedNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
+    }
+
+    private NovelGetResponsePreview convertToDTO(Novel novel) {
+
+        List<UserNovel> userNovels = userNovelRepository.findAllByNovel(novel);
+
+        long interestCount = userNovels.stream().filter(UserNovel::getIsInterest).count();
+        long novelRatingCount = userNovels.stream().filter(un -> un.getUserNovelRating() != 0.0f).count();
+        double novelRatingSum = userNovels.stream().filter(un -> un.getUserNovelRating() != 0.0f)
+                .mapToDouble(UserNovel::getUserNovelRating).sum();
+        Float novelRatingAverage = novelRatingCount == 0 ? 0.0f
+                : Math.round((float) (novelRatingSum / novelRatingCount) * 10.0f) / 10.0f;
+
+        return NovelGetResponsePreview.of(
+                novel,
+                (int) interestCount,
+                novelRatingAverage,
+                (int) novelRatingCount
+        );
     }
 
 }
