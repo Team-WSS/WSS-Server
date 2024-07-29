@@ -2,6 +2,8 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
+import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
+import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER_ACCESS;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
@@ -161,9 +163,26 @@ public class FeedService {
             throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
         }
 
-        reportedFeedService.createReportedFeed(feed, user);
+        reportedFeedService.createReportedFeed(feed, user, SPOILER);
 
-        if (feed.getReportedFeeds().size() >= 3) {
+        if (reportedFeedService.shouldHideFeed(feed, SPOILER)) {
+            feed.hideFeed();
+        }
+    }
+
+    public void reportFeedImpertinence(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
+
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
+
+        if (isUserFeedOwner(feed.getUser(), user)) {
+            throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
+        }
+
+        reportedFeedService.createReportedFeed(feed, user, IMPERTINENCE);
+
+        if (reportedFeedService.shouldHideFeed(feed, IMPERTINENCE)) {
             feed.hideFeed();
         }
     }

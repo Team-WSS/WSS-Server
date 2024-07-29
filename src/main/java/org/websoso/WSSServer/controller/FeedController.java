@@ -184,4 +184,15 @@ public class FeedController {
                 .status(CREATED)
                 .build();
     }
+
+    @PostMapping("/{feedId}/impertinence")
+    public ResponseEntity<Void> reportedFeedImpertinence(Principal principal,
+                                                         @PathVariable("feedId") Long feedId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.reportFeedImpertinence(user, feedId);
+
+        return ResponseEntity
+                .status(CREATED)
+                .build();
+    }
 }
