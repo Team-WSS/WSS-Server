@@ -264,8 +264,7 @@ public class NovelService {
             }
         } else {
             for (String genreName : genreNames) {
-                Genre genre = genreService.getGenreOrException(genreName);
-                genres.add(genre);
+                genres.add(genreService.getGenreOrException(genreName));
             }
         }
         return genres;
@@ -278,8 +277,7 @@ public class NovelService {
         List<Keyword> keywords = new ArrayList<>();
         if (!keywordIds.isEmpty()) {
             for (Integer keywordId : keywordIds) {
-                Keyword keyword = keywordService.getKeywordOrException(keywordId);
-                keywords.add(keyword);
+                keywords.add(keywordService.getKeywordOrException(keywordId));
             }
         }
 
