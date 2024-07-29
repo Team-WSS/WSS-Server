@@ -21,6 +21,7 @@ import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelAttractivePoint;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
+import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
@@ -144,4 +145,8 @@ public class UserNovelService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public UserNovelCountGetResponse getUserNovelStatistics(User user) {
+        return userNovelRepository.findUserNovelStatistics(user);
+    }
 }
