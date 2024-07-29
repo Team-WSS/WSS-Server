@@ -40,13 +40,7 @@ public class PopularFeedService {
 
     private static List<PopularFeedGetResponse> getPopularFeedGetResponses(List<PopularFeed> popularFeeds) {
         return popularFeeds.stream()
-                .map(popularFeed -> new PopularFeedGetResponse(
-                        popularFeed.getFeed().getFeedId(),
-                        popularFeed.getFeed().getFeedContent(),
-                        popularFeed.getFeed().getLikes().size(),
-                        popularFeed.getFeed().getComments().size(),
-                        popularFeed.getFeed().getIsSpoiler()
-                ))
+                .map(PopularFeedGetResponse::of)
                 .toList();
     }
 
