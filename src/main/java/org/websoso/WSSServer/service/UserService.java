@@ -39,7 +39,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public NicknameValidation isNicknameAvailable(User user, String nickname) {
-        if (user.getNickname().equals(nickname)) {
+        if (user.getNickname() != null && user.getNickname().equals(nickname)) {
             throw new CustomUserException(ALREADY_SET_NICKNAME, "nickname with given is already set");
         }
         if (userRepository.existsByNickname(nickname)) {
