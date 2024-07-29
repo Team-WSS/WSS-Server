@@ -288,7 +288,7 @@ public class NovelService {
 
     private NovelGetResponsePreview convertToDTO(Novel novel) {
 
-        List<UserNovel> userNovels = userNovelRepository.findAllByNovel(novel);
+        List<UserNovel> userNovels = novel.getUserNovels();
 
         long interestCount = userNovels.stream().filter(UserNovel::getIsInterest).count();
         long novelRatingCount = userNovels.stream().filter(un -> un.getUserNovelRating() != 0.0f).count();
