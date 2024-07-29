@@ -10,7 +10,7 @@ import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 
 @Repository
-public interface UserNovelRepository extends JpaRepository<UserNovel, Long> {
+public interface UserNovelRepository extends JpaRepository<UserNovel, Long>, UserNovelCustomRepository {
 
     Optional<UserNovel> findByNovelAndUser(Novel novel, User user);
 
