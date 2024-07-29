@@ -26,22 +26,26 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                                 .when(true)
                                 .then(1)
                                 .otherwise(0)
-                                .sum(),
+                                .sum()
+                                .coalesce(0),
                         userNovel.status
                                 .when(WATCHING)
                                 .then(1)
                                 .otherwise(0)
-                                .sum(),
+                                .sum()
+                                .coalesce(0),
                         userNovel.status
                                 .when(WATCHED)
                                 .then(1)
                                 .otherwise(0)
-                                .sum(),
+                                .sum()
+                                .coalesce(0),
                         userNovel.status
                                 .when(QUIT)
                                 .then(1)
                                 .otherwise(0)
                                 .sum()
+                                .coalesce(0)
                 ))
                 .from(userNovel)
                 .where(userNovel.user.eq(user))
