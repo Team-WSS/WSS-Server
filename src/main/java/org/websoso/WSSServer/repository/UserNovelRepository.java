@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.repository;
 
-import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,8 +13,6 @@ import org.websoso.WSSServer.domain.common.ReadStatus;
 public interface UserNovelRepository extends JpaRepository<UserNovel, Long> {
 
     Optional<UserNovel> findByNovelAndUser(Novel novel, User user);
-
-    List<UserNovel> findAllByNovel(Novel novel);
 
     Integer countByNovelAndStatus(Novel novel, ReadStatus status);
 
