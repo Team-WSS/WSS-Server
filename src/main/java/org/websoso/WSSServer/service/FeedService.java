@@ -162,6 +162,10 @@ public class FeedService {
         }
 
         reportedFeedService.createReportedFeed(feed, user);
+
+        if (feed.getReportedFeeds().size() >= 3) {
+            feed.hideFeed();
+        }
     }
 
     private Feed getFeedOrException(Long feedId) {
