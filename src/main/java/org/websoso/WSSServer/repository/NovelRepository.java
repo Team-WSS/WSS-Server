@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Novel;
 
 @Repository
-public interface NovelRepository extends JpaRepository<Novel, Long> {
+public interface NovelRepository extends JpaRepository<Novel, Long>, NovelCustomRepository {
 
     @Query("SELECT n FROM Novel n JOIN UserNovel un ON n.novelId = un.novel.novelId " +
             "GROUP BY n.novelId " +
