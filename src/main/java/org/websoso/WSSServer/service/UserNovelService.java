@@ -83,12 +83,7 @@ public class UserNovelService {
 
     public void updateEvaluation(User user, Novel novel, UserNovelUpdateRequest request) {
 
-        UserNovel userNovel = getUserNovelOrNull(user, novel);
-
-        if (userNovel == null) {
-            throw new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
-                    "user novel with the given user and novel is not found");
-        }
+        UserNovel userNovel = getUserNovelOrException(user, novel);
 
         if (userNovel.getStatus() == null) {
             throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
