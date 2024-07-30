@@ -27,7 +27,6 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.domain.common.AttractivePointName;
-import org.websoso.WSSServer.domain.common.GenreName;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
@@ -244,8 +243,8 @@ public class NovelService {
         List<Genre> genres = getGenres(genreNames);
         List<Keyword> keywords = getKeywords(keywordIds);
 
-        Page<Novel> novels = novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRating, keywords,
-                keywords.size());
+        Page<Novel> novels = novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRating,
+                keywords);
 
         List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream().map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -258,15 +257,12 @@ public class NovelService {
         genreNames = genreNames == null ? Collections.emptyList() : genreNames;
 
         List<Genre> genres = new ArrayList<>();
-        if (genreNames.isEmpty()) {
-            for (GenreName genreName : GenreName.values()) {
-                genres.add(genreService.getGenreOrException(genreName.getLabel()));
-            }
-        } else {
+        if (!genreNames.isEmpty()) {
             for (String genreName : genreNames) {
                 genres.add(genreService.getGenreOrException(genreName));
             }
         }
+
         return genres;
     }
 
