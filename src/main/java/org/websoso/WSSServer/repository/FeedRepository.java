@@ -13,11 +13,11 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     Integer countByNovelId(Long novelId);
 
     @Query(value = "SELECT f FROM Feed f WHERE "
-            + "(?1 = 0 OR f.feedId < ?1) "
+            + "(:lastFeedId = 0 OR f.feedId < :lastFeedId) "
             + "AND f.isHidden = false "
-            + "AND (?2 IS NULL "
-            + "OR (f.user.userId NOT IN (SELECT b.blockingId FROM Block b WHERE b.blockedId = ?2)) "
-            + "AND f.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = ?2)) "
+            + "AND (:userId IS NULL "
+            + "OR (f.user.userId NOT IN (SELECT b.blockingId FROM Block b WHERE b.blockedId = :userId)) "
+            + "AND f.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = :userId)) "
             + "ORDER BY f.feedId DESC")
     Slice<Feed> findFeeds(Long lastFeedId, Long userId, PageRequest pageRequest);
 
