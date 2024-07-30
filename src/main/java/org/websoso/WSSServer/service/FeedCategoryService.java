@@ -31,8 +31,13 @@ public class FeedCategoryService {
     }
 
     public void updateFeedCategory(Feed feed, List<String> relevantCategories) {
-        Set<Category> categories = feedcategoryRepository.findByFeed(feed).orElseThrow(
-                        () -> new CustomCategoryException(CATEGORY_NOT_FOUND, "Category for the given feed was not found"))
+        List<FeedCategory> feedCategories = feedcategoryRepository.findByFeed(feed);
+
+        if (feedCategories.isEmpty()) {
+            throw new CustomCategoryException(CATEGORY_NOT_FOUND, "Category for the given feed was not found");
+        }
+
+        Set<Category> categories = feedCategories
                 .stream()
                 .map(FeedCategory::getCategory).collect(Collectors.toSet());
 

@@ -1,7 +1,6 @@
 package org.websoso.WSSServer.repository;
 
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +13,7 @@ import org.websoso.WSSServer.domain.FeedCategory;
 @Repository
 public interface FeedCategoryRepository extends JpaRepository<FeedCategory, Long> {
 
-    Optional<List<FeedCategory>> findByFeed(Feed feed);
+    List<FeedCategory> findByFeed(Feed feed);
 
     void deleteByCategory(Category category);
 
