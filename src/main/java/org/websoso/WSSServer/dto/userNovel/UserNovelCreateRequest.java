@@ -2,9 +2,11 @@ package org.websoso.WSSServer.dto.userNovel;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 import java.util.List;
 import org.hibernate.annotations.ColumnDefault;
 import org.websoso.WSSServer.domain.common.ReadStatus;
@@ -35,4 +37,32 @@ public record UserNovelCreateRequest(
         @Size(max = 10, message = "키워드는 최대 10개까지 가능합니다.")
         List<Integer> keywordIds
 ) {
+    @AssertTrue(message = "시작 날짜는 유효한 날짜여야 합니다.")
+    public boolean isStartDateValid() {
+        return startDate == null || isValidDate(startDate);
+    }
+
+    @AssertTrue(message = "종료 날짜는 유효한 날짜여야 합니다.")
+    public boolean isEndDateValid() {
+        return endDate == null || isValidDate(endDate);
+    }
+
+    @AssertTrue(message = "종료 날짜는 시작 날짜 이후여야 합니다.")
+    public boolean isEndDateEqualOrAfterToEndDate() {
+        if (startDate != null && endDate != null && isValidDate(startDate) && isValidDate(endDate)) {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+            return end.isEqual(start) || end.isAfter(start);
+        }
+        return true;
+    }
+
+    private boolean isValidDate(String dateString) {
+        try {
+            LocalDate.parse(dateString);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }
