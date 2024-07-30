@@ -16,7 +16,7 @@ public interface UserNovelAttractivePointRepository extends JpaRepository<UserNo
 
     Integer countByUserNovel_NovelAndAttractivePoint_AttractivePointName(Novel novel, String attractivePoint);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("DELETE FROM UserNovelAttractivePoint un WHERE un.userNovel = :userNovel AND un.attractivePoint IN :attractivePoints")
     void deleteByAttractivePointsAndUserNovel(Set<AttractivePoint> attractivePoints, UserNovel userNovel);
