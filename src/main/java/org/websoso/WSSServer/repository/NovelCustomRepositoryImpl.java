@@ -5,6 +5,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberTemplate;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,10 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
         QNovel novel = QNovel.novel;
         QUserNovel userNovel = QUserNovel.userNovel;
+
+        if (query.isEmpty() || query.isBlank()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
 
         String searchQuery = query.replaceAll("\\s+", "");
 
