@@ -46,14 +46,14 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
         BooleanExpression authorContainsQuery = cleanAuthor.containsIgnoreCase(searchQuery);
 
         List<Novel> novelsByTitle = jpaQueryFactory.selectFrom(novel)
-                .join(novel.userNovels, userNovel)
-                .where(novel.title.containsIgnoreCase(query))
+                .leftJoin(novel.userNovels, userNovel)
+                .where(titleContainsQuery)
                 .groupBy(novel.novelId)
                 .orderBy(popularity.desc())
                 .fetch();
 
         List<Novel> novelsByAuthor = jpaQueryFactory.selectFrom(novel)
-                .join(novel.userNovels, userNovel)
+                .leftJoin(novel.userNovels, userNovel)
                 .where(authorContainsQuery.and(titleContainsQuery.not()))
                 .groupBy(novel.novelId)
                 .orderBy(popularity.desc())
