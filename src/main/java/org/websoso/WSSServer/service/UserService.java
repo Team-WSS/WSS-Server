@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.Avatar;
-import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
@@ -98,11 +97,12 @@ public class UserService {
 
         List<GenrePreference> preferGenres = registerUserInfoRequest.genrePreferences()
                 .stream()
-                .map(preferGenreName -> {
-                    Genre genre = genreRepository.findByGenreName(preferGenreName)
-                            .orElseThrow(() -> new CustomGenreException(GENRE_NOT_FOUND, "genre with tge given genreName is not found"));
-                    return GenrePreference.create(user, genre);
-                })
+                .map(preferGenreName -> genreRepository.findByGenreName(preferGenreName)
+                        .map(genre -> GenrePreference.create(user, genre))
+                        .orElseThrow(
+                                () -> new CustomGenreException(GENRE_NOT_FOUND,
+                                        "genre with the given genreName is not found"))
+                )
                 .collect(Collectors.toList());
 
         genrePreferenceRepository.saveAll(preferGenres);
