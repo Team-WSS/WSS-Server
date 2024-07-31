@@ -133,6 +133,7 @@ public class FeedController {
                                               @Valid @RequestBody CommentCreateRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.createComment(user, feedId, request);
+
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -145,6 +146,7 @@ public class FeedController {
                                               @Valid @RequestBody CommentUpdateRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.updateComment(user, feedId, commentId, request);
+
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -156,6 +158,7 @@ public class FeedController {
                                               @PathVariable("commentId") Long commentId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.deleteComment(user, feedId, commentId);
+
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -165,6 +168,7 @@ public class FeedController {
     public ResponseEntity<CommentsGetResponse> getComments(Principal principal,
                                                            @PathVariable("feedId") Long feedId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getComments(user, feedId));
