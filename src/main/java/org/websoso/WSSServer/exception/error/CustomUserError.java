@@ -23,7 +23,8 @@ public enum CustomUserError implements ICustomError {
     INVALID_AUTHORIZED("USER-007", "사용자에게 권한이 없습니다.", FORBIDDEN),
     INVALID_USER_ID("USER-008", "유효하지 않은 ID입니다.", BAD_REQUEST),
     DUPLICATED_NICKNAME("USER-009", "중복된 닉네임입니다.", CONFLICT),
-    INVALID_PROFILE_STATUS("USER-010", "프로필 상태는 이미 설정된 값과 동일합니다.", BAD_REQUEST);
+    INVALID_PROFILE_STATUS("USER-010", "프로필 상태는 이미 설정된 값과 동일합니다.", BAD_REQUEST),
+    ALREADY_SET_NICKNAME("USER-011", "닉네임은 이미 설정된 닉네임과 동일합니다.", BAD_REQUEST);
 
     private final String code;
     private final String description;
