@@ -29,7 +29,8 @@ public class SecurityConfig {
             "/actuator/health",
             "/novels/{novelId}",
             "/novels/{novelId}/info",
-            "/soso-picks"
+            "/soso-picks",
+            "/feeds"
     };
 
     @Bean
