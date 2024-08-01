@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
@@ -20,11 +19,9 @@ public record UserNovelUpdateRequest(
         @NotNull(message = "읽기 상태는 null일 수 없습니다.")
         ReadStatus status,
 
-        @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "시작 날짜는 yyyy-MM-dd 형식이어야 합니다.")
-        String startDate,
+        LocalDate startDate,
 
-        @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "종료 날짜는 yyyy-MM-dd 형식이어야 합니다.")
-        String endDate,
+        LocalDate endDate,
 
         @JsonSetter(nulls = Nulls.AS_EMPTY)
         @Size(max = 3, message = "매력 포인트는 최대 3개까지 가능합니다.")
@@ -34,32 +31,11 @@ public record UserNovelUpdateRequest(
         @Size(max = 10, message = "키워드는 최대 10개까지 가능합니다.")
         List<Integer> keywordIds
 ) {
-    @AssertTrue(message = "시작 날짜는 유효한 날짜여야 합니다.")
-    public boolean isStartDateValid() {
-        return startDate == null || isValidDate(startDate);
-    }
-
-    @AssertTrue(message = "종료 날짜는 유효한 날짜여야 합니다.")
-    public boolean isEndDateValid() {
-        return endDate == null || isValidDate(endDate);
-    }
-
     @AssertTrue(message = "종료 날짜는 시작 날짜 이후여야 합니다.")
     public boolean isEndDateEqualOrAfterToEndDate() {
-        if (startDate != null && endDate != null && isValidDate(startDate) && isValidDate(endDate)) {
-            LocalDate start = LocalDate.parse(startDate);
-            LocalDate end = LocalDate.parse(endDate);
-            return end.isEqual(start) || end.isAfter(start);
+        if (startDate != null && endDate != null) {
+            return !endDate.isBefore(startDate);
         }
         return true;
-    }
-
-    private boolean isValidDate(String dateString) {
-        try {
-            LocalDate.parse(dateString);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
     }
 }
