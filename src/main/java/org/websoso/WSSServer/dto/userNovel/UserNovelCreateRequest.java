@@ -15,6 +15,7 @@ public record UserNovelCreateRequest(
         @NotNull(message = "작품 id는 null일 수 없습니다.")
         Long novelId,
 
+        @NotNull(message = "작품 평점은 null일 수 없습니다.")
         @UserNovelRatingConstraint
         Float userNovelRating,
 

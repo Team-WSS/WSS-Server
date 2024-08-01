@@ -12,6 +12,7 @@ import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.validation.UserNovelRatingConstraint;
 
 public record UserNovelUpdateRequest(
+        @NotNull(message = "작품 평점은 null일 수 없습니다.")
         @UserNovelRatingConstraint
         Float userNovelRating,
 
