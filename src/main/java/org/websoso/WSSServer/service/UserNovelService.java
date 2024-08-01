@@ -5,8 +5,6 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_EVA
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -178,10 +176,6 @@ public class UserNovelService {
         }
 
         return userNovelRepository.save(UserNovel.create(null, 0.0f, null, null, user, novel));
-    }
-
-    private LocalDate convertToLocalDate(String string) {
-        return LocalDate.parse(string, DateTimeFormatter.ISO_DATE);
     }
 
     @Transactional(readOnly = true)
