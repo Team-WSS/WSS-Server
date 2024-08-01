@@ -1,7 +1,5 @@
 package org.websoso.WSSServer.dto.userNovel;
 
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -28,11 +26,11 @@ public record UserNovelCreateRequest(
         @PastOrPresent(message = "종료 날짜는 미래일 수 없습니다.")
         LocalDate endDate,
 
-        @JsonSetter(nulls = Nulls.AS_EMPTY)
+        @NotNull(message = "매력포인트는 null일 수 없습니다.")
         @Size(max = 3, message = "매력 포인트는 최대 3개까지 가능합니다.")
         List<String> attractivePoints,
 
-        @JsonSetter(nulls = Nulls.AS_EMPTY)
+        @NotNull(message = "키워드 id는 null일 수 없습니다.")
         @Size(max = 10, message = "키워드는 최대 10개까지 가능합니다.")
         List<Integer> keywordIds
 ) {
