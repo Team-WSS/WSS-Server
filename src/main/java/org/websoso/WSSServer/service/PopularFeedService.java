@@ -28,7 +28,7 @@ public class PopularFeedService {
     public PopularFeedsGetResponse getPopularFeeds(User user) {
         List<PopularFeed> popularFeeds = findPopularFeeds(user);
         List<PopularFeedGetResponse> popularFeedGetResponses = getPopularFeedGetResponses(popularFeeds);
-        return getPopularFeedsGetResponse(popularFeedGetResponses);
+        return new PopularFeedsGetResponse(popularFeedGetResponses);
     }
 
     private List<PopularFeed> findPopularFeeds(User user) {
@@ -42,10 +42,5 @@ public class PopularFeedService {
         return popularFeeds.stream()
                 .map(PopularFeedGetResponse::of)
                 .toList();
-    }
-
-    private static PopularFeedsGetResponse getPopularFeedsGetResponse(
-            List<PopularFeedGetResponse> popularFeedGetResponses) {
-        return new PopularFeedsGetResponse(popularFeedGetResponses);
     }
 }
