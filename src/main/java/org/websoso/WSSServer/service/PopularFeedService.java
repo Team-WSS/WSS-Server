@@ -27,7 +27,7 @@ public class PopularFeedService {
     @Transactional(readOnly = true)
     public PopularFeedsGetResponse getPopularFeeds(User user) {
         List<PopularFeed> popularFeeds = findPopularFeeds(user);
-        List<PopularFeedGetResponse> popularFeedGetResponses = getPopularFeedGetResponses(popularFeeds);
+        List<PopularFeedGetResponse> popularFeedGetResponses = mapToPopularFeedGetResponseList(popularFeeds);
         return new PopularFeedsGetResponse(popularFeedGetResponses);
     }
 
@@ -38,7 +38,7 @@ public class PopularFeedService {
         return popularFeedRepository.findTodayPopularFeeds(user.getUserId());
     }
 
-    private static List<PopularFeedGetResponse> getPopularFeedGetResponses(List<PopularFeed> popularFeeds) {
+    private static List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(List<PopularFeed> popularFeeds) {
         return popularFeeds.stream()
                 .map(PopularFeedGetResponse::of)
                 .toList();
