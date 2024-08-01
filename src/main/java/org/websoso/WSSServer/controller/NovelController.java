@@ -17,6 +17,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
+import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserService;
 
@@ -27,6 +28,7 @@ public class NovelController {
 
     private final NovelService novelService;
     private final UserService userService;
+    private final FeedService feedService;
 
     @GetMapping("/{novelId}")
     public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(Principal principal, @PathVariable Long novelId) {
@@ -60,7 +62,7 @@ public class NovelController {
 
         return ResponseEntity
                 .status(OK)
-                .body(novelService.getNovelInfoFeedTab(user, novelId, lastFeedId, size));
+                .body(feedService.getNovelInfoFeedTab(user, novelId, lastFeedId, size));
     }
 
     @PostMapping("/{novelId}/is-interest")
