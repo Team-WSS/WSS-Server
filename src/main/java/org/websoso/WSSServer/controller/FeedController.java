@@ -102,12 +102,9 @@ public class FeedController {
 
     @GetMapping("/popular")
     public ResponseEntity<PopularFeedsGetResponse> getPopularFeeds(Principal principal) {
-        if (principal == null) {
-            return ResponseEntity
-                    .status(OK)
-                    .body(popularFeedService.getPopularFeeds(null));
-        }
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        User user = principal == null ?
+                null :
+                userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(popularFeedService.getPopularFeeds(user));
