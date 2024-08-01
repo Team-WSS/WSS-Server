@@ -71,12 +71,8 @@ public class UserNovelService {
         UserNovel userNovel = userNovelRepository.save(UserNovel.create(
                 request.status(),
                 request.userNovelRating(),
-                request.startDate() != null
-                        ? convertToLocalDate(request.startDate())
-                        : null,
-                request.endDate() != null
-                        ? convertToLocalDate(request.endDate())
-                        : null,
+                request.startDate(),
+                request.endDate(),
                 user,
                 novel));
 
@@ -100,14 +96,7 @@ public class UserNovelService {
     }
 
     private void updateUserNovel(UserNovel userNovel, UserNovelUpdateRequest request) {
-        LocalDate startDate = request.startDate() == null
-                ? null
-                : convertToLocalDate(request.startDate());
-        LocalDate endDate = request.endDate() == null
-                ? null
-                : convertToLocalDate(request.endDate());
-
-        userNovel.updateUserNovel(request.userNovelRating(), request.status(), startDate, endDate);
+        userNovel.updateUserNovel(request.userNovelRating(), request.status(), request.startDate(), request.endDate());
     }
 
     private void updateUserNovelAttractivePoints(UserNovel userNovel, List<String> request) {
