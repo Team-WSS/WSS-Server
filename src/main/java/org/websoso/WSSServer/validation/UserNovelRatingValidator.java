@@ -11,9 +11,6 @@ public class UserNovelRatingValidator implements ConstraintValidator<UserNovelRa
 
     @Override
     public boolean isValid(Float value, ConstraintValidatorContext constraintValidatorContext) {
-        if (value == null) {
-            return true;
-        }
         return value >= 0.0 && value <= 5.0 && (value * 10) % 5 == 0;
     }
 }
