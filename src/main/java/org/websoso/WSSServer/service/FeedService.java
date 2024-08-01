@@ -20,6 +20,7 @@ import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedInfo;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.repository.FeedRepository;
@@ -187,6 +188,16 @@ public class FeedService {
             return (feedRepository.findFeeds(lastFeedId, userId, pageRequest));
         }
         return feedCategoryService.getFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest);
+    }
+
+    public NovelGetResponseFeedTab getNovelInfoFeedTab(User user, Long novelId, Long lastFeedId, int size) {
+
+        Slice<Feed> feeds = feedRepository.findFeedsByNovelId(novelId, lastFeedId,
+                user == null ? null : user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
+
+        List<FeedInfo> feedGetResponses = feeds.getContent().stream().map(feed -> createFeedInfo(feed, user)).toList();
+
+        return NovelGetResponseFeedTab.of(feeds.hasNext(), feedGetResponses);
     }
 
 }
