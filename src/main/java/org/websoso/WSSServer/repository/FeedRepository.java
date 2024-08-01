@@ -16,8 +16,8 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
             + "(:lastFeedId = 0 OR f.feedId < :lastFeedId) "
             + "AND f.isHidden = false "
             + "AND (:userId IS NULL "
-            + "OR (f.user.userId NOT IN (SELECT b.blockingId FROM Block b WHERE b.blockedId = :userId)) "
-            + "AND f.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = :userId)) "
+            + "OR (f.user.userId NOT IN (SELECT b.blockingId FROM Block b WHERE b.blockedId = :userId) "
+            + "AND f.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = :userId))) "
             + "ORDER BY f.feedId DESC")
     Slice<Feed> findFeeds(Long lastFeedId, Long userId, PageRequest pageRequest);
 
