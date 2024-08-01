@@ -8,7 +8,6 @@ import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
-import org.hibernate.annotations.ColumnDefault;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.validation.UserNovelRatingConstraint;
 
@@ -17,7 +16,6 @@ public record UserNovelCreateRequest(
         Long novelId,
 
         @UserNovelRatingConstraint
-        @ColumnDefault("0.0")
         Float userNovelRating,
 
         @NotNull(message = "읽기 상태는 null일 수 없습니다.")
