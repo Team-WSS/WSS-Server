@@ -3,6 +3,8 @@ package org.websoso.WSSServer.controller;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
+import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
+import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 
 import jakarta.validation.Valid;
 import java.security.Principal;
@@ -178,7 +180,7 @@ public class FeedController {
     public ResponseEntity<Void> reportFeedSpoiler(Principal principal,
                                                   @PathVariable("feedId") Long feedId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.reportFeedSpoiler(user, feedId);
+        feedService.reportFeed(user, feedId, SPOILER);
 
         return ResponseEntity
                 .status(CREATED)
@@ -189,7 +191,7 @@ public class FeedController {
     public ResponseEntity<Void> reportedFeedImpertinence(Principal principal,
                                                          @PathVariable("feedId") Long feedId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.reportFeedImpertinence(user, feedId);
+        feedService.reportFeed(user, feedId, IMPERTINENCE);
 
         return ResponseEntity
                 .status(CREATED)

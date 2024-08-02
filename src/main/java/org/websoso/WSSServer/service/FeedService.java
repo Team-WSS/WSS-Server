@@ -2,8 +2,6 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
-import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
-import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER_ACCESS;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
@@ -18,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
@@ -153,7 +152,7 @@ public class FeedService {
         return commentService.getComments(user, feed);
     }
 
-    public void reportFeedSpoiler(User user, Long feedId) {
+    public void reportFeed(User user, Long feedId, ReportedType reportedType) {
         Feed feed = getFeedOrException(feedId);
 
         checkHiddenFeed(feed);
@@ -163,26 +162,9 @@ public class FeedService {
             throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
         }
 
-        reportedFeedService.createReportedFeed(feed, user, SPOILER);
+        reportedFeedService.createReportedFeed(feed, user, reportedType);
 
-        if (reportedFeedService.shouldHideFeed(feed, SPOILER)) {
-            feed.hideFeed();
-        }
-    }
-
-    public void reportFeedImpertinence(User user, Long feedId) {
-        Feed feed = getFeedOrException(feedId);
-
-        checkHiddenFeed(feed);
-        checkBlockedRelationship(feed.getUser(), user);
-
-        if (isUserFeedOwner(feed.getUser(), user)) {
-            throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
-        }
-
-        reportedFeedService.createReportedFeed(feed, user, IMPERTINENCE);
-
-        if (reportedFeedService.shouldHideFeed(feed, IMPERTINENCE)) {
+        if (reportedFeedService.shouldHideFeed(feed, reportedType)) {
             feed.hideFeed();
         }
     }
