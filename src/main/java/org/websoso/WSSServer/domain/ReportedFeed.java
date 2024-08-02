@@ -27,7 +27,7 @@ public class ReportedFeed {
     private Long reportedFeedId;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "varchar(12)", nullable = false)
+    @Column(nullable = false)
     private ReportedType reportedType;
 
     @ManyToOne(fetch = FetchType.LAZY)
