@@ -88,8 +88,7 @@ public class UserNovelService {
         }
 
         updateUserNovel(userNovel, request);
-        updateUserNovelAttractivePoints(userNovel, request.attractivePoints());
-        updateUserNovelKeywords(userNovel, request.keywordIds());
+        updateAssociations(userNovel, request);
 
     }
 
@@ -97,14 +96,36 @@ public class UserNovelService {
         userNovel.updateUserNovel(request.userNovelRating(), request.status(), request.startDate(), request.endDate());
     }
 
-    private void updateUserNovelAttractivePoints(UserNovel userNovel, List<String> request) {
+    private void updateAssociations(UserNovel userNovel, UserNovelUpdateRequest request) {
 
-        Set<AttractivePoint> previousAttractivePoints = userNovel.getUserNovelAttractivePoints()
+        Set<AttractivePoint> previousAttractivePoints = getPreviousAttractivePoints(userNovel);
+        Set<Keyword> previousKeywords = getPreviousKeywords(userNovel);
+
+        manageAttractivePoints(userNovel, request.attractivePoints(), previousAttractivePoints);
+        manageKeywords(userNovel, request.keywordIds(), previousKeywords);
+
+        userNovelAttractivePointRepository.deleteByAttractivePointsAndUserNovel(previousAttractivePoints, userNovel);
+        userNovelKeywordRepository.deleteByKeywordsAndUserNovel(previousKeywords, userNovel);
+
+    }
+
+    private Set<AttractivePoint> getPreviousAttractivePoints(UserNovel userNovel) {
+        return userNovel.getUserNovelAttractivePoints()
                 .stream()
                 .map(UserNovelAttractivePoint::getAttractivePoint)
                 .collect(Collectors.toSet());
+    }
 
-        for (String stringAttractivePoint : request) {
+    private Set<Keyword> getPreviousKeywords(UserNovel userNovel) {
+        return userNovel.getUserNovelKeywords()
+                .stream()
+                .map(UserNovelKeyword::getKeyword)
+                .collect(Collectors.toSet());
+    }
+
+    private void manageAttractivePoints(UserNovel userNovel, List<String> attractivePoints,
+                                        Set<AttractivePoint> previousAttractivePoints) {
+        for (String stringAttractivePoint : attractivePoints) {
             AttractivePoint attractivePoint = attractivePointService.getAttractivePointByString(stringAttractivePoint);
             if (previousAttractivePoints.contains(attractivePoint)) {
                 previousAttractivePoints.remove(attractivePoint);
@@ -112,19 +133,10 @@ public class UserNovelService {
                 userNovelAttractivePointRepository.save(UserNovelAttractivePoint.create(userNovel, attractivePoint));
             }
         }
-
-        userNovelAttractivePointRepository.deleteByAttractivePointsAndUserNovel(previousAttractivePoints, userNovel);
-
     }
 
-    private void updateUserNovelKeywords(UserNovel userNovel, List<Integer> request) {
-
-        Set<Keyword> previousKeywords = userNovel.getUserNovelKeywords()
-                .stream()
-                .map(UserNovelKeyword::getKeyword)
-                .collect(Collectors.toSet());
-
-        for (Integer keywordId : request) {
+    private void manageKeywords(UserNovel userNovel, List<Integer> keywordIds, Set<Keyword> previousKeywords) {
+        for (Integer keywordId : keywordIds) {
             Keyword keyword = keywordService.getKeywordOrException(keywordId);
             if (previousKeywords.contains(keyword)) {
                 previousKeywords.remove(keyword);
@@ -132,9 +144,6 @@ public class UserNovelService {
                 userNovelKeywordRepository.save(UserNovelKeyword.create(userNovel, keyword));
             }
         }
-
-        userNovelKeywordRepository.deleteByKeywordsAndUserNovel(previousKeywords, userNovel);
-
     }
 
     private void createUserNovelAttractivePoints(UserNovel userNovel, List<String> request) {
