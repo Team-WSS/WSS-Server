@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.common.Message;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
@@ -46,6 +47,7 @@ public class FeedService {
     private final PopularFeedService popularFeedService;
     private final CommentService commentService;
     private final ReportedFeedService reportedFeedService;
+    private final MessageService messageService;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
@@ -166,6 +168,8 @@ public class FeedService {
 
         if (reportedFeedService.shouldHideFeed(feed, reportedType)) {
             feed.hideFeed();
+            messageService.sendMessage(Message.of(
+                    "피드 ID : " + feedId + " - " + reportedType.getDescription() + " 신고 누적 3회로 인해 해당 피드가 숨김처리 되었습니다."));
         }
     }
 
