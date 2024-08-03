@@ -48,6 +48,7 @@ public class FeedService {
     private final CommentService commentService;
     private final ReportedFeedService reportedFeedService;
     private final MessageService messageService;
+    private final CommentService commentService;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
@@ -171,6 +172,15 @@ public class FeedService {
         }
 
         messageService.sendMessage(Message.of(MessageFormatter.formatFeedReportMessage(feed, reportedType)));
+    }
+
+    public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
+        Feed feed = getFeedOrException(feedId);
+
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
+
+        commentService.createReportedComment(feed, commentId, user, reportedType);
     }
 
     private Feed getFeedOrException(Long feedId) {

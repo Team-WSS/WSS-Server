@@ -197,4 +197,28 @@ public class FeedController {
                 .status(CREATED)
                 .build();
     }
+
+    @PostMapping("/{feedId}/comments/{commentId}/spoiler")
+    public ResponseEntity<Void> reportCommentSpoiler(Principal principal,
+                                                     @PathVariable("feedId") Long feedId,
+                                                     @PathVariable("commentId") Long commentId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.reportComment(user, feedId, commentId, SPOILER);
+
+        return ResponseEntity
+                .status(CREATED)
+                .build();
+    }
+
+    @PostMapping("/{feedId}/comments/{commentId}/impertinence")
+    public ResponseEntity<Void> reportCommentImpertinence(Principal principal,
+                                                          @PathVariable("feedId") Long feedId,
+                                                          @PathVariable("commentId") Long commentId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.reportComment(user, feedId, commentId, IMPERTINENCE);
+
+        return ResponseEntity
+                .status(CREATED)
+                .build();
+    }
 }
