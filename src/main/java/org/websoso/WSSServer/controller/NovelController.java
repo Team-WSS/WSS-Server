@@ -51,10 +51,10 @@ public class NovelController {
     }
 
     @GetMapping("/{novelId}/feeds")
-    public ResponseEntity<NovelGetResponseFeedTab> getNovelInfoFeedTab(Principal principal,
-                                                                       @PathVariable Long novelId,
-                                                                       @RequestParam("lastFeedId") Long lastFeedId,
-                                                                       @RequestParam("size") int size) {
+    public ResponseEntity<NovelGetResponseFeedTab> getFeedsByNovel(Principal principal,
+                                                                   @PathVariable Long novelId,
+                                                                   @RequestParam("lastFeedId") Long lastFeedId,
+                                                                   @RequestParam("size") int size) {
 
         User user = principal == null
                 ? null
@@ -62,7 +62,7 @@ public class NovelController {
 
         return ResponseEntity
                 .status(OK)
-                .body(feedService.getNovelInfoFeedTab(user, novelId, lastFeedId, size));
+                .body(feedService.getFeedsByNovel(user, novelId, lastFeedId, size));
     }
 
     @PostMapping("/{novelId}/is-interest")

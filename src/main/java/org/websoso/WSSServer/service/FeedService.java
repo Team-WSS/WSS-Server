@@ -190,7 +190,7 @@ public class FeedService {
         return feedCategoryService.getFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest);
     }
 
-    public NovelGetResponseFeedTab getNovelInfoFeedTab(User user, Long novelId, Long lastFeedId, int size) {
+    public NovelGetResponseFeedTab getFeedsByNovel(User user, Long novelId, Long lastFeedId, int size) {
 
         Slice<Feed> feeds = feedRepository.findFeedsByNovelId(novelId, lastFeedId,
                 user == null ? null : user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
