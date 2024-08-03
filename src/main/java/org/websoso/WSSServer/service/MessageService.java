@@ -33,7 +33,6 @@ public class MessageService {
                     String.class
             );
 
-            // response에 대한 처리
             if (response.getStatusCode().value() != NO_CONTENT.value()) {
                 log.error("메시지 전송 이후 에러 발생");
             }
