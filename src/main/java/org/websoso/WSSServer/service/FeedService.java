@@ -168,9 +168,9 @@ public class FeedService {
 
         if (reportedFeedService.shouldHideFeed(feed, reportedType)) {
             feed.hideFeed();
-            messageService.sendMessage(Message.of(
-                    "피드 ID : " + feedId + " - " + reportedType.getDescription() + " 신고 누적 3회로 인해 해당 피드가 숨김처리 되었습니다."));
         }
+
+        messageService.sendMessage(Message.of(MessageFormatter.formatFeedReportMessage(feed, reportedType)));
     }
 
     private Feed getFeedOrException(Long feedId) {
