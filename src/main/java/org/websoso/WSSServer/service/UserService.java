@@ -7,13 +7,13 @@ import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_PROF
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.Avatar;
+import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
@@ -94,17 +94,7 @@ public class UserService {
     public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
         validateNickname(registerUserInfoRequest.nickname());
         user.updateUserInfo(registerUserInfoRequest);
-
-        List<GenrePreference> preferGenres = registerUserInfoRequest.genrePreferences()
-                .stream()
-                .map(preferGenreName -> genreRepository.findByGenreName(preferGenreName)
-                        .map(genre -> GenrePreference.create(user, genre))
-                        .orElseThrow(
-                                () -> new CustomGenreException(GENRE_NOT_FOUND,
-                                        "genre with the given genreName is not found"))
-                )
-                .collect(Collectors.toList());
-
+        List<GenrePreference> preferGenres = createGenrePreferences(user, registerUserInfoRequest.genrePreferences());
         genrePreferenceRepository.saveAll(preferGenres);
     }
 
@@ -112,5 +102,19 @@ public class UserService {
         if (userRepository.existsByNickname(nickname)) {
             throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
         }
+    }
+
+    private List<GenrePreference> createGenrePreferences(User user, List<String> genreNames) {
+        return genreNames
+                .stream()
+                .map(this::findByGenreNameOrThrow)
+                .map(genre -> GenrePreference.create(user, genre))
+                .toList();
+    }
+
+    private Genre findByGenreNameOrThrow(String genreName) {
+        return genreRepository.findByGenreName(genreName)
+                .orElseThrow(() ->
+                        new CustomGenreException(GENRE_NOT_FOUND, "genre with the given genreName is not found"));
     }
 }
