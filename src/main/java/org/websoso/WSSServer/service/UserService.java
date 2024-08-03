@@ -3,7 +3,7 @@ package org.websoso.WSSServer.service;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
-import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_PROFILE_STATUS;
+import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import java.util.List;
@@ -70,7 +70,7 @@ public class UserService {
 
     public void editProfileStatus(User user, EditProfileStatusRequest editProfileStatusRequest) {
         if (user.getIsProfilePublic().equals(editProfileStatusRequest.isProfilePublic())) {
-            throw new CustomUserException(INVALID_PROFILE_STATUS, "profile status with given is already set");
+            throw new CustomUserException(ALREADY_SET_PROFILE_STATUS, "profile status with given is already set");
         }
         user.updateProfileStatus(editProfileStatusRequest.isProfilePublic());
     }
