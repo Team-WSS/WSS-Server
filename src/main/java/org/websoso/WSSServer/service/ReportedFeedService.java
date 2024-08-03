@@ -20,7 +20,7 @@ public class ReportedFeedService {
     private final ReportedFeedRepository reportedFeedRepository;
 
     public void createReportedFeed(Feed feed, User user, ReportedType reportedType) {
-        if (reportedFeedRepository.existsByFeedAndUser(feed, user)) {
+        if (reportedFeedRepository.existsByFeedAndUserAndReportedType(feed, user, reportedType)) {
             throw new CustomFeedException(ALREADY_REPORTED_FEED, "feed has already been reported by the user");
         }
 
