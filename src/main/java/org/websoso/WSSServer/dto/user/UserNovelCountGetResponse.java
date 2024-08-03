@@ -5,5 +5,6 @@ public record UserNovelCountGetResponse(
         Integer interestNovelCount,
         Integer watchingNovelCount,
         Integer watchedNovelCount,
-        Integer quitNovelCount) {
+        Integer quitNovelCount
+) {
 }
