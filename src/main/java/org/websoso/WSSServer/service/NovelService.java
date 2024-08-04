@@ -86,7 +86,8 @@ public class NovelService {
     }
 
     private String getNovelGenreNames(List<NovelGenre> novelGenres) {
-        return novelGenres.stream().map(novelGenre -> novelGenre.getGenre().getGenreName())
+        return novelGenres.stream()
+                .map(novelGenre -> novelGenre.getGenre().getGenreName())
                 .collect(Collectors.joining("/"));
     }
 
@@ -146,7 +147,8 @@ public class NovelService {
     }
 
     private List<PlatformGetResponse> getPlatforms(Novel novel) {
-        return novelPlatformRepository.findAllByNovel(novel).stream().map(PlatformGetResponse::of)
+        return novelPlatformRepository.findAllByNovel(novel).stream()
+                .map(PlatformGetResponse::of)
                 .collect(Collectors.toList());
     }
 
@@ -238,7 +240,8 @@ public class NovelService {
 
         Page<Novel> novels = novelRepository.findSearchedNovels(pageRequest, query);
 
-        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream().map(this::convertToDTO)
+        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream()
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
 
         return SearchedNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
@@ -248,10 +251,19 @@ public class NovelService {
 
         List<UserNovel> userNovels = novel.getUserNovels();
 
-        long interestCount = userNovels.stream().filter(UserNovel::getIsInterest).count();
-        long novelRatingCount = userNovels.stream().filter(un -> un.getUserNovelRating() != 0.0f).count();
-        double novelRatingSum = userNovels.stream().filter(un -> un.getUserNovelRating() != 0.0f)
-                .mapToDouble(UserNovel::getUserNovelRating).sum();
+        long interestCount = userNovels.stream()
+                .filter(UserNovel::getIsInterest)
+                .count();
+
+        long novelRatingCount = userNovels.stream()
+                .filter(un -> un.getUserNovelRating() != 0.0f)
+                .count();
+
+        double novelRatingSum = userNovels.stream()
+                .filter(un -> un.getUserNovelRating() != 0.0f)
+                .mapToDouble(UserNovel::getUserNovelRating)
+                .sum();
+
         Float novelRatingAverage = novelRatingCount == 0 ? 0.0f
                 : Math.round((float) (novelRatingSum / novelRatingCount) * 10.0f) / 10.0f;
 
