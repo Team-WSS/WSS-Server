@@ -30,7 +30,8 @@ public class SecurityConfig {
             "/novels/{novelId}",
             "/novels/{novelId}/info",
             "/soso-picks",
-            "/feeds"
+            "/feeds",
+            "/feeds/popular"
     };
 
     @Bean

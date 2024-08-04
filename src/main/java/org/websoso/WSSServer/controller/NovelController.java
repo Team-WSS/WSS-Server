@@ -69,5 +69,4 @@ public class NovelController {
                 .status(NO_CONTENT)
                 .build();
     }
-
 }
