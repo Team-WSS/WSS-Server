@@ -34,21 +34,15 @@ public class CommentService {
 
     public void updateComment(Long userId, Feed feed, Long commentId, String commentContent) {
         Comment comment = getCommentOrException(commentId);
-
         comment.validateFeedAssociation(feed);
-
         comment.validateUserAuthorization(userId, UPDATE);
-
         comment.updateContent(commentContent);
     }
 
     public void deleteComment(Long userId, Feed feed, Long commentId) {
         Comment comment = getCommentOrException(commentId);
-
         comment.validateFeedAssociation(feed);
-
         comment.validateUserAuthorization(userId, DELETE);
-
         commentRepository.delete(comment);
     }
 
