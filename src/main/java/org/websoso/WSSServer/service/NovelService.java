@@ -240,9 +240,9 @@ public class NovelService {
     @Transactional(readOnly = true)
     public PopularNovelsGetResponse getTodayPopularNovels() {
         List<Long> novelIdsFromPopularNovel = getNovelIdsFromPopularNovel();
-        List<Long> selectedPopularNovelIds = getSelectedPopularNovelIds(novelIdsFromPopularNovel);
-        List<Novel> popularNovels = getSelectedPopularNovels(selectedPopularNovelIds);
-        List<Feed> popularFeedsFromPopularNovels = getPopularFeedsFromPopularNovels(selectedPopularNovelIds);
+        List<Long> selectedNovelIdsFromPopularNovel = getSelectedNovelIdsFromPopularNovel(novelIdsFromPopularNovel);
+        List<Novel> popularNovels = getSelectedPopularNovels(selectedNovelIdsFromPopularNovel);
+        List<Feed> popularFeedsFromPopularNovels = getPopularFeedsFromPopularNovels(selectedNovelIdsFromPopularNovel);
 
         Map<Long, Feed> feedMap = createFeedMap(popularFeedsFromPopularNovels);
         Map<Byte, Avatar> avatarMap = createAvatarMap(feedMap);
@@ -257,7 +257,7 @@ public class NovelService {
                 .toList());
     }
 
-    private static List<Long> getSelectedPopularNovelIds(List<Long> popularNovelIds) {
+    private static List<Long> getSelectedNovelIdsFromPopularNovel(List<Long> popularNovelIds) {
         Collections.shuffle(popularNovelIds);
         return popularNovelIds.size() > 10
                 ? popularNovelIds.subList(0, 10)
