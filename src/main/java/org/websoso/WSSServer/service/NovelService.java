@@ -238,6 +238,10 @@ public class NovelService {
 
         PageRequest pageRequest = PageRequest.of(page, size);
 
+        if(query.isEmpty() || query.isBlank()){
+            return SearchedNovelsGetResponse.of(0L, false, Collections.emptyList());
+        }
+
         Page<Novel> novels = novelRepository.findSearchedNovels(pageRequest, query);
 
         List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream()
