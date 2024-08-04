@@ -4,7 +4,7 @@ import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.exception.error.CustomCommentError.COMMENT_NOT_FOUND;
 
-import java.util.ArrayList;
+import java.util.AbstractMap;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -49,16 +49,18 @@ public class CommentService {
     @Transactional(readOnly = true)
     public CommentsGetResponse getComments(User user, Feed feed) {
         List<Comment> comments = feed.getComments();
-        List<CommentGetResponse> responses = new ArrayList<>();
 
-        for (Comment comment : comments) {
-            User createdUser = userService.getUserOrException(comment.getUserId());
-            if (comment.getIsHidden() || isBlocked(createdUser, user)) {
-                continue;
-            }
-            responses.add(CommentGetResponse.of(getUserBasicInfo(createdUser), comment,
-                    isUserCommentOwner(createdUser, user)));
-        }
+        List<CommentGetResponse> responses = comments
+                .stream()
+                .map(comment -> new AbstractMap.SimpleEntry<>(
+                        comment, userService.getUserOrException(comment.getUserId())
+                ))
+                .filter(entry -> !entry.getKey().getIsHidden() && !isBlocked(entry.getValue(), user))
+                .map(entry -> CommentGetResponse.of(
+                        getUserBasicInfo(entry.getValue()),
+                        entry.getKey(),
+                        isUserCommentOwner(entry.getValue(), user)))
+                .toList();
 
         return CommentsGetResponse.of(comments.size(), responses);
     }
