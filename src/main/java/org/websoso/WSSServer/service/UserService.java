@@ -2,8 +2,9 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
+import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_NICKNAME;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_PROFILE_STATUS;
+import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import java.util.List;
@@ -43,8 +44,13 @@ public class UserService {
     private final GenreRepository genreRepository;
 
     @Transactional(readOnly = true)
-    public NicknameValidation isNicknameAvailable(String nickname) {
-        validateNickname(nickname);
+    public NicknameValidation isNicknameAvailable(User user, String nickname) {
+        if (user.getNickname() != null && user.getNickname().equals(nickname)) {
+            throw new CustomUserException(ALREADY_SET_NICKNAME, "nickname with given is already set");
+        }
+        if (userRepository.existsByNickname(nickname)) {
+            throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
+        }
         return NicknameValidation.of(true);
     }
 
