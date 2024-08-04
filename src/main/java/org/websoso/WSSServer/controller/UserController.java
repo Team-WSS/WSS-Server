@@ -107,3 +107,4 @@ public class UserController {
                 .status(OK)
                 .body(userNovelService.getUserNovelStatistics(user));
     }
+}
