@@ -29,7 +29,8 @@ public class NovelController {
     private final UserService userService;
 
     @GetMapping("/{novelId}")
-    public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(Principal principal, @PathVariable Long novelId) {
+    public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(Principal principal,
+                                                                   @PathVariable Long novelId) {
         if (principal == null) {
             return ResponseEntity
                     .status(OK)
@@ -74,7 +75,8 @@ public class NovelController {
 
     @GetMapping
     public ResponseEntity<SearchedNovelsGetResponse> searchNovels(@RequestParam(required = false) String query,
-                                                                  @RequestParam int page, @RequestParam int size) {
+                                                                  @RequestParam int page,
+                                                                  @RequestParam int size) {
 
         return ResponseEntity
                 .status(OK)
