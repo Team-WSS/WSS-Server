@@ -222,10 +222,11 @@ public class FeedService {
     }
 
     private void validateFeedAccess(Feed feed, User user) {
-        if (!feed.getUser().equals(user)) {
-            checkHiddenFeed(feed);
-            checkBlockedRelationship(feed.getUser(), user);
+        if (feed.getUser().equals(user)) {
+            return;
         }
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
     }
 
 }
