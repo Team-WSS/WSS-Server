@@ -21,7 +21,7 @@ public record PopularNovelGetResponse(
                     novel.getNovelImage(),
                     null,
                     null,
-                    null
+                    novel.getNovelDescription()
             );
         }
         return new PopularNovelGetResponse(
