@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.dto.comment;
 
-import java.time.format.DateTimeFormatter;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDate;
 import org.websoso.WSSServer.domain.Comment;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 
@@ -9,7 +10,8 @@ public record CommentGetResponse(
         String nickname,
         String avatarImage,
         Long commentId,
-        String createdDate,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "M월 d일", timezone = "Asia/Seoul")
+        LocalDate createdDate,
         String commentContent,
         Boolean isModified,
         Boolean isMyComment
@@ -20,7 +22,7 @@ public record CommentGetResponse(
                 userBasicInfo.nickname(),
                 userBasicInfo.avatarImage(),
                 comment.getCommentId(),
-                comment.getCreatedDate().format(DateTimeFormatter.ofPattern("M월 d일")),
+                comment.getCreatedDate().toLocalDate(),
                 comment.getCommentContent(),
                 !comment.getCreatedDate().equals(comment.getModifiedDate()),
                 isMyComment
