@@ -1,5 +1,8 @@
 package org.websoso.WSSServer.repository;
 
+import static org.websoso.WSSServer.domain.QNovel.novel;
+import static org.websoso.WSSServer.domain.QUserNovel.userNovel;
+
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberTemplate;
@@ -13,8 +16,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Novel;
-import org.websoso.WSSServer.domain.QNovel;
-import org.websoso.WSSServer.domain.QUserNovel;
 
 @Repository
 @RequiredArgsConstructor
@@ -24,9 +25,6 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
     @Override
     public Page<Novel> findSearchedNovels(Pageable pageable, String query) {
-
-        QNovel novel = QNovel.novel;
-        QUserNovel userNovel = QUserNovel.userNovel;
 
         if (query.isEmpty() || query.isBlank()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
