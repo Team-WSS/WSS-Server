@@ -2,7 +2,6 @@ package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -39,7 +38,7 @@ public class Novel {
     @Column(columnDefinition = "Boolean default false", nullable = false)
     private Boolean isCompleted;
 
-    @OneToMany(mappedBy = "novel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "novel", fetch = FetchType.LAZY)
     private List<UserNovel> userNovels = new ArrayList<>();
 
 }
