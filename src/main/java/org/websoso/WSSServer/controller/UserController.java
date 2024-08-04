@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.controller;
 
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -22,6 +23,7 @@ import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
+import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.service.UserService;
 import org.websoso.WSSServer.validation.NicknameConstraint;
 
@@ -34,12 +36,13 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/nickname/check")
-    public ResponseEntity<NicknameValidation> checkNicknameAvailability(
-            @RequestParam("nickname")
-            @NicknameConstraint String nickname) {
+    public ResponseEntity<NicknameValidation> checkNicknameAvailability(Principal principal,
+                                                                        @RequestParam("nickname")
+                                                                        @NicknameConstraint String nickname) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body(userService.isNicknameAvailable(nickname));
+                .body(userService.isNicknameAvailable(user, nickname));
     }
 
     @GetMapping("/email")
@@ -82,5 +85,15 @@ public class UserController {
         return ResponseEntity
                 .status(OK)
                 .body(userService.getMyProfileInfo(user));
+    }
+
+    @PostMapping("/profile")
+    public ResponseEntity<Void> registerUserInfo(Principal principal,
+                                                 @Valid @RequestBody RegisterUserInfoRequest registerUserInfoRequest) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        userService.registerUserInfo(user, registerUserInfoRequest);
+        return ResponseEntity
+                .status(CREATED)
+                .build();
     }
 }

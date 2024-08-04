@@ -7,6 +7,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NO
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -119,12 +120,16 @@ public class UserNovelService {
     @Transactional(readOnly = true)
     public UserNovelGetResponse getUserNovelInfo(User user, Novel novel) {
 
-        UserNovel userNovel = getUserNovelOrException(user, novel);
+        UserNovel userNovel = getUserNovelOrNull(user, novel);
+
+        if (userNovel == null) {
+            return UserNovelGetResponse.of(novel, null, Collections.emptyList(), Collections.emptyList());
+        }
 
         List<String> attractivePoints = getStringAttractivePoints(userNovel);
         List<KeywordGetResponse> keywords = getKeywordGetResponses(userNovel);
 
-        return UserNovelGetResponse.of(userNovel, attractivePoints, keywords);
+        return UserNovelGetResponse.of(novel, userNovel, attractivePoints, keywords);
     }
 
     private List<String> getStringAttractivePoints(UserNovel userNovel) {

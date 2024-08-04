@@ -30,6 +30,7 @@ public class SecurityConfig {
             "/novels/{novelId}",
             "/novels/{novelId}/info",
             "/soso-picks",
+            "/feeds",
             "/feeds/popular"
     };
 

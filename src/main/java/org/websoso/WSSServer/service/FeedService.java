@@ -8,6 +8,8 @@ import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
@@ -15,7 +17,9 @@ import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
+import org.websoso.WSSServer.dto.feed.FeedInfo;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
+import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.repository.FeedRepository;
@@ -25,6 +29,8 @@ import org.websoso.WSSServer.repository.FeedRepository;
 @Transactional
 public class FeedService {
 
+    private static final String DEFAULT_CATEGORY = "all";
+    private static final int DEFAULT_PAGE_NUMBER = 0;
     private final FeedRepository feedRepository;
     private final FeedCategoryService feedCategoryService;
     private final NovelService novelService;
@@ -114,6 +120,18 @@ public class FeedService {
         return FeedGetResponse.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed);
     }
 
+    @Transactional(readOnly = true)
+    public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size) {
+        Slice<Feed> feeds = findFeedsByCategoryLabel(category == null ? DEFAULT_CATEGORY : category,
+                lastFeedId, user == null ? null : user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
+
+        List<FeedInfo> feedGetResponses = feeds.getContent().stream()
+                .map(feed -> createFeedInfo(feed, user)).toList();
+
+        return FeedsGetResponse.of(category == null ? DEFAULT_CATEGORY : category, feeds.hasNext(),
+                feedGetResponses);
+    }
+
     private Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() ->
                 new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
@@ -151,6 +169,24 @@ public class FeedService {
 
     private Boolean isUserFeedOwner(User createdUser, User user) {
         return createdUser.equals(user);
+    }
+
+    private FeedInfo createFeedInfo(Feed feed, User user) {
+        UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
+        Novel novel = getLinkedNovelOrNull(feed.getNovelId());
+        Boolean isLiked = user != null && isUserLikedFeed(user, feed);
+        List<String> relevantCategories = feedCategoryService.getRelevantCategoryNames(feed.getFeedCategories());
+        Boolean isMyFeed = user != null && isUserFeedOwner(feed.getUser(), user);
+
+        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed);
+    }
+
+    private Slice<Feed> findFeedsByCategoryLabel(String category, Long lastFeedId, Long userId,
+                                                 PageRequest pageRequest) {
+        if (category.equals(DEFAULT_CATEGORY)) {
+            return (feedRepository.findFeeds(lastFeedId, userId, pageRequest));
+        }
+        return feedCategoryService.getFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest);
     }
 
 }

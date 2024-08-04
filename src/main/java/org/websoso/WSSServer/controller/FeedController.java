@@ -15,11 +15,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
+import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.PopularFeedService;
@@ -109,4 +111,17 @@ public class FeedController {
                 .status(OK)
                 .body(popularFeedService.getPopularFeeds(user));
     }
+
+    @GetMapping
+    public ResponseEntity<FeedsGetResponse> getFeeds(Principal principal,
+                                                     @RequestParam("category") String category,
+                                                     @RequestParam("lastFeedId") Long lastFeedId,
+                                                     @RequestParam("size") int size) {
+        User user = principal == null ? null : userService.getUserOrException(Long.valueOf(principal.getName()));
+
+        return ResponseEntity
+                .status(OK)
+                .body(feedService.getFeeds(user, category, lastFeedId, size));
+    }
+  
 }
