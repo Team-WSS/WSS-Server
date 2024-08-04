@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Target({FIELD})
 @Retention(RUNTIME)
 public @interface BirthConstraint {
-    String message() default "출생연도는 1900 ~ 2024 사이여야 합니다.";
+    String message() default "유효하지 않은 출생년도입니다.";
 
     Class<?>[] groups() default {};
 
