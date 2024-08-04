@@ -1,12 +1,13 @@
 package org.websoso.WSSServer.repository;
 
+import static org.websoso.WSSServer.domain.QUserNovel.userNovel;
+
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import org.websoso.WSSServer.domain.QUserNovel;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 
 @Repository
@@ -17,7 +18,6 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
 
     @Override
     public List<Long> findTodayPopularNovelsId(Pageable pageable) {
-        QUserNovel userNovel = QUserNovel.userNovel;
         LocalDate sevenDaysAgo = LocalDate.now().minusDays(7);
 
         return jpaQueryFactory
