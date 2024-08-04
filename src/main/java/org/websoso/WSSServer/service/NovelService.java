@@ -239,8 +239,8 @@ public class NovelService {
 
     @Transactional(readOnly = true)
     public PopularNovelsGetResponse getTodayPopularNovels() {
-        List<Long> popularNovelIds = getPopularNovelIds();
-        List<Long> selectedPopularNovelIds = getSelectedPopularNovelIds(popularNovelIds);
+        List<Long> novelIdsFromPopularNovel = getNovelIdsFromPopularNovel();
+        List<Long> selectedPopularNovelIds = getSelectedPopularNovelIds(novelIdsFromPopularNovel);
         List<Novel> popularNovels = getSelectedPopularNovels(selectedPopularNovelIds);
         List<Feed> popularFeedsFromPopularNovels = getPopularFeedsFromPopularNovels(selectedPopularNovelIds);
 
@@ -250,7 +250,7 @@ public class NovelService {
         return createPopularNovelsGetResponse(popularNovels, feedMap, avatarMap);
     }
 
-    private List<Long> getPopularNovelIds() {
+    private List<Long> getNovelIdsFromPopularNovel() {
         return new ArrayList<>(popularNovelRepository.findAll()
                 .stream()
                 .map(PopularNovel::getNovelId)
