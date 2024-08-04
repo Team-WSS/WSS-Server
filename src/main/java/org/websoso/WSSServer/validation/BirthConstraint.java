@@ -1,7 +1,6 @@
 package org.websoso.WSSServer.validation;
 
 import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import jakarta.validation.Constraint;
@@ -11,12 +10,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 @Documented
-@Constraint(validatedBy = NicknameValidator.class)
-@Target({PARAMETER, FIELD})
+@Constraint(validatedBy = BirthValidator.class)
+@Target({FIELD})
 @Retention(RUNTIME)
-public @interface NicknameConstraint {
-
-    String message() default "invalid nickname";
+public @interface BirthConstraint {
+    String message() default "유효하지 않은 출생년도입니다.";
 
     Class<?>[] groups() default {};
 
