@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Category;
@@ -29,8 +31,13 @@ public class FeedCategoryService {
     }
 
     public void updateFeedCategory(Feed feed, List<String> relevantCategories) {
-        Set<Category> categories = feedcategoryRepository.findByFeed(feed).orElseThrow(
-                        () -> new CustomCategoryException(CATEGORY_NOT_FOUND, "Category for the given feed was not found"))
+        List<FeedCategory> feedCategories = feedcategoryRepository.findByFeed(feed);
+
+        if (feedCategories.isEmpty()) {
+            throw new CustomCategoryException(CATEGORY_NOT_FOUND, "Category for the given feed was not found");
+        }
+
+        Set<Category> categories = feedCategories
                 .stream()
                 .map(FeedCategory::getCategory).collect(Collectors.toSet());
 
@@ -55,6 +62,13 @@ public class FeedCategoryService {
         return feedCategories.stream()
                 .map(feedCategory -> feedCategory.getCategory().getCategoryName().getLabel())
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Slice<Feed> getFeedsByCategoryLabel(String category, Long lastFeedId, Long userId,
+                                               PageRequest pageRequest) {
+        return feedcategoryRepository.findFeedsByCategory(categoryservice.getCategory(category), lastFeedId,
+                userId, pageRequest);
     }
 
 }

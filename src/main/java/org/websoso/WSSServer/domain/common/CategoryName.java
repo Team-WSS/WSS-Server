@@ -1,8 +1,5 @@
 package org.websoso.WSSServer.domain.common;
 
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -10,24 +7,17 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum CategoryName {
 
-    RF("romanceFantasy"),
-    RO("romance"),
-    FA("fantasy"),
-    MF("modernFantasy"),
-    DR("drama"),
-    LN("lightNovel"),
-    WU("wuxia"),
-    MY("mystery"),
+    romanceFantasy("로판"),
+    romance("로맨스"),
+    fantasy("판타지"),
+    modernFantasy("현판"),
+    drama("드라마"),
+    lightNovel("라이트노벨"),
+    wuxia("무협"),
+    mystery("미스터리"),
     BL("BL"),
-    ETC("etc");
+    etc("기타");
 
     private final String label;
-
-    private static final Map<String, CategoryName> BY_LABEL =
-            Stream.of(values()).collect(Collectors.toMap(CategoryName::getLabel, e -> e));
-
-    public static CategoryName of(String label) {
-        return BY_LABEL.get(label);
-    }
 
 }

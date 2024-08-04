@@ -83,6 +83,13 @@ public class UserNovel extends BaseEntity {
         this.isInterest = isInterest;
     }
 
+    public void updateUserNovel(Float userNovelRating, ReadStatus status, LocalDate startDate, LocalDate endDate) {
+        this.userNovelRating = userNovelRating;
+        this.status = status;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
     public void deleteEvaluation() {
         this.status = null;
         this.userNovelRating = 0.0f;
