@@ -31,4 +31,12 @@ public class GenrePreference {
     @JoinColumn(name = "genre_id", nullable = false)
     private Genre genre;
 
+    private GenrePreference(User user, Genre genre) {
+        this.user = user;
+        this.genre = genre;
+    }
+
+    public static GenrePreference create(User user, Genre genre) {
+        return new GenrePreference(user, genre);
+    }
 }

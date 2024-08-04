@@ -1,8 +1,10 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_NICKNAME;
+import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
-import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import java.util.List;
@@ -12,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.Avatar;
+import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
-import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.EmailGetResponse;
@@ -21,9 +23,13 @@ import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
+import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
+import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.AvatarRepository;
+import org.websoso.WSSServer.repository.GenrePreferenceRepository;
+import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Service
@@ -35,9 +41,13 @@ public class UserService {
     private final JwtProvider jwtProvider;
     private final AvatarRepository avatarRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
+    private final GenreRepository genreRepository;
 
     @Transactional(readOnly = true)
-    public NicknameValidation isNicknameAvailable(String nickname) {
+    public NicknameValidation isNicknameAvailable(User user, String nickname) {
+        if (user.getNickname() != null && user.getNickname().equals(nickname)) {
+            throw new CustomUserException(ALREADY_SET_NICKNAME, "nickname with given is already set");
+        }
         if (userRepository.existsByNickname(nickname)) {
             throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
         }
@@ -66,7 +76,7 @@ public class UserService {
 
     public void editProfileStatus(User user, EditProfileStatusRequest editProfileStatusRequest) {
         if (user.getIsProfilePublic().equals(editProfileStatusRequest.isProfilePublic())) {
-            throw new CustomUserException(INVALID_PROFILE_STATUS, "profile status with given is already set");
+            throw new CustomUserException(ALREADY_SET_PROFILE_STATUS, "profile status with given is already set");
         }
         user.updateProfileStatus(editProfileStatusRequest.isProfilePublic());
     }
@@ -85,5 +95,32 @@ public class UserService {
                         () -> new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
         List<GenrePreference> genrePreferences = genrePreferenceRepository.findByUser(user);
         return MyProfileResponse.of(user, avatar, genrePreferences);
+    }
+
+    public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
+        validateNickname(registerUserInfoRequest.nickname());
+        user.updateUserInfo(registerUserInfoRequest);
+        List<GenrePreference> preferGenres = createGenrePreferences(user, registerUserInfoRequest.genrePreferences());
+        genrePreferenceRepository.saveAll(preferGenres);
+    }
+
+    private void validateNickname(String nickname) {
+        if (userRepository.existsByNickname(nickname)) {
+            throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
+        }
+    }
+
+    private List<GenrePreference> createGenrePreferences(User user, List<String> genreNames) {
+        return genreNames
+                .stream()
+                .map(this::findByGenreNameOrThrow)
+                .map(genre -> GenrePreference.create(user, genre))
+                .toList();
+    }
+
+    private Genre findByGenreNameOrThrow(String genreName) {
+        return genreRepository.findByGenreName(genreName)
+                .orElseThrow(() ->
+                        new CustomGenreException(GENRE_NOT_FOUND, "genre with the given genreName is not found"));
     }
 }
