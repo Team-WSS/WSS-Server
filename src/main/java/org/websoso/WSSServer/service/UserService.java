@@ -103,9 +103,9 @@ public class UserService {
         checkIfAlreadySetOrThrow(user.getAvatarId(), updateMyProfileRequest.avatarId(),
                 ALREADY_SET_AVATAR, "avatarId with given is already set");
 
-        checkNicknameIfAlreadyExist(updateMyProfileRequest.nickname());
         checkIfAlreadySetOrThrow(user.getNickname(), updateMyProfileRequest.nickname(),
                 ALREADY_SET_NICKNAME, "nickname with given is already set");
+        checkNicknameIfAlreadyExist(updateMyProfileRequest.nickname());
 
         checkIfAlreadySetOrThrow(user.getIntro(), updateMyProfileRequest.intro(),
                 ALREADY_SET_INTRO, "intro with given is already set");
