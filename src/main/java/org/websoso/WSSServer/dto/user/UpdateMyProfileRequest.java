@@ -9,7 +9,7 @@ public record UpdateMyProfileRequest(
         @NicknameConstraint
         String nickname,
 
-        @Size(max = 60, message = "intro는 60자를 초과할 수 없습니다.")
+        @Size(max = 60, message = "소개글은 60자를 초과할 수 없습니다.")
         String intro
 ) {
 }
