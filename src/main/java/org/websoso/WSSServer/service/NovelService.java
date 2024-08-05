@@ -238,7 +238,7 @@ public class NovelService {
 
         PageRequest pageRequest = PageRequest.of(page, size);
 
-        if(query.isEmpty() || query.isBlank()){
+        if (query.isEmpty() || query.isBlank()) {
             return SearchedNovelsGetResponse.of(0L, false, Collections.emptyList());
         }
 
@@ -273,9 +273,9 @@ public class NovelService {
 
         return NovelGetResponsePreview.of(
                 novel,
-                (int) interestCount,
+                interestCount,
                 novelRatingAverage,
-                (int) novelRatingCount
+                novelRatingCount
         );
     }
 
