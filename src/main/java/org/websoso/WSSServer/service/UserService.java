@@ -51,9 +51,7 @@ public class UserService {
         if (user.getNickname() != null && user.getNickname().equals(nickname)) {
             throw new CustomUserException(ALREADY_SET_NICKNAME, "nickname with given is already set");
         }
-        if (userRepository.existsByNickname(nickname)) {
-            throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
-        }
+        checkNicknameIfAlreadyExist(nickname);
         return NicknameValidation.of(true);
     }
 
