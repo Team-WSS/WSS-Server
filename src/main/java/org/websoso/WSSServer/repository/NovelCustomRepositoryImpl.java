@@ -6,6 +6,7 @@ import static org.websoso.WSSServer.domain.QUserNovel.userNovel;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberTemplate;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -27,21 +28,12 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
         String searchQuery = query.replaceAll("\\s+", "");
 
-        StringTemplate cleanTitle = Expressions.stringTemplate(
-                "REPLACE(REPLACE({0}, ' ', ''), CHAR(9), '')",
-                novel.title
-        );
-        StringTemplate cleanAuthor = Expressions.stringTemplate(
-                "REPLACE(REPLACE({0}, ' ', ''), CHAR(9), '')",
-                novel.author
-        );
-
         NumberTemplate<Long> popularity = Expressions.numberTemplate(Long.class,
                 "(SELECT COUNT(un) FROM UserNovel un WHERE un.novel = {0} AND (un.isInterest = true OR un.status <> 'QUIT'))",
                 novel);
 
-        BooleanExpression titleContainsQuery = cleanTitle.containsIgnoreCase(searchQuery);
-        BooleanExpression authorContainsQuery = cleanAuthor.containsIgnoreCase(searchQuery);
+        BooleanExpression titleContainsQuery = getSpaceRemovedString(novel.title).containsIgnoreCase(searchQuery);
+        BooleanExpression authorContainsQuery = getSpaceRemovedString(novel.author).containsIgnoreCase(searchQuery);
 
         List<Novel> novelsByTitle = jpaQueryFactory
                 .selectFrom(novel)
@@ -66,6 +58,13 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
         int end = Math.min((start + pageable.getPageSize()), (int) total);
 
         return new PageImpl<>(novelsByTitle.subList(start, end), pageable, total);
+    }
+
+    private StringTemplate getSpaceRemovedString(StringPath stringPath) {
+        return Expressions.stringTemplate(
+                "REPLACE(REPLACE({0}, ' ', ''), CHAR(9), '')",
+                stringPath
+        );
     }
 
 }
