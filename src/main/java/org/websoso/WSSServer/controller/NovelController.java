@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
+import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserService;
 
@@ -68,5 +69,13 @@ public class NovelController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(Principal principal) {
+        //TODO 차단 관계에 있는 유저의 피드글 처리
+        return ResponseEntity
+                .status(OK)
+                .body(novelService.getTodayPopularNovels());
     }
 }

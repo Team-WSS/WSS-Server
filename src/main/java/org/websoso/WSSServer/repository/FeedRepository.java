@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Feed;
 
 @Repository
-public interface FeedRepository extends JpaRepository<Feed, Long> {
+public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRepository {
 
     Integer countByNovelId(Long novelId);
 
@@ -20,5 +20,4 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
             + "AND f.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = :userId)) "
             + "ORDER BY f.feedId DESC")
     Slice<Feed> findFeeds(Long lastFeedId, Long userId, PageRequest pageRequest);
-
 }
