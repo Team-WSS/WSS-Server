@@ -105,7 +105,7 @@ public class UserService {
             throw new CustomUserException(ALREADY_SET_AVATAR, "avatarId with given is already set");
         }
 
-        validateNickname(updateMyProfileRequest.nickname());
+        checkNicknameIfAlreadyExist(updateMyProfileRequest.nickname());
         if (user.getNickname() != null && user.getNickname().equals(updateMyProfileRequest.nickname())) {
             throw new CustomUserException(ALREADY_SET_NICKNAME, "nickname with given is already set");
         }
@@ -119,13 +119,13 @@ public class UserService {
     }
 
     public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
-        validateNickname(registerUserInfoRequest.nickname());
+        checkNicknameIfAlreadyExist(registerUserInfoRequest.nickname());
         user.updateUserInfo(registerUserInfoRequest);
         List<GenrePreference> preferGenres = createGenrePreferences(user, registerUserInfoRequest.genrePreferences());
         genrePreferenceRepository.saveAll(preferGenres);
     }
 
-    private void validateNickname(String nickname) {
+    private void checkNicknameIfAlreadyExist(String nickname) {
         if (userRepository.existsByNickname(nickname)) {
             throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
         }
