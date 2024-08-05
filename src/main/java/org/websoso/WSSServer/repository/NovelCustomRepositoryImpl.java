@@ -2,6 +2,7 @@ package org.websoso.WSSServer.repository;
 
 import static org.websoso.WSSServer.domain.QNovel.novel;
 import static org.websoso.WSSServer.domain.QUserNovel.userNovel;
+import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Novel;
+import org.websoso.WSSServer.domain.QNovel;
 
 @Repository
 @RequiredArgsConstructor
@@ -29,10 +31,6 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
         String searchQuery = query.replaceAll("\\s+", "");
 
-        NumberTemplate<Long> popularity = Expressions.numberTemplate(Long.class,
-                "(SELECT COUNT(un) FROM UserNovel un WHERE un.novel = {0} AND (un.isInterest = true OR un.status <> 'QUIT'))",
-                novel);
-
         BooleanExpression titleContainsQuery = getSpaceRemovedString(novel.title).containsIgnoreCase(searchQuery);
         BooleanExpression authorContainsQuery = getSpaceRemovedString(novel.author).containsIgnoreCase(searchQuery);
 
@@ -41,7 +39,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                 .leftJoin(novel.userNovels, userNovel)
                 .where(titleContainsQuery)
                 .groupBy(novel.novelId)
-                .orderBy(popularity.desc())
+                .orderBy(getPopularity(novel).desc())
                 .fetch();
 
         List<Novel> novelsByAuthor = jpaQueryFactory
@@ -49,7 +47,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                 .leftJoin(novel.userNovels, userNovel)
                 .where(authorContainsQuery.and(titleContainsQuery.not()))
                 .groupBy(novel.novelId)
-                .orderBy(popularity.desc())
+                .orderBy(getPopularity(novel).desc())
                 .fetch();
 
         List<Novel> result = Stream.concat(novelsByTitle.stream(), novelsByAuthor.stream()).toList();
@@ -65,6 +63,17 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
         return Expressions.stringTemplate(
                 "REPLACE(REPLACE({0}, ' ', ''), CHAR(9), '')",
                 stringPath
+        );
+    }
+
+    private NumberTemplate<Long> getPopularity(QNovel novel) {
+        return Expressions.numberTemplate(
+                Long.class,
+                "COUNT(userNovel.userNovelId)",
+                jpaQueryFactory.selectFrom(userNovel)
+                        .where(userNovel.novel.eq(novel)
+                                .and(userNovel.status.ne(QUIT)
+                                        .or(userNovel.isInterest.isTrue())))
         );
     }
 
