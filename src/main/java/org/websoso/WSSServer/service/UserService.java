@@ -27,6 +27,7 @@ import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
+import org.websoso.WSSServer.exception.error.CustomUserError;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
@@ -99,18 +100,15 @@ public class UserService {
     }
 
     public void updateMyProfileInfo(User user, UpdateMyProfileRequest updateMyProfileRequest) {
-        if (user.getAvatarId() != null && user.getAvatarId().equals(updateMyProfileRequest.avatarId())) {
-            throw new CustomUserException(ALREADY_SET_AVATAR, "avatarId with given is already set");
-        }
+        checkIfAlreadySetOrThrow(user.getAvatarId(), updateMyProfileRequest.avatarId(),
+                ALREADY_SET_AVATAR, "avatarId with given is already set");
 
         checkNicknameIfAlreadyExist(updateMyProfileRequest.nickname());
-        if (user.getNickname() != null && user.getNickname().equals(updateMyProfileRequest.nickname())) {
-            throw new CustomUserException(ALREADY_SET_NICKNAME, "nickname with given is already set");
-        }
+        checkIfAlreadySetOrThrow(user.getNickname(), updateMyProfileRequest.nickname(),
+                ALREADY_SET_NICKNAME, "nickname with given is already set");
 
-        if (user.getIntro() != null && user.getIntro().equals(updateMyProfileRequest.intro())) {
-            throw new CustomUserException(ALREADY_SET_INTRO, "intro with given is already set");
-        }
+        checkIfAlreadySetOrThrow(user.getIntro(), updateMyProfileRequest.intro(),
+                ALREADY_SET_INTRO, "intro with given is already set");
 
         user.updateUserProfile(updateMyProfileRequest);
         userRepository.save(user);
@@ -126,6 +124,13 @@ public class UserService {
     private void checkNicknameIfAlreadyExist(String nickname) {
         if (userRepository.existsByNickname(nickname)) {
             throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
+        }
+    }
+
+    private <T> void checkIfAlreadySetOrThrow(T currentValue, T newValue,
+                                              CustomUserError customUserError, String message) {
+        if (newValue != null && newValue.equals(currentValue)) {
+            throw new CustomUserException(customUserError, message);
         }
     }
 
