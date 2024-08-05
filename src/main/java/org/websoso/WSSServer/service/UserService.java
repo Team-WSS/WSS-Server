@@ -8,6 +8,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_N
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import org.websoso.WSSServer.dto.user.EmailGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
+import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
@@ -95,6 +97,21 @@ public class UserService {
                         () -> new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
         List<GenrePreference> genrePreferences = genrePreferenceRepository.findByUser(user);
         return MyProfileResponse.of(user, avatar, genrePreferences);
+    }
+
+    @Transactional(readOnly = true)
+    public ProfileGetResponse getProfileInfo(User visitor, Long ownerId) {
+        User owner = getUserOrException(ownerId);
+        Byte avatarId = owner.getAvatarId();
+        Avatar avatar = avatarRepository.findById(avatarId)
+                .orElseThrow(
+                        () -> new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
+        List<GenrePreference> genrePreferences = genrePreferenceRepository.findByUser(owner);
+
+        if (visitor != null && visitor.getUserId().equals(ownerId)) {
+            return ProfileGetResponse.of(owner, avatar, genrePreferences, true);
+        }
+        return ProfileGetResponse.of(owner, avatar, genrePreferences, false);
     }
 
     public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
