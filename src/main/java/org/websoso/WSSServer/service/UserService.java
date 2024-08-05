@@ -2,6 +2,8 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_AVATAR;
+import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_INTRO;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_NICKNAME;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
@@ -24,6 +26,7 @@ import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
+import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
@@ -95,6 +98,24 @@ public class UserService {
                         () -> new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
         List<GenrePreference> genrePreferences = genrePreferenceRepository.findByUser(user);
         return MyProfileResponse.of(user, avatar, genrePreferences);
+    }
+
+    public void updateMyProfileInfo(User user, UpdateMyProfileRequest updateMyProfileRequest) {
+        if (user.getAvatarId() != null && user.getAvatarId().equals(updateMyProfileRequest.avatarId())) {
+            throw new CustomUserException(ALREADY_SET_AVATAR, "avatarId with given is already set");
+        }
+
+        validateNickname(updateMyProfileRequest.nickname());
+        if (user.getNickname() != null && user.getNickname().equals(updateMyProfileRequest.nickname())) {
+            throw new CustomUserException(ALREADY_SET_NICKNAME, "nickname with given is already set");
+        }
+
+        if (user.getIntro() != null && user.getIntro().equals(updateMyProfileRequest.intro())) {
+            throw new CustomUserException(ALREADY_SET_INTRO, "intro with given is already set");
+        }
+
+        user.updateUserProfile(updateMyProfileRequest);
+        userRepository.save(user);
     }
 
     public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
