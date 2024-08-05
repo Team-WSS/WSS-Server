@@ -268,7 +268,8 @@ public class NovelService {
                 .mapToDouble(UserNovel::getUserNovelRating)
                 .sum();
 
-        Float novelRatingAverage = novelRatingCount == 0 ? 0.0f
+        Float novelRatingAverage = novelRatingCount == 0
+                ? 0.0f
                 : Math.round((float) (novelRatingSum / novelRatingCount) * 10.0f) / 10.0f;
 
         return NovelGetResponsePreview.of(
