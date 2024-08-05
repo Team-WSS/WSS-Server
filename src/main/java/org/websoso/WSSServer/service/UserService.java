@@ -49,10 +49,10 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public NicknameValidation isNicknameAvailable(User user, String nickname) {
-        if (user.getNickname() != null && user.getNickname().equals(nickname)) {
-            throw new CustomUserException(ALREADY_SET_NICKNAME, "nickname with given is already set");
-        }
+        checkIfAlreadySetOrThrow(user.getNickname(), nickname,
+                ALREADY_SET_NICKNAME, "nickname with given is already set");
         checkNicknameIfAlreadyExist(nickname);
+
         return NicknameValidation.of(true);
     }
 
@@ -77,9 +77,9 @@ public class UserService {
     }
 
     public void editProfileStatus(User user, EditProfileStatusRequest editProfileStatusRequest) {
-        if (user.getIsProfilePublic().equals(editProfileStatusRequest.isProfilePublic())) {
-            throw new CustomUserException(ALREADY_SET_PROFILE_STATUS, "profile status with given is already set");
-        }
+        checkIfAlreadySetOrThrow(user.getIsProfilePublic(), editProfileStatusRequest.isProfilePublic(),
+                ALREADY_SET_PROFILE_STATUS, "profile status with given is already set");
+
         user.updateProfileStatus(editProfileStatusRequest.isProfilePublic());
     }
 
