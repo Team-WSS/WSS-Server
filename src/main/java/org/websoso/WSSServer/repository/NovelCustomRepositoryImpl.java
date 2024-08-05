@@ -10,6 +10,7 @@ import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -51,13 +52,13 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                 .orderBy(popularity.desc())
                 .fetch();
 
-        novelsByTitle.addAll(novelsByAuthor);
+        List<Novel> result = Stream.concat(novelsByTitle.stream(), novelsByAuthor.stream()).toList();
 
-        long total = novelsByTitle.size();
+        long total = result.size();
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), (int) total);
 
-        return new PageImpl<>(novelsByTitle.subList(start, end), pageable, total);
+        return new PageImpl<>(result.subList(start, end), pageable, total);
     }
 
     private StringTemplate getSpaceRemovedString(StringPath stringPath) {
