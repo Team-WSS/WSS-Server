@@ -50,7 +50,9 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                 .orderBy(getPopularity(novel).desc())
                 .fetch();
 
-        List<Novel> result = Stream.concat(novelsByTitle.stream(), novelsByAuthor.stream()).toList();
+        List<Novel> result = Stream
+                .concat(novelsByTitle.stream(), novelsByAuthor.stream())
+                .toList();
 
         long total = result.size();
         int start = (int) pageable.getOffset();
