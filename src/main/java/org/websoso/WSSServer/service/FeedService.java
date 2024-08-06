@@ -195,9 +195,10 @@ public class FeedService {
         Slice<Feed> feeds = feedRepository.findFeedsByNovelId(novelId, lastFeedId,
                 user == null ? null : user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
 
-        List<FeedInfo> feedGetResponses = feeds.getContent().stream().map(feed -> createFeedInfo(feed, user)).toList();
+        List<FeedInfo> feedGetResponses = feeds.getContent().stream()
+                .map(feed -> createFeedInfo(feed, user))
+                .toList();
 
         return NovelGetResponseFeedTab.of(feeds.hasNext(), feedGetResponses);
     }
-
 }
