@@ -10,7 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.websoso.WSSServer.domain.common.Message;
+import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 
 @Service
 @Slf4j
@@ -19,11 +19,11 @@ public class MessageService {
     @Value("${logging.discord.webhook-url}")
     String discordWebhookUrl;
 
-    public void sendMessage(Message message) {
+    public void sendDiscordWebhookMessage(DiscordWebhookMessage message) {
         try {
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.add("Content-Type", "application/json; utf-8");
-            HttpEntity<Message> messageEntity = new HttpEntity<>(message, httpHeaders);
+            HttpEntity<DiscordWebhookMessage> messageEntity = new HttpEntity<>(message, httpHeaders);
 
             RestTemplate template = new RestTemplate();
             ResponseEntity<String> response = template.exchange(

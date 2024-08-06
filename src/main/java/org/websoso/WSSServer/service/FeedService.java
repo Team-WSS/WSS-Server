@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.domain.common.Message;
+import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
@@ -171,7 +171,8 @@ public class FeedService {
             feed.hideFeed();
         }
 
-        messageService.sendMessage(Message.of(MessageFormatter.formatFeedReportMessage(feed, reportedType)));
+        messageService.sendDiscordWebhookMessage(
+                DiscordWebhookMessage.of(MessageFormatter.formatFeedReportMessage(feed, reportedType)));
     }
 
     public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {

@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Comment;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.domain.common.Message;
+import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentGetResponse;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
@@ -87,8 +87,9 @@ public class CommentService {
             comment.hideComment();
         }
 
-        messageService.sendMessage(
-                Message.of(MessageFormatter.formatCommentReportMessage(comment, reportedType, commentCreatedUser)));
+        messageService.sendDiscordWebhookMessage(
+                DiscordWebhookMessage.of(
+                        MessageFormatter.formatCommentReportMessage(comment, reportedType, commentCreatedUser)));
     }
 
     private Comment getCommentOrException(Long commentId) {
