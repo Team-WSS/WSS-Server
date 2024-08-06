@@ -248,7 +248,6 @@ public class NovelService {
     @Transactional(readOnly = true)
     public FilteredNovelsGetResponse getFilteredNovels(List<String> genreNames, Boolean isCompleted, Float novelRating,
                                                        List<Integer> keywordIds, int page, int size) {
-
         PageRequest pageRequest = PageRequest.of(page, size);
         List<Genre> genres = getGenres(genreNames);
         List<Keyword> keywords = getKeywords(keywordIds);
@@ -264,7 +263,6 @@ public class NovelService {
     }
 
     private List<Genre> getGenres(List<String> genreNames) {
-
         genreNames = genreNames == null
                 ? Collections.emptyList()
                 : genreNames;
@@ -280,7 +278,6 @@ public class NovelService {
     }
 
     private List<Keyword> getKeywords(List<Integer> keywordIds) {
-
         keywordIds = keywordIds == null
                 ? Collections.emptyList()
                 : keywordIds;
@@ -296,7 +293,6 @@ public class NovelService {
     }
 
     private NovelGetResponsePreview convertToDTO(Novel novel) {
-
         List<UserNovel> userNovels = novel.getUserNovels();
 
         long interestCount = userNovels.stream()
