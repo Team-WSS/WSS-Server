@@ -2,11 +2,13 @@ package org.websoso.WSSServer.repository;
 
 import static org.websoso.WSSServer.domain.QNovel.novel;
 import static org.websoso.WSSServer.domain.QUserNovel.userNovel;
-import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
+import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
+import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberTemplate;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -68,15 +70,12 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
         );
     }
 
-    private NumberTemplate<Long> getPopularity(QNovel novel) {
-        return Expressions.numberTemplate(
-                Long.class,
-                "COUNT(userNovel.userNovelId)",
-                jpaQueryFactory.selectFrom(userNovel)
-                        .where(userNovel.novel.eq(novel)
-                                .and(userNovel.status.ne(QUIT)
-                                        .or(userNovel.isInterest.isTrue())))
-        );
+    private NumberExpression<Long> getPopularity(QNovel novel) {
+        return new CaseBuilder()
+                .when(userNovel.isInterest.isTrue()
+                        .or(userNovel.status.in(WATCHING, WATCHED)))
+                .then(1L)
+                .otherwise(0L)
+                .sum();
     }
-
 }
