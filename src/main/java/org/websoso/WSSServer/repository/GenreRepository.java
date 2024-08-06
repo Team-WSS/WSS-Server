@@ -9,5 +9,4 @@ import org.websoso.WSSServer.domain.Genre;
 public interface GenreRepository extends JpaRepository<Genre, Byte> {
 
     Optional<Genre> findByGenreName(String name);
-
 }

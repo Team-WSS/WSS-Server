@@ -18,10 +18,10 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true)
-    public Category getCategory(String label) {
-        return categoryRepository.findByCategoryName(CategoryName.of(label))
+    public Category getCategory(String categoryName) {
+        return categoryRepository.findByCategoryName(CategoryName.valueOf(categoryName))
                 .orElseThrow(() -> new CustomCategoryException(INVALID_CATEGORY_FORMAT,
                         "Category for the given feed was not found"));
     }
-    
+
 }

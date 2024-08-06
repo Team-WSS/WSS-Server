@@ -9,10 +9,7 @@ import java.util.List;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.validation.UserNovelRatingConstraint;
 
-public record UserNovelCreateRequest(
-        @NotNull(message = "작품 id는 null일 수 없습니다.")
-        Long novelId,
-
+public record UserNovelUpdateRequest(
         @NotNull(message = "작품 평점은 null일 수 없습니다.")
         @UserNovelRatingConstraint
         Float userNovelRating,

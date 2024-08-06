@@ -18,6 +18,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
+import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserService;
 
@@ -87,4 +88,11 @@ public class NovelController {
                 .body(novelService.getFilteredNovels(genres, isCompleted, novelRating, keywordIds, page, size));
     }
 
+    @GetMapping("/popular")
+    public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(Principal principal) {
+        //TODO 차단 관계에 있는 유저의 피드글 처리
+        return ResponseEntity
+                .status(OK)
+                .body(novelService.getTodayPopularNovels());
+    }
 }
