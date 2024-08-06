@@ -256,7 +256,8 @@ public class NovelService {
         Page<Novel> novels = novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRating,
                 keywords);
 
-        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream().map(this::convertToDTO)
+        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream()
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
 
         return FilteredNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
@@ -264,7 +265,9 @@ public class NovelService {
 
     private List<Genre> getGenres(List<String> genreNames) {
 
-        genreNames = genreNames == null ? Collections.emptyList() : genreNames;
+        genreNames = genreNames == null
+                ? Collections.emptyList()
+                : genreNames;
 
         List<Genre> genres = new ArrayList<>();
         if (!genreNames.isEmpty()) {
@@ -278,7 +281,9 @@ public class NovelService {
 
     private List<Keyword> getKeywords(List<Integer> keywordIds) {
 
-        keywordIds = keywordIds == null ? Collections.emptyList() : keywordIds;
+        keywordIds = keywordIds == null
+                ? Collections.emptyList()
+                : keywordIds;
 
         List<Keyword> keywords = new ArrayList<>();
         if (!keywordIds.isEmpty()) {
@@ -294,11 +299,19 @@ public class NovelService {
 
         List<UserNovel> userNovels = novel.getUserNovels();
 
-        long interestCount = userNovels.stream().filter(UserNovel::getIsInterest).count();
-        long novelRatingCount = userNovels.stream().filter(un -> un.getUserNovelRating() != 0.0f).count();
-        double novelRatingSum = userNovels.stream().filter(un -> un.getUserNovelRating() != 0.0f)
-                .mapToDouble(UserNovel::getUserNovelRating).sum();
-        Float novelRatingAverage = novelRatingCount == 0 ? 0.0f
+        long interestCount = userNovels.stream()
+                .filter(UserNovel::getIsInterest)
+                .count();
+        long novelRatingCount = userNovels.stream()
+                .filter(un -> un.getUserNovelRating() != 0.0f)
+                .count();
+        double novelRatingSum = userNovels
+                .stream()
+                .filter(un -> un.getUserNovelRating() != 0.0f)
+                .mapToDouble(UserNovel::getUserNovelRating)
+                .sum();
+        Float novelRatingAverage = novelRatingCount == 0
+                ? 0.0f
                 : Math.round((float) (novelRatingSum / novelRatingCount) * 10.0f) / 10.0f;
 
         return NovelGetResponsePreview.of(
