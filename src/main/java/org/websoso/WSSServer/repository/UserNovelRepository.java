@@ -22,5 +22,4 @@ public interface UserNovelRepository extends JpaRepository<UserNovel, Long>, Use
     Float sumUserNovelRatingByNovel(Novel novel);
 
     Integer countByNovelAndUserNovelRatingNot(Novel novel, float ratingToExclude);
-
 }
