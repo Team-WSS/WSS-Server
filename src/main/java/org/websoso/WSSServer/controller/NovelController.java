@@ -55,7 +55,6 @@ public class NovelController {
                                                                    @PathVariable Long novelId,
                                                                    @RequestParam("lastFeedId") Long lastFeedId,
                                                                    @RequestParam("size") int size) {
-
         User user = principal == null
                 ? null
                 : userService.getUserOrException(Long.valueOf(principal.getName()));

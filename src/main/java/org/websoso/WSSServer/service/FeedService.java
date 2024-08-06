@@ -191,7 +191,6 @@ public class FeedService {
     }
 
     public NovelGetResponseFeedTab getFeedsByNovel(User user, Long novelId, Long lastFeedId, int size) {
-
         Slice<Feed> feeds = feedRepository.findFeedsByNovelId(novelId, lastFeedId,
                 user == null ? null : user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
 
