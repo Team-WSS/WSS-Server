@@ -36,6 +36,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                 novel);
 
         JPAQuery<Novel> query = jpaQueryFactory.selectFrom(novel)
+                .distinct()
                 .join(novel.novelGenres, novelGenre)
                 .where(
                         genres.isEmpty() ? null : novelGenre.genre.in(genres),
