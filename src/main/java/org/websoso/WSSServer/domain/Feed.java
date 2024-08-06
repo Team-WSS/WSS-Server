@@ -60,7 +60,7 @@ public class Feed extends BaseEntity {
     @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ReportedFeed> reportedFeeds = new ArrayList<>();
 
     @Builder
