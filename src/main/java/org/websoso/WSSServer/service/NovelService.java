@@ -248,7 +248,7 @@ public class NovelService {
 
         PageRequest pageRequest = PageRequest.of(page, size);
 
-        if (query.isEmpty() || query.isBlank()) {
+        if (query.isBlank()) {
             return SearchedNovelsGetResponse.of(0L, false, Collections.emptyList());
         }
 
