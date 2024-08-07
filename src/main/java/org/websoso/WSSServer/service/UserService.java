@@ -8,7 +8,6 @@ import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_N
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
