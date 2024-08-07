@@ -17,6 +17,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
+import org.websoso.WSSServer.dto.novel.SearchedNovelsGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.NovelService;
@@ -32,7 +33,8 @@ public class NovelController {
     private final FeedService feedService;
 
     @GetMapping("/{novelId}")
-    public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(Principal principal, @PathVariable Long novelId) {
+    public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(Principal principal,
+                                                                   @PathVariable Long novelId) {
         if (principal == null) {
             return ResponseEntity
                     .status(OK)
@@ -87,6 +89,16 @@ public class NovelController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
+    }
+
+    @GetMapping
+    public ResponseEntity<SearchedNovelsGetResponse> searchNovels(@RequestParam(required = false) String query,
+                                                                  @RequestParam int page,
+                                                                  @RequestParam int size) {
+
+        return ResponseEntity
+                .status(OK)
+                .body(novelService.searchNovels(query, page, size));
     }
 
     @GetMapping("/popular")
