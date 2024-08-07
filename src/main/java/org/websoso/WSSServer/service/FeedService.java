@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
@@ -214,5 +215,9 @@ public class FeedService {
                 .map(feed -> feed.getUser().getAvatarId())
                 .distinct()
                 .toList();
+        Map<Byte, Avatar> avatarMap = avatarRepository.findAllById(avatarIds)
+                .stream()
+                .collect(Collectors.toMap(Avatar::getAvatarId, avatar -> avatar));
+
     }
 }
