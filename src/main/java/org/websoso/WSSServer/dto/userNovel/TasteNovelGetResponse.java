@@ -10,7 +10,7 @@ public record TasteNovelGetResponse(
         String novelImage,
         Long interestCount,
         Float novelRating,
-        Integer novelRatingCount
+        Long novelRatingCount
 ) {
 
     public static TasteNovelGetResponse of(Novel tasteNovel) {
