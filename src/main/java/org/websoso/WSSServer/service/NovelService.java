@@ -316,5 +316,7 @@ public class NovelService {
                 .map(GenrePreference::getGenre)
                 .toList();
 
+        List<Novel> tasteNovels = userNovelRepository.findTasteNovels(preferGenres);
+
     }
 }
