@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.repository;
 
+import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +21,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
             + "AND f.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = :userId)) "
             + "ORDER BY f.feedId DESC")
     Slice<Feed> findFeeds(Long lastFeedId, Long userId, PageRequest pageRequest);
+
+    @Query("SELECT f FROM Feed f WHERE f.novelId IN :novelIds ORDER BY f.feedId DESC")
+    List<Feed> findTop10ByNovelIdIn(List<Long> novelIds);
 }
