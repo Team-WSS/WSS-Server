@@ -25,6 +25,7 @@ import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedInfo;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.InterestFeedGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
@@ -219,5 +220,13 @@ public class FeedService {
                 .stream()
                 .collect(Collectors.toMap(Avatar::getAvatarId, avatar -> avatar));
 
+        List<InterestFeedGetResponse> interestFeedGetResponseList = interestFeeds.stream()
+                .map(feed -> {
+                    Novel novel = novelMap.get(feed.getNovelId());
+                    Avatar avatar = avatarMap.get(feed.getUser().getAvatarId());
+                    return InterestFeedGetResponse.of(novel, feed.getUser(), feed, avatar);
+                })
+                .toList();
+        return InterestFeedsGetResponse.of(interestFeedGetResponseList);
     }
 }
