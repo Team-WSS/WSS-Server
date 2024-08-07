@@ -8,18 +8,23 @@ public record TasteNovelGetResponse(
         String title,
         String author,
         String novelImage,
-        Long interestCount
-//        Float novelRating,
-//        Integer novelRatingCount
+        Long interestCount,
+        Float novelRating,
+        Integer novelRatingCount
 ) {
 
     public static TasteNovelGetResponse of(Novel tasteNovel) {
+        Long novelRatingCount = getNovelRatingCount(tasteNovel);
+        Float novelRating = getNovelRating(tasteNovel, novelRatingCount);
+
         return new TasteNovelGetResponse(
                 tasteNovel.getNovelId(),
                 tasteNovel.getTitle(),
                 tasteNovel.getAuthor(),
                 tasteNovel.getNovelImage(),
-                getInterestCount(tasteNovel)
+                getInterestCount(tasteNovel),
+                novelRating,
+                novelRatingCount
         );
     }
 
