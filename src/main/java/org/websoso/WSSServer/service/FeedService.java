@@ -293,6 +293,8 @@ public class FeedService {
             List<UserFeedGetResponse> userFeedGetResponseList = feedsByNoOffsetPagination.stream()
                     .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId))
                     .toList();
+
+            return UserFeedsGetResponse.of(userFeedGetResponseList);
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
