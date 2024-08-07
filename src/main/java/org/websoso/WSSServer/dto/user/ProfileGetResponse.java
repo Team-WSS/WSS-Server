@@ -16,11 +16,14 @@ public record ProfileGetResponse(
 
     public static ProfileGetResponse of(boolean isMyProfile, User user, Avatar avatar,
                                         List<GenrePreference> genrePreferences) {
+        boolean isProfilePublic = isMyProfile
+                ? true
+                : user.getIsProfilePublic();
         return new ProfileGetResponse(
                 user.getNickname(),
                 user.getIntro(),
                 avatar.getAvatarImage(),
-                isMyProfile ? true : user.getIsProfilePublic(),
+                isProfilePublic,
                 genrePreferences.stream()
                         .map(gp -> gp.getGenre().getGenreName())
                         .collect(Collectors.toList()));
