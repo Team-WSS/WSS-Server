@@ -211,7 +211,7 @@ public class FeedService {
                 .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
         List<Long> interestNovelIds = new ArrayList<>(novelMap.keySet());
 
-        List<Feed> interestFeeds = feedRepository.findTop10ByNovelIdIn(interestNovelIds);
+        List<Feed> interestFeeds = feedRepository.findTop10ByNovelIdInOrderByFeedIdDesc(interestNovelIds);
         List<Byte> avatarIds = interestFeeds.stream()
                 .map(feed -> feed.getUser().getAvatarId())
                 .distinct()

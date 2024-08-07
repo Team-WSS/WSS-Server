@@ -22,6 +22,5 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
             + "ORDER BY f.feedId DESC")
     Slice<Feed> findFeeds(Long lastFeedId, Long userId, PageRequest pageRequest);
 
-    @Query("SELECT f FROM Feed f WHERE f.novelId IN :novelIds ORDER BY f.feedId DESC")
-    List<Feed> findTop10ByNovelIdIn(List<Long> novelIds);
+    List<Feed> findTop10ByNovelIdInOrderByFeedIdDesc(List<Long> novelIds);
 }
