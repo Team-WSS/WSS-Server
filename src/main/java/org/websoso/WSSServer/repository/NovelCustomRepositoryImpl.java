@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.repository;
 
 import static org.websoso.WSSServer.domain.QNovel.novel;
+import static org.websoso.WSSServer.domain.QNovelGenre.novelGenre;
 import static org.websoso.WSSServer.domain.QUserNovel.userNovel;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
@@ -25,7 +26,6 @@ import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.QNovel;
-import org.websoso.WSSServer.domain.QNovelGenre;
 
 @Repository
 @RequiredArgsConstructor
@@ -36,9 +36,6 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     @Override
     public Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRating,
                                           List<Keyword> keywords) {
-
-        QNovel novel = QNovel.novel;
-        QNovelGenre novelGenre = QNovelGenre.novelGenre;
 
         NumberTemplate<Long> popularity = Expressions.numberTemplate(Long.class,
                 "(SELECT COUNT(un) FROM UserNovel un WHERE un.novel = {0} AND (un.isInterest = true OR un.status <> 'QUIT'))",
