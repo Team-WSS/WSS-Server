@@ -76,7 +76,8 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     @Override
     public Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRating,
                                           List<Keyword> keywords) {
-        JPAQuery<Novel> query = jpaQueryFactory.selectFrom(novel)
+        JPAQuery<Novel> query = jpaQueryFactory
+                .selectFrom(novel)
                 .distinct()
                 .join(novel.novelGenres, novelGenre)
                 .where(
