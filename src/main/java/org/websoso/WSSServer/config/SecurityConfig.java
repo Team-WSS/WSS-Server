@@ -29,6 +29,7 @@ public class SecurityConfig {
             "/actuator/health",
             "/novels/{novelId}",
             "/novels/{novelId}/info",
+            "/novels/{novelId}/feeds",
             "/soso-picks",
             "/novels/popular",
             "/feeds",
