@@ -116,7 +116,6 @@ public class UserService {
         genrePreferenceRepository.saveAll(newPreferGenres);
 
         user.updateUserProfile(updateMyProfileRequest);
-        userRepository.save(user);
     }
 
     public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
