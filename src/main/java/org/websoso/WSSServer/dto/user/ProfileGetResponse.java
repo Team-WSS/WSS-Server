@@ -14,8 +14,8 @@ public record ProfileGetResponse(
         List<String> genrePreferences
 ) {
 
-    public static ProfileGetResponse of(User user, Avatar avatar,
-                                        List<GenrePreference> genrePreferences, boolean isMyProfile) {
+    public static ProfileGetResponse of(boolean isMyProfile, User user, Avatar avatar,
+                                        List<GenrePreference> genrePreferences) {
         return new ProfileGetResponse(
                 user.getNickname(),
                 user.getIntro(),

@@ -109,9 +109,9 @@ public class UserService {
         List<GenrePreference> genrePreferences = genrePreferenceRepository.findByUser(owner);
 
         if (visitor != null && visitor.getUserId().equals(ownerId)) {
-            return ProfileGetResponse.of(owner, avatar, genrePreferences, true);
+            return ProfileGetResponse.of(true, owner, avatar, genrePreferences);
         }
-        return ProfileGetResponse.of(owner, avatar, genrePreferences, false);
+        return ProfileGetResponse.of(false, owner, avatar, genrePreferences);
     }
 
     public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
