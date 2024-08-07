@@ -2,7 +2,9 @@ package org.websoso.WSSServer.dto.feed;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.websoso.WSSServer.domain.Category;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.FeedCategory;
 import org.websoso.WSSServer.domain.Like;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.UserNovel;
@@ -20,8 +22,8 @@ public record UserFeedGetResponse(
         Long novelId,
         String title,
         Float novelRating,
-        Long novelRatingCount
-//        List<String> relevantCategories
+        Long novelRatingCount,
+        List<String> relevantCategories
 ) {
 
     public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId) {
@@ -30,6 +32,7 @@ public record UserFeedGetResponse(
         Float novelRating = getNovelRating(novel, novelRatingCount);
         List<Long> likeUsers = getLikeUsers(feed);
         boolean isLiked = likeUsers.contains(visitorId);
+        List<String> relevantCategories = getFeedCategories(feed);
 
         return new UserFeedGetResponse(
                 feed.getFeedId(),
@@ -44,8 +47,18 @@ public record UserFeedGetResponse(
                 novel.getNovelId(),
                 novel.getTitle(),
                 novelRating,
-                novelRatingCount
+                novelRatingCount,
+                relevantCategories
         );
+    }
+
+    private static List<String> getFeedCategories(Feed feed) {
+        return feed.getFeedCategories()
+                .stream()
+                .map(FeedCategory::getCategory)
+                .map(Category::getCategoryName)
+                .map(Enum::name)
+                .toList();
     }
 
     private static List<Long> getLikeUsers(Feed feed) {
