@@ -15,14 +15,18 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedInfo;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
+import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.repository.UserNovelRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +42,8 @@ public class FeedService {
     private final BlockService blockService;
     private final LikeService likeService;
     private final PopularFeedService popularFeedService;
+    private final UserNovelRepository userNovelRepository;
+    private final AvatarRepository avatarRepository;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
@@ -189,4 +195,10 @@ public class FeedService {
         return feedCategoryService.getFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest);
     }
 
+    public InterestFeedsGetResponse getInterestFeeds(User user) {
+        List<Novel> interestNovels = userNovelRepository.findByUserAndIsInterestTrue(user)
+                .stream()
+                .map(UserNovel::getNovel)
+                .toList();
+    }
 }
