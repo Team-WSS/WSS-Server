@@ -33,6 +33,13 @@ public record InterestFeedGetResponse(
         );
     }
 
+    private static Long getNovelRatingCount(Novel novel) {
+        return novel.getUserNovels()
+                .stream()
+                .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
+                .count();
+    }
+
     private static Float getNovelRatingSum(Novel novel) {
         return (float) novel.getUserNovels()
                 .stream()
@@ -45,12 +52,5 @@ public record InterestFeedGetResponse(
         return novelRatingCount > 0
                 ? getNovelRatingSum(novel) / novelRatingCount
                 : 0.0f;
-    }
-
-    private static Long getNovelRatingCount(Novel novel) {
-        return novel.getUserNovels()
-                .stream()
-                .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
-                .count();
     }
 }
