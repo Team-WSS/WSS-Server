@@ -6,6 +6,7 @@ import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -206,5 +207,7 @@ public class FeedService {
         Map<Long, Novel> novelMap = interestNovels
                 .stream()
                 .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
+        List<Long> interestNovelIds = new ArrayList<>(novelMap.keySet());
+
     }
 }
