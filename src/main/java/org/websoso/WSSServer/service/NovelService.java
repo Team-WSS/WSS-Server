@@ -36,6 +36,7 @@ import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
+import org.websoso.WSSServer.dto.userNovel.TasteNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
@@ -317,6 +318,10 @@ public class NovelService {
                 .toList();
 
         List<Novel> tasteNovels = userNovelRepository.findTasteNovels(preferGenres);
+
+        List<TasteNovelGetResponse> tasteNovelGetResponseList = tasteNovels.stream()
+                .map(TasteNovelGetResponse::of)
+                .toList();
 
     }
 }
