@@ -7,6 +7,8 @@ import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOU
 import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -200,5 +202,9 @@ public class FeedService {
                 .stream()
                 .map(UserNovel::getNovel)
                 .toList();
+
+        Map<Long, Novel> novelMap = interestNovels
+                .stream()
+                .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
     }
 }
