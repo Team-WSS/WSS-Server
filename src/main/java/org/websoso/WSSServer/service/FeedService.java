@@ -275,6 +275,7 @@ public class FeedService {
         boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
 
         if (owner.getIsProfilePublic() || isOwner) {
+            List<Feed> feedsByNoOffsetPagination = feedRepository.getFeedsByNoOffsetPagination(owner, lastFeedId, size);
 
         }
 
