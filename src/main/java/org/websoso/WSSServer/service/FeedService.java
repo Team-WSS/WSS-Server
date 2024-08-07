@@ -289,7 +289,7 @@ public class FeedService {
 
             List<UserFeedGetResponse> userFeedGetResponseList = feedsByNoOffsetPagination.stream()
                     .map(feed -> {
-                        return UserFeedGetResponse.of(feed);
+                        return UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()));
                     })
                     .toList();
         }
