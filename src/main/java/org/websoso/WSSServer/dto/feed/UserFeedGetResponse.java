@@ -64,7 +64,7 @@ public record UserFeedGetResponse(
     private static List<Long> getLikeUsers(Feed feed) {
         return feed.getLikes()
                 .stream()
-                .map(Like::getLikeId)
+                .map(Like::getUserId)
                 .toList();
     }
 
