@@ -9,6 +9,8 @@ import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -277,6 +279,12 @@ public class FeedService {
         if (owner.getIsProfilePublic() || isOwner) {
             List<Feed> feedsByNoOffsetPagination = feedRepository.getFeedsByNoOffsetPagination(owner, lastFeedId, size);
 
+            List<Long> novelIds = feedsByNoOffsetPagination.stream()
+                    .map(Feed::getNovelId)
+                    .collect(Collectors.toList());
+            Map<Long, Novel> novelMap = novelRepository.findAllById(novelIds)
+                    .stream()
+                    .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
