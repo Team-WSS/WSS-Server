@@ -34,7 +34,8 @@ public class SecurityConfig {
             "/soso-picks",
             "/novels/popular",
             "/feeds",
-            "/feeds/popular"
+            "/feeds/popular",
+            "/users/{userId}/feeds"
     };
 
     @Bean
