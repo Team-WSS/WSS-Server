@@ -29,6 +29,7 @@ import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedInfo;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
@@ -285,6 +286,12 @@ public class FeedService {
             Map<Long, Novel> novelMap = novelRepository.findAllById(novelIds)
                     .stream()
                     .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
+
+            List<UserFeedGetResponse> userFeedGetResponseList = feedsByNoOffsetPagination.stream()
+                    .map(feed -> {
+                        return UserFeedGetResponse.of(feed);
+                    })
+                    .toList();
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
