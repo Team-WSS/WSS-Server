@@ -19,9 +19,7 @@ public record InterestFeedGetResponse(
 
     public static InterestFeedGetResponse of(Novel novel, User user, Feed feed, Avatar avatar) {
         Long novelRatingCount = getNovelRatingCount(novel);
-        Float novelRating = novelRatingCount > 0
-                ? getNovelRatingSum(novel) / novelRatingCount
-                : 0.0f;
+        Float novelRating = getNovelRating(novel, novelRatingCount);
 
         return new InterestFeedGetResponse(
                 novel.getNovelId(),
@@ -41,6 +39,12 @@ public record InterestFeedGetResponse(
                 .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
                 .mapToDouble(UserNovel::getUserNovelRating)
                 .sum();
+    }
+
+    private static float getNovelRating(Novel novel, Long novelRatingCount) {
+        return novelRatingCount > 0
+                ? getNovelRatingSum(novel) / novelRatingCount
+                : 0.0f;
     }
 
     private static Long getNovelRatingCount(Novel novel) {
