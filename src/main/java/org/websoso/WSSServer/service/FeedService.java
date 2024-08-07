@@ -291,9 +291,7 @@ public class FeedService {
                     .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
 
             List<UserFeedGetResponse> userFeedGetResponseList = feedsByNoOffsetPagination.stream()
-                    .map(feed -> {
-                        return UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId);
-                    })
+                    .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId))
                     .toList();
         }
 
