@@ -7,12 +7,12 @@ public record NovelGetResponsePreview(
         String novelImage,
         String title,
         String author,
-        Integer interestCount,
+        Long interestCount,
         Float novelRating,
-        Integer novelRatingCount
+        Long novelRatingCount
 ) {
-    public static NovelGetResponsePreview of(Novel novel, Integer interestCount, Float novelRating,
-                                             Integer novelRatingCount) {
+    public static NovelGetResponsePreview of(Novel novel, Long interestCount, Float novelRating,
+                                             Long novelRatingCount) {
         return new NovelGetResponsePreview(
                 novel.getNovelId(),
                 novel.getNovelImage(),

@@ -36,6 +36,7 @@ import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.novel.NovelGetResponsePreview;
+import org.websoso.WSSServer.dto.novel.SearchedNovelsGetResponse;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
@@ -99,7 +100,8 @@ public class NovelService {
     }
 
     private String getNovelGenreNames(List<NovelGenre> novelGenres) {
-        return novelGenres.stream().map(novelGenre -> novelGenre.getGenre().getGenreName())
+        return novelGenres.stream()
+                .map(novelGenre -> novelGenre.getGenre().getGenreName())
                 .collect(Collectors.joining("/"));
     }
 
@@ -160,7 +162,8 @@ public class NovelService {
     }
 
     private List<PlatformGetResponse> getPlatforms(Novel novel) {
-        return novelPlatformRepository.findAllByNovel(novel).stream().map(PlatformGetResponse::of)
+        return novelPlatformRepository.findAllByNovel(novel).stream()
+                .map(PlatformGetResponse::of)
                 .collect(Collectors.toList());
     }
 
@@ -262,6 +265,23 @@ public class NovelService {
         return FilteredNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
     }
 
+    @Transactional(readOnly = true)
+    public SearchedNovelsGetResponse searchNovels(String query, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+
+        if (query.isBlank()) {
+            return SearchedNovelsGetResponse.of(0L, false, Collections.emptyList());
+        }
+
+        Page<Novel> novels = novelRepository.findSearchedNovels(pageRequest, query);
+
+        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        return SearchedNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
+    }
+
     private List<Genre> getGenres(List<String> genreNames) {
         genreNames = genreNames == null
                 ? Collections.emptyList()
@@ -301,20 +321,20 @@ public class NovelService {
         long novelRatingCount = userNovels.stream()
                 .filter(un -> un.getUserNovelRating() != 0.0f)
                 .count();
-        double novelRatingSum = userNovels
-                .stream()
+        double novelRatingSum = userNovels.stream()
                 .filter(un -> un.getUserNovelRating() != 0.0f)
                 .mapToDouble(UserNovel::getUserNovelRating)
                 .sum();
+
         Float novelRatingAverage = novelRatingCount == 0
                 ? 0.0f
                 : Math.round((float) (novelRatingSum / novelRatingCount) * 10.0f) / 10.0f;
 
         return NovelGetResponsePreview.of(
                 novel,
-                (int) interestCount,
+                interestCount,
                 novelRatingAverage,
-                (int) novelRatingCount
+                novelRatingCount
         );
     }
 
