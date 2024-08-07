@@ -1,5 +1,7 @@
 package org.websoso.WSSServer.repository;
 
+import static org.websoso.WSSServer.domain.QNovel.novel;
+import static org.websoso.WSSServer.domain.QNovelGenre.novelGenre;
 import static org.websoso.WSSServer.domain.QUserNovel.userNovel;
 import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
@@ -12,6 +14,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.websoso.WSSServer.domain.Genre;
+import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
@@ -73,4 +77,22 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .limit(pageable.getPageSize())
                 .fetch();
     }
+
+    @Override
+    public List<Novel> findTasteNovels(List<Genre> preferGenres) {
+        return jpaQueryFactory
+                .select(userNovel.novel, userNovel.userNovelId)
+                .distinct()
+                .from(userNovel)
+                .join(userNovel.novel, novel)
+                .join(novelGenre).on(novelGenre.novel.eq(novel))
+                .where(novelGenre.genre.in(preferGenres))
+                .orderBy(userNovel.userNovelId.desc())
+                .limit(10)
+                .fetch()
+                .stream()
+                .map(tuple -> tuple.get(novel))
+                .toList();
+    }
+
 }
