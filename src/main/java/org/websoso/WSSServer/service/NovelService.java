@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Genre;
+import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
@@ -34,10 +36,12 @@ import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
+import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.NovelGenreRepository;
 import org.websoso.WSSServer.repository.NovelPlatformRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
@@ -64,6 +68,7 @@ public class NovelService {
     private final UserNovelKeywordRepository userNovelKeywordRepository;
     private final PopularNovelRepository popularNovelRepository;
     private final AvatarRepository avatarRepository;
+    private final GenrePreferenceRepository genrePreferenceRepository;
 
     @Transactional(readOnly = true)
     public Novel getNovelOrException(Long novelId) {
@@ -302,5 +307,14 @@ public class NovelService {
                 })
                 .toList();
         return new PopularNovelsGetResponse(popularNovelResponses);
+    }
+
+    @Transactional(readOnly = true)
+    public TasteNovelsGetResponse getTasteNovels(User user) {
+        List<Genre> preferGenres = genrePreferenceRepository.findByUser(user)
+                .stream()
+                .map(GenrePreference::getGenre)
+                .toList();
+
     }
 }
