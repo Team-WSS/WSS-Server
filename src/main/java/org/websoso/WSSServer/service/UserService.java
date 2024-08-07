@@ -107,10 +107,8 @@ public class UserService {
                         () -> new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
         List<GenrePreference> genrePreferences = genrePreferenceRepository.findByUser(owner);
 
-        if (visitor != null && visitor.getUserId().equals(ownerId)) {
-            return ProfileGetResponse.of(true, owner, avatar, genrePreferences);
-        }
-        return ProfileGetResponse.of(false, owner, avatar, genrePreferences);
+        boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
+        return ProfileGetResponse.of(isOwner, owner, avatar, genrePreferences);
     }
 
     public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
