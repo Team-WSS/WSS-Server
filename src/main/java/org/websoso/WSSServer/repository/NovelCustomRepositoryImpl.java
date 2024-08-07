@@ -35,7 +35,6 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     @Override
     public Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRating,
                                           List<Keyword> keywords) {
-
         JPAQuery<Novel> query = jpaQueryFactory.selectFrom(novel)
                 .distinct()
                 .join(novel.novelGenres, novelGenre)
@@ -81,7 +80,6 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
     @Override
     public Page<Novel> findSearchedNovels(Pageable pageable, String query) {
-
         String searchQuery = query.replaceAll("\\s+", "");
 
         BooleanExpression titleContainsQuery = getSpaceRemovedString(novel.title).containsIgnoreCase(searchQuery);

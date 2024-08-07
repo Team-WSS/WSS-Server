@@ -111,7 +111,6 @@ public class NovelService {
     }
 
     public void registerAsInterest(User user, Long novelId) {
-
         Novel novel = getNovelOrException(novelId);
         UserNovel userNovel = userNovelService.getUserNovelOrNull(user, novel);
 
@@ -127,7 +126,6 @@ public class NovelService {
     }
 
     public void unregisterAsInterest(User user, Long novelId) {
-
         Novel novel = getNovelOrException(novelId);
         UserNovel userNovel = userNovelService.getUserNovelOrException(user, novel);
 
@@ -168,7 +166,6 @@ public class NovelService {
     }
 
     private List<String> getAttractivePoints(Novel novel) {
-
         Map<String, Integer> attractivePointMap = makeAttractivePointMapExcludingZero(novel);
 
         if (attractivePointMap.isEmpty()) {
@@ -179,7 +176,6 @@ public class NovelService {
     }
 
     private Map<String, Integer> makeAttractivePointMapExcludingZero(Novel novel) {
-
         Map<String, Integer> attractivePointMap = new HashMap<>();
 
         for (AttractivePointName point : AttractivePointName.values()) {
@@ -194,7 +190,6 @@ public class NovelService {
     }
 
     private List<String> getTOP3AttractivePoints(Map<String, Integer> attractivePointMap) {
-
         Map<Integer, List<String>> groupedByValue = groupAttractivePointByValue(attractivePointMap);
 
         List<String> result = new ArrayList<>();
@@ -231,7 +226,6 @@ public class NovelService {
     }
 
     private List<KeywordCountGetResponse> getKeywords(Novel novel) {
-
         List<UserNovelKeyword> userNovelKeywords = userNovelKeywordRepository.findAllByUserNovel_Novel(novel);
 
         if (userNovelKeywords.isEmpty()) {
