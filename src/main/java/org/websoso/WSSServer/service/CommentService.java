@@ -3,6 +3,7 @@ package org.websoso.WSSServer.service;
 import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.exception.error.CustomCommentError.COMMENT_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomCommentError.SELF_REPORT_NOT_ALLOWED;
 
 import java.util.AbstractMap;
 import java.util.List;
@@ -12,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Comment;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
+import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentGetResponse;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
@@ -27,6 +30,8 @@ public class CommentService {
     private final UserService userService;
     private final AvatarService avatarService;
     private final BlockService blockService;
+    private final ReportedCommentService reportedCommentService;
+    private final MessageService messageService;
 
     public void createComment(Long userId, Feed feed, String commentContent) {
         commentRepository.save(Comment.create(userId, feed, commentContent));
@@ -65,6 +70,28 @@ public class CommentService {
         return CommentsGetResponse.of(comments.size(), responses);
     }
 
+    public void createReportedComment(Feed feed, Long commentId, User user, ReportedType reportedType) {
+        Comment comment = getCommentOrException(commentId);
+
+        comment.validateFeedAssociation(feed);
+
+        User commentCreatedUser = userService.getUserOrException(comment.getUserId());
+
+        if (isUserCommentOwner(commentCreatedUser, user)) {
+            throw new CustomCommentException(SELF_REPORT_NOT_ALLOWED, "cannot report own comment");
+        }
+
+        reportedCommentService.createReportedComment(comment, user, reportedType);
+
+        if (reportedCommentService.shouldHideComment(comment, reportedType)) {
+            comment.hideComment();
+        }
+
+        messageService.sendDiscordWebhookMessage(
+                DiscordWebhookMessage.of(
+                        MessageFormatter.formatCommentReportMessage(comment, reportedType, commentCreatedUser)));
+    }
+
     private Comment getCommentOrException(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(() ->
                 new CustomCommentException(COMMENT_NOT_FOUND, "comment with the given id was not found"));
@@ -83,5 +110,4 @@ public class CommentService {
     private Boolean isBlocked(User createdFeedUser, User user) {
         return blockService.isBlockedRelationship(user.getUserId(), createdFeedUser.getUserId());
     }
-
 }
