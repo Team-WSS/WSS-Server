@@ -21,12 +21,14 @@ public record UserFeedGetResponse(
 
     public static UserFeedGetResponse of(Feed feed) {
 
+        boolean isModified = !feed.getCreatedDate().equals(feed.getModifiedDate());
+
         return new UserFeedGetResponse(
                 feed.getFeedId(),
                 feed.getFeedContent(),
                 feed.getCreatedDate().toLocalDate(),
                 feed.getIsSpoiler(),
-                !feed.getCreatedDate().equals(feed.getModifiedDate())
+                isModified
         );
     }
 }
