@@ -40,10 +40,18 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                 .distinct()
                 .join(novel.novelGenres, novelGenre)
                 .where(
-                        genres.isEmpty() ? null : novelGenre.genre.in(genres),
-                        isCompleted == null ? null : novel.isCompleted.eq(isCompleted),
-                        novelRating == null ? null : getAverageRating(novel).goe(novelRating),
-                        keywords.isEmpty() ? null : getKeywordCount(novel, keywords).eq(keywords.size())
+                        genres.isEmpty()
+                                ? null
+                                : novelGenre.genre.in(genres),
+                        isCompleted == null
+                                ? null
+                                : novel.isCompleted.eq(isCompleted),
+                        novelRating == null
+                                ? null
+                                : getAverageRating(novel).goe(novelRating),
+                        keywords.isEmpty()
+                                ? null
+                                : getKeywordCount(novel, keywords).eq(keywords.size())
                 )
                 .orderBy(getPopularity(novel).desc());
 
