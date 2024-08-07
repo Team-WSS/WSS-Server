@@ -95,9 +95,9 @@ public class UserController {
     @GetMapping("/profile/{userId}")
     public ResponseEntity<ProfileGetResponse> getProfileInfo(Principal principal,
                                                              @PathVariable("userId") Long userId) {
-        User user = principal == null ?
-                null :
-                userService.getUserOrException(Long.valueOf(principal.getName()));
+        User user = principal == null
+                ? null
+                : userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userService.getProfileInfo(user, userId));
