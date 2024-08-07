@@ -14,7 +14,7 @@ public record UserFeedGetResponse(
         Boolean isSpoiler,
         Boolean isModified,
         List<Long> likerUsers,
-//        Boolean isLiked,
+        Boolean isLiked,
         Integer likeCount,
         Integer commentCount,
         Long novelId,
@@ -24,11 +24,12 @@ public record UserFeedGetResponse(
 //        List<String> relevantCategories
 ) {
 
-    public static UserFeedGetResponse of(Feed feed, Novel novel) {
+    public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId) {
         boolean isModified = !feed.getCreatedDate().equals(feed.getModifiedDate());
         Long novelRatingCount = getNovelRatingCount(novel);
         Float novelRating = getNovelRating(novel, novelRatingCount);
         List<Long> likeUsers = getLikeUsers(feed);
+        boolean isLiked = likeUsers.contains(visitorId);
 
         return new UserFeedGetResponse(
                 feed.getFeedId(),
@@ -37,6 +38,7 @@ public record UserFeedGetResponse(
                 feed.getIsSpoiler(),
                 isModified,
                 likeUsers,
+                isLiked,
                 feed.getLikes().size(),
                 feed.getComments().size(),
                 novel.getNovelId(),

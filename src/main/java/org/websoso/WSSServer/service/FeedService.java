@@ -276,6 +276,9 @@ public class FeedService {
     public UserFeedsGetResponse getUserFeeds(User visitor, Long ownerId, Long lastFeedId, int size) {
         User owner = userService.getUserOrException(ownerId);
         boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
+        Long visitorId = visitor == null
+                ? null
+                : visitor.getUserId();
 
         if (owner.getIsProfilePublic() || isOwner) {
             List<Feed> feedsByNoOffsetPagination = feedRepository.getFeedsByNoOffsetPagination(owner, lastFeedId, size);
@@ -289,7 +292,7 @@ public class FeedService {
 
             List<UserFeedGetResponse> userFeedGetResponseList = feedsByNoOffsetPagination.stream()
                     .map(feed -> {
-                        return UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()));
+                        return UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId);
                     })
                     .toList();
         }
