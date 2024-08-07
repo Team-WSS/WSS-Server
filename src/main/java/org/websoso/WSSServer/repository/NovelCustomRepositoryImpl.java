@@ -10,7 +10,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
-import com.querydsl.core.types.dsl.NumberTemplate;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -37,10 +36,6 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     public Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRating,
                                           List<Keyword> keywords) {
 
-        NumberTemplate<Long> popularity = Expressions.numberTemplate(Long.class,
-                "(SELECT COUNT(un) FROM UserNovel un WHERE un.novel = {0} AND (un.isInterest = true OR un.status <> 'QUIT'))",
-                novel);
-
         JPAQuery<Novel> query = jpaQueryFactory.selectFrom(novel)
                 .distinct()
                 .join(novel.novelGenres, novelGenre)
@@ -50,7 +45,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                         novelRating == null ? null : getAverageRating(novel).goe(novelRating),
                         keywords.isEmpty() ? null : getKeywordCount(novel, keywords).eq(keywords.size())
                 )
-                .orderBy(popularity.desc());
+                .orderBy(getPopularity(novel).desc());
 
         return applyPagination(pageable, query);
     }
