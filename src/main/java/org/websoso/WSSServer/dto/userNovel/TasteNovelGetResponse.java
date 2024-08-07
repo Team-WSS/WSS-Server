@@ -7,8 +7,8 @@ public record TasteNovelGetResponse(
         Long novelId,
         String title,
         String author,
-        String novelImage
-//        Integer interestCount,
+        String novelImage,
+        Integer interestCount
 //        Float novelRating,
 //        Integer novelRatingCount
 ) {
@@ -18,7 +18,8 @@ public record TasteNovelGetResponse(
                 tasteNovel.getNovelId(),
                 tasteNovel.getTitle(),
                 tasteNovel.getAuthor(),
-                tasteNovel.getNovelImage()
+                tasteNovel.getNovelImage(),
+                getInterestCount(tasteNovel)
         );
     }
 
