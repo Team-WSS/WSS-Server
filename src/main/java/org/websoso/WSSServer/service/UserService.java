@@ -91,7 +91,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public MyProfileResponse getMyProfileInfo(User user) {
         Byte avatarId = user.getAvatarId();
-        Avatar avatar = findByIdOrThrow(avatarId);
+        Avatar avatar = findAvatarByIdOrThrow(avatarId);
         List<GenrePreference> genrePreferences = genrePreferenceRepository.findByUser(user);
         return MyProfileResponse.of(user, avatar, genrePreferences);
     }
@@ -100,14 +100,14 @@ public class UserService {
     public ProfileGetResponse getProfileInfo(User visitor, Long ownerId) {
         User owner = getUserOrException(ownerId);
         Byte avatarId = owner.getAvatarId();
-        Avatar avatar = findByIdOrThrow(avatarId);
+        Avatar avatar = findAvatarByIdOrThrow(avatarId);
         List<GenrePreference> genrePreferences = genrePreferenceRepository.findByUser(owner);
 
         boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
         return ProfileGetResponse.of(isOwner, owner, avatar, genrePreferences);
     }
 
-    private Avatar findByIdOrThrow(Byte avatarId) {
+    private Avatar findAvatarByIdOrThrow(Byte avatarId) {
         return avatarRepository.findById(avatarId)
                 .orElseThrow(
                         () -> new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
