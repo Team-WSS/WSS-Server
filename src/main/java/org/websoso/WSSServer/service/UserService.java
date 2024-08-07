@@ -110,9 +110,9 @@ public class UserService {
         checkIfAlreadySetOrThrow(user.getIntro(), updateMyProfileRequest.intro(),
                 ALREADY_SET_INTRO, "intro with given is already set");
 
-        List<GenrePreference> currentPreferGenres = genrePreferenceRepository.findByUser(user);
+        genrePreferenceRepository.deleteAllByUser(user);
+
         List<GenrePreference> newPreferGenres = createGenrePreferences(user, updateMyProfileRequest.genrePreferences());
-        genrePreferenceRepository.deleteAll(currentPreferGenres);
         genrePreferenceRepository.saveAll(newPreferGenres);
 
         user.updateUserProfile(updateMyProfileRequest);
