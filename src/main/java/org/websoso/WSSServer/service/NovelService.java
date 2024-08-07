@@ -323,5 +323,6 @@ public class NovelService {
                 .map(TasteNovelGetResponse::of)
                 .toList();
 
+        return TasteNovelsGetResponse.of(tasteNovelGetResponseList);
     }
 }
