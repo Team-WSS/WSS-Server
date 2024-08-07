@@ -48,7 +48,6 @@ public class FeedService {
     private final CommentService commentService;
     private final ReportedFeedService reportedFeedService;
     private final MessageService messageService;
-    private final CommentService commentService;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
