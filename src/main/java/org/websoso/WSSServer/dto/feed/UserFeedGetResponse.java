@@ -26,7 +26,7 @@ public record UserFeedGetResponse(
                 feed.getFeedContent(),
                 feed.getCreatedDate().toLocalDate(),
                 feed.getIsSpoiler(),
-                feed.getCreatedDate().equals(feed.getModifiedDate())
+                !feed.getCreatedDate().equals(feed.getModifiedDate())
         );
     }
 }
