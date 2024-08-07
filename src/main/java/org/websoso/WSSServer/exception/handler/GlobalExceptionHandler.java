@@ -62,4 +62,5 @@ public class GlobalExceptionHandler {
                 .status(iCustomError.getStatusCode())
                 .body(new ErrorResult(iCustomError.getCode(), iCustomError.getDescription()));
     }
+
 }

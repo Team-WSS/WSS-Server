@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
+import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
+import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
@@ -123,5 +126,52 @@ public class FeedController {
                 .status(OK)
                 .body(feedService.getFeeds(user, category, lastFeedId, size));
     }
-  
+
+    @PostMapping("/{feedId}/comments")
+    public ResponseEntity<Void> createComment(Principal principal,
+                                              @PathVariable("feedId") Long feedId,
+                                              @Valid @RequestBody CommentCreateRequest request) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.createComment(user, feedId, request);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @PutMapping("/{feedId}/comments/{commentId}")
+    public ResponseEntity<Void> updateComment(Principal principal,
+                                              @PathVariable("feedId") Long feedId,
+                                              @PathVariable("commentId") Long commentId,
+                                              @Valid @RequestBody CommentUpdateRequest request) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.updateComment(user, feedId, commentId, request);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @DeleteMapping("/{feedId}/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(Principal principal,
+                                              @PathVariable("feedId") Long feedId,
+                                              @PathVariable("commentId") Long commentId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.deleteComment(user, feedId, commentId);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @GetMapping("/{feedId}/comments")
+    public ResponseEntity<CommentsGetResponse> getComments(Principal principal,
+                                                           @PathVariable("feedId") Long feedId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+
+        return ResponseEntity
+                .status(OK)
+                .body(feedService.getComments(user, feedId));
+    }
+
 }
