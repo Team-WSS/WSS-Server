@@ -220,13 +220,13 @@ public class FeedService {
                 .stream()
                 .collect(Collectors.toMap(Avatar::getAvatarId, avatar -> avatar));
 
-        List<InterestFeedGetResponse> interestFeedGetResponseList = interestFeeds.stream()
+        List<InterestFeedGetResponse> interestFeedGetResponses = interestFeeds.stream()
                 .map(feed -> {
                     Novel novel = novelMap.get(feed.getNovelId());
                     Avatar avatar = avatarMap.get(feed.getUser().getAvatarId());
                     return InterestFeedGetResponse.of(novel, feed.getUser(), feed, avatar);
                 })
                 .toList();
-        return InterestFeedsGetResponse.of(interestFeedGetResponseList);
+        return InterestFeedsGetResponse.of(interestFeedGetResponses);
     }
 }
