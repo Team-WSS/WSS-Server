@@ -8,7 +8,7 @@ public record TasteNovelGetResponse(
         String title,
         String author,
         String novelImage,
-        Integer interestCount
+        Long interestCount
 //        Float novelRating,
 //        Integer novelRatingCount
 ) {
