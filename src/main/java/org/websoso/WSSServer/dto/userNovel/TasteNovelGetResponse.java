@@ -29,4 +29,25 @@ public record TasteNovelGetResponse(
                 .map(UserNovel::getIsInterest)
                 .count();
     }
+
+    private static Long getNovelRatingCount(Novel tasteNovel) {
+        return tasteNovel.getUserNovels()
+                .stream()
+                .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
+                .count();
+    }
+
+    private static Float getNovelRatingSum(Novel tasteNovel) {
+        return (float) tasteNovel.getUserNovels()
+                .stream()
+                .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
+                .mapToDouble(UserNovel::getUserNovelRating)
+                .sum();
+    }
+
+    private static float getNovelRating(Novel tasteNovel, Long novelRatingCount) {
+        return novelRatingCount > 0
+                ? getNovelRatingSum(tasteNovel) / novelRatingCount
+                : 0.0f;
+    }
 }
