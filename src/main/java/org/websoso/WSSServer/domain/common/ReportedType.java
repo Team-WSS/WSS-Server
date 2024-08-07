@@ -8,7 +8,7 @@ import lombok.Getter;
 public enum ReportedType {
 
     SPOILER("spoiler", "스포일러"),
-    IMPERTINENCE("Impertinence", "부적절한 표현");
+    IMPERTINENCE("impertinence", "부적절한 표현");
 
     private final String label;
     private final String description;
