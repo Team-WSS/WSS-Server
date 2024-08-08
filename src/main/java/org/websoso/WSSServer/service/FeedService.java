@@ -294,6 +294,7 @@ public class FeedService {
                     .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId))
                     .toList();
 
+            // TODO Slice의 hasNext()로 판단하도록 수정
             Boolean isLoadable = feedsByNoOffsetPagination.size() == size;
 
             return UserFeedsGetResponse.of(isLoadable, userFeedGetResponseList);
