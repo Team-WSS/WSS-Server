@@ -27,12 +27,15 @@ public class SecurityConfig {
             "/users/login",
             "/users/nickname/check",
             "/actuator/health",
+            "/novels",
             "/novels/{novelId}",
             "/novels/{novelId}/info",
+            "/novels/{novelId}/feeds",
             "/soso-picks",
             "/novels/popular",
             "/feeds",
-            "/feeds/popular"
+            "/feeds/popular",
+            "/users/profile/{userId}"
     };
 
     @Bean

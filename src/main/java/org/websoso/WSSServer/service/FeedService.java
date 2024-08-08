@@ -5,6 +5,7 @@ import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER_ACCESS;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_NOT_ALLOWED;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,11 @@ import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
+import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
+import org.websoso.WSSServer.domain.common.ReportedType;
+import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
+import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
+import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedInfo;
@@ -28,6 +34,7 @@ import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.repository.AvatarRepository;
@@ -50,58 +57,51 @@ public class FeedService {
     private final PopularFeedService popularFeedService;
     private final UserNovelRepository userNovelRepository;
     private final AvatarRepository avatarRepository;
+    private final CommentService commentService;
+    private final ReportedFeedService reportedFeedService;
+    private final MessageService messageService;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
             novelService.getNovelOrException(request.novelId());
         }
-
         Feed feed = Feed.builder()
                 .feedContent(request.feedContent())
                 .isSpoiler(request.isSpoiler())
                 .novelId(request.novelId())
                 .user(user)
                 .build();
-
         feedRepository.save(feed);
         feedCategoryService.createFeedCategory(feed, request.relevantCategories());
     }
 
     public void updateFeed(User user, Long feedId, FeedUpdateRequest request) {
         Feed feed = getFeedOrException(feedId);
-
         feed.validateUserAuthorization(user, UPDATE);
 
         if (feed.isNovelChanged(request.novelId())) {
             novelService.getNovelOrException(feed.getNovelId());
         }
-
         feed.updateFeed(request.feedContent(), request.isSpoiler(), request.novelId());
         feedCategoryService.updateFeedCategory(feed, request.relevantCategories());
     }
 
     public void deleteFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
-
         feed.validateUserAuthorization(user, DELETE);
-
         feedRepository.delete(feed);
     }
 
     public void likeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
-
         checkHiddenFeed(feed);
         checkBlockedRelationship(feed.getUser(), user);
 
         boolean isPopularFeed = false;
-
         if (feed.getLikes().size() == 9) {
             isPopularFeed = true;
         }
-
         likeService.createLike(user, feed);
-
         if (isPopularFeed) {
             popularFeedService.createPopularFeed(feed);
         }
@@ -109,17 +109,14 @@ public class FeedService {
 
     public void unLikeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
-
         checkHiddenFeed(feed);
         checkBlockedRelationship(feed.getUser(), user);
-
         likeService.deleteLike(user, feed);
     }
 
     @Transactional(readOnly = true)
     public FeedGetResponse getFeedById(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
-
         checkHiddenFeed(feed);
         checkBlockedRelationship(feed.getUser(), user);
 
@@ -142,6 +139,60 @@ public class FeedService {
 
         return FeedsGetResponse.of(category == null ? DEFAULT_CATEGORY : category, feeds.hasNext(),
                 feedGetResponses);
+    }
+
+    public void createComment(User user, Long feedId, CommentCreateRequest request) {
+        Feed feed = getFeedOrException(feedId);
+        validateFeedAccess(feed, user);
+        commentService.createComment(user.getUserId(), feed, request.commentContent());
+    }
+
+    public void updateComment(User user, Long feedId, Long commentId, CommentUpdateRequest request) {
+        Feed feed = getFeedOrException(feedId);
+        validateFeedAccess(feed, user);
+        commentService.updateComment(user.getUserId(), feed, commentId, request.commentContent());
+    }
+
+    public void deleteComment(User user, Long feedId, Long commentId) {
+        Feed feed = getFeedOrException(feedId);
+        validateFeedAccess(feed, user);
+        commentService.deleteComment(user.getUserId(), feed, commentId);
+    }
+
+    @Transactional(readOnly = true)
+    public CommentsGetResponse getComments(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
+        validateFeedAccess(feed, user);
+        return commentService.getComments(user, feed);
+    }
+
+    public void reportFeed(User user, Long feedId, ReportedType reportedType) {
+        Feed feed = getFeedOrException(feedId);
+
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
+
+        if (isUserFeedOwner(feed.getUser(), user)) {
+            throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
+        }
+
+        reportedFeedService.createReportedFeed(feed, user, reportedType);
+
+        if (reportedFeedService.shouldHideFeed(feed, reportedType)) {
+            feed.hideFeed();
+        }
+
+        messageService.sendDiscordWebhookMessage(
+                DiscordWebhookMessage.of(MessageFormatter.formatFeedReportMessage(feed, reportedType)));
+    }
+
+    public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
+        Feed feed = getFeedOrException(feedId);
+
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
+
+        commentService.createReportedComment(feed, commentId, user, reportedType);
     }
 
     private Feed getFeedOrException(Long feedId) {
@@ -228,5 +279,28 @@ public class FeedService {
                 })
                 .toList();
         return InterestFeedsGetResponse.of(interestFeedGetResponses);
+    }
+
+    public NovelGetResponseFeedTab getFeedsByNovel(User user, Long novelId, Long lastFeedId, int size) {
+        Long userIdOrNull = user == null
+                ? null
+                : user.getUserId();
+
+        Slice<Feed> feeds = feedRepository.findFeedsByNovelId(novelId, lastFeedId, userIdOrNull,
+                PageRequest.of(DEFAULT_PAGE_NUMBER, size));
+
+        List<FeedInfo> feedGetResponses = feeds.getContent().stream()
+                .map(feed -> createFeedInfo(feed, user))
+                .toList();
+
+        return NovelGetResponseFeedTab.of(feeds.hasNext(), feedGetResponses);
+    }
+
+    private void validateFeedAccess(Feed feed, User user) {
+        if (feed.getUser().equals(user)) {
+            return;
+        }
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
     }
 }
