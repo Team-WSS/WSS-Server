@@ -6,6 +6,7 @@ import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_NOT_ALLOWED;
+import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,11 +35,15 @@ import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
+import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
+import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
 
 @Service
@@ -60,6 +65,8 @@ public class FeedService {
     private final CommentService commentService;
     private final ReportedFeedService reportedFeedService;
     private final MessageService messageService;
+    private final UserService userService;
+    private final NovelRepository novelRepository;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
@@ -302,5 +309,36 @@ public class FeedService {
         }
         checkHiddenFeed(feed);
         checkBlockedRelationship(feed.getUser(), user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserFeedsGetResponse getUserFeeds(User visitor, Long ownerId, Long lastFeedId, int size) {
+        User owner = userService.getUserOrException(ownerId);
+        boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
+        Long visitorId = visitor == null
+                ? null
+                : visitor.getUserId();
+
+        if (owner.getIsProfilePublic() || isOwner) {
+            List<Feed> feedsByNoOffsetPagination = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size);
+
+            List<Long> novelIds = feedsByNoOffsetPagination.stream()
+                    .map(Feed::getNovelId)
+                    .collect(Collectors.toList());
+            Map<Long, Novel> novelMap = novelRepository.findAllById(novelIds)
+                    .stream()
+                    .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
+
+            List<UserFeedGetResponse> userFeedGetResponseList = feedsByNoOffsetPagination.stream()
+                    .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId))
+                    .toList();
+
+            // TODO Slice의 hasNext()로 판단하도록 수정
+            Boolean isLoadable = feedsByNoOffsetPagination.size() == size;
+
+            return UserFeedsGetResponse.of(isLoadable, userFeedGetResponseList);
+        }
+
+        throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
     }
 }
