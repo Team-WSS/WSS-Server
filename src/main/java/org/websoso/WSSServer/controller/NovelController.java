@@ -11,12 +11,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
+import org.websoso.WSSServer.dto.novel.SearchedNovelsGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
+import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserService;
 
@@ -27,9 +31,11 @@ public class NovelController {
 
     private final NovelService novelService;
     private final UserService userService;
+    private final FeedService feedService;
 
     @GetMapping("/{novelId}")
-    public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(Principal principal, @PathVariable Long novelId) {
+    public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(Principal principal,
+                                                                   @PathVariable Long novelId) {
         if (principal == null) {
             return ResponseEntity
                     .status(OK)
@@ -46,6 +52,20 @@ public class NovelController {
         return ResponseEntity
                 .status(OK)
                 .body(novelService.getNovelInfoInfoTab(novelId));
+    }
+
+    @GetMapping("/{novelId}/feeds")
+    public ResponseEntity<NovelGetResponseFeedTab> getFeedsByNovel(Principal principal,
+                                                                   @PathVariable Long novelId,
+                                                                   @RequestParam("lastFeedId") Long lastFeedId,
+                                                                   @RequestParam("size") int size) {
+        User user = principal == null
+                ? null
+                : userService.getUserOrException(Long.valueOf(principal.getName()));
+
+        return ResponseEntity
+                .status(OK)
+                .body(feedService.getFeedsByNovel(user, novelId, lastFeedId, size));
     }
 
     @PostMapping("/{novelId}/is-interest")
@@ -70,6 +90,16 @@ public class NovelController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
+    }
+
+    @GetMapping
+    public ResponseEntity<SearchedNovelsGetResponse> searchNovels(@RequestParam(required = false) String query,
+                                                                  @RequestParam int page,
+                                                                  @RequestParam int size) {
+
+        return ResponseEntity
+                .status(OK)
+                .body(novelService.searchNovels(query, page, size));
     }
 
     @GetMapping("/popular")
