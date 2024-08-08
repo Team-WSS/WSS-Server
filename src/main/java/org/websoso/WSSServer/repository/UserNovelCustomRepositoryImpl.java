@@ -67,9 +67,9 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
         return jpaQueryFactory
                 .select(userNovel.novel.novelId)
                 .from(userNovel)
-                .where(userNovel.status.eq(ReadStatus.WATCHING)
+                .where((userNovel.status.eq(ReadStatus.WATCHING)
                         .or(userNovel.status.eq(ReadStatus.WATCHED))
-                        .or(userNovel.isInterest.isTrue())
+                        .or(userNovel.isInterest.isTrue()))
                         .and(userNovel.createdDate.after(sevenDaysAgo.atStartOfDay())))
                 .groupBy(userNovel.novel.novelId)
                 .orderBy(userNovel.count().desc())
