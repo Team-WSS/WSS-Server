@@ -319,10 +319,10 @@ public class NovelService {
 
         List<Novel> tasteNovels = userNovelRepository.findTasteNovels(preferGenres);
 
-        List<TasteNovelGetResponse> tasteNovelGetResponseList = tasteNovels.stream()
+        List<TasteNovelGetResponse> tasteNovelGetResponses = tasteNovels.stream()
                 .map(TasteNovelGetResponse::of)
                 .toList();
 
-        return TasteNovelsGetResponse.of(tasteNovelGetResponseList);
+        return TasteNovelsGetResponse.of(tasteNovelGetResponses);
     }
 }
