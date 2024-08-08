@@ -84,18 +84,25 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .where(
                         userNovel.user.eq(owner),
                         generateReadStatusCondition(readStatus),
-                        ltFeedId(lastUserNovelId)
+                        ltFeedId(lastUserNovelId, sortType)
                 )
                 .orderBy(userNovel.userNovelId.desc())
                 .limit(size)
                 .fetch();
     }
 
-    private BooleanExpression ltFeedId(Long lastUserNovelId) {
+    private BooleanExpression ltFeedId(Long lastUserNovelId, String sortType) {
         if (lastUserNovelId == 0) {
             return null;
         }
-        return userNovel.userNovelId.lt(lastUserNovelId);
+
+        if ("NEWEST".equalsIgnoreCase(sortType)) {
+            return userNovel.userNovelId.lt(lastUserNovelId);
+        } else if ("OLDEST".equalsIgnoreCase(sortType)) {
+            return userNovel.userNovelId.gt(lastUserNovelId);
+        }
+
+        return null;
     }
 
     private BooleanExpression generateReadStatusCondition(String readStatus) {
