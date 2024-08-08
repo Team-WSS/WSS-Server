@@ -121,6 +121,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
         } else if ("OLDEST".equalsIgnoreCase(sortType)) {
             return userNovel.userNovelId.asc();
         }
+        return userNovel.userNovelId.desc();
     }
 
     @Override
