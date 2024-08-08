@@ -6,6 +6,7 @@ import org.websoso.WSSServer.exception.error.CustomGenreError;
 
 @Getter
 public class CustomGenreException extends AbstractCustomException {
+
     public CustomGenreException(CustomGenreError customGenreError, String message) {
         super(customGenreError, message);
     }
