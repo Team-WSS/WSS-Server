@@ -226,14 +226,15 @@ public class UserNovelService {
     }
 
     @Transactional(readOnly = true)
-    public UserNovelAndNovelsGetResponse getUserNovelsAndNovels(User visitor, Long ownerId, Long lastUserNovelId,
-                                                                int size, String sortType) {
+    public UserNovelAndNovelsGetResponse getUserNovelsAndNovels(User visitor, Long ownerId, String readStatus,
+                                                                Long lastUserNovelId, int size, String sortType) {
         User owner = userService.getUserOrException(ownerId);
         boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
 
         if (owner.getIsProfilePublic() || isOwner) {
             // TODO 성능 개선
-            List<UserNovel> userNovelsByUserAndSortType = userNovelRepository.findByUserAndSortType(owner, sortType);
+            List<UserNovel> userNovelsByUserAndSortType =
+                    userNovelRepository.findByUserAndReadStatus(owner, readStatus);
             long evaluatedUserNovelCount = userNovelsByUserAndSortType.stream()
                     .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
                     .count();
