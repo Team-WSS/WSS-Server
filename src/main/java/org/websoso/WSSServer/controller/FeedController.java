@@ -3,6 +3,8 @@ package org.websoso.WSSServer.controller;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
+import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
+import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 
 import jakarta.validation.Valid;
 import java.security.Principal;
@@ -18,6 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
+import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
+import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
@@ -123,5 +128,97 @@ public class FeedController {
                 .status(OK)
                 .body(feedService.getFeeds(user, category, lastFeedId, size));
     }
-  
+
+    @PostMapping("/{feedId}/comments")
+    public ResponseEntity<Void> createComment(Principal principal,
+                                              @PathVariable("feedId") Long feedId,
+                                              @Valid @RequestBody CommentCreateRequest request) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.createComment(user, feedId, request);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @PutMapping("/{feedId}/comments/{commentId}")
+    public ResponseEntity<Void> updateComment(Principal principal,
+                                              @PathVariable("feedId") Long feedId,
+                                              @PathVariable("commentId") Long commentId,
+                                              @Valid @RequestBody CommentUpdateRequest request) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.updateComment(user, feedId, commentId, request);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @DeleteMapping("/{feedId}/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(Principal principal,
+                                              @PathVariable("feedId") Long feedId,
+                                              @PathVariable("commentId") Long commentId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.deleteComment(user, feedId, commentId);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @GetMapping("/{feedId}/comments")
+    public ResponseEntity<CommentsGetResponse> getComments(Principal principal,
+                                                           @PathVariable("feedId") Long feedId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+
+        return ResponseEntity
+                .status(OK)
+                .body(feedService.getComments(user, feedId));
+    }
+
+    @PostMapping("/{feedId}/spoiler")
+    public ResponseEntity<Void> reportFeedSpoiler(Principal principal,
+                                                  @PathVariable("feedId") Long feedId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.reportFeed(user, feedId, SPOILER);
+
+        return ResponseEntity
+                .status(CREATED)
+                .build();
+    }
+
+    @PostMapping("/{feedId}/impertinence")
+    public ResponseEntity<Void> reportedFeedImpertinence(Principal principal,
+                                                         @PathVariable("feedId") Long feedId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.reportFeed(user, feedId, IMPERTINENCE);
+
+        return ResponseEntity
+                .status(CREATED)
+                .build();
+    }
+
+    @PostMapping("/{feedId}/comments/{commentId}/spoiler")
+    public ResponseEntity<Void> reportCommentSpoiler(Principal principal,
+                                                     @PathVariable("feedId") Long feedId,
+                                                     @PathVariable("commentId") Long commentId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.reportComment(user, feedId, commentId, SPOILER);
+
+        return ResponseEntity
+                .status(CREATED)
+                .build();
+    }
+
+    @PostMapping("/{feedId}/comments/{commentId}/impertinence")
+    public ResponseEntity<Void> reportCommentImpertinence(Principal principal,
+                                                          @PathVariable("feedId") Long feedId,
+                                                          @PathVariable("commentId") Long commentId) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        feedService.reportComment(user, feedId, commentId, IMPERTINENCE);
+
+        return ResponseEntity
+                .status(CREATED)
+                .build();
+    }
 }

@@ -60,6 +60,9 @@ public class Feed extends BaseEntity {
     @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
+    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<ReportedFeed> reportedFeeds = new ArrayList<>();
+
     @Builder
     public Feed(String feedContent, Boolean isSpoiler, Long novelId, User user) {
         this.feedContent = feedContent;
@@ -83,6 +86,10 @@ public class Feed extends BaseEntity {
 
     public boolean isNovelChanged(Long novelId) {
         return !Objects.equals(this.novelId, novelId);
+    }
+
+    public void hideFeed() {
+        this.isHidden = true;
     }
 
 }

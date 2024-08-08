@@ -13,13 +13,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.domain.Avatar;
+import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.NovelGenre;
+import org.websoso.WSSServer.domain.PopularNovel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
@@ -27,13 +33,19 @@ import org.websoso.WSSServer.domain.common.AttractivePointName;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
+import org.websoso.WSSServer.dto.novel.NovelGetResponsePreview;
+import org.websoso.WSSServer.dto.novel.SearchedNovelsGetResponse;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
+import org.websoso.WSSServer.dto.popularNovel.PopularNovelGetResponse;
+import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
+import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.NovelGenreRepository;
 import org.websoso.WSSServer.repository.NovelPlatformRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
+import org.websoso.WSSServer.repository.PopularNovelRepository;
 import org.websoso.WSSServer.repository.UserNovelAttractivePointRepository;
 import org.websoso.WSSServer.repository.UserNovelKeywordRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
@@ -54,6 +66,8 @@ public class NovelService {
     private final FeedRepository feedRepository;
     private final NovelGenreRepository novelGenreRepository;
     private final UserNovelKeywordRepository userNovelKeywordRepository;
+    private final PopularNovelRepository popularNovelRepository;
+    private final AvatarRepository avatarRepository;
 
     @Transactional(readOnly = true)
     public Novel getNovelOrException(Long novelId) {
@@ -82,7 +96,8 @@ public class NovelService {
     }
 
     private String getNovelGenreNames(List<NovelGenre> novelGenres) {
-        return novelGenres.stream().map(novelGenre -> novelGenre.getGenre().getGenreName())
+        return novelGenres.stream()
+                .map(novelGenre -> novelGenre.getGenre().getGenreName())
                 .collect(Collectors.joining("/"));
     }
 
@@ -142,7 +157,8 @@ public class NovelService {
     }
 
     private List<PlatformGetResponse> getPlatforms(Novel novel) {
-        return novelPlatformRepository.findAllByNovel(novel).stream().map(PlatformGetResponse::of)
+        return novelPlatformRepository.findAllByNovel(novel).stream()
+                .map(PlatformGetResponse::of)
                 .collect(Collectors.toList());
     }
 
@@ -227,4 +243,117 @@ public class NovelService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public SearchedNovelsGetResponse searchNovels(String query, int page, int size) {
+
+        PageRequest pageRequest = PageRequest.of(page, size);
+
+        if (query.isBlank()) {
+            return SearchedNovelsGetResponse.of(0L, false, Collections.emptyList());
+        }
+
+        Page<Novel> novels = novelRepository.findSearchedNovels(pageRequest, query);
+
+        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        return SearchedNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
+    }
+
+    private NovelGetResponsePreview convertToDTO(Novel novel) {
+
+        List<UserNovel> userNovels = novel.getUserNovels();
+
+        long interestCount = userNovels.stream()
+                .filter(UserNovel::getIsInterest)
+                .count();
+
+        long novelRatingCount = userNovels.stream()
+                .filter(un -> un.getUserNovelRating() != 0.0f)
+                .count();
+
+        double novelRatingSum = userNovels.stream()
+                .filter(un -> un.getUserNovelRating() != 0.0f)
+                .mapToDouble(UserNovel::getUserNovelRating)
+                .sum();
+
+        Float novelRatingAverage = novelRatingCount == 0
+                ? 0.0f
+                : Math.round((float) (novelRatingSum / novelRatingCount) * 10.0f) / 10.0f;
+
+        return NovelGetResponsePreview.of(
+                novel,
+                interestCount,
+                novelRatingAverage,
+                novelRatingCount
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public PopularNovelsGetResponse getTodayPopularNovels() {
+        List<Long> novelIdsFromPopularNovel = getNovelIdsFromPopularNovel();
+        List<Long> selectedNovelIdsFromPopularNovel = getSelectedNovelIdsFromPopularNovel(novelIdsFromPopularNovel);
+        List<Novel> popularNovels = getSelectedPopularNovels(selectedNovelIdsFromPopularNovel);
+        List<Feed> popularFeedsFromPopularNovels = getPopularFeedsFromPopularNovels(selectedNovelIdsFromPopularNovel);
+
+        Map<Long, Feed> feedMap = createFeedMap(popularFeedsFromPopularNovels);
+        Map<Byte, Avatar> avatarMap = createAvatarMap(feedMap);
+
+        return createPopularNovelsGetResponse(popularNovels, feedMap, avatarMap);
+    }
+
+    private List<Long> getNovelIdsFromPopularNovel() {
+        return new ArrayList<>(popularNovelRepository.findAll()
+                .stream()
+                .map(PopularNovel::getNovelId)
+                .toList());
+    }
+
+    private static List<Long> getSelectedNovelIdsFromPopularNovel(List<Long> popularNovelIds) {
+        Collections.shuffle(popularNovelIds);
+        return popularNovelIds.size() > 10
+                ? popularNovelIds.subList(0, 10)
+                : popularNovelIds;
+    }
+
+    private List<Novel> getSelectedPopularNovels(List<Long> selectedPopularNovelIds) {
+        return novelRepository.findAllById(selectedPopularNovelIds);
+    }
+
+    private List<Feed> getPopularFeedsFromPopularNovels(List<Long> selectedPopularNovelIds) {
+        return feedRepository.findPopularFeedsByNovelIds(selectedPopularNovelIds);
+    }
+
+    private static Map<Long, Feed> createFeedMap(List<Feed> popularFeedsFromPopularNovels) {
+        return popularFeedsFromPopularNovels.stream()
+                .collect(Collectors.toMap(Feed::getNovelId, feed -> feed));
+    }
+
+    private Map<Byte, Avatar> createAvatarMap(Map<Long, Feed> feedMap) {
+        Set<Byte> avatarIds = feedMap.values()
+                .stream()
+                .map(feed -> feed.getUser().getAvatarId())
+                .collect(Collectors.toSet());
+
+        List<Avatar> avatars = avatarRepository.findAllById(avatarIds);
+        return avatars.stream()
+                .collect(Collectors.toMap(Avatar::getAvatarId, avatar -> avatar));
+    }
+
+    private static PopularNovelsGetResponse createPopularNovelsGetResponse(List<Novel> popularNovels,
+                                                                           Map<Long, Feed> feedMap,
+                                                                           Map<Byte, Avatar> avatarMap) {
+        List<PopularNovelGetResponse> popularNovelResponses = popularNovels.stream()
+                .map(novel -> {
+                    Feed feed = feedMap.get(novel.getNovelId());
+                    if (feed == null) {
+                        return PopularNovelGetResponse.of(novel, null, null);
+                    }
+                    Avatar avatar = avatarMap.get(feed.getUser().getAvatarId());
+                    return PopularNovelGetResponse.of(novel, avatar, feed);
+                })
+                .toList();
+        return new PopularNovelsGetResponse(popularNovelResponses);
+    }
 }

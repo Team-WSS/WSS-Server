@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Feed;
 
 @Repository
-public interface FeedRepository extends JpaRepository<Feed, Long> {
+public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRepository {
 
     Integer countByNovelId(Long novelId);
 
@@ -16,9 +16,18 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
             + "(:lastFeedId = 0 OR f.feedId < :lastFeedId) "
             + "AND f.isHidden = false "
             + "AND (:userId IS NULL "
-            + "OR (f.user.userId NOT IN (SELECT b.blockingId FROM Block b WHERE b.blockedId = :userId)) "
-            + "AND f.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = :userId)) "
+            + "OR (f.user.userId NOT IN (SELECT b.blockingId FROM Block b WHERE b.blockedId = :userId) "
+            + "AND f.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = :userId))) "
             + "ORDER BY f.feedId DESC")
     Slice<Feed> findFeeds(Long lastFeedId, Long userId, PageRequest pageRequest);
 
+    @Query(value = "SELECT f FROM Feed f WHERE "
+            + "(:lastFeedId = 0 OR f.feedId < :lastFeedId) "
+            + "AND f.novelId = :novelId "
+            + "AND f.isHidden = false "
+            + "AND (:userId IS NULL "
+            + "OR (f.user.userId NOT IN (SELECT b.blockingId FROM Block b WHERE b.blockedId = :userId) "
+            + "AND f.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = :userId))) "
+            + "ORDER BY f.feedId DESC")
+    Slice<Feed> findFeedsByNovelId(Long novelId, Long lastFeedId, Long userId, PageRequest pageRequest);
 }
