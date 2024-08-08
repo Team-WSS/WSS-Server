@@ -22,6 +22,7 @@ import org.websoso.WSSServer.domain.UserNovelAttractivePoint;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
@@ -233,6 +234,10 @@ public class UserNovelService {
         if (owner.getIsProfilePublic() || isOwner) {
             List<UserNovel> userNovelsByNoOffsetPagination = userNovelRepository.findUserNovelsByNoOffsetPagination(
                     owner, lastUserNovelId, size, sortType);
+
+            List<UserNovelAndNovelGetResponse> userNovelAndNovelGetResponses = userNovelsByNoOffsetPagination.stream()
+                    .map(UserNovelAndNovelGetResponse::of)
+                    .toList();
 
         }
 
