@@ -14,5 +14,5 @@ public interface UserNovelCustomRepository {
 
     List<UserNovel> findUserNovelsByNoOffsetPagination(User owner, Long lastUserNovelId, int size, String sortType);
 
-    List<UserNovel> findByUserAndSortType(User owner, String sortType);
+    List<UserNovel> findByUserAndReadStatus(User owner, String readStatus);
 }

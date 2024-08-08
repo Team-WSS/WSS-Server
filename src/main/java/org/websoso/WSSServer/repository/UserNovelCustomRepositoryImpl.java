@@ -98,21 +98,21 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
         return userNovel.userNovelId.lt(lastUserNovelId);
     }
 
-    private BooleanExpression generateSortTypeCondition(String sortType) {
-        if (sortType.equals("INTEREST")) {
+    private BooleanExpression generateReadStatusCondition(String readStatus) {
+        if (readStatus.equals("INTEREST")) {
             return userNovel.isInterest.isTrue();
         } else {
-            ReadStatus status = ReadStatus.valueOf(sortType);
+            ReadStatus status = ReadStatus.valueOf(readStatus);
             return userNovel.status.eq(status);
         }
     }
 
     @Override
-    public List<UserNovel> findByUserAndSortType(User owner, String sortType) {
+    public List<UserNovel> findByUserAndReadStatus(User owner, String readStatus) {
         return jpaQueryFactory
                 .selectFrom(userNovel)
                 .where(userNovel.user.eq(owner),
-                        generateSortTypeCondition(sortType)
+                        generateReadStatusCondition(readStatus)
                 )
                 .fetch();
     }
