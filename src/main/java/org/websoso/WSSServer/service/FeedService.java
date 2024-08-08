@@ -5,6 +5,7 @@ import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER_ACCESS;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_NOT_ALLOWED;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
+import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
@@ -43,6 +46,8 @@ public class FeedService {
     private final LikeService likeService;
     private final PopularFeedService popularFeedService;
     private final CommentService commentService;
+    private final ReportedFeedService reportedFeedService;
+    private final MessageService messageService;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
@@ -147,6 +152,35 @@ public class FeedService {
         Feed feed = getFeedOrException(feedId);
         validateFeedAccess(feed, user);
         return commentService.getComments(user, feed);
+    }
+
+    public void reportFeed(User user, Long feedId, ReportedType reportedType) {
+        Feed feed = getFeedOrException(feedId);
+
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
+
+        if (isUserFeedOwner(feed.getUser(), user)) {
+            throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
+        }
+
+        reportedFeedService.createReportedFeed(feed, user, reportedType);
+
+        if (reportedFeedService.shouldHideFeed(feed, reportedType)) {
+            feed.hideFeed();
+        }
+
+        messageService.sendDiscordWebhookMessage(
+                DiscordWebhookMessage.of(MessageFormatter.formatFeedReportMessage(feed, reportedType)));
+    }
+
+    public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
+        Feed feed = getFeedOrException(feedId);
+
+        checkHiddenFeed(feed);
+        checkBlockedRelationship(feed.getUser(), user);
+
+        commentService.createReportedComment(feed, commentId, user, reportedType);
     }
 
     private Feed getFeedOrException(Long feedId) {

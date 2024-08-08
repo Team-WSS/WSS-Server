@@ -73,4 +73,7 @@ public class Comment extends BaseEntity {
         this.feed = feed;
     }
 
+    public void hideComment() {
+        this.isHidden = true;
+    }
 }
