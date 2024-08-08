@@ -233,6 +233,18 @@ public class UserNovelService {
 
         if (owner.getIsProfilePublic() || isOwner) {
             List<UserNovel> userNovelsByUserAndSortType = userNovelRepository.findByUserAndSortType(owner, sortType);
+            long evaluatedUserNovelCount = userNovelsByUserAndSortType.stream()
+                    .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
+                    .count();
+            float evaluatedUserNovelSum = (float) userNovelsByUserAndSortType
+                    .stream()
+                    .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
+                    .mapToDouble(UserNovel::getUserNovelRating)
+                    .sum();
+            Float evaluatedUserNovelRating = evaluatedUserNovelCount > 0
+                    ? evaluatedUserNovelSum / evaluatedUserNovelCount
+                    : 0;
+            Long userNovelCount = (long) userNovelsByUserAndSortType.size();
 
             List<UserNovel> userNovelsByNoOffsetPagination = userNovelRepository.findUserNovelsByNoOffsetPagination(
                     owner, lastUserNovelId, size, sortType);
@@ -240,7 +252,6 @@ public class UserNovelService {
             List<UserNovelAndNovelGetResponse> userNovelAndNovelGetResponses = userNovelsByNoOffsetPagination.stream()
                     .map(UserNovelAndNovelGetResponse::of)
                     .toList();
-
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
