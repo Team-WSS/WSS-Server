@@ -232,6 +232,8 @@ public class UserNovelService {
         boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
 
         if (owner.getIsProfilePublic() || isOwner) {
+            List<UserNovel> userNovelsByUserAndSortType = userNovelRepository.findByUserAndSortType(owner, sortType);
+
             List<UserNovel> userNovelsByNoOffsetPagination = userNovelRepository.findUserNovelsByNoOffsetPagination(
                     owner, lastUserNovelId, size, sortType);
 
@@ -244,3 +246,4 @@ public class UserNovelService {
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
     }
 }
+
