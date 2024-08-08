@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.EmailGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
@@ -26,7 +27,9 @@ import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
+import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
+import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.UserNovelService;
 import org.websoso.WSSServer.service.UserService;
 import org.websoso.WSSServer.validation.NicknameConstraint;
@@ -39,6 +42,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserNovelService userNovelService;
+    private final FeedService feedService;
 
     @GetMapping("/nickname/check")
     public ResponseEntity<NicknameValidation> checkNicknameAvailability(Principal principal,
@@ -92,6 +96,16 @@ public class UserController {
                 .body(userService.getMyProfileInfo(user));
     }
 
+    @PatchMapping("/my-profile")
+    public ResponseEntity<Void> updateMyProfileInfo(Principal principal,
+                                                    @RequestBody @Valid UpdateMyProfileRequest updateMyProfileRequest) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        userService.updateMyProfileInfo(user, updateMyProfileRequest);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
     @GetMapping("/profile/{userId}")
     public ResponseEntity<ProfileGetResponse> getProfileInfo(Principal principal,
                                                              @PathVariable("userId") Long userId) {
@@ -119,5 +133,18 @@ public class UserController {
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserNovelStatistics(user));
+    }
+
+    @GetMapping("/{userId}/feeds")
+    public ResponseEntity<UserFeedsGetResponse> getUserFeeds(Principal principal,
+                                                             @PathVariable("userId") Long userId,
+                                                             @RequestParam("lastFeedId") Long lastFeedId,
+                                                             @RequestParam("size") int size) {
+        User visitor = principal == null
+                ? null
+                : userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(feedService.getUserFeeds(visitor, userId, lastFeedId, size));
     }
 }

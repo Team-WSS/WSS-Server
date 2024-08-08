@@ -17,6 +17,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.domain.common.Role;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
+import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 
 @Entity
@@ -65,6 +66,18 @@ public class User {
 
     public void updateProfileStatus(Boolean profileStatus) {
         this.isProfilePublic = profileStatus;
+    }
+
+    public void updateUserProfile(UpdateMyProfileRequest updateMyProfileRequest) {
+        if (updateMyProfileRequest.avatarId() != null) {
+            this.avatarId = updateMyProfileRequest.avatarId();
+        }
+        if (updateMyProfileRequest.nickname() != null) {
+            this.nickname = updateMyProfileRequest.nickname();
+        }
+        if (updateMyProfileRequest.intro() != null) {
+            this.intro = updateMyProfileRequest.intro();
+        }
     }
 
     public void updateUserInfo(RegisterUserInfoRequest registerUserInfoRequest) {

@@ -35,6 +35,7 @@ public class SecurityConfig {
             "/novels/popular",
             "/feeds",
             "/feeds/popular",
+            "/users/{userId}/feeds",
             "/users/profile/{userId}"
     };
 

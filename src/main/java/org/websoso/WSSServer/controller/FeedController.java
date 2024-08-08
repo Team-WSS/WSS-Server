@@ -27,6 +27,7 @@ import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.PopularFeedService;
@@ -127,6 +128,16 @@ public class FeedController {
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getFeeds(user, category, lastFeedId, size));
+    }
+
+    @GetMapping("/interest")
+    public ResponseEntity<InterestFeedsGetResponse> getInterestFeeds(Principal principal) {
+        User user = principal == null
+                ? null
+                : userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(feedService.getInterestFeeds(user));
     }
 
     @PostMapping("/{feedId}/comments")

@@ -33,6 +33,7 @@ import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.domain.common.AttractivePointName;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
+import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.novel.NovelGetResponsePreview;
@@ -71,6 +72,8 @@ public class NovelService {
     private final FeedRepository feedRepository;
     private final NovelGenreRepository novelGenreRepository;
     private final UserNovelKeywordRepository userNovelKeywordRepository;
+    private final KeywordService keywordService;
+    private final GenreService genreService;
     private final PopularNovelRepository popularNovelRepository;
     private final AvatarRepository avatarRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
@@ -113,7 +116,6 @@ public class NovelService {
     }
 
     public void registerAsInterest(User user, Long novelId) {
-
         Novel novel = getNovelOrException(novelId);
         UserNovel userNovel = userNovelService.getUserNovelOrNull(user, novel);
 
@@ -129,7 +131,6 @@ public class NovelService {
     }
 
     public void unregisterAsInterest(User user, Long novelId) {
-
         Novel novel = getNovelOrException(novelId);
         UserNovel userNovel = userNovelService.getUserNovelOrException(user, novel);
 
@@ -149,6 +150,7 @@ public class NovelService {
         return userNovel.getStatus() == null;
     }
 
+    @Transactional(readOnly = true)
     public NovelGetResponseInfoTab getNovelInfoInfoTab(Long novelId) {
         Novel novel = getNovelOrException(novelId);
         return NovelGetResponseInfoTab.of(
@@ -169,7 +171,6 @@ public class NovelService {
     }
 
     private List<String> getAttractivePoints(Novel novel) {
-
         Map<String, Integer> attractivePointMap = makeAttractivePointMapExcludingZero(novel);
 
         if (attractivePointMap.isEmpty()) {
@@ -180,7 +181,6 @@ public class NovelService {
     }
 
     private Map<String, Integer> makeAttractivePointMapExcludingZero(Novel novel) {
-
         Map<String, Integer> attractivePointMap = new HashMap<>();
 
         for (AttractivePointName point : AttractivePointName.values()) {
@@ -195,7 +195,6 @@ public class NovelService {
     }
 
     private List<String> getTOP3AttractivePoints(Map<String, Integer> attractivePointMap) {
-
         Map<Integer, List<String>> groupedByValue = groupAttractivePointByValue(attractivePointMap);
 
         List<String> result = new ArrayList<>();
@@ -232,7 +231,6 @@ public class NovelService {
     }
 
     private List<KeywordCountGetResponse> getKeywords(Novel novel) {
-
         List<UserNovelKeyword> userNovelKeywords = userNovelKeywordRepository.findAllByUserNovel_Novel(novel);
 
         if (userNovelKeywords.isEmpty()) {
@@ -250,8 +248,24 @@ public class NovelService {
     }
 
     @Transactional(readOnly = true)
-    public SearchedNovelsGetResponse searchNovels(String query, int page, int size) {
+    public FilteredNovelsGetResponse getFilteredNovels(List<String> genreNames, Boolean isCompleted, Float novelRating,
+                                                       List<Integer> keywordIds, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        List<Genre> genres = getGenres(genreNames);
+        List<Keyword> keywords = getKeywords(keywordIds);
 
+        Page<Novel> novels = novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRating,
+                keywords);
+
+        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        return FilteredNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
+    }
+
+    @Transactional(readOnly = true)
+    public SearchedNovelsGetResponse searchNovels(String query, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
 
         if (query.isBlank()) {
@@ -267,18 +281,45 @@ public class NovelService {
         return SearchedNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
     }
 
-    private NovelGetResponsePreview convertToDTO(Novel novel) {
+    private List<Genre> getGenres(List<String> genreNames) {
+        genreNames = genreNames == null
+                ? Collections.emptyList()
+                : genreNames;
 
+        List<Genre> genres = new ArrayList<>();
+        if (!genreNames.isEmpty()) {
+            for (String genreName : genreNames) {
+                genres.add(genreService.getGenreOrException(genreName));
+            }
+        }
+
+        return genres;
+    }
+
+    private List<Keyword> getKeywords(List<Integer> keywordIds) {
+        keywordIds = keywordIds == null
+                ? Collections.emptyList()
+                : keywordIds;
+
+        List<Keyword> keywords = new ArrayList<>();
+        if (!keywordIds.isEmpty()) {
+            for (Integer keywordId : keywordIds) {
+                keywords.add(keywordService.getKeywordOrException(keywordId));
+            }
+        }
+
+        return keywords;
+    }
+
+    private NovelGetResponsePreview convertToDTO(Novel novel) {
         List<UserNovel> userNovels = novel.getUserNovels();
 
         long interestCount = userNovels.stream()
                 .filter(UserNovel::getIsInterest)
                 .count();
-
         long novelRatingCount = userNovels.stream()
                 .filter(un -> un.getUserNovelRating() != 0.0f)
                 .count();
-
         double novelRatingSum = userNovels.stream()
                 .filter(un -> un.getUserNovelRating() != 0.0f)
                 .mapToDouble(UserNovel::getUserNovelRating)
