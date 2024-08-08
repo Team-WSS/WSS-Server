@@ -6,6 +6,7 @@ import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
 import java.util.List;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 
@@ -72,5 +74,26 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .from(userNovel)
                 .where(userNovel.user.eq(user))
                 .fetchOne();
+    }
+
+    @Override
+    public List<UserNovel> findUserNovelsByNoOffsetPagination(User owner, Long lastUserNovelId,
+                                                              int size, String sortType) {
+        return jpaQueryFactory
+                .selectFrom(userNovel)
+                .where(
+                        userNovel.user.eq(owner),
+                        ltFeedId(lastUserNovelId)
+                )
+                .orderBy(userNovel.userNovelId.desc())
+                .limit(size)
+                .fetch();
+    }
+
+    private BooleanExpression ltFeedId(Long lastUserNovelId) {
+        if (lastUserNovelId == 0) {
+            return null;
+        }
+        return userNovel.userNovelId.lt(lastUserNovelId);
     }
 }
