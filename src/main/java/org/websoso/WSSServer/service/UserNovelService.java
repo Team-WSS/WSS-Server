@@ -231,6 +231,8 @@ public class UserNovelService {
         boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
 
         if (owner.getIsProfilePublic() || isOwner) {
+            List<UserNovel> userNovelsByNoOffsetPagination = userNovelRepository.findUserNovelsByNoOffsetPagination(
+                    owner, lastUserNovelId, size, sortType);
 
         }
 
