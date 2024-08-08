@@ -106,4 +106,14 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
             return userNovel.status.eq(status);
         }
     }
+
+    @Override
+    public List<UserNovel> findByUserAndSortType(User owner, String sortType) {
+        return jpaQueryFactory
+                .selectFrom(userNovel)
+                .where(userNovel.user.eq(owner),
+                        generateSortTypeCondition(sortType)
+                )
+                .fetch();
+    }
 }
