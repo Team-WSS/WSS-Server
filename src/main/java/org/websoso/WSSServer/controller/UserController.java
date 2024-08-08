@@ -27,6 +27,7 @@ import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
 import org.websoso.WSSServer.service.UserNovelService;
 import org.websoso.WSSServer.service.UserService;
 import org.websoso.WSSServer.validation.NicknameConstraint;
@@ -119,5 +120,19 @@ public class UserController {
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserNovelStatistics(user));
+    }
+
+    @GetMapping("/{userId}/novels")
+    public ResponseEntity<UserNovelAndNovelsGetResponse> getUserNovelsAndNovels(Principal principal,
+                                                                                @PathVariable("userId") Long userId,
+                                                                                @RequestParam("lastUserNovelId") Long lastUserNovelId,
+                                                                                @RequestParam("size") int size,
+                                                                                @RequestParam("sortType") String sortType) {
+        User visitor = principal == null
+                ? null
+                : userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(userNovelService.getUserNovelsAndNovels(visitor, userId, lastUserNovelId, size, sortType));
     }
 }
