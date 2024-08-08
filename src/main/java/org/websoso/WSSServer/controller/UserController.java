@@ -125,6 +125,7 @@ public class UserController {
     @GetMapping("/{userId}/novels")
     public ResponseEntity<UserNovelAndNovelsGetResponse> getUserNovelsAndNovels(Principal principal,
                                                                                 @PathVariable("userId") Long userId,
+                                                                                @RequestParam("readStatus") String readStatus,
                                                                                 @RequestParam("lastUserNovelId") Long lastUserNovelId,
                                                                                 @RequestParam("size") int size,
                                                                                 @RequestParam("sortType") String sortType) {
@@ -133,6 +134,7 @@ public class UserController {
                 : userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body(userNovelService.getUserNovelsAndNovels(visitor, userId, lastUserNovelId, size, sortType));
+                .body(userNovelService.getUserNovelsAndNovels(
+                        visitor, userId, readStatus, lastUserNovelId, size, sortType));
     }
 }
