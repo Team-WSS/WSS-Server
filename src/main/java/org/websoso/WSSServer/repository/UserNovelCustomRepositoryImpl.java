@@ -117,6 +117,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
     }
 
     private OrderSpecifier<?> getSortOrder(String sortType) {
+        // TODO 잘못된 sortType이 오는 경우 default desc가 아닌 예외 처리
         if ("NEWEST".equalsIgnoreCase(sortType)) {
             return userNovel.userNovelId.desc();
         } else if ("OLDEST".equalsIgnoreCase(sortType)) {
