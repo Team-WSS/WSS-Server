@@ -10,4 +10,6 @@ import org.websoso.WSSServer.domain.User;
 public interface GenrePreferenceRepository extends JpaRepository<GenrePreference, Long> {
 
     List<GenrePreference> findByUser(User user);
+
+    void deleteAllByUser(User user);
 }

@@ -26,6 +26,7 @@ import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
+import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 import org.websoso.WSSServer.service.UserNovelService;
 import org.websoso.WSSServer.service.UserService;
@@ -90,6 +91,16 @@ public class UserController {
         return ResponseEntity
                 .status(OK)
                 .body(userService.getMyProfileInfo(user));
+    }
+
+    @PatchMapping("/my-profile")
+    public ResponseEntity<Void> updateMyProfileInfo(Principal principal,
+                                                    @RequestBody @Valid UpdateMyProfileRequest updateMyProfileRequest) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        userService.updateMyProfileInfo(user, updateMyProfileRequest);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
     }
 
     @GetMapping("/profile/{userId}")
