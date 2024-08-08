@@ -5,6 +5,7 @@ import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -86,7 +87,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                         generateReadStatusCondition(readStatus),
                         compareFeedId(lastUserNovelId, sortType)
                 )
-                .orderBy(userNovel.userNovelId.desc())
+                .orderBy(getSortOrder(sortType))
                 .limit(size)
                 .fetch();
     }
@@ -111,6 +112,14 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
         } else {
             ReadStatus status = ReadStatus.valueOf(readStatus);
             return userNovel.status.eq(status);
+        }
+    }
+
+    private OrderSpecifier<?> getSortOrder(String sortType) {
+        if ("NEWEST".equalsIgnoreCase(sortType)) {
+            return userNovel.userNovelId.desc();
+        } else if ("OLDEST".equalsIgnoreCase(sortType)) {
+            return userNovel.userNovelId.asc();
         }
     }
 
