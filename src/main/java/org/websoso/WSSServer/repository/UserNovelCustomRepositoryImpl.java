@@ -77,8 +77,8 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
     }
 
     @Override
-    public List<UserNovel> findUserNovelsByNoOffsetPagination(User owner, Long lastUserNovelId,
-                                                              int size, String sortType) {
+    public List<UserNovel> findUserNovelsByNoOffsetPagination(User owner, Long lastUserNovelId, int size,
+                                                              String readStatus, String sortType) {
         return jpaQueryFactory
                 .selectFrom(userNovel)
                 .where(
