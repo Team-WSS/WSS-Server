@@ -248,7 +248,8 @@ public class UserNovelService {
 
             List<UserNovel> userNovelsByNoOffsetPagination = userNovelRepository.findUserNovelsByNoOffsetPagination(
                     owner, lastUserNovelId, size, sortType);
-
+            // TODO Slice의 hasNext()로 판단하도록 수정
+            Boolean isLoadable = userNovelsByNoOffsetPagination.size() == size;
             List<UserNovelAndNovelGetResponse> userNovelAndNovelGetResponses = userNovelsByNoOffsetPagination.stream()
                     .map(UserNovelAndNovelGetResponse::of)
                     .toList();
