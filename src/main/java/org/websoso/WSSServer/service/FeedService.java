@@ -8,17 +8,21 @@ import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_
 import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_NOT_ALLOWED;
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
@@ -29,14 +33,18 @@ import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedInfo;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.InterestFeedGetResponse;
+import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
+import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
+import org.websoso.WSSServer.repository.UserNovelRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +60,8 @@ public class FeedService {
     private final BlockService blockService;
     private final LikeService likeService;
     private final PopularFeedService popularFeedService;
+    private final UserNovelRepository userNovelRepository;
+    private final AvatarRepository avatarRepository;
     private final CommentService commentService;
     private final ReportedFeedService reportedFeedService;
     private final MessageService messageService;
@@ -247,6 +257,35 @@ public class FeedService {
             return (feedRepository.findFeeds(lastFeedId, userId, pageRequest));
         }
         return feedCategoryService.getFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest);
+    }
+
+    public InterestFeedsGetResponse getInterestFeeds(User user) {
+        List<Novel> interestNovels = userNovelRepository.findByUserAndIsInterestTrue(user)
+                .stream()
+                .map(UserNovel::getNovel)
+                .toList();
+
+        Map<Long, Novel> novelMap = interestNovels
+                .stream()
+                .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
+        List<Long> interestNovelIds = new ArrayList<>(novelMap.keySet());
+
+        List<Feed> interestFeeds = feedRepository.findTop10ByNovelIdInOrderByFeedIdDesc(interestNovelIds);
+        Set<Byte> avatarIds = interestFeeds.stream()
+                .map(feed -> feed.getUser().getAvatarId())
+                .collect(Collectors.toSet());
+        Map<Byte, Avatar> avatarMap = avatarRepository.findAllById(avatarIds)
+                .stream()
+                .collect(Collectors.toMap(Avatar::getAvatarId, avatar -> avatar));
+
+        List<InterestFeedGetResponse> interestFeedGetResponses = interestFeeds.stream()
+                .map(feed -> {
+                    Novel novel = novelMap.get(feed.getNovelId());
+                    Avatar avatar = avatarMap.get(feed.getUser().getAvatarId());
+                    return InterestFeedGetResponse.of(novel, feed.getUser(), feed, avatar);
+                })
+                .toList();
+        return InterestFeedsGetResponse.of(interestFeedGetResponses);
     }
 
     public NovelGetResponseFeedTab getFeedsByNovel(User user, Long novelId, Long lastFeedId, int size) {

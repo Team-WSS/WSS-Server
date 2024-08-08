@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.repository;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +23,6 @@ public interface UserNovelRepository extends JpaRepository<UserNovel, Long>, Use
     Float sumUserNovelRatingByNovel(Novel novel);
 
     Integer countByNovelAndUserNovelRatingNot(Novel novel, float ratingToExclude);
+
+    List<UserNovel> findByUserAndIsInterestTrue(User user);
 }
