@@ -232,6 +232,7 @@ public class UserNovelService {
         boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
 
         if (owner.getIsProfilePublic() || isOwner) {
+            // TODO 성능 개선
             List<UserNovel> userNovelsByUserAndSortType = userNovelRepository.findByUserAndSortType(owner, sortType);
             long evaluatedUserNovelCount = userNovelsByUserAndSortType.stream()
                     .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
