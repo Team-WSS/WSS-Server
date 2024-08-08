@@ -41,4 +41,7 @@ public class Novel {
     @OneToMany(mappedBy = "novel", fetch = FetchType.LAZY)
     private List<UserNovel> userNovels = new ArrayList<>();
 
+    @OneToMany(mappedBy = "novel", fetch = FetchType.LAZY)
+    private List<NovelGenre> novelGenres = new ArrayList<>();
+
 }

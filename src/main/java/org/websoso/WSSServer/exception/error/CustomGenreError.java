@@ -11,7 +11,7 @@ import org.websoso.WSSServer.exception.common.ICustomError;
 @Getter
 public enum CustomGenreError implements ICustomError {
 
-    GENRE_NOT_FOUND("GENRE-001", "해당 이름을 가진 장르는 존재하지 않습니다.", NOT_FOUND);
+    GENRE_NOT_FOUND("GENRE-001", "해당 이름을 가진 장르를 찾을 수 없습니다.", NOT_FOUND);
 
     private final String code;
     private final String description;

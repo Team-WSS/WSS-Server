@@ -2,6 +2,8 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_AVATAR;
+import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_INTRO;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_NICKNAME;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
@@ -25,6 +27,8 @@ import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
+import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
+import org.websoso.WSSServer.exception.error.CustomUserError;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
@@ -46,12 +50,10 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public NicknameValidation isNicknameAvailable(User user, String nickname) {
-        if (user.getNickname() != null && user.getNickname().equals(nickname)) {
-            throw new CustomUserException(ALREADY_SET_NICKNAME, "nickname with given is already set");
-        }
-        if (userRepository.existsByNickname(nickname)) {
-            throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
-        }
+        checkIfAlreadySetOrThrow(user.getNickname(), nickname,
+                ALREADY_SET_NICKNAME, "nickname with given is already set");
+        checkNicknameIfAlreadyExist(nickname);
+
         return NicknameValidation.of(true);
     }
 
@@ -76,9 +78,9 @@ public class UserService {
     }
 
     public void editProfileStatus(User user, EditProfileStatusRequest editProfileStatusRequest) {
-        if (user.getIsProfilePublic().equals(editProfileStatusRequest.isProfilePublic())) {
-            throw new CustomUserException(ALREADY_SET_PROFILE_STATUS, "profile status with given is already set");
-        }
+        checkIfAlreadySetOrThrow(user.getIsProfilePublic(), editProfileStatusRequest.isProfilePublic(),
+                ALREADY_SET_PROFILE_STATUS, "profile status with given is already set");
+
         user.updateProfileStatus(editProfileStatusRequest.isProfilePublic());
     }
 
@@ -96,6 +98,25 @@ public class UserService {
         return MyProfileResponse.of(user, avatar, genrePreferences);
     }
 
+    public void updateMyProfileInfo(User user, UpdateMyProfileRequest updateMyProfileRequest) {
+        checkIfAlreadySetOrThrow(user.getAvatarId(), updateMyProfileRequest.avatarId(),
+                ALREADY_SET_AVATAR, "avatarId with given is already set");
+
+        checkIfAlreadySetOrThrow(user.getNickname(), updateMyProfileRequest.nickname(),
+                ALREADY_SET_NICKNAME, "nickname with given is already set");
+        checkNicknameIfAlreadyExist(updateMyProfileRequest.nickname());
+
+        checkIfAlreadySetOrThrow(user.getIntro(), updateMyProfileRequest.intro(),
+                ALREADY_SET_INTRO, "intro with given is already set");
+
+        genrePreferenceRepository.deleteAllByUser(user);
+
+        List<GenrePreference> newPreferGenres = createGenrePreferences(user, updateMyProfileRequest.genrePreferences());
+        genrePreferenceRepository.saveAll(newPreferGenres);
+
+        user.updateUserProfile(updateMyProfileRequest);
+    }
+  
     @Transactional(readOnly = true)
     public ProfileGetResponse getProfileInfo(User visitor, Long ownerId) {
         User owner = getUserOrException(ownerId);
@@ -114,15 +135,22 @@ public class UserService {
     }
 
     public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
-        validateNickname(registerUserInfoRequest.nickname());
+        checkNicknameIfAlreadyExist(registerUserInfoRequest.nickname());
         user.updateUserInfo(registerUserInfoRequest);
         List<GenrePreference> preferGenres = createGenrePreferences(user, registerUserInfoRequest.genrePreferences());
         genrePreferenceRepository.saveAll(preferGenres);
     }
 
-    private void validateNickname(String nickname) {
+    private void checkNicknameIfAlreadyExist(String nickname) {
         if (userRepository.existsByNickname(nickname)) {
             throw new CustomUserException(DUPLICATED_NICKNAME, "nickname is duplicated.");
+        }
+    }
+
+    private <T> void checkIfAlreadySetOrThrow(T currentValue, T newValue,
+                                              CustomUserError customUserError, String message) {
+        if (newValue != null && newValue.equals(currentValue)) {
+            throw new CustomUserException(customUserError, message);
         }
     }
 
