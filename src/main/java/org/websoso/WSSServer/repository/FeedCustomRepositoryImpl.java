@@ -35,7 +35,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
     }
 
     @Override
-    public List<Feed> getFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size) {
+    public List<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size) {
         return jpaQueryFactory
                 .selectFrom(feed)
                 .where(

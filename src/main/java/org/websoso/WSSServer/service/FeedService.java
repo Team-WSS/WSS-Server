@@ -281,7 +281,7 @@ public class FeedService {
                 : visitor.getUserId();
 
         if (owner.getIsProfilePublic() || isOwner) {
-            List<Feed> feedsByNoOffsetPagination = feedRepository.getFeedsByNoOffsetPagination(owner, lastFeedId, size);
+            List<Feed> feedsByNoOffsetPagination = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size);
 
             List<Long> novelIds = feedsByNoOffsetPagination.stream()
                     .map(Feed::getNovelId)

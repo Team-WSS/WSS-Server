@@ -8,5 +8,5 @@ public interface FeedCustomRepository {
 
     List<Feed> findPopularFeedsByNovelIds(List<Long> novelIds);
 
-    List<Feed> getFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size);
+    List<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size);
 }
