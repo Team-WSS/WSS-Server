@@ -21,6 +21,7 @@ import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.novel.SearchedNovelsGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
+import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
 import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserService;
@@ -117,5 +118,13 @@ public class NovelController {
         return ResponseEntity
                 .status(OK)
                 .body(novelService.getTodayPopularNovels());
+    }
+
+    @GetMapping("/taste")
+    public ResponseEntity<TasteNovelsGetResponse> getTasteNovels(Principal principal) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(novelService.getTasteNovels(user));
     }
 }
