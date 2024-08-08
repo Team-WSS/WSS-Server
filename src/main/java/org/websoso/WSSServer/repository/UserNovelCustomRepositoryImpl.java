@@ -83,6 +83,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .selectFrom(userNovel)
                 .where(
                         userNovel.user.eq(owner),
+                        generateSortTypeCondition(sortType),
                         ltFeedId(lastUserNovelId)
                 )
                 .orderBy(userNovel.userNovelId.desc())
@@ -95,5 +96,14 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
             return null;
         }
         return userNovel.userNovelId.lt(lastUserNovelId);
+    }
+
+    private BooleanExpression generateSortTypeCondition(String sortType) {
+        if (sortType.equals("INTEREST")) {
+            return userNovel.isInterest.isTrue();
+        } else {
+            ReadStatus status = ReadStatus.valueOf(sortType);
+            return userNovel.status.eq(status);
+        }
     }
 }
