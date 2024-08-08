@@ -97,6 +97,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
             return null;
         }
 
+        // TODO 잘못된 sortType이 오는 경우 default null로 return이 아닌 예외 처리
         if ("NEWEST".equalsIgnoreCase(sortType)) {
             return userNovel.userNovelId.lt(lastUserNovelId);
         } else if ("OLDEST".equalsIgnoreCase(sortType)) {
