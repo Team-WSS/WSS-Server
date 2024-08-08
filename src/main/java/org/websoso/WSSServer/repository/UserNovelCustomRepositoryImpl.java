@@ -108,6 +108,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
     }
 
     private BooleanExpression generateReadStatusCondition(String readStatus) {
+        // TODO 잘못된 readStatus가 오는 경우 예외 처리
         if (readStatus.equals("INTEREST")) {
             return userNovel.isInterest.isTrue();
         } else {
