@@ -83,7 +83,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .selectFrom(userNovel)
                 .where(
                         userNovel.user.eq(owner),
-                        generateSortTypeCondition(sortType),
+                        generateReadStatusCondition(readStatus),
                         ltFeedId(lastUserNovelId)
                 )
                 .orderBy(userNovel.userNovelId.desc())
