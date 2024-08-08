@@ -9,6 +9,7 @@ import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -212,10 +213,9 @@ public class FeedService {
         List<Long> interestNovelIds = new ArrayList<>(novelMap.keySet());
 
         List<Feed> interestFeeds = feedRepository.findTop10ByNovelIdInOrderByFeedIdDesc(interestNovelIds);
-        List<Byte> avatarIds = interestFeeds.stream()
+        Set<Byte> avatarIds = interestFeeds.stream()
                 .map(feed -> feed.getUser().getAvatarId())
-                .distinct()
-                .toList();
+                .collect(Collectors.toSet());
         Map<Byte, Avatar> avatarMap = avatarRepository.findAllById(avatarIds)
                 .stream()
                 .collect(Collectors.toMap(Avatar::getAvatarId, avatar -> avatar));
