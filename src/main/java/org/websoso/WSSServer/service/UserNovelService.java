@@ -253,6 +253,9 @@ public class UserNovelService {
             List<UserNovelAndNovelGetResponse> userNovelAndNovelGetResponses = userNovelsByNoOffsetPagination.stream()
                     .map(UserNovelAndNovelGetResponse::of)
                     .toList();
+
+            return UserNovelAndNovelsGetResponse.of(userNovelCount, evaluatedUserNovelRating, isLoadable,
+                    userNovelAndNovelGetResponses);
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
