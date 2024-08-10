@@ -7,7 +7,9 @@ import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
 import java.util.List;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 
@@ -61,6 +64,65 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
     }
 
     @Override
+    public List<UserNovel> findUserNovelsByNoOffsetPagination(User owner, Long lastUserNovelId, int size,
+                                                              String readStatus, String sortType) {
+        return jpaQueryFactory
+                .selectFrom(userNovel)
+                .where(
+                        userNovel.user.eq(owner),
+                        generateReadStatusCondition(readStatus),
+                        compareFeedId(lastUserNovelId, sortType)
+                )
+                .orderBy(getSortOrder(sortType))
+                .limit(size)
+                .fetch();
+    }
+
+    private BooleanExpression compareFeedId(Long lastUserNovelId, String sortType) {
+        if (lastUserNovelId == 0) {
+            return null;
+        }
+
+        // TODO 잘못된 sortType이 오는 경우 default null로 return이 아닌 예외 처리
+        if ("NEWEST".equalsIgnoreCase(sortType)) {
+            return userNovel.userNovelId.lt(lastUserNovelId);
+        } else if ("OLDEST".equalsIgnoreCase(sortType)) {
+            return userNovel.userNovelId.gt(lastUserNovelId);
+        }
+
+        return null;
+    }
+
+    private BooleanExpression generateReadStatusCondition(String readStatus) {
+        // TODO 잘못된 readStatus가 오는 경우 예외 처리
+        if (readStatus.equals("INTEREST")) {
+            return userNovel.isInterest.isTrue();
+        } else {
+            ReadStatus status = ReadStatus.valueOf(readStatus);
+            return userNovel.status.eq(status);
+        }
+    }
+
+    private OrderSpecifier<?> getSortOrder(String sortType) {
+        // TODO 잘못된 sortType이 오는 경우 default desc가 아닌 예외 처리
+        if ("NEWEST".equalsIgnoreCase(sortType)) {
+            return userNovel.userNovelId.desc();
+        } else if ("OLDEST".equalsIgnoreCase(sortType)) {
+            return userNovel.userNovelId.asc();
+        }
+        return userNovel.userNovelId.desc();
+    }
+
+    @Override
+    public List<UserNovel> findByUserAndReadStatus(User owner, String readStatus) {
+        return jpaQueryFactory
+                .selectFrom(userNovel)
+                .where(userNovel.user.eq(owner),
+                        generateReadStatusCondition(readStatus)
+                )
+                .fetch();
+    }
+
     public List<Long> findTodayPopularNovelsId(Pageable pageable) {
         LocalDate sevenDaysAgo = LocalDate.now().minusDays(7);
 
@@ -94,5 +156,4 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .map(tuple -> tuple.get(novel))
                 .toList();
     }
-
 }

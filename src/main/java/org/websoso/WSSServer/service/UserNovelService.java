@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_EVALUATED;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
@@ -21,10 +22,13 @@ import org.websoso.WSSServer.domain.UserNovelAttractivePoint;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
+import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.UserNovelAttractivePointRepository;
@@ -42,6 +46,7 @@ public class UserNovelService {
     private final UserNovelAttractivePointRepository userNovelAttractivePointRepository;
     private final UserNovelKeywordRepository userNovelKeywordRepository;
     private final AttractivePointService attractivePointService;
+    private final UserService userService;
 
     @Transactional(readOnly = true)
     public UserNovel getUserNovelOrException(User user, Novel novel) {
@@ -219,4 +224,43 @@ public class UserNovelService {
     public UserNovelCountGetResponse getUserNovelStatistics(User user) {
         return userNovelRepository.findUserNovelStatistics(user);
     }
+
+    @Transactional(readOnly = true)
+    public UserNovelAndNovelsGetResponse getUserNovelsAndNovels(User visitor, Long ownerId, String readStatus,
+                                                                Long lastUserNovelId, int size, String sortType) {
+        User owner = userService.getUserOrException(ownerId);
+        boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
+
+        if (owner.getIsProfilePublic() || isOwner) {
+            // TODO 성능 개선
+            List<UserNovel> userNovelsByUserAndSortType =
+                    userNovelRepository.findByUserAndReadStatus(owner, readStatus);
+            long evaluatedUserNovelCount = userNovelsByUserAndSortType.stream()
+                    .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
+                    .count();
+            float evaluatedUserNovelSum = (float) userNovelsByUserAndSortType
+                    .stream()
+                    .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
+                    .mapToDouble(UserNovel::getUserNovelRating)
+                    .sum();
+            Float evaluatedUserNovelRating = evaluatedUserNovelCount > 0
+                    ? evaluatedUserNovelSum / evaluatedUserNovelCount
+                    : 0;
+            Long userNovelCount = (long) userNovelsByUserAndSortType.size();
+
+            List<UserNovel> userNovelsByNoOffsetPagination = userNovelRepository.findUserNovelsByNoOffsetPagination(
+                    owner, lastUserNovelId, size, readStatus, sortType);
+            // TODO Slice의 hasNext()로 판단하도록 수정
+            Boolean isLoadable = userNovelsByNoOffsetPagination.size() == size;
+            List<UserNovelAndNovelGetResponse> userNovelAndNovelGetResponses = userNovelsByNoOffsetPagination.stream()
+                    .map(UserNovelAndNovelGetResponse::of)
+                    .toList();
+
+            return UserNovelAndNovelsGetResponse.of(userNovelCount, evaluatedUserNovelRating, isLoadable,
+                    userNovelAndNovelGetResponses);
+        }
+
+        throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
+    }
 }
+
