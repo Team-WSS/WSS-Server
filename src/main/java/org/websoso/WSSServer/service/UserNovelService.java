@@ -295,6 +295,7 @@ public class UserNovelService {
                     .map(preferGenre -> UserGenrePreferenceGetResponse.of(preferGenre.getKey(), preferGenre.getValue()))
                     .toList();
 
+            return UserGenrePreferencesGetResponse.of(genrePreferences);
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
