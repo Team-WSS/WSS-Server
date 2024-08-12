@@ -287,6 +287,8 @@ public class UserNovelService {
                     .map(NovelGenre::getGenre)
                     .collect(Collectors.groupingBy(genre -> genre, Collectors.counting()));
 
+            genreCountMap.forEach((genre, count) -> myGenreCountMap.putIfAbsent(genre, 0L));
+
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
