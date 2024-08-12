@@ -18,6 +18,7 @@ import org.websoso.WSSServer.domain.AttractivePoint;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
+import org.websoso.WSSServer.domain.NovelGenre;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelAttractivePoint;
@@ -277,6 +278,14 @@ public class UserNovelService {
             Map<Genre, Long> genreCountMap = genreRepository.findAll()
                     .stream()
                     .collect(Collectors.toMap(genre -> genre, genre -> 0L));
+
+            Map<Genre, Long> myGenreCountMap = userNovelRepository.findNovelByUser(owner)
+                    .stream()
+                    .map(UserNovel::getNovel)
+                    .map(Novel::getNovelGenres)
+                    .flatMap(List::stream)
+                    .map(NovelGenre::getGenre)
+                    .collect(Collectors.groupingBy(genre -> genre, Collectors.counting()));
 
         }
 
