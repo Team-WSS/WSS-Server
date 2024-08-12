@@ -25,6 +25,7 @@ import org.websoso.WSSServer.domain.UserNovelAttractivePoint;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserGenrePreferenceGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserGenrePreferencesGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
@@ -288,6 +289,11 @@ public class UserNovelService {
                     .collect(Collectors.groupingBy(genre -> genre, Collectors.counting()));
 
             genreCountMap.forEach((genre, count) -> myGenreCountMap.putIfAbsent(genre, 0L));
+
+            List<UserGenrePreferenceGetResponse> genrePreferences = myGenreCountMap.entrySet()
+                    .stream()
+                    .map(preferGenre -> UserGenrePreferenceGetResponse.of(preferGenre.getKey(), preferGenre.getValue()))
+                    .toList();
 
         }
 
