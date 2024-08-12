@@ -291,6 +291,7 @@ public class UserNovelService {
 
             List<UserGenrePreferenceGetResponse> genrePreferences = myGenreCountMap.entrySet()
                     .stream()
+                    .sorted(Map.Entry.<Genre, Long>comparingByValue().reversed())
                     .map(preferGenre -> UserGenrePreferenceGetResponse.of(preferGenre.getKey(), preferGenre.getValue()))
                     .toList();
 
