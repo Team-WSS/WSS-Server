@@ -8,12 +8,14 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NO
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
+import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
@@ -272,6 +274,9 @@ public class UserNovelService {
         boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
 
         if (owner.getIsProfilePublic() || isOwner) {
+            Map<Genre, Long> genreCountMap = genreRepository.findAll()
+                    .stream()
+                    .collect(Collectors.toMap(genre -> genre, genre -> 0L));
 
         }
 
