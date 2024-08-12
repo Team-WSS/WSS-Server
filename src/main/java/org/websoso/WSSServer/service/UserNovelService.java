@@ -274,6 +274,7 @@ public class UserNovelService {
         User owner = userService.getUserOrException(ownerId);
 
         if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
+            //TODO genreMap은 Genre의 변화가 없다면 매번 repository에서 가져올 필요가 없음 -> 캐싱하여 사용하도록 리팩터링
             Map<Genre, Long> genreCountMap = genreRepository.findAll()
                     .stream()
                     .collect(Collectors.toMap(genre -> genre, genre -> 0L));
