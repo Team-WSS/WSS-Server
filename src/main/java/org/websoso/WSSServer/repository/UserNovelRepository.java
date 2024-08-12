@@ -25,4 +25,6 @@ public interface UserNovelRepository extends JpaRepository<UserNovel, Long>, Use
     Integer countByNovelAndUserNovelRatingNot(Novel novel, float ratingToExclude);
 
     List<UserNovel> findByUserAndIsInterestTrue(User user);
+
+    List<UserNovel> findNovelByUser(User user);
 }
