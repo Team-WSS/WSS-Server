@@ -236,9 +236,8 @@ public class UserNovelService {
     public UserNovelAndNovelsGetResponse getUserNovelsAndNovels(User visitor, Long ownerId, String readStatus,
                                                                 Long lastUserNovelId, int size, String sortType) {
         User owner = userService.getUserOrException(ownerId);
-        boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
 
-        if (owner.getIsProfilePublic() || isOwner) {
+        if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
             // TODO 성능 개선
             List<UserNovel> userNovelsByUserAndSortType =
                     userNovelRepository.findByUserAndReadStatus(owner, readStatus);
@@ -273,9 +272,8 @@ public class UserNovelService {
     @Transactional(readOnly = true)
     public UserGenrePreferencesGetResponse getUserGenrePreferences(User visitor, Long ownerId) {
         User owner = userService.getUserOrException(ownerId);
-        boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
 
-        if (owner.getIsProfilePublic() || isOwner) {
+        if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
             Map<Genre, Long> genreCountMap = genreRepository.findAll()
                     .stream()
                     .collect(Collectors.toMap(genre -> genre, genre -> 0L));
@@ -299,6 +297,11 @@ public class UserNovelService {
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
+    }
+
+    private static boolean isOwner(User visitor, Long ownerId) {
+        //TODO 현재는 비로그인 회원인 경우
+        return visitor != null && visitor.getUserId().equals(ownerId);
     }
 }
 

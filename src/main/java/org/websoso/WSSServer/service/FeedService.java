@@ -314,13 +314,13 @@ public class FeedService {
     @Transactional(readOnly = true)
     public UserFeedsGetResponse getUserFeeds(User visitor, Long ownerId, Long lastFeedId, int size) {
         User owner = userService.getUserOrException(ownerId);
-        boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
         Long visitorId = visitor == null
                 ? null
                 : visitor.getUserId();
 
-        if (owner.getIsProfilePublic() || isOwner) {
-            List<Feed> feedsByNoOffsetPagination = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size);
+        if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
+            List<Feed> feedsByNoOffsetPagination = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId,
+                    size);
 
             List<Long> novelIds = feedsByNoOffsetPagination.stream()
                     .map(Feed::getNovelId)
@@ -340,5 +340,10 @@ public class FeedService {
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
+    }
+
+    private static boolean isOwner(User visitor, Long ownerId) {
+        //TODO 현재는 비로그인 회원인 경우
+        return visitor != null && visitor.getUserId().equals(ownerId);
     }
 }
