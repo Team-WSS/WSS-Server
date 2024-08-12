@@ -275,9 +275,7 @@ public class UserNovelService {
 
         if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
             //TODO genreMap은 Genre의 변화가 없다면 매번 repository에서 가져올 필요가 없음 -> 캐싱하여 사용하도록 리팩터링
-            Map<Genre, Long> genreCountMap = genreRepository.findAll()
-                    .stream()
-                    .collect(Collectors.toMap(genre -> genre, genre -> 0L));
+            List<Genre> allGenres = genreRepository.findAll();
 
             Map<Genre, Long> myGenreCountMap = userNovelRepository.findUserNovelByUser(owner)
                     .stream()
@@ -287,7 +285,7 @@ public class UserNovelService {
                     .map(NovelGenre::getGenre)
                     .collect(Collectors.groupingBy(genre -> genre, Collectors.counting()));
 
-            genreCountMap.forEach((genre, count) -> myGenreCountMap.putIfAbsent(genre, 0L));
+            allGenres.forEach(genre -> myGenreCountMap.putIfAbsent(genre, 0L));
 
             List<UserGenrePreferenceGetResponse> genrePreferences = myGenreCountMap.entrySet()
                     .stream()
