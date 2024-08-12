@@ -1,7 +1,6 @@
 package org.websoso.WSSServer.dto.userNovel;
 
 import java.util.List;
-import org.websoso.WSSServer.domain.Genre;
 
 public record UserGenrePreferencesGetResponse(
         List<UserGenrePreferenceGetResponse> genrePreferences
