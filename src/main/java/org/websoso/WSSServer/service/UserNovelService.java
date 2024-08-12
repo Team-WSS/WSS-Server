@@ -22,6 +22,7 @@ import org.websoso.WSSServer.domain.UserNovelAttractivePoint;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserGenrePreferencesGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
@@ -30,6 +31,7 @@ import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
+import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.UserNovelAttractivePointRepository;
 import org.websoso.WSSServer.repository.UserNovelKeywordRepository;
@@ -47,6 +49,7 @@ public class UserNovelService {
     private final UserNovelKeywordRepository userNovelKeywordRepository;
     private final AttractivePointService attractivePointService;
     private final UserService userService;
+    private final GenreRepository genreRepository;
 
     @Transactional(readOnly = true)
     public UserNovel getUserNovelOrException(User user, Novel novel) {
@@ -258,6 +261,18 @@ public class UserNovelService {
 
             return UserNovelAndNovelsGetResponse.of(userNovelCount, evaluatedUserNovelRating, isLoadable,
                     userNovelAndNovelGetResponses);
+        }
+
+        throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
+    }
+
+    @Transactional(readOnly = true)
+    public UserGenrePreferencesGetResponse getUserGenrePreferences(User visitor, Long ownerId) {
+        User owner = userService.getUserOrException(ownerId);
+        boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
+
+        if (owner.getIsProfilePublic() || isOwner) {
+
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
