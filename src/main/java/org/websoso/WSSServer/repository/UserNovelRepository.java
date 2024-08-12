@@ -26,5 +26,5 @@ public interface UserNovelRepository extends JpaRepository<UserNovel, Long>, Use
 
     List<UserNovel> findByUserAndIsInterestTrue(User user);
 
-    List<UserNovel> findNovelByUser(User user);
+    List<UserNovel> findUserNovelByUser(User user);
 }

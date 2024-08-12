@@ -279,7 +279,7 @@ public class UserNovelService {
                     .stream()
                     .collect(Collectors.toMap(genre -> genre, genre -> 0L));
 
-            Map<Genre, Long> myGenreCountMap = userNovelRepository.findNovelByUser(owner)
+            Map<Genre, Long> myGenreCountMap = userNovelRepository.findUserNovelByUser(owner)
                     .stream()
                     .map(UserNovel::getNovel)
                     .map(Novel::getNovelGenres)
