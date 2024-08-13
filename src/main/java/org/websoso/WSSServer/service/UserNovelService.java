@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_EVALUATED;
@@ -33,6 +34,7 @@ import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
+import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
@@ -295,22 +297,7 @@ public class UserNovelService {
 
             allGenres.forEach(genre -> myGenreCountMap.putIfAbsent(genre, 0L));
 
-            if (owner.getGender().equals(Gender.M)) {
-                List<Genre> priorityOrder = priorityGenreNamesOfMale.stream()
-                        .map(name -> allGenres.stream()
-                                .filter(genre -> genre.getGenreName().equals(name))
-                                .findFirst()
-                                .orElseThrow(() -> new IllegalArgumentException("Invalid genre name: " + name))
-                        )
-                        .toList();
-            }
-            List<Genre> priorityOrder = priorityGenreNamesOfFemale.stream()
-                    .map(name -> allGenres.stream()
-                            .filter(genre -> genre.getGenreName().equals(name))
-                            .findFirst()
-                            .orElseThrow(() -> new IllegalArgumentException("Invalid genre name: " + name))
-                    )
-                    .toList();
+            List<Genre> priorityOrder = getPriorityOrderByGender(owner.getGender(), allGenres);
 
             List<UserGenrePreferenceGetResponse> genrePreferences = myGenreCountMap.entrySet()
                     .stream()
@@ -328,5 +315,26 @@ public class UserNovelService {
     private static boolean isOwner(User visitor, Long ownerId) {
         //TODO 현재는 비로그인 회원인 경우
         return visitor != null && visitor.getUserId().equals(ownerId);
+    }
+
+    private List<Genre> getPriorityOrderByGender(Gender gender, List<Genre> allGenres) {
+        if (gender.equals(Gender.M)) {
+            return priorityGenreNamesOfMale.stream()
+                    .map(name -> allGenres.stream()
+                            .filter(genre -> genre.getGenreName().equals(name))
+                            .findFirst()
+                            .orElseThrow(() -> new CustomGenreException(GENRE_NOT_FOUND,
+                                    "genre with the given genreName is not found"))
+                    )
+                    .toList();
+        }
+        return priorityGenreNamesOfFemale.stream()
+                .map(name -> allGenres.stream()
+                        .filter(genre -> genre.getGenreName().equals(name))
+                        .findFirst()
+                        .orElseThrow(() -> new CustomGenreException(GENRE_NOT_FOUND,
+                                "genre with the given genreName is not found"))
+                )
+                .toList();
     }
 }
