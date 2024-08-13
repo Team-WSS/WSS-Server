@@ -23,6 +23,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelAttractivePoint;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
+import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserGenrePreferenceGetResponse;
@@ -287,9 +288,31 @@ public class UserNovelService {
 
             allGenres.forEach(genre -> myGenreCountMap.putIfAbsent(genre, 0L));
 
+            if (owner.getGender().equals(Gender.M)) {
+                List<Genre> priorityOrder = List.of(
+                                "fantasy", "modernFantasy", "wuxia", "drama", "mystery", "lightNovel", "romance", "romanceFantasy", "BL"
+                        ).stream()
+                        .map(name -> allGenres.stream()
+                                .filter(genre -> genre.getGenreName().equals(name))
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalArgumentException("Invalid genre name: " + name))
+                        )
+                        .toList();
+            }
+            List<Genre> priorityOrder = List.of(
+                            "romance", "romanceFantasy", "fantasy", "modernFantasy", "wuxia", "drama", "mystery", "lightNovel", "BL"
+                    ).stream()
+                    .map(name -> allGenres.stream()
+                            .filter(genre -> genre.getGenreName().equals(name))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("Invalid genre name: " + name))
+                    )
+                    .toList();
+
             List<UserGenrePreferenceGetResponse> genrePreferences = myGenreCountMap.entrySet()
                     .stream()
-                    .sorted(Map.Entry.<Genre, Long>comparingByValue().reversed())
+                    .sorted(Map.Entry.<Genre, Long>comparingByValue().reversed()
+                            .thenComparing(entry -> priorityOrder.indexOf(entry.getKey())))
                     .map(preferGenre -> UserGenrePreferenceGetResponse.of(preferGenre.getKey(), preferGenre.getValue()))
                     .toList();
 
@@ -304,4 +327,3 @@ public class UserNovelService {
         return visitor != null && visitor.getUserId().equals(ownerId);
     }
 }
-
