@@ -56,6 +56,13 @@ public class UserNovelService {
     private final UserService userService;
     private final GenreRepository genreRepository;
 
+    private static final List<String> priorityGenreNamesOfMale = List.of(
+            "fantasy", "modernFantasy", "wuxia", "drama", "mystery", "lightNovel", "romance", "romanceFantasy", "BL"
+    );
+    private static final List<String> priorityGenreNamesOfFemale = List.of(
+            "romance", "romanceFantasy", "fantasy", "modernFantasy", "wuxia", "drama", "mystery", "lightNovel", "BL"
+    );
+
     @Transactional(readOnly = true)
     public UserNovel getUserNovelOrException(User user, Novel novel) {
         return userNovelRepository.findByNovelAndUser(novel, user).orElseThrow(
@@ -289,9 +296,7 @@ public class UserNovelService {
             allGenres.forEach(genre -> myGenreCountMap.putIfAbsent(genre, 0L));
 
             if (owner.getGender().equals(Gender.M)) {
-                List<Genre> priorityOrder = List.of(
-                                "fantasy", "modernFantasy", "wuxia", "drama", "mystery", "lightNovel", "romance", "romanceFantasy", "BL"
-                        ).stream()
+                List<Genre> priorityOrder = priorityGenreNamesOfMale.stream()
                         .map(name -> allGenres.stream()
                                 .filter(genre -> genre.getGenreName().equals(name))
                                 .findFirst()
@@ -299,9 +304,7 @@ public class UserNovelService {
                         )
                         .toList();
             }
-            List<Genre> priorityOrder = List.of(
-                            "romance", "romanceFantasy", "fantasy", "modernFantasy", "wuxia", "drama", "mystery", "lightNovel", "BL"
-                    ).stream()
+            List<Genre> priorityOrder = priorityGenreNamesOfFemale.stream()
                     .map(name -> allGenres.stream()
                             .filter(genre -> genre.getGenreName().equals(name))
                             .findFirst()
