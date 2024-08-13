@@ -297,12 +297,12 @@ public class UserNovelService {
 
             allGenres.forEach(genre -> myGenreCountMap.putIfAbsent(genre, 0L));
 
-            List<Genre> priorityOrder = getPriorityOrderByGender(owner.getGender(), allGenres);
+            List<Genre> priorityOrderByGender = getPriorityOrderByGender(owner.getGender(), allGenres);
 
             List<UserGenrePreferenceGetResponse> genrePreferences = myGenreCountMap.entrySet()
                     .stream()
                     .sorted(Map.Entry.<Genre, Long>comparingByValue().reversed()
-                            .thenComparing(entry -> priorityOrder.indexOf(entry.getKey())))
+                            .thenComparing(entry -> priorityOrderByGender.indexOf(entry.getKey())))
                     .map(preferGenre -> UserGenrePreferenceGetResponse.of(preferGenre.getKey(), preferGenre.getValue()))
                     .toList();
 
