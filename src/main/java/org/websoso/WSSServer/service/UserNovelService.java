@@ -318,17 +318,11 @@ public class UserNovelService {
     }
 
     private List<Genre> getPriorityOrderByGender(Gender gender, List<Genre> allGenres) {
-        if (gender.equals(Gender.M)) {
-            return priorityGenreNamesOfMale.stream()
-                    .map(name -> allGenres.stream()
-                            .filter(genre -> genre.getGenreName().equals(name))
-                            .findFirst()
-                            .orElseThrow(() -> new CustomGenreException(GENRE_NOT_FOUND,
-                                    "genre with the given genreName is not found"))
-                    )
-                    .toList();
-        }
-        return priorityGenreNamesOfFemale.stream()
+        List<String> priorityGenreNames = gender.equals(Gender.M)
+                ? priorityGenreNamesOfMale
+                : priorityGenreNamesOfFemale;
+
+        return priorityGenreNames.stream()
                 .map(name -> allGenres.stream()
                         .filter(genre -> genre.getGenreName().equals(name))
                         .findFirst()
