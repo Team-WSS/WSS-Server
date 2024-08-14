@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.Gender.*;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
@@ -318,7 +319,7 @@ public class UserNovelService {
     }
 
     private List<Genre> getPriorityOrderByGender(Gender gender, List<Genre> allGenres) {
-        List<String> priorityGenreNames = gender.equals(Gender.M)
+        List<String> priorityGenreNames = gender.equals(M)
                 ? priorityGenreNamesOfMale
                 : priorityGenreNamesOfFemale;
 
