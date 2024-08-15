@@ -9,6 +9,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NO
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -356,14 +357,19 @@ public class UserNovelService {
                     .map(Entry::getKey)
                     .toList();
 
-            ownerUserNovels.stream()
+            Map<String, Long> tasteAttractivePoints = ownerUserNovels.stream()
                     .map(UserNovel::getUserNovelKeywords)
                     .flatMap(List::stream)
                     .map(UserNovelKeyword::getKeyword)
                     .collect(Collectors.groupingBy(Keyword::getKeywordName, Collectors.counting()))
                     .entrySet()
                     .stream()
-                    .sorted(Entry.<String, Long>comparingByValue().reversed());
+                    .sorted(Entry.<String, Long>comparingByValue().reversed())
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            Map.Entry::getValue,
+                            (e1, e2) -> e1,
+                            LinkedHashMap::new));
 
             return UserTasteAttractivePointPreferencesAndKeywordsGetResponse.of(top3OwnerAttractivePointNames);
         }
