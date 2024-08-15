@@ -356,6 +356,12 @@ public class UserNovelService {
                     .map(Entry::getKey)
                     .toList();
 
+            ownerUserNovels.stream()
+                    .map(UserNovel::getUserNovelKeywords)
+                    .flatMap(List::stream)
+                    .map(UserNovelKeyword::getKeyword)
+                    .collect(Collectors.groupingBy(Keyword::getKeywordName, Collectors.counting()));
+
             return UserTasteAttractivePointPreferencesAndKeywordsGetResponse.of(top3OwnerAttractivePointNames);
         }
 
