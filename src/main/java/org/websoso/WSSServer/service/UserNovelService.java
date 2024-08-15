@@ -11,6 +11,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NO
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -348,6 +349,12 @@ public class UserNovelService {
                     .map(UserNovelAttractivePoint::getAttractivePoint)
                     .collect(Collectors.groupingBy(AttractivePoint::getAttractivePointName, Collectors.counting()));
 
+            List<String> top3OwnerAttractivePointNames = ownerAttractivePointCountMap.entrySet()
+                    .stream()
+                    .sorted(Entry.<String, Long>comparingByValue().reversed())
+                    .limit(3)
+                    .map(Entry::getKey)
+                    .toList();
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
