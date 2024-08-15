@@ -360,7 +360,10 @@ public class UserNovelService {
                     .map(UserNovel::getUserNovelKeywords)
                     .flatMap(List::stream)
                     .map(UserNovelKeyword::getKeyword)
-                    .collect(Collectors.groupingBy(Keyword::getKeywordName, Collectors.counting()));
+                    .collect(Collectors.groupingBy(Keyword::getKeywordName, Collectors.counting()))
+                    .entrySet()
+                    .stream()
+                    .sorted(Entry.<String, Long>comparingByValue().reversed());
 
             return UserTasteAttractivePointPreferencesAndKeywordsGetResponse.of(top3OwnerAttractivePointNames);
         }
