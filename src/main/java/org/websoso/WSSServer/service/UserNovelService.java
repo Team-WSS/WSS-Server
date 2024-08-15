@@ -342,6 +342,12 @@ public class UserNovelService {
         if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
             List<UserNovel> ownerUserNovels = userNovelRepository.findUserNovelByUser(owner);
 
+            Map<String, Long> ownerAttractivePointCountMap = ownerUserNovels.stream()
+                    .map(UserNovel::getUserNovelAttractivePoints)
+                    .flatMap(List::stream)
+                    .map(UserNovelAttractivePoint::getAttractivePoint)
+                    .collect(Collectors.groupingBy(AttractivePoint::getAttractivePointName, Collectors.counting()));
+
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
