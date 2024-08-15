@@ -29,6 +29,7 @@ import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserGenrePreferencesGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
 import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.UserNovelService;
@@ -135,7 +136,7 @@ public class UserController {
                 .status(OK)
                 .body(userNovelService.getUserNovelStatistics(user));
     }
-  
+
     @GetMapping("/{userId}/novels")
     public ResponseEntity<UserNovelAndNovelsGetResponse> getUserNovelsAndNovels(Principal principal,
                                                                                 @PathVariable("userId") Long userId,
@@ -151,7 +152,7 @@ public class UserController {
                 .body(userNovelService.getUserNovelsAndNovels(
                         visitor, userId, readStatus, lastUserNovelId, size, sortType));
     }
-  
+
     @GetMapping("/{userId}/feeds")
     public ResponseEntity<UserFeedsGetResponse> getUserFeeds(Principal principal,
                                                              @PathVariable("userId") Long userId,
@@ -163,5 +164,16 @@ public class UserController {
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getUserFeeds(visitor, userId, lastFeedId, size));
+    }
+
+    @GetMapping("/{userId}/preferences/genres")
+    public ResponseEntity<UserGenrePreferencesGetResponse> getUserGenrePreferences(Principal principal,
+                                                                                   @PathVariable("userId") Long ownerId) {
+        User visitor = principal == null
+                ? null
+                : userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(userNovelService.getUserGenrePreferences(visitor, ownerId));
     }
 }
