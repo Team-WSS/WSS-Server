@@ -30,6 +30,7 @@ import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
+import org.websoso.WSSServer.dto.userNovel.TasteKeywordGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserGenrePreferenceGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserGenrePreferencesGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponse;
@@ -370,6 +371,11 @@ public class UserNovelService {
                             Map.Entry::getValue,
                             (e1, e2) -> e1,
                             LinkedHashMap::new));
+
+            List<TasteKeywordGetResponse> tasteKeywordGetResponses = tasteAttractivePoints.entrySet()
+                    .stream()
+                    .map(TasteKeywordGetResponse::of)
+                    .toList();
 
             return UserTasteAttractivePointPreferencesAndKeywordsGetResponse.of(top3OwnerAttractivePointNames);
         }
