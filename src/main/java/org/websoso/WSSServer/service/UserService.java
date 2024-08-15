@@ -52,7 +52,6 @@ public class UserService {
     public NicknameValidation isNicknameAvailable(User user, String nickname) {
         checkIfAlreadySetOrThrow(user.getNickname(), nickname,
                 ALREADY_SET_NICKNAME, "nickname with given is already set");
-        checkNicknameIfAlreadyExist(nickname);
         if (userRepository.existsByNickname(nickname)) {
             NicknameValidation.of(false);
         }
