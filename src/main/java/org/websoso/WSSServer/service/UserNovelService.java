@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.domain.common.Gender.*;
+import static org.websoso.WSSServer.domain.common.Gender.M;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
@@ -35,6 +35,7 @@ import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
+import org.websoso.WSSServer.dto.userNovel.UserTasteAttractivePointPreferencesAndKeywordsGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
@@ -331,5 +332,16 @@ public class UserNovelService {
                                 "genre with the given genreName is not found"))
                 )
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public UserTasteAttractivePointPreferencesAndKeywordsGetResponse getUserAttractivePointsAndKeywords(User visitor,
+                                                                                                        Long ownerId) {
+        User owner = userService.getUserOrException(ownerId);
+
+        if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
+        }
+
+        throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
     }
 }
