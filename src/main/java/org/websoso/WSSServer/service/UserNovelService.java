@@ -340,6 +340,8 @@ public class UserNovelService {
         User owner = userService.getUserOrException(ownerId);
 
         if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
+            List<UserNovel> ownerUserNovels = userNovelRepository.findUserNovelByUser(owner);
+
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
