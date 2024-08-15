@@ -355,6 +355,8 @@ public class UserNovelService {
                     .limit(3)
                     .map(Entry::getKey)
                     .toList();
+
+            return UserTasteAttractivePointPreferencesAndKeywordsGetResponse.of(top3OwnerAttractivePointNames);
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
