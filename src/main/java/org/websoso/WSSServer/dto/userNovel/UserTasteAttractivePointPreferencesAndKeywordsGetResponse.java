@@ -7,10 +7,11 @@ public record UserTasteAttractivePointPreferencesAndKeywordsGetResponse(
         List<TasteKeywordGetResponse> keywords
 ) {
 
-    public static UserTasteAttractivePointPreferencesAndKeywordsGetResponse of(List<String> attractivePoints) {
+    public static UserTasteAttractivePointPreferencesAndKeywordsGetResponse of(List<String> attractivePoints,
+                                                                               List<TasteKeywordGetResponse> tasteKeywordGetResponses) {
         return new UserTasteAttractivePointPreferencesAndKeywordsGetResponse(
                 attractivePoints,
-
+                tasteKeywordGetResponses
         );
     }
 }

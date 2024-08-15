@@ -377,7 +377,8 @@ public class UserNovelService {
                     .map(TasteKeywordGetResponse::of)
                     .toList();
 
-            return UserTasteAttractivePointPreferencesAndKeywordsGetResponse.of(top3OwnerAttractivePointNames);
+            return UserTasteAttractivePointPreferencesAndKeywordsGetResponse.of(
+                    top3OwnerAttractivePointNames, tasteKeywordGetResponses);
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
