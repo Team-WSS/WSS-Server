@@ -53,6 +53,9 @@ public class UserService {
         checkIfAlreadySetOrThrow(user.getNickname(), nickname,
                 ALREADY_SET_NICKNAME, "nickname with given is already set");
         checkNicknameIfAlreadyExist(nickname);
+        if (userRepository.existsByNickname(nickname)) {
+            NicknameValidation.of(false);
+        }
 
         return NicknameValidation.of(true);
     }
@@ -116,7 +119,7 @@ public class UserService {
 
         user.updateUserProfile(updateMyProfileRequest);
     }
-  
+
     @Transactional(readOnly = true)
     public ProfileGetResponse getProfileInfo(User visitor, Long ownerId) {
         User owner = getUserOrException(ownerId);
