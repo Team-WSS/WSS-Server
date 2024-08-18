@@ -47,9 +47,7 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(
                         AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> {
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-                })
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> {
                     exception.authenticationEntryPoint(customJwtAuthenticationEntryPoint);
                     exception.accessDeniedHandler(customAccessDeniedHandler);
