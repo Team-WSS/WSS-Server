@@ -2,15 +2,14 @@ package org.websoso.WSSServer.oauth2.dto;
 
 import java.util.Collection;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+@RequiredArgsConstructor
 public class CustomOauth2User implements OAuth2User {
 
-    @Override
-    public <A> A getAttribute(String name) {
-        return OAuth2User.super.getAttribute(name);
-    }
+    private final OAuth2UserDTO OAuth2UserDTO;
 
     @Override
     public Map<String, Object> getAttributes() {
