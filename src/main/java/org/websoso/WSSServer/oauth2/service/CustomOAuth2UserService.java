@@ -5,6 +5,8 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.websoso.WSSServer.oauth2.dto.KakaoOauth2Response;
+import org.websoso.WSSServer.oauth2.dto.OAuth2Response;
 
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
@@ -14,5 +16,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(userRequest);
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
 
+        if (registrationId.equals("kakao")) {
+            OAuth2Response oAuth2Response = new KakaoOauth2Response(oAuth2User.getAttributes());
+        }
+
+        return null;
     }
 }
