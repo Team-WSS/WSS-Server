@@ -50,13 +50,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> {
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
-                .exceptionHandling(exception ->
-                {
+                .exceptionHandling(exception -> {
                     exception.authenticationEntryPoint(customJwtAuthenticationEntryPoint);
                     exception.accessDeniedHandler(customAccessDeniedHandler);
-                });
-
-        http.authorizeHttpRequests(auth -> {
+                })
+                .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(permitAllPaths).permitAll();
                     auth.anyRequest().authenticated();
                 })
