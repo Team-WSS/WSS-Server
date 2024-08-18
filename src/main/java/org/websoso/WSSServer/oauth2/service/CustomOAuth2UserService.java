@@ -16,9 +16,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(userRequest);
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
 
+        OAuth2Response oAuth2Response = null;
         if (registrationId.equals("kakao")) {
-            OAuth2Response oAuth2Response = new KakaoOauth2Response(oAuth2User.getAttributes());
+            oAuth2Response = new KakaoOauth2Response(oAuth2User.getAttributes());
         }
+
+        String socialId = oAuth2Response.getProvider() + "_" + oAuth2Response.getProviderId();
 
         return null;
     }
