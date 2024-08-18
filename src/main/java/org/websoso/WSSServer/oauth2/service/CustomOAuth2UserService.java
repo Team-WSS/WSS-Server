@@ -6,6 +6,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.oauth2.dto.CustomOauth2User;
 import org.websoso.WSSServer.oauth2.dto.KakaoOauth2Response;
@@ -14,6 +15,7 @@ import org.websoso.WSSServer.oauth2.dto.OAuth2UserDTO;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
