@@ -93,4 +93,12 @@ public class User {
         return UserBasicInfo.of(this.getUserId(), this.getNickname(), avatarImage);
     }
 
+    public User(String socialId, String nickname) {
+        this.socialId = socialId;
+        this.nickname = nickname;
+    }
+
+    public static User createBySocial(String socialId, String nickname) {
+        return new User(socialId, nickname);
+    }
 }
