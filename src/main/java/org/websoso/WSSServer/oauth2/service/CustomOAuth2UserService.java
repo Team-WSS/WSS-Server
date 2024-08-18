@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.oauth2.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -9,9 +10,13 @@ import org.websoso.WSSServer.oauth2.dto.CustomOauth2User;
 import org.websoso.WSSServer.oauth2.dto.KakaoOauth2Response;
 import org.websoso.WSSServer.oauth2.dto.OAuth2Response;
 import org.websoso.WSSServer.oauth2.dto.OAuth2UserDTO;
+import org.websoso.WSSServer.repository.UserRepository;
 
 @Service
+@RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
+
+    private final UserRepository userRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
