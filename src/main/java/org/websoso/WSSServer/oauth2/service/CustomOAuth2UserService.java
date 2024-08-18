@@ -36,7 +36,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             OAuth2UserDTO oAuth2UserDTO = OAuth2UserDTO.of(oAuth2Response.getName(), socialId);
             return new CustomOauth2User(oAuth2UserDTO);
         } else {
-
+            OAuth2UserDTO oAuth2UserDTO
+                    = OAuth2UserDTO.of(existedUserOrNull.getNickname(), existedUserOrNull.getSocialId());
+            return new CustomOauth2User(oAuth2UserDTO);
         }
     }
 }
