@@ -15,6 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.websoso.WSSServer.config.jwt.CustomAccessDeniedHandler;
 import org.websoso.WSSServer.config.jwt.CustomJwtAuthenticationEntryPoint;
 import org.websoso.WSSServer.config.jwt.JwtAuthenticationFilter;
+import org.websoso.WSSServer.oauth2.CustomAuthenticationSuccessHandler;
 
 @Configuration
 @RequiredArgsConstructor
@@ -24,6 +25,7 @@ public class SecurityConfig {
     private final CustomJwtAuthenticationEntryPoint customJwtAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final DefaultOAuth2UserService customOAuth2UserService;
+    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
 
     private final String[] permitAllPaths = {
             "/users/login",
