@@ -26,7 +26,11 @@ import org.websoso.WSSServer.dto.user.UserBasicInfo;
 @Table(uniqueConstraints = {
         @UniqueConstraint(
                 name = "UNIQUE_NICKNAME_CONSTRAINT",
-                columnNames = "nickname")
+                columnNames = "nickname"),
+        @UniqueConstraint(
+                name = "UNIQUE_SOCIAL_ID_CONSTRAINT",
+                columnNames = "social_id")
+
 })
 public class User {
 
@@ -35,7 +39,7 @@ public class User {
     @Column(nullable = false)
     private Long userId;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String socialId;
 
     @Column(columnDefinition = "varchar(10)", nullable = false)
