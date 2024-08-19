@@ -94,6 +94,12 @@ public class User {
     }
 
     private User(String socialId, String nickname, String email) {
+        this.intro = "안녕하세요";
+        this.gender = Gender.M;
+        this.birth = Year.now();
+        this.avatarId = 1;
+        this.isProfilePublic = true;
+        this.role = Role.USER;
         this.socialId = socialId;
         this.nickname = nickname;
         this.email = email;
