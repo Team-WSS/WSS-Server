@@ -59,10 +59,11 @@ public class SecurityConfig {
                     auth.requestMatchers(permitAllPaths).permitAll();
                     auth.anyRequest().authenticated();
                 })
-                .oauth2Login(oauth2 -> oauth2
-                                .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/callback/*"))
-                                .userInfoEndpoint(endpoint -> endpoint.userService(customOAuth2UserService))
-                )
+                .oauth2Login(oauth2 -> {
+                    oauth2.redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/callback/*"));
+                    oauth2.userInfoEndpoint(endpoint -> endpoint.userService(customOAuth2UserService));
+                    oauth2.successHandler(customAuthenticationSuccessHandler);
+                })
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
