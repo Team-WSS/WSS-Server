@@ -93,7 +93,7 @@ public class User {
         return UserBasicInfo.of(this.getUserId(), this.getNickname(), avatarImage);
     }
 
-    public User(String socialId, String nickname) {
+    private User(String socialId, String nickname) {
         this.socialId = socialId;
         this.nickname = nickname;
     }
