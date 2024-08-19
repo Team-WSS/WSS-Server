@@ -23,4 +23,10 @@ public class KakaoOauth2Response implements OAuth2Response {
         Map<String, String> properties = (Map<String, String>) attributes.get("properties");
         return properties.get("nickname");
     }
+
+    @Override
+    public String getEmail() {
+        Map<String, String> kakaoAccount = (Map<String, String >) attributes.get("kakao_account");
+        return kakaoAccount.get("email");
+    }
 }
