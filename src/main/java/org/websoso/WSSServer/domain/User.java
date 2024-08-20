@@ -30,7 +30,6 @@ import org.websoso.WSSServer.dto.user.UserBasicInfo;
         @UniqueConstraint(
                 name = "UNIQUE_SOCIAL_ID_CONSTRAINT",
                 columnNames = "social_id")
-
 })
 public class User {
 
