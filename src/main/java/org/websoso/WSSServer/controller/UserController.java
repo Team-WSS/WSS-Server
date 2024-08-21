@@ -181,7 +181,7 @@ public class UserController {
 
     @PutMapping("/info")
     public ResponseEntity<Void> editMyInfo(Principal principal,
-                                           @RequestBody EditMyInfoRequest editMyInfoRequest) {
+                                           @Valid @RequestBody EditMyInfoRequest editMyInfoRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.editMyInfo(user, editMyInfoRequest);
         return ResponseEntity
