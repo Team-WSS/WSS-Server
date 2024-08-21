@@ -20,7 +20,7 @@ import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
-import org.websoso.WSSServer.dto.user.EmailGetResponse;
+import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
@@ -70,8 +70,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public EmailGetResponse getUserInfo(User user) {
-        return EmailGetResponse.of(user.getEmail());
+    public UserInfoGetResponse getUserInfo(User user) {
+        return UserInfoGetResponse.of(user.getEmail());
     }
 
     @Transactional(readOnly = true)

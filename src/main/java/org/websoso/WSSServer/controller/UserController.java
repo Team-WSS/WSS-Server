@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
-import org.websoso.WSSServer.dto.user.EmailGetResponse;
+import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
@@ -57,7 +57,7 @@ public class UserController {
     }
 
     @GetMapping("/info")
-    public ResponseEntity<EmailGetResponse> getUserInfo(Principal principal) {
+    public ResponseEntity<UserInfoGetResponse> getUserInfo(Principal principal) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
