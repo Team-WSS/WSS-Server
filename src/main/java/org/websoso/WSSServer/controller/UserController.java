@@ -56,7 +56,7 @@ public class UserController {
                 .body(userService.isNicknameAvailable(user, nickname));
     }
 
-    @GetMapping("/email")
+    @GetMapping("/info")
     public ResponseEntity<EmailGetResponse> getEmail(Principal principal) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
