@@ -120,7 +120,7 @@ public class FeedController {
 
     @GetMapping
     public ResponseEntity<FeedsGetResponse> getFeeds(Principal principal,
-                                                     @RequestParam("category") String category,
+                                                     @RequestParam(value = "category", required = false) String category,
                                                      @RequestParam("lastFeedId") Long lastFeedId,
                                                      @RequestParam("size") int size) {
         User user = principal == null ? null : userService.getUserOrException(Long.valueOf(principal.getName()));
