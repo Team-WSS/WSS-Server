@@ -71,7 +71,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserInfoGetResponse getUserInfo(User user) {
-        return UserInfoGetResponse.of(user.getEmail());
+        return UserInfoGetResponse.of(user);
     }
 
     @Transactional(readOnly = true)
