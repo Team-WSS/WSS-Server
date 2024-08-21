@@ -57,7 +57,7 @@ public class UserController {
     }
 
     @GetMapping("/info")
-    public ResponseEntity<EmailGetResponse> getEmail(Principal principal) {
+    public ResponseEntity<EmailGetResponse> getUserInfo(Principal principal) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
