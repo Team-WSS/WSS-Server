@@ -19,6 +19,7 @@ import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.EmailGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
@@ -168,5 +169,9 @@ public class UserService {
         return genreRepository.findByGenreName(genreName)
                 .orElseThrow(() ->
                         new CustomGenreException(GENRE_NOT_FOUND, "genre with the given genreName is not found"));
+    }
+
+    public void editMyInfo(User user, EditMyInfoRequest editMyInfoRequest) {
+        user.editMyInfo(editMyInfoRequest);
     }
 }
