@@ -70,7 +70,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public EmailGetResponse getEmail(User user) {
+    public EmailGetResponse getUserInfo(User user) {
         return EmailGetResponse.of(user.getEmail());
     }
 

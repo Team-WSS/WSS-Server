@@ -61,7 +61,7 @@ public class UserController {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body(userService.getEmail(user));
+                .body(userService.getUserInfo(user));
     }
 
     @GetMapping("/profile-status")
