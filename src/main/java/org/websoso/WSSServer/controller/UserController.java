@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
-import org.websoso.WSSServer.dto.user.EmailGetResponse;
+import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
@@ -56,12 +56,12 @@ public class UserController {
                 .body(userService.isNicknameAvailable(user, nickname));
     }
 
-    @GetMapping("/email")
-    public ResponseEntity<EmailGetResponse> getEmail(Principal principal) {
+    @GetMapping("/info")
+    public ResponseEntity<UserInfoGetResponse> getUserInfo(Principal principal) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body(userService.getEmail(user));
+                .body(userService.getUserInfo(user));
     }
 
     @GetMapping("/profile-status")
