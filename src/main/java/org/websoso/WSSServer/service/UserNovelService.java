@@ -252,7 +252,7 @@ public class UserNovelService {
                                                                 Long lastUserNovelId, int size, String sortType) {
         User owner = userService.getUserOrException(ownerId);
 
-        if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
+        if (isProfileAccessible(visitor, ownerId, owner)) {
             // TODO 성능 개선
             List<UserNovel> userNovelsByUserAndSortType =
                     userNovelRepository.findByUserAndReadStatus(owner, readStatus);
@@ -288,7 +288,7 @@ public class UserNovelService {
     public UserGenrePreferencesGetResponse getUserGenrePreferences(User visitor, Long ownerId) {
         User owner = userService.getUserOrException(ownerId);
 
-        if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
+        if (isProfileAccessible(visitor, ownerId, owner)) {
             //TODO genreMap은 Genre의 변화가 없다면 매번 repository에서 가져올 필요가 없음 -> 캐싱하여 사용하도록 리팩터링
             List<Genre> allGenres = genreRepository.findAll();
 
@@ -342,7 +342,7 @@ public class UserNovelService {
                                                                                                         Long ownerId) {
         User owner = userService.getUserOrException(ownerId);
 
-        if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
+        if (isProfileAccessible(visitor, ownerId, owner)) {
             List<UserNovel> ownerUserNovels = userNovelRepository.findUserNovelByUser(owner);
 
             Map<String, Long> ownerAttractivePointCountMap = ownerUserNovels.stream()
@@ -382,5 +382,9 @@ public class UserNovelService {
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
+    }
+
+    private static boolean isProfileAccessible(User visitor, Long ownerId, User owner) {
+        return owner.getIsProfilePublic() || isOwner(visitor, ownerId);
     }
 }
