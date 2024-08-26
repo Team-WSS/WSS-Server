@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.domain.common.Role;
+import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
@@ -90,4 +91,8 @@ public class User {
         return UserBasicInfo.of(this.getUserId(), this.getNickname(), avatarImage);
     }
 
+    public void editMyInfo(EditMyInfoRequest editMyInfoRequest) {
+        this.gender = Gender.valueOf(editMyInfoRequest.gender());
+        this.birth = Year.of(editMyInfoRequest.birth());
+    }
 }

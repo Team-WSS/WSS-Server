@@ -19,8 +19,9 @@ import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
-import org.websoso.WSSServer.dto.user.EmailGetResponse;
+import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
@@ -52,7 +53,9 @@ public class UserService {
     public NicknameValidation isNicknameAvailable(User user, String nickname) {
         checkIfAlreadySetOrThrow(user.getNickname(), nickname,
                 ALREADY_SET_NICKNAME, "nickname with given is already set");
-        checkNicknameIfAlreadyExist(nickname);
+        if (userRepository.existsByNickname(nickname)) {
+            NicknameValidation.of(false);
+        }
 
         return NicknameValidation.of(true);
     }
@@ -68,8 +71,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public EmailGetResponse getEmail(User user) {
-        return EmailGetResponse.of(user.getEmail());
+    public UserInfoGetResponse getUserInfo(User user) {
+        return UserInfoGetResponse.of(user);
     }
 
     @Transactional(readOnly = true)
@@ -116,7 +119,7 @@ public class UserService {
 
         user.updateUserProfile(updateMyProfileRequest);
     }
-  
+
     @Transactional(readOnly = true)
     public ProfileGetResponse getProfileInfo(User visitor, Long ownerId) {
         User owner = getUserOrException(ownerId);
@@ -166,5 +169,9 @@ public class UserService {
         return genreRepository.findByGenreName(genreName)
                 .orElseThrow(() ->
                         new CustomGenreException(GENRE_NOT_FOUND, "genre with the given genreName is not found"));
+    }
+
+    public void editMyInfo(User user, EditMyInfoRequest editMyInfoRequest) {
+        user.editMyInfo(editMyInfoRequest);
     }
 }

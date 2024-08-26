@@ -13,14 +13,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
+import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
-import org.websoso.WSSServer.dto.user.EmailGetResponse;
+import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
@@ -57,12 +59,12 @@ public class UserController {
                 .body(userService.isNicknameAvailable(user, nickname));
     }
 
-    @GetMapping("/email")
-    public ResponseEntity<EmailGetResponse> getEmail(Principal principal) {
+    @GetMapping("/info")
+    public ResponseEntity<UserInfoGetResponse> getUserInfo(Principal principal) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body(userService.getEmail(user));
+                .body(userService.getUserInfo(user));
     }
 
     @GetMapping("/profile-status")
@@ -188,5 +190,15 @@ public class UserController {
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserAttractivePointsAndKeywords(visitor, ownerId));
+    }
+  
+    @PutMapping("/info")
+    public ResponseEntity<Void> editMyInfo(Principal principal,
+                                           @Valid @RequestBody EditMyInfoRequest editMyInfoRequest) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        userService.editMyInfo(user, editMyInfoRequest);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
     }
 }
