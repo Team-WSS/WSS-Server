@@ -33,6 +33,7 @@ import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserGenrePreferencesGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserTasteAttractivePointPreferencesAndKeywordsGetResponse;
 import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.UserNovelService;
 import org.websoso.WSSServer.service.UserService;
@@ -179,6 +180,18 @@ public class UserController {
                 .body(userNovelService.getUserGenrePreferences(visitor, ownerId));
     }
 
+    @GetMapping("/{userId}/preferences/attractive-points")
+    public ResponseEntity<UserTasteAttractivePointPreferencesAndKeywordsGetResponse>
+    getUserAttractivePointsAndKeywords(Principal principal,
+                                       @PathVariable("userId") Long ownerId) {
+        User visitor = principal == null
+                ? null
+                : userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(userNovelService.getUserAttractivePointsAndKeywords(visitor, ownerId));
+    }
+  
     @PutMapping("/info")
     public ResponseEntity<Void> editMyInfo(Principal principal,
                                            @Valid @RequestBody EditMyInfoRequest editMyInfoRequest) {
