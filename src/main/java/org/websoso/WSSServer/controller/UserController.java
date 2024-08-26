@@ -13,12 +13,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
+import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
@@ -175,5 +177,15 @@ public class UserController {
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserGenrePreferences(visitor, ownerId));
+    }
+
+    @PutMapping("/info")
+    public ResponseEntity<Void> editMyInfo(Principal principal,
+                                           @Valid @RequestBody EditMyInfoRequest editMyInfoRequest) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        userService.editMyInfo(user, editMyInfoRequest);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
     }
 }
