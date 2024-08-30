@@ -54,7 +54,7 @@ public class UserService {
         checkIfAlreadySetOrThrow(user.getNickname(), nickname,
                 ALREADY_SET_NICKNAME, "nickname with given is already set");
         if (userRepository.existsByNickname(nickname)) {
-            NicknameValidation.of(false);
+            return NicknameValidation.of(false);
         }
 
         return NicknameValidation.of(true);
