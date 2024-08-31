@@ -36,7 +36,6 @@ public class UserNovelController {
 
     @GetMapping("/{novelId}")
     public ResponseEntity<UserNovelGetResponse> getEvaluation(Principal principal, @PathVariable Long novelId) {
-
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
 
@@ -48,7 +47,6 @@ public class UserNovelController {
     @PostMapping
     public ResponseEntity<Void> createEvaluation(Principal principal,
                                                  @Valid @RequestBody UserNovelCreateRequest request) {
-
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userNovelService.createEvaluation(user, request);
 
@@ -60,7 +58,6 @@ public class UserNovelController {
     @PutMapping("/{novelId}")
     public ResponseEntity<Void> updateEvaluation(Principal principal, @PathVariable Long novelId,
                                                  @Valid @RequestBody UserNovelUpdateRequest request) {
-
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
         userNovelService.updateEvaluation(user, novel, request);
@@ -72,7 +69,6 @@ public class UserNovelController {
 
     @DeleteMapping("/{novelId}")
     public ResponseEntity<Void> deleteEvaluation(Principal principal, @PathVariable Long novelId) {
-
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
         userNovelService.deleteEvaluation(user, novel);
