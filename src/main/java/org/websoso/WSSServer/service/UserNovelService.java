@@ -108,10 +108,6 @@ public class UserNovelService {
     public void updateEvaluation(User user, Novel novel, UserNovelUpdateRequest request) {
         UserNovel userNovel = getUserNovelOrException(user, novel);
 
-        if (userNovel.getStatus() == null) {
-            throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
-        }
-
         updateUserNovel(userNovel, request);
         updateAssociations(userNovel, request);
     }
