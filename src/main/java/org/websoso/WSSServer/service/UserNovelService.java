@@ -189,7 +189,7 @@ public class UserNovelService {
 
     }
 
-    public void deleteUserNovel(User user, Novel novel) {
+    public void deleteEvaluation(User user, Novel novel) {
 
         UserNovel userNovel = getUserNovelOrException(user, novel);
 

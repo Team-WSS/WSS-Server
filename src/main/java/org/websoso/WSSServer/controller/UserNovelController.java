@@ -71,11 +71,11 @@ public class UserNovelController {
     }
 
     @DeleteMapping("/{novelId}")
-    public ResponseEntity<Void> deleteUserNovel(Principal principal, @PathVariable Long novelId) {
+    public ResponseEntity<Void> deleteEvaluation(Principal principal, @PathVariable Long novelId) {
 
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
-        userNovelService.deleteUserNovel(user, novel);
+        userNovelService.deleteEvaluation(user, novel);
 
         return ResponseEntity
                 .status(NO_CONTENT)
