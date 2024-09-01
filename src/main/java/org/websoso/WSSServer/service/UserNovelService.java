@@ -86,7 +86,6 @@ public class UserNovelService {
     }
 
     public void createEvaluation(User user, UserNovelCreateRequest request) {
-
         Novel novel = novelRepository.findById(request.novelId())
                 .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
 
@@ -104,20 +103,13 @@ public class UserNovelService {
 
         createUserNovelAttractivePoints(userNovel, request.attractivePoints());
         createNovelKeywords(userNovel, request.keywordIds());
-
     }
 
     public void updateEvaluation(User user, Novel novel, UserNovelUpdateRequest request) {
-
         UserNovel userNovel = getUserNovelOrException(user, novel);
-
-        if (userNovel.getStatus() == null) {
-            throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
-        }
 
         updateUserNovel(userNovel, request);
         updateAssociations(userNovel, request);
-
     }
 
     private void updateUserNovel(UserNovel userNovel, UserNovelUpdateRequest request) {
@@ -125,7 +117,6 @@ public class UserNovelService {
     }
 
     private void updateAssociations(UserNovel userNovel, UserNovelUpdateRequest request) {
-
         Set<AttractivePoint> previousAttractivePoints = getPreviousAttractivePoints(userNovel);
         Set<Keyword> previousKeywords = getPreviousKeywords(userNovel);
 
@@ -134,7 +125,6 @@ public class UserNovelService {
 
         userNovelAttractivePointRepository.deleteByAttractivePointsAndUserNovel(previousAttractivePoints, userNovel);
         userNovelKeywordRepository.deleteByKeywordsAndUserNovel(previousKeywords, userNovel);
-
     }
 
     private Set<AttractivePoint> getPreviousAttractivePoints(UserNovel userNovel) {
@@ -186,11 +176,9 @@ public class UserNovelService {
             Keyword keyword = keywordService.getKeywordOrException(keywordId);
             userNovelKeywordRepository.save(UserNovelKeyword.create(userNovel, keyword));
         }
-
     }
 
-    public void deleteUserNovel(User user, Novel novel) {
-
+    public void deleteEvaluation(User user, Novel novel) {
         UserNovel userNovel = getUserNovelOrException(user, novel);
 
         if (userNovel.getStatus() == null) {
@@ -207,17 +195,14 @@ public class UserNovelService {
     }
 
     public UserNovel createUserNovelByInterest(User user, Novel novel) {
-
         if (getUserNovelOrNull(user, novel) != null) {
             throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
         }
-
         return userNovelRepository.save(UserNovel.create(null, 0.0f, null, null, user, novel));
     }
 
     @Transactional(readOnly = true)
     public UserNovelGetResponse getEvaluation(User user, Novel novel) {
-
         UserNovel userNovel = getUserNovelOrNull(user, novel);
 
         if (userNovel == null) {
