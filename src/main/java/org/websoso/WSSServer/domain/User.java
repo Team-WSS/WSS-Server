@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.domain;
 
 import static org.websoso.WSSServer.domain.common.Gender.M;
+import static org.websoso.WSSServer.domain.common.Role.USER;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -98,11 +99,6 @@ public class User {
     public UserBasicInfo getUserBasicInfo(String avatarImage) {
         return UserBasicInfo.of(this.getUserId(), this.getNickname(), avatarImage);
     }
-  
-    public void editMyInfo(EditMyInfoRequest editMyInfoRequest) {
-        this.gender = Gender.valueOf(editMyInfoRequest.gender());
-        this.birth = Year.of(editMyInfoRequest.birth());
-    }
 
     private User(String socialId, String nickname, String email) {
         this.intro = "안녕하세요";
@@ -110,13 +106,34 @@ public class User {
         this.birth = Year.now();
         this.avatarId = 1;
         this.isProfilePublic = true;
-        this.role = Role.USER;
+        this.role = USER;
         this.socialId = socialId;
         this.nickname = nickname;
         this.email = email;
     }
 
+    private User(String socialId, String email) {
+        this.intro = "안녕하세요";
+        this.gender = M;
+        this.birth = Year.now();
+        this.avatarId = 1;
+        this.isProfilePublic = true;
+        this.role = USER;
+        this.socialId = socialId;
+        this.nickname = "애플로그인유저임시";
+        this.email = email;
+    }
+
     public static User createBySocial(String socialId, String nickname, String email) {
         return new User(socialId, nickname, email);
+    }
+
+    public static User createByAppleSocial(String socialId, String email) {
+        return new User(socialId, email);
+    }
+
+    public void editMyInfo(EditMyInfoRequest editMyInfoRequest) {
+        this.gender = Gender.valueOf(editMyInfoRequest.gender());
+        this.birth = Year.of(editMyInfoRequest.birth());
     }
 }

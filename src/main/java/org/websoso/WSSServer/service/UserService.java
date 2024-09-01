@@ -21,8 +21,6 @@ import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
-import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
-import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
@@ -30,6 +28,8 @@ import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
+import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
+import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.exception.error.CustomUserError;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
@@ -143,6 +143,14 @@ public class UserService {
         user.updateUserInfo(registerUserInfoRequest);
         List<GenrePreference> preferGenres = createGenrePreferences(user, registerUserInfoRequest.genrePreferences());
         genrePreferenceRepository.saveAll(preferGenres);
+    }
+
+    public LoginResponse signUpOrSignInWithApple(String socialId, String email) {
+        User user = userRepository.findBySocialIdAndEmail(socialId, email)
+                .orElseGet(() -> userRepository.save(User.createByAppleSocial(socialId, email)));
+
+        UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
+        return LoginResponse.of(jwtProvider.generateAccessToken(userAuthentication));
     }
 
     private void checkNicknameIfAlreadyExist(String nickname) {
