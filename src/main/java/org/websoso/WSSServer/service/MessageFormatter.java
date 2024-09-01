@@ -16,34 +16,48 @@ public class MessageFormatter {
                     "[신고된 피드 작성자]\n" +
                     "유저 아이디 : %d\n" +
                     "유저 닉네임 : %s\n\n" +
-                    "[신고된 피드 내용]\n%s\n```";
+                    "[신고된 피드 내용]\n%s\n\n" +
+                    "[신고 횟수]\n총 신고 횟수 %d회.\n" +
+                    "%s\n```";
 
     private static final String COMMENT_REPORT_MESSAGE =
             "```[%s] 피드 댓글 %s 신고가 접수되었습니다.\n\n" +
                     "[신고된 댓글 작성자]\n" +
                     "유저 아이디 : %d\n" +
                     "유저 닉네임 : %s\n\n" +
-                    "[신고된 댓글 내용]\n%s\n```";
+                    "[신고된 댓글 내용]\n%s\n\n" +
+                    "[신고 횟수]\n총 신고 횟수 %d회.\n" +
+                    "%s\n```";
 
-    public static String formatFeedReportMessage(Feed feed, ReportedType reportedType) {
+    public static String formatFeedReportMessage(Feed feed, ReportedType reportedType, int reportedCount,
+                                                 boolean isHidden) {
+        String hiddenMessage = isHidden ? "해당 피드는 숨김 처리되었습니다." : "해당 피드는 숨김 처리되지 않았습니다.";
+
         return String.format(
                 FEED_REPORT_MESSAGE,
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)),
                 reportedType.getDescription(),
                 feed.getUser().getUserId(),
                 feed.getUser().getNickname(),
-                feed.getFeedContent()
+                feed.getFeedContent(),
+                reportedCount,
+                hiddenMessage
         );
     }
 
-    public static String formatCommentReportMessage(Comment comment, ReportedType reportedType, User user) {
+    public static String formatCommentReportMessage(Comment comment, ReportedType reportedType, User user,
+                                                    int reportedCount, boolean isHidden) {
+        String hiddenMessage = isHidden ? "해당 댓글은 숨김 처리되었습니다." : "해당 댓글는 숨김 처리되지 않았습니다.";
+
         return String.format(
                 COMMENT_REPORT_MESSAGE,
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)),
                 reportedType.getDescription(),
                 user.getUserId(),
                 user.getNickname(),
-                comment.getCommentContent()
+                comment.getCommentContent(),
+                reportedCount,
+                hiddenMessage
         );
     }
 
