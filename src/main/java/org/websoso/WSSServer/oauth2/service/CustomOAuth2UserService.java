@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.oauth2.dto.CustomOAuth2User;
-import org.websoso.WSSServer.oauth2.dto.KakaoOauth2Response;
+import org.websoso.WSSServer.oauth2.dto.KakaoOAuth2Response;
 import org.websoso.WSSServer.oauth2.dto.OAuth2Response;
 import org.websoso.WSSServer.oauth2.dto.OAuth2UserDTO;
 import org.websoso.WSSServer.repository.UserRepository;
@@ -28,7 +28,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         OAuth2Response oAuth2Response = null;
         if (registrationId.equals("kakao")) {
-            oAuth2Response = new KakaoOauth2Response(oAuth2User.getAttributes());
+            oAuth2Response = new KakaoOAuth2Response(oAuth2User.getAttributes());
         }
 
         String socialId = oAuth2Response.getProvider() + "_" + oAuth2Response.getProviderId();

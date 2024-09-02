@@ -4,7 +4,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class KakaoOauth2Response implements OAuth2Response {
+public class KakaoOAuth2Response implements OAuth2Response {
 
     private final Map<String, Object> attributes;
 
