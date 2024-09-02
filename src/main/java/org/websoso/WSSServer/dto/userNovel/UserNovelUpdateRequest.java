@@ -28,7 +28,7 @@ public record UserNovelUpdateRequest(
         List<String> attractivePoints,
 
         @NotNull(message = "키워드 id는 null일 수 없습니다.")
-        @Size(max = 10, message = "키워드는 최대 10개까지 가능합니다.")
+        @Size(max = 20, message = "키워드는 최대 20개까지 가능합니다.")
         List<Integer> keywordIds
 ) {
     @AssertTrue(message = "종료 날짜는 시작 날짜 이후여야 합니다.")

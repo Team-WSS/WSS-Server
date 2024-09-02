@@ -153,7 +153,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .limit(10)
                 .fetch()
                 .stream()
-                .map(tuple -> tuple.get(novel))
+                .map(tuple -> tuple.get(userNovel.novel))
                 .toList();
     }
 }
