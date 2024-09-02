@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.oauth2.dto.CustomOauth2User;
+import org.websoso.WSSServer.oauth2.dto.CustomOAuth2User;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Component
@@ -24,8 +24,8 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
-        CustomOauth2User customOauth2UserDetails = (CustomOauth2User) authentication.getPrincipal();
-        String socialId = customOauth2UserDetails.getName();
+        CustomOAuth2User customOAuth2UserDetails = (CustomOAuth2User) authentication.getPrincipal();
+        String socialId = customOAuth2UserDetails.getName();
         User user = userRepository.findBySocialId(socialId);
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
         String token = jwtProvider.generateToken(userAuthentication);

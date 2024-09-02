@@ -8,7 +8,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.oauth2.dto.CustomOauth2User;
+import org.websoso.WSSServer.oauth2.dto.CustomOAuth2User;
 import org.websoso.WSSServer.oauth2.dto.KakaoOauth2Response;
 import org.websoso.WSSServer.oauth2.dto.OAuth2Response;
 import org.websoso.WSSServer.oauth2.dto.OAuth2UserDTO;
@@ -37,11 +37,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userRepository.save(User.createBySocial(socialId, oAuth2Response.getName(), oAuth2Response.getEmail()));
             OAuth2UserDTO oAuth2UserDTO = OAuth2UserDTO.of(
                     oAuth2Response.getName(), oAuth2Response.getEmail(), socialId);
-            return new CustomOauth2User(oAuth2UserDTO);
+            return new CustomOAuth2User(oAuth2UserDTO);
         } else {
             OAuth2UserDTO oAuth2UserDTO = OAuth2UserDTO.of(
                     existedUserOrNull.getNickname(), existedUserOrNull.getEmail(), existedUserOrNull.getSocialId());
-            return new CustomOauth2User(oAuth2UserDTO);
+            return new CustomOAuth2User(oAuth2UserDTO);
         }
     }
 }
