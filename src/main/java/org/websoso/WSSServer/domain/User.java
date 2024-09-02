@@ -98,7 +98,7 @@ public class User {
         return UserBasicInfo.of(this.getUserId(), this.getNickname(), avatarImage);
     }
 
-    private User(String socialId, String email) {
+    private User(String socialId, String nickname, String email) {
         this.intro = "안녕하세요";
         this.gender = M;
         this.birth = Year.now();
@@ -106,11 +106,11 @@ public class User {
         this.isProfilePublic = true;
         this.role = Role.USER;
         this.socialId = socialId;
-        this.nickname = socialId;
+        this.nickname = nickname;
         this.email = email;
     }
 
-    public static User createBySocial(String socialId, String email) {
-        return new User(socialId, email);
+    public static User createBySocial(String socialId, String nickname, String email) {
+        return new User(socialId, nickname, email);
     }
 }
