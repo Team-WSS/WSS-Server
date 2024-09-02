@@ -1,5 +1,7 @@
 package org.websoso.WSSServer.domain;
 
+import static org.websoso.WSSServer.domain.common.Gender.M;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -27,7 +29,10 @@ import org.websoso.WSSServer.dto.user.UserBasicInfo;
 @Table(uniqueConstraints = {
         @UniqueConstraint(
                 name = "UNIQUE_NICKNAME_CONSTRAINT",
-                columnNames = "nickname")
+                columnNames = "nickname"),
+        @UniqueConstraint(
+                name = "UNIQUE_SOCIAL_ID_CONSTRAINT",
+                columnNames = "social_id")
 })
 public class User {
 
@@ -35,6 +40,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Long userId;
+
+    @Column(nullable = false)
+    private String socialId;
 
     @Column(columnDefinition = "varchar(10)", nullable = false)
     private String nickname;
@@ -90,9 +98,25 @@ public class User {
     public UserBasicInfo getUserBasicInfo(String avatarImage) {
         return UserBasicInfo.of(this.getUserId(), this.getNickname(), avatarImage);
     }
-
+  
     public void editMyInfo(EditMyInfoRequest editMyInfoRequest) {
         this.gender = Gender.valueOf(editMyInfoRequest.gender());
         this.birth = Year.of(editMyInfoRequest.birth());
+    }
+
+    private User(String socialId, String nickname, String email) {
+        this.intro = "안녕하세요";
+        this.gender = M;
+        this.birth = Year.now();
+        this.avatarId = 1;
+        this.isProfilePublic = true;
+        this.role = Role.USER;
+        this.socialId = socialId;
+        this.nickname = nickname;
+        this.email = email;
+    }
+
+    public static User createBySocial(String socialId, String nickname, String email) {
+        return new User(socialId, nickname, email);
     }
 }
