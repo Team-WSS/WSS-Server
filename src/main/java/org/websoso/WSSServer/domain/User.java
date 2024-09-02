@@ -1,5 +1,7 @@
 package org.websoso.WSSServer.domain;
 
+import static org.websoso.WSSServer.domain.common.Gender.M;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -98,7 +100,7 @@ public class User {
 
     private User(String socialId, String nickname, String email) {
         this.intro = "안녕하세요";
-        this.gender = Gender.M;
+        this.gender = M;
         this.birth = Year.now();
         this.avatarId = 1;
         this.isProfilePublic = true;
