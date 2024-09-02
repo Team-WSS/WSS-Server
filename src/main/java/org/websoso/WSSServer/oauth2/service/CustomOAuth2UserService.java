@@ -34,9 +34,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String socialId = oAuth2Response.getProvider() + "_" + oAuth2Response.getProviderId();
         User existedUserOrNull = userRepository.findBySocialId(socialId);
         if (existedUserOrNull == null) {
-            userRepository.save(User.createBySocial(socialId, oAuth2Response.getName(), oAuth2Response.getEmail()));
+            userRepository.save(User.createBySocial(socialId, oAuth2Response.getEmail()));
             OAuth2UserDTO oAuth2UserDTO = OAuth2UserDTO.of(
-                    oAuth2Response.getName(), oAuth2Response.getEmail(), socialId);
+                    socialId, oAuth2Response.getEmail(), socialId);
             return new CustomOAuth2User(oAuth2UserDTO);
         } else {
             OAuth2UserDTO oAuth2UserDTO = OAuth2UserDTO.of(
