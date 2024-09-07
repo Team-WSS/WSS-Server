@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,16 +20,16 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.Action;
-import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 
 @Getter
 @DynamicInsert
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Feed extends BaseEntity {
+public class Feed {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
@@ -44,8 +45,16 @@ public class Feed extends BaseEntity {
     @Column
     private Long novelId;
 
-    @Column(columnDefinition = "Boolean default false", nullable = false)
+    @Column(nullable = false)
     private Boolean isSpoiler;
+
+    @CreationTimestamp
+    @Column(nullable = false)
+    private LocalDateTime createdDate;
+
+    @CreationTimestamp
+    @Column(nullable = false)
+    private LocalDateTime modifiedDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -75,6 +84,7 @@ public class Feed extends BaseEntity {
         this.feedContent = feedContent;
         this.isSpoiler = isSpoiler;
         this.novelId = novelId;
+        this.modifiedDate = LocalDateTime.now();
     }
 
     public void validateUserAuthorization(User user, Action action) {
