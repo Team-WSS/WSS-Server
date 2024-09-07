@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class JwtProvider {
 
-    private static final String USER_ID = "userId";
+    private static final String CLAIM_USER_ID = "userId";
     private static final Long TOKEN_EXPIRATION_TIME = 6 * 30 * 24 * 60 * 60 * 1000L;
 
     @Value("${jwt.secret}")
@@ -46,7 +46,7 @@ public class JwtProvider {
         final Claims claims = Jwts.claims()
                 .setIssuedAt(new Date(now))
                 .setExpiration(new Date(now + TOKEN_EXPIRATION_TIME));
-        claims.put(USER_ID, authentication.getPrincipal());
+        claims.put(CLAIM_USER_ID, authentication.getPrincipal());
 
         return claims;
     }
@@ -57,7 +57,7 @@ public class JwtProvider {
 
     public Long getUserIdFromJwt(String token) {
         Claims claims = getClaim(token);
-        return Long.valueOf(claims.get(USER_ID).toString());
+        return Long.valueOf(claims.get(CLAIM_USER_ID).toString());
     }
 
     public JwtValidationType validateJWT(String token) {
