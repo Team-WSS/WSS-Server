@@ -52,8 +52,7 @@ public class JwtProvider {
 
     private SecretKey getSigningKey() {
         String encodedKey = Base64.getEncoder().encodeToString(JWT_SECRET_KEY.getBytes());
-        return Keys.hmacShaKeyFor(
-                encodedKey.getBytes());
+        return Keys.hmacShaKeyFor(encodedKey.getBytes());
     }
 
     public JwtValidationType validateToken(String token) {
