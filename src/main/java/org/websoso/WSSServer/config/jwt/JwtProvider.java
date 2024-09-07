@@ -57,7 +57,7 @@ public class JwtProvider {
 
     public JwtValidationType validateToken(String token) {
         try {
-            final Claims claims = getBody(token);
+            final Claims claims = getClaim(token);
             return JwtValidationType.VALID_TOKEN;
         } catch (MalformedJwtException ex) {
             return JwtValidationType.INVALID_TOKEN;
@@ -70,7 +70,7 @@ public class JwtProvider {
         }
     }
 
-    private Claims getBody(final String token) {
+    private Claims getClaim(final String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -79,7 +79,7 @@ public class JwtProvider {
     }
 
     public Long getUserFromJwt(String token) {
-        Claims claims = getBody(token);
+        Claims claims = getClaim(token);
         return Long.valueOf(claims.get(USER_ID).toString());
     }
 
