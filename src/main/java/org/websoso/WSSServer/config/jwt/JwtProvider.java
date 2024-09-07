@@ -22,14 +22,13 @@ import org.springframework.stereotype.Component;
 public class JwtProvider {
 
     private static final String USER_ID = "userId";
-    private static final Long TOKEN_EXPIRATION_TIME = 6 * 30 * 24 * 60 * 60 * 1000L; // 6개월
+    private static final Long TOKEN_EXPIRATION_TIME = 6 * 30 * 24 * 60 * 60 * 1000L;
 
     @Value("${jwt.secret}")
     private String JWT_SECRET;
 
     @PostConstruct
     protected void init() {
-        //base64 라이브러리에서 encodeToString을 이용해서 byte[] 형식을 String 형식으로 변환
         JWT_SECRET = Base64.getEncoder().encodeToString(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -38,21 +37,21 @@ public class JwtProvider {
 
         final Claims claims = Jwts.claims()
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + TOKEN_EXPIRATION_TIME));      // 만료 시간
+                .setExpiration(new Date(now.getTime() + TOKEN_EXPIRATION_TIME));
 
         claims.put(USER_ID, authentication.getPrincipal());
 
         return Jwts.builder()
-                .setHeaderParam(Header.TYPE, Header.JWT_TYPE) // Header
-                .setClaims(claims) // Claim
-                .signWith(getSigningKey()) // Signature
+                .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+                .setClaims(claims)
+                .signWith(getSigningKey())
                 .compact();
     }
 
     private SecretKey getSigningKey() {
-        String encodedKey = Base64.getEncoder().encodeToString(JWT_SECRET.getBytes()); //SecretKey 통해 서명 생성
+        String encodedKey = Base64.getEncoder().encodeToString(JWT_SECRET.getBytes());
         return Keys.hmacShaKeyFor(
-                encodedKey.getBytes());   //일반적으로 HMAC (Hash-based Message Authentication Code) 알고리즘 사용
+                encodedKey.getBytes());
     }
 
     public JwtValidationType validateToken(String token) {
