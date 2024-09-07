@@ -42,9 +42,10 @@ public class JwtProvider {
     }
 
     private Claims generateClaims(Authentication authentication) {
+        long now = System.currentTimeMillis();
         final Claims claims = Jwts.claims()
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_TIME));
+                .setIssuedAt(new Date(now))
+                .setExpiration(new Date(now + TOKEN_EXPIRATION_TIME));
         claims.put(USER_ID, authentication.getPrincipal());
 
         return claims;
