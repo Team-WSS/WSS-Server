@@ -32,7 +32,7 @@ public class JwtProvider {
         JWT_SECRET = Base64.getEncoder().encodeToString(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(Authentication authentication) {
+    public String generateJWT(Authentication authentication) {
         final Date now = new Date();
 
         final Claims claims = Jwts.claims()

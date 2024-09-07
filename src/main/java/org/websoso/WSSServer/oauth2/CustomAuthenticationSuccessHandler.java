@@ -28,7 +28,7 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String socialId = customOAuth2UserDetails.getName();
         User user = userRepository.findBySocialId(socialId);
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
-        String token = jwtProvider.generateToken(userAuthentication);
+        String token = jwtProvider.generateJWT(userAuthentication);
 
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_OK);
