@@ -54,6 +54,11 @@ public class JwtProvider {
         return Keys.hmacShaKeyFor(JWT_SECRET_KEY.getBytes());
     }
 
+    public Long getUserIdFromJwt(String token) {
+        Claims claims = getClaim(token);
+        return Long.valueOf(claims.get(USER_ID).toString());
+    }
+
     public JwtValidationType validateJWT(String token) {
         try {
             final Claims claims = getClaim(token);
@@ -76,10 +81,4 @@ public class JwtProvider {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
-    public Long getUserIdFromJwt(String token) {
-        Claims claims = getClaim(token);
-        return Long.valueOf(claims.get(USER_ID).toString());
-    }
-
 }
