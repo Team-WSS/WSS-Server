@@ -27,8 +27,8 @@ public class ReportedCommentService {
         reportedCommentRepository.save(ReportedComment.create(comment, user, reportedType));
     }
 
-    public boolean shouldHideComment(Comment comment, ReportedType reportedType) {
-        return reportedCommentRepository.countByCommentAndReportedType(comment, reportedType) >= 3;
+    public int getReportedCountByReportedType(Comment comment, ReportedType reportedType) {
+        return reportedCommentRepository.countByCommentAndReportedType(comment, reportedType);
     }
 
 }

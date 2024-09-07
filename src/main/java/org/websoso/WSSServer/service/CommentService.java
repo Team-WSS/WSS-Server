@@ -83,13 +83,17 @@ public class CommentService {
 
         reportedCommentService.createReportedComment(comment, user, reportedType);
 
-        if (reportedCommentService.shouldHideComment(comment, reportedType)) {
+        int reportedCount = reportedCommentService.getReportedCountByReportedType(comment, reportedType);
+        boolean shouldHide = reportedCount >= 3;
+
+        if (shouldHide) {
             comment.hideComment();
         }
 
         messageService.sendDiscordWebhookMessage(
                 DiscordWebhookMessage.of(
-                        MessageFormatter.formatCommentReportMessage(comment, reportedType, commentCreatedUser)));
+                        MessageFormatter.formatCommentReportMessage(comment, reportedType, commentCreatedUser,
+                                reportedCount, shouldHide)));
     }
 
     private Comment getCommentOrException(Long commentId) {

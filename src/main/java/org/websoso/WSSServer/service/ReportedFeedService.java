@@ -27,8 +27,8 @@ public class ReportedFeedService {
         reportedFeedRepository.save(ReportedFeed.create(feed, user, reportedType));
     }
 
-    public boolean shouldHideFeed(Feed feed, ReportedType reportedType) {
-        return reportedFeedRepository.countByFeedAndReportedType(feed, reportedType) >= 3;
+    public int getReportedCountByReportedType(Feed feed, ReportedType reportedType) {
+        return reportedFeedRepository.countByFeedAndReportedType(feed, reportedType);
     }
 
 }
