@@ -25,11 +25,11 @@ public class JwtProvider {
     private static final Long TOKEN_EXPIRATION_TIME = 6 * 30 * 24 * 60 * 60 * 1000L;
 
     @Value("${jwt.secret}")
-    private String JWT_SECRET;
+    private String JWT_SECRET_KEY;
 
     @PostConstruct
     protected void init() {
-        JWT_SECRET = Base64.getEncoder().encodeToString(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+        JWT_SECRET_KEY = Base64.getEncoder().encodeToString(JWT_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateJWT(Authentication authentication) {
@@ -49,7 +49,7 @@ public class JwtProvider {
     }
 
     private SecretKey getSigningKey() {
-        String encodedKey = Base64.getEncoder().encodeToString(JWT_SECRET.getBytes());
+        String encodedKey = Base64.getEncoder().encodeToString(JWT_SECRET_KEY.getBytes());
         return Keys.hmacShaKeyFor(
                 encodedKey.getBytes());
     }
