@@ -33,19 +33,20 @@ public class JwtProvider {
     }
 
     public String generateJWT(Authentication authentication) {
-        final Date now = new Date();
-
-        final Claims claims = Jwts.claims()
-                .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + TOKEN_EXPIRATION_TIME));
-
-        claims.put(USER_ID, authentication.getPrincipal());
-
         return Jwts.builder()
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-                .setClaims(claims)
+                .setClaims(generateClaims(authentication))
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    private Claims generateClaims(Authentication authentication) {
+        final Claims claims = Jwts.claims()
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_TIME));
+        claims.put(USER_ID, authentication.getPrincipal());
+
+        return claims;
     }
 
     private SecretKey getSigningKey() {
