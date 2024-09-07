@@ -54,7 +54,7 @@ public class JwtProvider {
         return Keys.hmacShaKeyFor(JWT_SECRET_KEY.getBytes());
     }
 
-    public JwtValidationType validateToken(String token) {
+    public JwtValidationType validateJWT(String token) {
         try {
             final Claims claims = getClaim(token);
             return JwtValidationType.VALID_TOKEN;
