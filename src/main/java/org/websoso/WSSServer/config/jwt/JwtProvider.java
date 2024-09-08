@@ -30,6 +30,9 @@ public class JwtProvider {
     @Value("${jwt.expiration-time.access-token}")
     private Long ACCESS_TOKEN_EXPIRATION_TIME;
 
+    @Value("${jwt.expiration-time.refresh-token}")
+    private Long REFRESH_TOKEN_EXPIRATION_TIME;
+
     @PostConstruct
     protected void init() {
         JWT_SECRET_KEY = Base64.getEncoder().encodeToString(JWT_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
