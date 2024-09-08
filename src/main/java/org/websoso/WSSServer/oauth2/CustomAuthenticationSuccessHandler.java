@@ -32,6 +32,6 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().write("{\"authorization\": \"" + token + "\"}");
+        response.getWriter().write("{\"Authorization\": \"" + token + "\"}");
     }
 }
