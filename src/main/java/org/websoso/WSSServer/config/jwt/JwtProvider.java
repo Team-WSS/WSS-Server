@@ -38,7 +38,14 @@ public class JwtProvider {
         JWT_SECRET_KEY = Base64.getEncoder().encodeToString(JWT_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateJWT(Authentication authentication) {
+    public String generateAccessToken(Authentication authentication) {
+        return generateJWT(authentication, ACCESS_TOKEN_EXPIRATION_TIME);
+    }
+
+    public String generateRefreshToken(Authentication authentication) {
+        return generateJWT(authentication, REFRESH_TOKEN_EXPIRATION_TIME);
+    }
+
     public String generateJWT(Authentication authentication, Long expirationTime) {
         return Jwts.builder()
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
