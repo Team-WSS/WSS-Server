@@ -39,18 +39,19 @@ public class JwtProvider {
     }
 
     public String generateJWT(Authentication authentication) {
+    public String generateJWT(Authentication authentication, Long expirationTime) {
         return Jwts.builder()
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-                .setClaims(generateClaims(authentication))
+                .setClaims(generateClaims(authentication, expirationTime))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    private Claims generateClaims(Authentication authentication) {
+    private Claims generateClaims(Authentication authentication, Long expirationTime) {
         long now = System.currentTimeMillis();
         final Claims claims = Jwts.claims()
                 .setIssuedAt(new Date(now))
-                .setExpiration(new Date(now + TOKEN_EXPIRATION_TIME));
+                .setExpiration(new Date(now + expirationTime));
         claims.put(CLAIM_USER_ID, authentication.getPrincipal());
 
         return claims;
