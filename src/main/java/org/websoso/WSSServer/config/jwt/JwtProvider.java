@@ -23,10 +23,12 @@ import org.springframework.stereotype.Component;
 public class JwtProvider {
 
     private static final String CLAIM_USER_ID = "userId";
-    private static final Long TOKEN_EXPIRATION_TIME = 6 * 30 * 24 * 60 * 60 * 1000L;
 
     @Value("${jwt.secret}")
     private String JWT_SECRET_KEY;
+
+    @Value("${jwt.expiration-time.access-token}")
+    private Long ACCESS_TOKEN_EXPIRATION_TIME;
 
     @PostConstruct
     protected void init() {
