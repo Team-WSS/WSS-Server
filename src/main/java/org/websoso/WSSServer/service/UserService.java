@@ -65,7 +65,7 @@ public class UserService {
         User user = getUserOrException(userId);
 
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
-        String token = jwtProvider.generateJWT(userAuthentication);
+        String token = jwtProvider.generateAccessToken(userAuthentication);
 
         return LoginResponse.of(token);
     }
