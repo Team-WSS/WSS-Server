@@ -28,10 +28,10 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String socialId = customOAuth2UserDetails.getName();
         User user = userRepository.findBySocialId(socialId);
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
-        String token = jwtProvider.generateAccessToken(userAuthentication);
+        String accessToken = jwtProvider.generateAccessToken(userAuthentication);
 
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().write("{\"Authorization\": \"" + token + "\"}");
+        response.getWriter().write("{\"Authorization\": \"" + accessToken + "\"}");
     }
 }
