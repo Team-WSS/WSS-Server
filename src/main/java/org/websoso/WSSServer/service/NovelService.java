@@ -9,6 +9,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.ALREADY
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_INTERESTED;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.domain.common.AttractivePointName;
+import org.websoso.WSSServer.domain.common.GenreName;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
@@ -113,18 +115,12 @@ public class NovelService {
     }
 
     private String getKoreanGenreName(String englishGenreName) {
-        return switch (englishGenreName) {
-            case "romance" -> "로맨스";
-            case "romanceFantasy" -> "로판";
-            case "fantasy" -> "판타지";
-            case "modernFantasy" -> "현판";
-            case "wuxia" -> "무협";
-            case "drama" -> "드라마";
-            case "mystery" -> "미스터리";
-            case "lightNovel" -> "라노벨";
-            case "BL" -> "BL";
-            default -> throw new CustomGenreException(GENRE_NOT_FOUND, "genre with the given genreName is not found");
-        };
+        return Arrays.stream(GenreName.values())
+                .filter(genreName -> genreName.getLabel().equalsIgnoreCase(englishGenreName))
+                .findFirst()
+                .map(GenreName::getKoreanLabel)
+                .orElseThrow(
+                        () -> new CustomGenreException(GENRE_NOT_FOUND, "Genre with the given genreName is not found"));
     }
 
     private String getRandomNovelGenreImage(List<NovelGenre> novelGenres) {
