@@ -9,14 +9,8 @@ import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.ReadOnlyJWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.interfaces.ECPrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -26,6 +20,9 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -34,169 +31,142 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.websoso.WSSServer.apple.dto.AppleDTO;
+import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.service.UserService;
 
 @Service
 @RequiredArgsConstructor
 public class AppleService {
 
-    /*
-    나중에 .yml 파일로 넣기!!!
-     */
+    private static final String GRANT_TYPE = "authorization_code";
+    private static final String CONTENT_TYPE = "application/x-www-form-urlencoded";
+    private static final long TOKEN_EXPIRATION_TIME = 179L * 24 * 60 * 60 * 1000; // 약 6개월 미만
 
-    //    @Value("${apple.team.id}")
-    private String APPLE_TEAM_ID = "팀아이디";
+    @Value("${apple.auth.team-id}")
+    private String appleTeamId;
 
-    //    @Value("${apple.login.key}")
-    private String APPLE_LOGIN_KEY = "키아이디"; // 키 아이디
+    @Value("${apple.auth.key.id}")
+    private String appleLoginKey;
 
-    //    @Value("${apple.client.id}")
-    private String APPLE_CLIENT_ID = "클라이언트아이디";
+    @Value("${apple.auth.client-id}")
+    private String appleClientId;
 
-    //    @Value("${apple.redirect.url}")
-    private String APPLE_REDIRECT_URL = "https://996e-175-197-155-27.ngrok-free.app/oauth2/callback/apple";
+    @Value("${apple.auth.redirect-url}")
+    private String appleRedirectUrl;
 
-    //    @Value("${apple.key.path}")
-    private String APPLE_KEY_PATH = "static/apple/AuthKey_95FY7899YW.p8";
+    @Value("${apple.auth.key.path}")
+    private String appleKeyPath;
 
-    private final static String APPLE_AUTH_URL = "https://appleid.apple.com";
+    @Value("${apple.auth.iss}")
+    private String appleAuthUrl;
 
     private final UserService userService;
 
-    public String getAppleLogin() {
-//        https:appleid.apple.com/auth/authorize?client_id={APPLE_CLIENT_ID}&redirect_uri=https://996e-175-197-155-27.ngrok-free.app/oauth2/callback/apple/&response_type=code%20id_token&scope=name%20email&response_mode=form_post
-        return APPLE_AUTH_URL + "/auth/authorize"
-                + "?client_id=" + APPLE_CLIENT_ID
-                + "&redirect_uri=" + APPLE_REDIRECT_URL
-                + "&response_type=code%20id_token&scope=name%20email&response_mode=form_post";
-    }
-
-    public AppleDTO getAppleInfo(String code) throws Exception {
-        if (code == null) {
-            throw new Exception("Failed get authorization code");
-        }
-
+    public LoginResponse getAppleInfo(String authorizationCode) throws Exception {
+        validateAuthorizationCode(authorizationCode);
         String clientSecret = createClientSecret();
-        String userId = "";
-        String email = "";
-        String accessToken = "";
 
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Content-type", "application/x-www-form-urlencoded");
+            JSONObject tokenResponse = requestToken(authorizationCode, clientSecret);
+            JSONObject payload = parseIdToken((String) tokenResponse.get("id_token"));
 
-            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-            params.add("grant_type", "authorization_code");
-            params.add("client_id", APPLE_CLIENT_ID);
-            params.add("client_secret", clientSecret);
-            params.add("code", code);
-            params.add("redirect_uri", APPLE_REDIRECT_URL);
+            String socialId = (String) payload.get("sub");
+            String email = (String) payload.get("email");
 
-            RestTemplate restTemplate = new RestTemplate();
-            HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(params, headers);
-
-            ResponseEntity<String> response = restTemplate.exchange(
-                    APPLE_AUTH_URL + "/auth/token",
-                    HttpMethod.POST,
-                    httpEntity,
-                    String.class
-            );
-
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObj = (JSONObject) jsonParser.parse(response.getBody());
-
-            accessToken = String.valueOf(jsonObj.get("access_token"));
-
-            //ID TOKEN을 통해 회원 고유 식별자 받기
-            SignedJWT signedJWT = SignedJWT.parse(String.valueOf(jsonObj.get("id_token")));
-            ReadOnlyJWTClaimsSet getPayload = signedJWT.getJWTClaimsSet();
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            JSONObject payload = objectMapper.readValue(getPayload.toJSONObject().toJSONString(), JSONObject.class);
-
-            userId = String.valueOf(payload.get("sub"));
-            email = String.valueOf(payload.get("email"));
+            return userService.signUpOrSignInWithApple(socialId, email);
         } catch (Exception e) {
-            throw new Exception("API call failed");
+            throw new Exception("Failed to retrieve user information from Apple", e);
         }
+    }
 
-//        다 잘 되면 토큰 발급까지 해보기
-//        return userService.signUpOrSignInWithApple(userId, email);
+    private void validateAuthorizationCode(String code) throws Exception {
+        if (code == null || code.isBlank()) {
+            throw new Exception("Authorization code is missing");
+        }
+    }
 
-        return AppleDTO.builder()
-                .id(userId)
-                .token(accessToken)
-                .email(email).build();
+    private JSONObject requestToken(String authorizationCode, String clientSecret) throws Exception {
+        HttpHeaders headers = createHttpHeaders();
+        MultiValueMap<String, String> params = createTokenRequestParams(authorizationCode, clientSecret);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(params, headers);
+        ResponseEntity<String> response = restTemplate.exchange(
+                appleAuthUrl + "/auth/token",
+                HttpMethod.POST,
+                httpEntity,
+                String.class
+        );
+
+        JSONParser jsonParser = new JSONParser();
+        return (JSONObject) jsonParser.parse(response.getBody());
+    }
+
+    private HttpHeaders createHttpHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", CONTENT_TYPE);
+        return headers;
+    }
+
+    private MultiValueMap<String, String> createTokenRequestParams(String authorizationCode, String clientSecret) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", GRANT_TYPE);
+        params.add("client_id", appleClientId);
+        params.add("client_secret", clientSecret);
+        params.add("code", authorizationCode);
+        params.add("redirect_uri", appleRedirectUrl);
+        return params;
+    }
+
+    private JSONObject parseIdToken(String idToken) throws Exception {
+        SignedJWT signedJWT = SignedJWT.parse(idToken);
+        ReadOnlyJWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(claimsSet.toJSONObject().toJSONString(), JSONObject.class);
     }
 
     private String createClientSecret() throws Exception {
-        JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.ES256).keyID(APPLE_LOGIN_KEY).build();
-        JWTClaimsSet claimsSet = new JWTClaimsSet();
-
-        Date now = new Date();
-        claimsSet.setIssuer(APPLE_TEAM_ID);
-        claimsSet.setIssueTime(now);
-        claimsSet.setExpirationTime(new Date(now.getTime() + 3600000));
-        claimsSet.setAudience(APPLE_AUTH_URL);
-        claimsSet.setSubject(APPLE_CLIENT_ID);
+        JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.ES256).keyID(appleLoginKey).build();
+        JWTClaimsSet claimsSet = buildJwtClaimsSet();
 
         SignedJWT jwt = new SignedJWT(header, claimsSet);
-
-        try {
-            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(getPrivateKey());
-            KeyFactory kf = KeyFactory.getInstance("EC");
-            ECPrivateKey ecPrivateKey = (ECPrivateKey) kf.generatePrivate(spec);
-            JWSSigner jwsSigner = new ECDSASigner(ecPrivateKey.getS());
-
-            jwt.sign(jwsSigner);
-        } catch (InvalidKeyException | JOSEException e) {
-            throw new Exception("Failed create client secret");
-        }
+        signJwt(jwt);
 
         return jwt.serialize();
     }
 
-    private byte[] getPrivateKey() throws Exception {
-        byte[] content = null;
-        File file = null;
+    private JWTClaimsSet buildJwtClaimsSet() {
+        Date now = new Date();
+        JWTClaimsSet claimsSet = new JWTClaimsSet();
 
-        URL res = getClass().getResource(APPLE_KEY_PATH);
+        claimsSet.setIssuer(appleTeamId);
+        claimsSet.setIssueTime(now);
+        claimsSet.setExpirationTime(new Date(now.getTime() + TOKEN_EXPIRATION_TIME));
+        claimsSet.setAudience(appleAuthUrl);
+        claimsSet.setSubject(appleClientId);
 
-        if ("jar".equals(res.getProtocol())) {
-            try {
-                InputStream input = getClass().getResourceAsStream(APPLE_KEY_PATH);
-                file = File.createTempFile("tempfile", ".tmp");
-                OutputStream out = new FileOutputStream(file);
+        return claimsSet;
+    }
 
-                int read;
-                byte[] bytes = new byte[1024];
-
-                while ((read = input.read(bytes)) != -1) {
-                    out.write(bytes, 0, read);
-                }
-
-                out.close();
-                file.deleteOnExit();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        } else {
-            file = new File(res.getFile());
+    private void signJwt(SignedJWT jwt) throws Exception {
+        try {
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(readPrivateKey(appleKeyPath));
+            KeyFactory keyFactory = KeyFactory.getInstance("EC");
+            ECPrivateKey ecPrivateKey = (ECPrivateKey) keyFactory.generatePrivate(spec);
+            JWSSigner signer = new ECDSASigner(ecPrivateKey.getS());
+            jwt.sign(signer);
+        } catch (JOSEException e) {
+            throw new Exception("Failed to create client secret", e);
         }
+    }
 
-        if (file.exists()) {
-            try (FileReader keyReader = new FileReader(file);
-                 PemReader pemReader = new PemReader(keyReader)) {
-                PemObject pemObject = pemReader.readPemObject();
-                content = pemObject.getContent();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            throw new Exception("File " + file + " not found");
+    private byte[] readPrivateKey(String keyPath) throws Exception {
+        Resource resource = new ClassPathResource(keyPath);
+        try (PemReader pemReader = new PemReader(new FileReader(resource.getFile()))) {
+            PemObject pemObject = pemReader.readPemObject();
+            return pemObject.getContent();
+        } catch (IOException e) {
+            throw new Exception("Failed to read private key", e);
         }
-
-        return content;
     }
 }

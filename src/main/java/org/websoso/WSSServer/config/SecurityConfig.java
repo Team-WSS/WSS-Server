@@ -42,7 +42,9 @@ public class SecurityConfig {
             "/users/{userId}/feeds",
             "/users/profile/{userId}",
             "/{userId}/preferences/genres",
-            "/reissue"
+            "/reissue",
+            "/login/callback",
+            "/login/apple"
     };
 
     @Bean
@@ -82,5 +84,4 @@ public class SecurityConfig {
             }
         };
     }
-
 }

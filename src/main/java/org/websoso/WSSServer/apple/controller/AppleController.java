@@ -8,18 +8,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.apple.dto.AppleDTO;
 import org.websoso.WSSServer.apple.service.AppleService;
+import org.websoso.WSSServer.dto.user.LoginResponse;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/oauth2")
+@RequestMapping("/login")
 public class AppleController {
 
     private final AppleService appleService;
 
-    @PostMapping("/callback/apple")
-    public ResponseEntity<AppleDTO> callback(HttpServletRequest request) throws Exception {
+    @PostMapping("/callback")
+    public ResponseEntity<LoginResponse> callback(HttpServletRequest request) throws Exception {
         return ResponseEntity
                 .status(OK)
                 .body(appleService.getAppleInfo(request.getParameter("code")));
