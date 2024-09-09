@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.apple.controller;
+package org.websoso.WSSServer.oauth2.controller;
 
 import static org.springframework.http.HttpStatus.OK;
 
@@ -8,8 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.apple.service.AppleService;
 import org.websoso.WSSServer.dto.user.LoginResponse;
+import org.websoso.WSSServer.oauth2.service.AppleService;
 
 @RestController
 @RequiredArgsConstructor
