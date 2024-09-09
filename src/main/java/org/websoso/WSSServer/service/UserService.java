@@ -146,8 +146,11 @@ public class UserService {
     }
 
     public LoginResponse signUpOrSignInWithApple(String socialId, String email, String nickname) {
-        User user = userRepository.findBySocialIdAndEmail(socialId, email)
-                .orElseGet(() -> userRepository.save(User.createBySocial(socialId, nickname, email)));
+        User user = userRepository.findBySocialId(socialId);
+
+        if (user == null) {
+            user = userRepository.save(User.createBySocial(socialId, nickname, email));
+        }
 
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
         return LoginResponse.of(jwtProvider.generateAccessToken(userAuthentication));
