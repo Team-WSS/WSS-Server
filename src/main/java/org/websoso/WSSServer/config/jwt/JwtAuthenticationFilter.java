@@ -33,9 +33,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             final String token = getJwtFromRequest(request);
-            final JwtValidationType validationResult = jwtProvider.validateJWT(token);
+            final JwtValidationType validationResult = jwtUtil.validateJWT(token);
             if (validationResult == VALID_TOKEN) {
-                Long memberId = jwtProvider.getUserIdFromJwt(token);
+                Long memberId = jwtUtil.getUserIdFromJwt(token);
                 UserAuthentication authentication = new UserAuthentication(memberId.toString(), null, null);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);

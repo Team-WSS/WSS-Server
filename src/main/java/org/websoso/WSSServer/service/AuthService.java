@@ -22,11 +22,11 @@ public class AuthService {
     private final JWTUtil jwtUtil;
 
     public ReissueResponse reissue(String refreshToken) {
-        JwtValidationType validationResult = jwtProvider.validateJWT(refreshToken);
-        String tokenType = jwtProvider.getTokenTypeFromJwt(refreshToken);
+        JwtValidationType validationResult = jwtUtil.validateJWT(refreshToken);
+        String tokenType = jwtUtil.getTokenTypeFromJwt(refreshToken);
         if ("refresh".equals(tokenType)) {
             if (validationResult == JwtValidationType.VALID_TOKEN) {
-                Long userId = jwtProvider.getUserIdFromJwt(refreshToken);
+                Long userId = jwtUtil.getUserIdFromJwt(refreshToken);
                 UserAuthentication userAuthentication = new UserAuthentication(userId, null, null);
                 String newAccessToken = jwtProvider.generateAccessToken(userAuthentication);
                 String newRefreshToken = jwtProvider.generateRefreshToken(userAuthentication);
