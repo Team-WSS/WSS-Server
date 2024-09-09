@@ -1,12 +1,9 @@
 package org.websoso.WSSServer.config.jwt;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
@@ -68,38 +65,4 @@ public class JwtProvider {
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(JWT_SECRET_KEY.getBytes());
     }
-
-    public Long getUserIdFromJwt(String token) {
-        Claims claims = getClaim(token);
-        return Long.valueOf(claims.get(CLAIM_USER_ID).toString());
-    }
-
-    public JwtValidationType validateJWT(String token) {
-        try {
-            final Claims claims = getClaim(token);
-            return JwtValidationType.VALID_TOKEN;
-        } catch (MalformedJwtException ex) {
-            return JwtValidationType.INVALID_TOKEN;
-        } catch (ExpiredJwtException ex) {
-            return JwtValidationType.EXPIRED_TOKEN;
-        } catch (UnsupportedJwtException ex) {
-            return JwtValidationType.UNSUPPORTED_TOKEN;
-        } catch (IllegalArgumentException ex) {
-            return JwtValidationType.EMPTY_TOKEN;
-        }
-    }
-
-    private Claims getClaim(final String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
-    public String getTokenTypeFromJwt(String token) {
-        Claims claims = getClaim(token);
-        return claims.getSubject();
-    }
-
 }
