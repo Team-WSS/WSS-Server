@@ -31,7 +31,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             final String token = getJwtFromRequest(request);
-            if (jwtProvider.validateJWT(token) == VALID_TOKEN) {
+            final JwtValidationType validationResult = jwtProvider.validateJWT(token);
+            if (validationResult == VALID_TOKEN) {
                 Long memberId = jwtProvider.getUserIdFromJwt(token);
                 UserAuthentication authentication = new UserAuthentication(memberId.toString(), null, null);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
