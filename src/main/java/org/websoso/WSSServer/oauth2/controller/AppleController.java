@@ -19,7 +19,7 @@ public class AppleController {
     private final AppleService appleService;
 
     @PostMapping("/callback")
-    public ResponseEntity<LoginResponse> callback(HttpServletRequest request) throws Exception {
+    public ResponseEntity<LoginResponse> callback(HttpServletRequest request) {
         return ResponseEntity
                 .status(OK)
                 .body(appleService.getAppleInfo(request.getParameter("code")));
