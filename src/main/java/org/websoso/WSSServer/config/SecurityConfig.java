@@ -41,7 +41,8 @@ public class SecurityConfig {
             "/feeds/popular",
             "/users/{userId}/feeds",
             "/users/profile/{userId}",
-            "/{userId}/preferences/genres"
+            "/{userId}/preferences/genres",
+            "/reissue"
     };
 
     @Bean
