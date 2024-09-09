@@ -39,24 +39,25 @@ public class JwtProvider {
     }
 
     public String generateAccessToken(Authentication authentication) {
-        return generateJWT(authentication, ACCESS_TOKEN_EXPIRATION_TIME);
+        return generateJWT(authentication, ACCESS_TOKEN_EXPIRATION_TIME, "access");
     }
 
     public String generateRefreshToken(Authentication authentication) {
-        return generateJWT(authentication, REFRESH_TOKEN_EXPIRATION_TIME);
+        return generateJWT(authentication, REFRESH_TOKEN_EXPIRATION_TIME, "refresh");
     }
 
-    public String generateJWT(Authentication authentication, Long expirationTime) {
+    public String generateJWT(Authentication authentication, Long expirationTime, String tokenType) {
         return Jwts.builder()
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-                .setClaims(generateClaims(authentication, expirationTime))
+                .setClaims(generateClaims(authentication, expirationTime, tokenType))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    private Claims generateClaims(Authentication authentication, Long expirationTime) {
+    private Claims generateClaims(Authentication authentication, Long expirationTime, String tokenType) {
         long now = System.currentTimeMillis();
         final Claims claims = Jwts.claims()
+                .setSubject(tokenType)
                 .setIssuedAt(new Date(now))
                 .setExpiration(new Date(now + expirationTime));
         claims.put(CLAIM_USER_ID, authentication.getPrincipal());
