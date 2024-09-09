@@ -6,6 +6,7 @@ import static org.websoso.WSSServer.exception.error.CustomAuthError.INVALID_TOKE
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.config.jwt.JWTUtil;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.JwtValidationType;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
@@ -18,6 +19,7 @@ import org.websoso.WSSServer.exception.exception.CustomAuthException;
 public class AuthService {
 
     private final JwtProvider jwtProvider;
+    private final JWTUtil jwtUtil;
 
     public ReissueResponse reissue(String refreshToken) {
         JwtValidationType validationResult = jwtProvider.validateJWT(refreshToken);
