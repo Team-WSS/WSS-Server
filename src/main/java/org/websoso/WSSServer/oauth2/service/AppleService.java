@@ -47,7 +47,7 @@ public class AppleService {
 
     private static final String GRANT_TYPE = "authorization_code";
     private static final String CONTENT_TYPE = "application/x-www-form-urlencoded";
-    private static final long TOKEN_EXPIRATION_TIME = 179L * 24 * 60 * 60 * 1000; // 약 6개월 미만
+    private static final long TOKEN_EXPIRATION_TIME = 179L * 24 * 60 * 60 * 1000;
     private static final String APPLE_PREFIX = "Apple";
 
     @Value("${apple.auth.team-id}")
