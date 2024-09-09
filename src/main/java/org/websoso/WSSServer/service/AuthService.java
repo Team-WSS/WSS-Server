@@ -21,15 +21,17 @@ public class AuthService {
 
     public ReissueResponse reissue(String refreshToken) {
         JwtValidationType validationResult = jwtProvider.validateJWT(refreshToken);
-
-        if (validationResult == JwtValidationType.VALID_TOKEN) {
-            Long userId = jwtProvider.getUserIdFromJwt(refreshToken);
-            UserAuthentication userAuthentication = new UserAuthentication(userId, null, null);
-            String newAccessToken = jwtProvider.generateAccessToken(userAuthentication);
-            String newRefreshToken = jwtProvider.generateRefreshToken(userAuthentication);
-            return ReissueResponse.of(newAccessToken, newRefreshToken);
-        } else if (validationResult == JwtValidationType.EXPIRED_TOKEN) {
-            throw new CustomAuthException(EXPIRED_REFRESH_TOKEN, "given token is expired refresh token.");
+        String tokenType = jwtProvider.getTokenTypeFromJwt(refreshToken);
+        if ("refresh".equals(tokenType)) {
+            if (validationResult == JwtValidationType.VALID_TOKEN) {
+                Long userId = jwtProvider.getUserIdFromJwt(refreshToken);
+                UserAuthentication userAuthentication = new UserAuthentication(userId, null, null);
+                String newAccessToken = jwtProvider.generateAccessToken(userAuthentication);
+                String newRefreshToken = jwtProvider.generateRefreshToken(userAuthentication);
+                return ReissueResponse.of(newAccessToken, newRefreshToken);
+            } else if (validationResult == JwtValidationType.EXPIRED_TOKEN) {
+                throw new CustomAuthException(EXPIRED_REFRESH_TOKEN, "given token is expired refresh token.");
+            }
         }
         throw new CustomAuthException(INVALID_TOKEN, "given token is invalid token.");
     }
