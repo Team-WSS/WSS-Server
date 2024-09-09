@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class JwtProvider {
 
-    private static final String CLAIM_USER_ID = "userId";
+    protected static final String CLAIM_USER_ID = "userId";
 
     @Value("${jwt.secret}")
     private String JWT_SECRET_KEY;
@@ -62,7 +62,7 @@ public class JwtProvider {
         return claims;
     }
 
-    private SecretKey getSigningKey() {
+    protected SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(JWT_SECRET_KEY.getBytes());
     }
 }
