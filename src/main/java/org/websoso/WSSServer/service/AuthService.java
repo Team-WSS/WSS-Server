@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.error.CustomAuthError.EXPIRED_REFRESH_TOKEN;
+import static org.websoso.WSSServer.exception.error.CustomAuthError.INVALID_TOKEN;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,5 +30,6 @@ public class AuthService {
         } else if (validationResult == JwtValidationType.EXPIRED_TOKEN) {
             throw new CustomAuthException(EXPIRED_REFRESH_TOKEN, "given token is expired refresh token.");
         }
+        throw new CustomAuthException(INVALID_TOKEN, "given token is invalid token.");
     }
 }
