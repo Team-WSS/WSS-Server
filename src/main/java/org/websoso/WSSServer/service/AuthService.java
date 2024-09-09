@@ -26,7 +26,8 @@ public class AuthService {
             Long userId = jwtProvider.getUserIdFromJwt(refreshToken);
             UserAuthentication userAuthentication = new UserAuthentication(userId, null, null);
             String newAccessToken = jwtProvider.generateAccessToken(userAuthentication);
-            return ReissueResponse.of(newAccessToken);
+            String newRefreshToken = jwtProvider.generateRefreshToken(userAuthentication);
+            return ReissueResponse.of(newAccessToken, newRefreshToken);
         } else if (validationResult == JwtValidationType.EXPIRED_TOKEN) {
             throw new CustomAuthException(EXPIRED_REFRESH_TOKEN, "given token is expired refresh token.");
         }
