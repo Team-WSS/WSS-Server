@@ -145,9 +145,9 @@ public class UserService {
         genrePreferenceRepository.saveAll(preferGenres);
     }
 
-    public LoginResponse signUpOrSignInWithApple(String socialId, String email) {
+    public LoginResponse signUpOrSignInWithApple(String socialId, String email, String nickname) {
         User user = userRepository.findBySocialIdAndEmail(socialId, email)
-                .orElseGet(() -> userRepository.save(User.createByAppleSocial(socialId, email)));
+                .orElseGet(() -> userRepository.save(User.createBySocial(socialId, nickname, email)));
 
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
         return LoginResponse.of(jwtProvider.generateAccessToken(userAuthentication));

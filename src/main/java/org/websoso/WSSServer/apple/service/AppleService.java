@@ -41,6 +41,7 @@ public class AppleService {
     private static final String GRANT_TYPE = "authorization_code";
     private static final String CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final long TOKEN_EXPIRATION_TIME = 179L * 24 * 60 * 60 * 1000; // 약 6개월 미만
+    private static final String APPLE_PREFIX = "Apple";
 
     @Value("${apple.auth.team-id}")
     private String appleTeamId;
@@ -73,7 +74,11 @@ public class AppleService {
             String socialId = (String) payload.get("sub");
             String email = (String) payload.get("email");
 
-            return userService.signUpOrSignInWithApple(socialId, email);
+            String customSocialId = APPLE_PREFIX + "_" + socialId;
+            String defaultNickname =
+                    APPLE_PREFIX.charAt(0) + "*" + socialId.substring(2, 10);
+
+            return userService.signUpOrSignInWithApple(customSocialId, email, defaultNickname);
         } catch (Exception e) {
             throw new Exception("Failed to retrieve user information from Apple", e);
         }

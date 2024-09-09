@@ -128,10 +128,6 @@ public class User {
         return new User(socialId, nickname, email);
     }
 
-    public static User createByAppleSocial(String socialId, String email) {
-        return new User(socialId, email);
-    }
-
     public void editMyInfo(EditMyInfoRequest editMyInfoRequest) {
         this.gender = Gender.valueOf(editMyInfoRequest.gender());
         this.birth = Year.of(editMyInfoRequest.birth());
