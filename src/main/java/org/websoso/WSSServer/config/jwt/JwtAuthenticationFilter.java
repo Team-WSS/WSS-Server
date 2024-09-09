@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.config.jwt;
 
+import static org.websoso.WSSServer.config.jwt.JwtValidationType.EXPIRED_TOKEN;
 import static org.websoso.WSSServer.config.jwt.JwtValidationType.VALID_TOKEN;
 
 import jakarta.servlet.FilterChain;
@@ -37,6 +38,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserAuthentication authentication = new UserAuthentication(memberId.toString(), null, null);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else if (validationResult == EXPIRED_TOKEN) {
+                handleExpiredAccessToken(request, response);
+                return;
             }
         } catch (Exception exception) {
             try {
@@ -54,5 +58,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(TOKEN_PREFIX.length());
         }
         return null;
+    }
+
+    private void handleExpiredAccessToken(HttpServletRequest request,
+                                          HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().write("{\"error\": \"Access Token Expired. Use Refresh Token to reissue.\"}");
     }
 }
