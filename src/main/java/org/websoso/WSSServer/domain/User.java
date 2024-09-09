@@ -124,6 +124,10 @@ public class User {
         this.email = email;
     }
 
+    public static User createBySocial(String socialId, String nickname, String email) {
+        return new User(socialId, nickname, email);
+    }
+
     public static User createByAppleSocial(String socialId, String email) {
         return new User(socialId, email);
     }
