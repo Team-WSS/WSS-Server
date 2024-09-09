@@ -24,7 +24,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final static String TOKEN_PREFIX = "Bearer ";
-    private final JwtProvider jwtProvider;
     private final JWTUtil jwtUtil;
 
     @Override
