@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.error.CustomAuthError.EXPIRED_REFRESH_TOKEN;
+import static org.websoso.WSSServer.exception.error.CustomAuthError.INVALID_REFRESH_TOKEN;
 import static org.websoso.WSSServer.exception.error.CustomAuthError.INVALID_TOKEN;
 
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.websoso.WSSServer.config.jwt.JWTUtil;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.JwtValidationType;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
+import org.websoso.WSSServer.domain.RefreshToken;
 import org.websoso.WSSServer.dto.auth.ReissueResponse;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
@@ -24,6 +26,9 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     public ReissueResponse reissue(String refreshToken) {
+        RefreshToken storedRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new CustomAuthException(INVALID_REFRESH_TOKEN, "given refresh token is invalid"));
+
         JwtValidationType validationResult = jwtUtil.validateJWT(refreshToken);
         String tokenType = jwtUtil.getTokenTypeFromJwt(refreshToken);
         if ("refresh".equals(tokenType)) {
