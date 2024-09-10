@@ -12,6 +12,7 @@ import org.websoso.WSSServer.config.jwt.JwtValidationType;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.dto.auth.ReissueResponse;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
+import org.websoso.WSSServer.repository.RefreshTokenRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ public class AuthService {
 
     private final JwtProvider jwtProvider;
     private final JWTUtil jwtUtil;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public ReissueResponse reissue(String refreshToken) {
         JwtValidationType validationResult = jwtUtil.validateJWT(refreshToken);
