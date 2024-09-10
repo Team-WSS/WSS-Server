@@ -43,9 +43,4 @@ public class JWTUtil {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
-    public String getTokenTypeFromJwt(String token) {
-        Claims claims = getClaim(token);
-        return claims.getSubject();
-    }
 }
