@@ -31,6 +31,8 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String accessToken = jwtProvider.generateAccessToken(userAuthentication);
         String refreshToken = jwtProvider.generateRefreshToken(userAuthentication);
 
+        boolean isRegister = !user.getNickname().contains("*");
+
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter()
