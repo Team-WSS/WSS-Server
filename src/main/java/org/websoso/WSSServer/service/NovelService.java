@@ -3,11 +3,13 @@ package org.websoso.WSSServer.service;
 import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
+import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.ALREADY_INTERESTED;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_INTERESTED;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +34,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.domain.common.AttractivePointName;
+import org.websoso.WSSServer.domain.common.GenreName;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
@@ -43,6 +46,7 @@ import org.websoso.WSSServer.dto.popularNovel.PopularNovelGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
+import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.repository.AvatarRepository;
@@ -106,8 +110,17 @@ public class NovelService {
 
     private String getNovelGenreNames(List<NovelGenre> novelGenres) {
         return novelGenres.stream()
-                .map(novelGenre -> novelGenre.getGenre().getGenreName())
+                .map(novelGenre -> getKoreanGenreName(novelGenre.getGenre().getGenreName()))
                 .collect(Collectors.joining("/"));
+    }
+
+    private String getKoreanGenreName(String englishGenreName) {
+        return Arrays.stream(GenreName.values())
+                .filter(genreName -> genreName.getLabel().equalsIgnoreCase(englishGenreName))
+                .findFirst()
+                .map(GenreName::getKoreanLabel)
+                .orElseThrow(
+                        () -> new CustomGenreException(GENRE_NOT_FOUND, "Genre with the given genreName is not found"));
     }
 
     private String getRandomNovelGenreImage(List<NovelGenre> novelGenres) {
