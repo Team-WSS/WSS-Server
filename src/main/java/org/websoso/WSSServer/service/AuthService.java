@@ -30,21 +30,19 @@ public class AuthService {
                 .orElseThrow(() -> new CustomAuthException(INVALID_REFRESH_TOKEN, "given refresh token is invalid"));
 
         JwtValidationType validationResult = jwtUtil.validateJWT(refreshToken);
-        String tokenType = jwtUtil.getTokenTypeFromJwt(refreshToken);
-        if ("refresh".equals(tokenType)) {
-            if (validationResult == JwtValidationType.VALID_TOKEN) {
-                Long userId = jwtUtil.getUserIdFromJwt(refreshToken);
-                UserAuthentication userAuthentication = new UserAuthentication(userId, null, null);
-                String newAccessToken = jwtProvider.generateAccessToken(userAuthentication);
-                String newRefreshToken = jwtProvider.generateRefreshToken(userAuthentication);
 
-                refreshTokenRepository.delete(storedRefreshToken);
-                refreshTokenRepository.save(new RefreshToken(newRefreshToken, userId));
+        if (validationResult == JwtValidationType.VALID_TOKEN) {
+            Long userId = jwtUtil.getUserIdFromJwt(refreshToken);
+            UserAuthentication userAuthentication = new UserAuthentication(userId, null, null);
+            String newAccessToken = jwtProvider.generateAccessToken(userAuthentication);
+            String newRefreshToken = jwtProvider.generateRefreshToken(userAuthentication);
 
-                return ReissueResponse.of(newAccessToken, newRefreshToken);
-            } else if (validationResult == JwtValidationType.EXPIRED_TOKEN) {
-                throw new CustomAuthException(EXPIRED_REFRESH_TOKEN, "given token is expired refresh token.");
-            }
+            refreshTokenRepository.delete(storedRefreshToken);
+            refreshTokenRepository.save(new RefreshToken(newRefreshToken, userId));
+
+            return ReissueResponse.of(newAccessToken, newRefreshToken);
+        } else if (validationResult == JwtValidationType.EXPIRED_TOKEN) {
+            throw new CustomAuthException(EXPIRED_REFRESH_TOKEN, "given token is expired refresh token.");
         }
         throw new CustomAuthException(INVALID_TOKEN, "given token is invalid token.");
     }
