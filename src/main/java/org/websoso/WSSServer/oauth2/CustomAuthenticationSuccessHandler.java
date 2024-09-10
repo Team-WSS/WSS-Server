@@ -9,6 +9,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
+import org.websoso.WSSServer.domain.RefreshToken;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.oauth2.dto.CustomOAuth2User;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
@@ -32,6 +33,9 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
         String accessToken = jwtProvider.generateAccessToken(userAuthentication);
         String refreshToken = jwtProvider.generateRefreshToken(userAuthentication);
+
+        RefreshToken redisRefreshToken = new RefreshToken(refreshToken, user.getUserId());
+        refreshTokenRepository.save(redisRefreshToken);
 
         boolean isRegister = !user.getNickname().contains("*");
 
