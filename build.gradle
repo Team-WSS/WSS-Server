@@ -64,6 +64,9 @@ dependencies {
 
     // Lettuce for Java Redis client
     implementation 'io.lettuce:lettuce-core:6.3.2.RELEASE'
+
+    // spring data redis
+    implementation 'org.springframework.data:spring-data-redis:3.3.2'
 }
 
 tasks.named('test') {
