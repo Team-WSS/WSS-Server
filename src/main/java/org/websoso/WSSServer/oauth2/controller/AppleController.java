@@ -24,5 +24,4 @@ public class AppleController {
                 .status(OK)
                 .body(appleService.getAppleInfo(request.getParameter("code")));
     }
-
 }
