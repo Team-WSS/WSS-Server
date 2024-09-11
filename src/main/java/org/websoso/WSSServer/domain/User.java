@@ -112,18 +112,6 @@ public class User {
         this.email = email;
     }
 
-    private User(String socialId, String email) {
-        this.intro = "안녕하세요";
-        this.gender = M;
-        this.birth = Year.now();
-        this.avatarId = 1;
-        this.isProfilePublic = true;
-        this.role = USER;
-        this.socialId = socialId;
-        this.nickname = "애플로그인유저임시";
-        this.email = email;
-    }
-
     public static User createBySocial(String socialId, String nickname, String email) {
         return new User(socialId, nickname, email);
     }
