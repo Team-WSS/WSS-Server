@@ -280,6 +280,11 @@ public class FeedService {
         List<Long> interestNovelIds = new ArrayList<>(novelMap.keySet());
 
         List<Feed> interestFeeds = feedRepository.findTop10ByNovelIdInOrderByFeedIdDesc(interestNovelIds);
+
+        if (interestFeeds.isEmpty()) {
+            return InterestFeedsGetResponse.of(Collections.emptyList(), "NO_ASSOCIATED_FEEDS");
+        }
+
         Set<Byte> avatarIds = interestFeeds.stream()
                 .map(feed -> feed.getUser().getAvatarId())
                 .collect(Collectors.toSet());
