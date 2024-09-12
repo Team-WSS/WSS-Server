@@ -299,7 +299,7 @@ public class FeedService {
                     return InterestFeedGetResponse.of(novel, feed.getUser(), feed, avatar);
                 })
                 .toList();
-        return InterestFeedsGetResponse.of(interestFeedGetResponses);
+        return InterestFeedsGetResponse.of(interestFeedGetResponses, "");
     }
 
     public NovelGetResponseFeedTab getFeedsByNovel(User user, Long novelId, Long lastFeedId, int size) {
