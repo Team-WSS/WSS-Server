@@ -59,8 +59,8 @@ public record NovelGetResponseBasic(
                 feedCount,
                 userNovel.getUserNovelRating(),
                 userNovel.getStatus() == null ? null : userNovel.getStatus().name(),
-                userNovel.getStartDate() != null ? userNovel.getStartDate().toString() : null,
-                userNovel.getEndDate() != null ? userNovel.getEndDate().toString() : null,
+                userNovel.getStartDate() == null ? null : userNovel.getStartDate().toString(),
+                userNovel.getEndDate() == null ? null : userNovel.getEndDate().toString(),
                 userNovel.getIsInterest()
         );
     }
