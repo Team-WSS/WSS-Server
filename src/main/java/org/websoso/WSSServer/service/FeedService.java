@@ -9,6 +9,7 @@ import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -269,12 +270,21 @@ public class FeedService {
                 .map(UserNovel::getNovel)
                 .toList();
 
+        if (interestNovels.isEmpty()) {
+            return InterestFeedsGetResponse.of(Collections.emptyList(), "NO_INTEREST_NOVELS");
+        }
+
         Map<Long, Novel> novelMap = interestNovels
                 .stream()
                 .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
         List<Long> interestNovelIds = new ArrayList<>(novelMap.keySet());
 
         List<Feed> interestFeeds = feedRepository.findTop10ByNovelIdInOrderByFeedIdDesc(interestNovelIds);
+
+        if (interestFeeds.isEmpty()) {
+            return InterestFeedsGetResponse.of(Collections.emptyList(), "NO_ASSOCIATED_FEEDS");
+        }
+
         Set<Byte> avatarIds = interestFeeds.stream()
                 .map(feed -> feed.getUser().getAvatarId())
                 .collect(Collectors.toSet());
@@ -289,7 +299,7 @@ public class FeedService {
                     return InterestFeedGetResponse.of(novel, feed.getUser(), feed, avatar);
                 })
                 .toList();
-        return InterestFeedsGetResponse.of(interestFeedGetResponses);
+        return InterestFeedsGetResponse.of(interestFeedGetResponses, "");
     }
 
     public NovelGetResponseFeedTab getFeedsByNovel(User user, Long novelId, Long lastFeedId, int size) {
