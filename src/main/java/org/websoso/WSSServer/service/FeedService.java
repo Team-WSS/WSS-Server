@@ -9,6 +9,7 @@ import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -268,6 +269,10 @@ public class FeedService {
                 .stream()
                 .map(UserNovel::getNovel)
                 .toList();
+
+        if (interestNovels.isEmpty()) {
+            return InterestFeedsGetResponse.of(Collections.emptyList(), "NO_INTEREST_NOVELS");
+        }
 
         Map<Long, Novel> novelMap = interestNovels
                 .stream()
