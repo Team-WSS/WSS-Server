@@ -1,13 +1,14 @@
 package org.websoso.WSSServer.dto.feed;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.util.List;
 
 public record InterestFeedsGetResponse(
         List<InterestFeedGetResponse> recommendFeeds,
 
-        @JsonInclude(Include.NON_NULL)
+        @JsonInclude(NON_NULL)
         String message
 ) {
 
