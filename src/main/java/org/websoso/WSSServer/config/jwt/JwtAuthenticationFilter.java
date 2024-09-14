@@ -64,6 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                           HttpServletResponse response) throws IOException {
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write("{\"error\": \"Access Token Expired. Use Refresh Token to reissue.\"}");
+        response.getWriter()
+                .write("{\"code\": \"AUTH-000\", \"message\": \"Access Token Expired. Use Refresh Token to reissue.\"}");
     }
 }
