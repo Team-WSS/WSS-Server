@@ -24,7 +24,11 @@ public class JWTUtil {
     public JwtValidationType validateJWT(String token) {
         try {
             final Claims claims = getClaim(token);
-            return JwtValidationType.VALID_TOKEN;
+            String tokenType = claims.getSubject();
+            if (tokenType.equals("access")) {
+                return JwtValidationType.VALID_ACCESS;
+            }
+            return JwtValidationType.VALID_REFRESH;
         } catch (MalformedJwtException ex) {
             return JwtValidationType.INVALID_TOKEN;
         } catch (ExpiredJwtException ex) {
