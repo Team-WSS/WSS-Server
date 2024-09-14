@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.config.jwt;
 
-import static org.websoso.WSSServer.config.jwt.JwtValidationType.EXPIRED_TOKEN;
+import static org.websoso.WSSServer.config.jwt.JwtValidationType.EXPIRED_ACCESS;
 import static org.websoso.WSSServer.config.jwt.JwtValidationType.VALID_ACCESS;
 
 import jakarta.servlet.FilterChain;
@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserAuthentication authentication = new UserAuthentication(memberId.toString(), null, null);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else if (validationResult == EXPIRED_TOKEN) {
+            } else if (validationResult == EXPIRED_ACCESS) {
                 handleExpiredAccessToken(request, response);
                 return;
             }
