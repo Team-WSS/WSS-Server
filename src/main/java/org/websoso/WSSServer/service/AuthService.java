@@ -40,6 +40,5 @@ public class AuthService {
         refreshTokenRepository.save(new RefreshToken(newRefreshToken, userId));
 
         return ReissueResponse.of(newAccessToken, newRefreshToken);
-
     }
 }
