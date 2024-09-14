@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.config.jwt;
 
 import static org.websoso.WSSServer.config.jwt.JwtValidationType.EXPIRED_TOKEN;
-import static org.websoso.WSSServer.config.jwt.JwtValidationType.VALID_TOKEN;
+import static org.websoso.WSSServer.config.jwt.JwtValidationType.VALID_ACCESS;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             final String token = getJwtFromRequest(request);
             final JwtValidationType validationResult = jwtUtil.validateJWT(token);
-            if (validationResult == VALID_TOKEN) {
+            if (validationResult == VALID_ACCESS) {
                 Long memberId = jwtUtil.getUserIdFromJwt(token);
                 UserAuthentication authentication = new UserAuthentication(memberId.toString(), null, null);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
