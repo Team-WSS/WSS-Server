@@ -32,7 +32,11 @@ public class JWTUtil {
         } catch (MalformedJwtException ex) {
             return JwtValidationType.INVALID_TOKEN;
         } catch (ExpiredJwtException ex) {
-            return JwtValidationType.EXPIRED_TOKEN;
+            String tokenType = ex.getClaims().getSubject();
+            if (tokenType.equals("access")) {
+                return JwtValidationType.EXPIRED_ACCESS;
+            }
+            return JwtValidationType.EXPIRED_REFRESH;
         } catch (UnsupportedJwtException ex) {
             return JwtValidationType.UNSUPPORTED_TOKEN;
         } catch (IllegalArgumentException ex) {
