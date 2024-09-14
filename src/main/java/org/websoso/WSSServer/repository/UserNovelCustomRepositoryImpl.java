@@ -144,16 +144,16 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
     public List<Novel> findTasteNovels(List<Genre> preferGenres) {
         return jpaQueryFactory
                 .select(userNovel.novel, userNovel.userNovelId)
-                .distinct()
                 .from(userNovel)
                 .join(userNovel.novel, novel)
                 .join(novelGenre).on(novelGenre.novel.eq(novel))
                 .where(novelGenre.genre.in(preferGenres))
                 .orderBy(userNovel.userNovelId.desc())
-                .limit(10)
                 .fetch()
                 .stream()
                 .map(tuple -> tuple.get(userNovel.novel))
+                .distinct()
+                .limit(10)
                 .toList();
     }
 }
