@@ -31,7 +31,7 @@ public class AuthService {
 
         JwtValidationType validationResult = jwtUtil.validateJWT(refreshToken);
 
-        if (validationResult == JwtValidationType.VALID_TOKEN) {
+        if (validationResult == JwtValidationType.VALID_REFRESH) {
             Long userId = jwtUtil.getUserIdFromJwt(refreshToken);
             UserAuthentication userAuthentication = new UserAuthentication(userId, null, null);
             String newAccessToken = jwtProvider.generateAccessToken(userAuthentication);
