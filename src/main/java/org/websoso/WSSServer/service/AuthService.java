@@ -41,7 +41,7 @@ public class AuthService {
             refreshTokenRepository.save(new RefreshToken(newRefreshToken, userId));
 
             return ReissueResponse.of(newAccessToken, newRefreshToken);
-        } else if (validationResult == JwtValidationType.EXPIRED_TOKEN) {
+        } else if (validationResult == JwtValidationType.EXPIRED_REFRESH) {
             throw new CustomAuthException(EXPIRED_REFRESH_TOKEN, "given token is expired refresh token.");
         }
         throw new CustomAuthException(INVALID_TOKEN, "given token is invalid token.");
