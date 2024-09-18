@@ -44,8 +44,10 @@ public record UserFeedGetResponse(
                 isLiked,
                 feed.getLikes().size(),
                 feed.getComments().size(),
-                novel.getNovelId(),
-                novel.getTitle(),
+                novel == null ?
+                        null : novel.getNovelId(),
+                novel == null ?
+                        null : novel.getTitle(),
                 novelRating,
                 novelRatingCount,
                 relevantCategories
@@ -69,6 +71,9 @@ public record UserFeedGetResponse(
     }
 
     private static Long getNovelRatingCount(Novel novel) {
+        if (novel == null) {
+            return null;
+        }
         return novel.getUserNovels()
                 .stream()
                 .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
@@ -76,6 +81,10 @@ public record UserFeedGetResponse(
     }
 
     private static Float getNovelRatingSum(Novel novel) {
+        if (novel == null) {
+            return null;
+        }
+
         return (float) novel.getUserNovels()
                 .stream()
                 .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
@@ -83,7 +92,10 @@ public record UserFeedGetResponse(
                 .sum();
     }
 
-    private static float getNovelRating(Novel novel, Long novelRatingCount) {
+    private static Float getNovelRating(Novel novel, Long novelRatingCount) {
+        if (novel == null) {
+            return null;
+        }
         return novelRatingCount > 0
                 ? getNovelRatingSum(novel) / novelRatingCount
                 : 0.0f;
