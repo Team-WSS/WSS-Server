@@ -73,4 +73,8 @@ public class BlockService {
         return blockRepository.existsByTwoUserId(firstUserId, secondUserId);
     }
 
+    public boolean isBlocked(Long blockingId, Long blockedId) {
+        return blockRepository.existsByBlockingIdAndBlockedId(blockingId, blockedId);
+    }
+
 }

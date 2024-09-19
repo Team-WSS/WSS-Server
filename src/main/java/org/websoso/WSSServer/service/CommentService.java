@@ -64,7 +64,7 @@ public class CommentService {
                         entry.getKey(),
                         isUserCommentOwner(entry.getValue(), user),
                         entry.getKey().getIsSpoiler(),
-                        isBlocked(entry.getValue(), user),
+                        isBlocked(user, entry.getValue()),
                         entry.getKey().getIsHidden()))
                 .toList();
 
@@ -116,7 +116,8 @@ public class CommentService {
         return createdUser.equals(user);
     }
 
-    private Boolean isBlocked(User createdFeedUser, User user) {
-        return blockService.isBlockedRelationship(user.getUserId(), createdFeedUser.getUserId());
+    private Boolean isBlocked(User user, User createdFeedUser) {
+        return blockService.isBlocked(user.getUserId(), createdFeedUser.getUserId());
     }
+
 }
