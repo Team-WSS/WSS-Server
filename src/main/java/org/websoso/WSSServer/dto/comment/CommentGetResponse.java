@@ -14,18 +14,25 @@ public record CommentGetResponse(
         LocalDate createdDate,
         String commentContent,
         Boolean isModified,
-        Boolean isMyComment
+        Boolean isMyComment,
+        Boolean isSpoiler,
+        Boolean isBlocked,
+        Boolean isHidden
 ) {
-    public static CommentGetResponse of(UserBasicInfo userBasicInfo, Comment comment, Boolean isMyComment) {
+    public static CommentGetResponse of(UserBasicInfo userBasicInfo, Comment comment, Boolean isMyComment,
+                                        Boolean isSpoiler, Boolean isBlocked, Boolean isHidden) {
         return new CommentGetResponse(
-                userBasicInfo.userId(),
-                userBasicInfo.nickname(),
-                userBasicInfo.avatarImage(),
+                isBlocked ? 0 : userBasicInfo.userId(),
+                isBlocked ? "none" : userBasicInfo.nickname(),
+                isBlocked ? "none" : userBasicInfo.avatarImage(),
                 comment.getCommentId(),
                 comment.getCreatedDate().toLocalDate(),
                 comment.getCommentContent(),
                 !comment.getCreatedDate().equals(comment.getModifiedDate()),
-                isMyComment
+                isMyComment,
+                isSpoiler,
+                isBlocked,
+                isHidden
         );
     }
 }

@@ -41,6 +41,9 @@ public class Comment extends BaseEntity {
     @Column(nullable = false)
     private Long userId;
 
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isSpoiler;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feed_id", nullable = false)
     private Feed feed;
@@ -75,5 +78,9 @@ public class Comment extends BaseEntity {
 
     public void hideComment() {
         this.isHidden = true;
+    }
+
+    public void spoiler() {
+        this.isSpoiler = true;
     }
 }

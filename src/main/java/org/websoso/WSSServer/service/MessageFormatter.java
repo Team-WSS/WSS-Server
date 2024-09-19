@@ -1,5 +1,8 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
+import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import org.websoso.WSSServer.domain.Comment;
@@ -47,7 +50,14 @@ public class MessageFormatter {
 
     public static String formatCommentReportMessage(Comment comment, ReportedType reportedType, User user,
                                                     int reportedCount, boolean isHidden) {
-        String hiddenMessage = isHidden ? "해당 댓글은 숨김 처리되었습니다." : "해당 댓글는 숨김 처리되지 않았습니다.";
+        String hiddenMessage = "해당 댓글은 현재 숨김 처리되지 않은 상태입니다.";
+        if (isHidden) {
+            if (reportedType.equals(SPOILER)) {
+                hiddenMessage = "해당 댓글은 스포일러 댓글로 지정되었습니다.";
+            } else if (reportedType.equals(IMPERTINENCE)) {
+                hiddenMessage = "해당 댓글은 부적절한 내용으로 인해 숨김 처리되었습니다.";
+            }
+        }
 
         return String.format(
                 COMMENT_REPORT_MESSAGE,
