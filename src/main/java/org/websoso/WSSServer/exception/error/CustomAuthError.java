@@ -17,4 +17,3 @@ public enum CustomAuthError implements ICustomError {
     private final String description;
     private final HttpStatus statusCode;
 }
-
