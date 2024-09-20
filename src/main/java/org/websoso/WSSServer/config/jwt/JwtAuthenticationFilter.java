@@ -34,8 +34,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             final String token = getJwtFromRequest(request);
             final JwtValidationType validationResult = jwtUtil.validateJWT(token);
             if (validationResult == VALID_ACCESS) {
-                Long memberId = jwtUtil.getUserIdFromJwt(token);
-                UserAuthentication authentication = new UserAuthentication(memberId.toString(), null, null);
+                Long userId = jwtUtil.getUserIdFromJwt(token);
+                UserAuthentication authentication = new UserAuthentication(userId.toString(), null, null);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } else if (validationResult == EXPIRED_ACCESS) {
