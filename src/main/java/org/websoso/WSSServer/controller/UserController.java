@@ -191,7 +191,7 @@ public class UserController {
                 .status(OK)
                 .body(userNovelService.getUserAttractivePointsAndKeywords(visitor, ownerId));
     }
-  
+
     @PutMapping("/info")
     public ResponseEntity<Void> editMyInfo(Principal principal,
                                            @Valid @RequestBody EditMyInfoRequest editMyInfoRequest) {
