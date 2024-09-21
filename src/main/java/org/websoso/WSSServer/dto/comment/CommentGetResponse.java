@@ -24,7 +24,7 @@ public record CommentGetResponse(
         return new CommentGetResponse(
                 isBlocked ? null : userBasicInfo.userId(),
                 isBlocked ? null : userBasicInfo.nickname(),
-                isBlocked ? null : userBasicInfo.avatarImage(),
+                userBasicInfo.avatarImage(),
                 comment.getCommentId(),
                 comment.getCreatedDate().toLocalDate(),
                 comment.getCommentContent(),
