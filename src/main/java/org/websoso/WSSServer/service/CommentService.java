@@ -111,7 +111,7 @@ public class CommentService {
         return createdUser.equals(user);
     }
 
-    private Boolean isBlocked(User createdFeedUser, User user) {
-        return blockService.isBlockedRelationship(user.getUserId(), createdFeedUser.getUserId());
+    private Boolean isBlocked(User user, User createdFeedUser) {
+        return blockService.isBlocked(user.getUserId(), createdFeedUser.getUserId());
     }
 }

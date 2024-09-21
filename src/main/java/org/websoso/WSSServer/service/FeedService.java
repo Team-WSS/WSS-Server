@@ -104,7 +104,7 @@ public class FeedService {
     public void likeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
         checkHiddenFeed(feed);
-        checkBlockedRelationship(feed.getUser(), user);
+        checkBlocked(feed.getUser(), user);
 
         boolean isPopularFeed = false;
         if (feed.getLikes().size() == 9) {
@@ -119,7 +119,7 @@ public class FeedService {
     public void unLikeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
         checkHiddenFeed(feed);
-        checkBlockedRelationship(feed.getUser(), user);
+        checkBlocked(feed.getUser(), user);
         likeService.deleteLike(user, feed);
     }
 
@@ -127,7 +127,7 @@ public class FeedService {
     public FeedGetResponse getFeedById(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
         checkHiddenFeed(feed);
-        checkBlockedRelationship(feed.getUser(), user);
+        checkBlocked(feed.getUser(), user);
 
         UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
         Novel novel = getLinkedNovelOrNull(feed.getNovelId());
@@ -179,7 +179,7 @@ public class FeedService {
         Feed feed = getFeedOrException(feedId);
 
         checkHiddenFeed(feed);
-        checkBlockedRelationship(feed.getUser(), user);
+        checkBlocked(feed.getUser(), user);
 
         if (isUserFeedOwner(feed.getUser(), user)) {
             throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
@@ -203,7 +203,7 @@ public class FeedService {
         Feed feed = getFeedOrException(feedId);
 
         checkHiddenFeed(feed);
-        checkBlockedRelationship(feed.getUser(), user);
+        checkBlocked(feed.getUser(), user);
 
         commentService.createReportedComment(feed, commentId, user, reportedType);
     }
@@ -219,8 +219,8 @@ public class FeedService {
         }
     }
 
-    private void checkBlockedRelationship(User createdFeedUser, User user) {
-        if (blockService.isBlockedRelationship(user.getUserId(), createdFeedUser.getUserId())) {
+    private void checkBlocked(User createdFeedUser, User user) {
+        if (blockService.isBlocked(user.getUserId(), createdFeedUser.getUserId())) {
             throw new CustomFeedException(BLOCKED_USER_ACCESS,
                     "cannot access this feed because either you or the feed author has blocked the other.");
         }
@@ -323,7 +323,7 @@ public class FeedService {
             return;
         }
         checkHiddenFeed(feed);
-        checkBlockedRelationship(feed.getUser(), user);
+        checkBlocked(feed.getUser(), user);
     }
 
     @Transactional(readOnly = true)
