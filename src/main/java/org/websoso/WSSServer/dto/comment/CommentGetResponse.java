@@ -27,7 +27,7 @@ public record CommentGetResponse(
                 userBasicInfo.avatarImage(),
                 comment.getCommentId(),
                 comment.getCreatedDate().toLocalDate(),
-                comment.getCommentContent(),
+                isBlocked || isHidden ? null : comment.getCommentContent(),
                 !comment.getCreatedDate().equals(comment.getModifiedDate()),
                 isMyComment,
                 isSpoiler,
