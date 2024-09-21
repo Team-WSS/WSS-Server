@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.config.jwt;
 
-import static org.websoso.WSSServer.config.jwt.JwtValidationType.VALID_TOKEN;
+import static org.websoso.WSSServer.config.jwt.JwtValidationType.EXPIRED_ACCESS;
+import static org.websoso.WSSServer.config.jwt.JwtValidationType.VALID_ACCESS;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,7 +24,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final static String TOKEN_PREFIX = "Bearer ";
-    private final JwtProvider jwtProvider;
+    private final JWTUtil jwtUtil;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -31,12 +32,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             final String token = getJwtFromRequest(request);
-            if (jwtProvider.validateToken(token) == VALID_TOKEN) {
-                Long memberId = jwtProvider.getUserFromJwt(token);
-                // authentication 객체 생성 -> principal에 유저정보를 담는다.
-                UserAuthentication authentication = new UserAuthentication(memberId.toString(), null, null);
+            final JwtValidationType validationResult = jwtUtil.validateJWT(token);
+            if (validationResult == VALID_ACCESS) {
+                Long userId = jwtUtil.getUserIdFromJwt(token);
+                UserAuthentication authentication = new UserAuthentication(userId.toString(), null, null);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else if (validationResult == EXPIRED_ACCESS) {
+                handleExpiredAccessToken(request, response);
+                return;
             }
         } catch (Exception exception) {
             try {
@@ -45,7 +49,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 throw new RuntimeException(e);
             }
         }
-        // 다음 필터로 요청 전달
         filterChain.doFilter(request, response);
     }
 
@@ -55,5 +58,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(TOKEN_PREFIX.length());
         }
         return null;
+    }
+
+    private void handleExpiredAccessToken(HttpServletRequest request,
+                                          HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter()
+                .write("{\"code\": \"AUTH-000\", \"message\": \"Access Token Expired. Use Refresh Token to reissue.\"}");
     }
 }

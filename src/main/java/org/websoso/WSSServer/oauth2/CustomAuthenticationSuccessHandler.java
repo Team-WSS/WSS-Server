@@ -9,8 +9,10 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
+import org.websoso.WSSServer.domain.RefreshToken;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.oauth2.dto.CustomOAuth2User;
+import org.websoso.WSSServer.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Component
@@ -19,6 +21,7 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -28,10 +31,18 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String socialId = customOAuth2UserDetails.getName();
         User user = userRepository.findBySocialId(socialId);
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
-        String token = jwtProvider.generateToken(userAuthentication);
+        String accessToken = jwtProvider.generateAccessToken(userAuthentication);
+        String refreshToken = jwtProvider.generateRefreshToken(userAuthentication);
+
+        RefreshToken redisRefreshToken = new RefreshToken(refreshToken, user.getUserId());
+        refreshTokenRepository.save(redisRefreshToken);
+
+        boolean isRegister = !user.getNickname().contains("*");
 
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().write("{\"authorization\": \"" + token + "\"}");
+        response.getWriter()
+                .write(String.format("{\"Authorization\": \"%s\", \"refreshToken\": \"%s\", \"isRegister\": %s}",
+                        accessToken, refreshToken, isRegister));
     }
 }
