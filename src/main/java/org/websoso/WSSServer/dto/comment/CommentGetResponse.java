@@ -22,12 +22,18 @@ public record CommentGetResponse(
     public static CommentGetResponse of(UserBasicInfo userBasicInfo, Comment comment, Boolean isMyComment,
                                         Boolean isSpoiler, Boolean isBlocked, Boolean isHidden) {
         return new CommentGetResponse(
-                isBlocked ? null : userBasicInfo.userId(),
-                isBlocked ? null : userBasicInfo.nickname(),
+                isBlocked
+                        ? null
+                        : userBasicInfo.userId(),
+                isBlocked
+                        ? null
+                        : userBasicInfo.nickname(),
                 userBasicInfo.avatarImage(),
                 comment.getCommentId(),
                 comment.getCreatedDate().toLocalDate(),
-                isBlocked || isHidden ? null : comment.getCommentContent(),
+                isBlocked || isHidden
+                        ? null
+                        : comment.getCommentContent(),
                 !comment.getCreatedDate().equals(comment.getModifiedDate()),
                 isMyComment,
                 isSpoiler,
