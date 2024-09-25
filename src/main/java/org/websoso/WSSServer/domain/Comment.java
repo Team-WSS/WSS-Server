@@ -35,7 +35,7 @@ public class Comment extends BaseEntity {
     @Column(columnDefinition = "Boolean default false", nullable = false)
     private Boolean isHidden;
 
-    @Column(columnDefinition = "varchar(100)", nullable = false)
+    @Column(columnDefinition = "varchar(500)", nullable = false)
     private String commentContent;
 
     @Column(nullable = false)
