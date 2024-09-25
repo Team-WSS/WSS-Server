@@ -2,6 +2,8 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
+import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
+import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 import static org.websoso.WSSServer.exception.error.CustomCommentError.COMMENT_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomCommentError.SELF_REPORT_NOT_ALLOWED;
 
@@ -53,21 +55,20 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public CommentsGetResponse getComments(User user, Feed feed) {
-        List<Comment> comments = feed.getComments();
-
-        List<CommentGetResponse> responses = comments
+        List<CommentGetResponse> responses = feed.getComments()
                 .stream()
                 .map(comment -> new AbstractMap.SimpleEntry<>(
-                        comment, userService.getUserOrException(comment.getUserId())
-                ))
-                .filter(entry -> !entry.getKey().getIsHidden() && !isBlocked(entry.getValue(), user))
+                        comment, userService.getUserOrException(comment.getUserId())))
                 .map(entry -> CommentGetResponse.of(
                         getUserBasicInfo(entry.getValue()),
                         entry.getKey(),
-                        isUserCommentOwner(entry.getValue(), user)))
+                        isUserCommentOwner(entry.getValue(), user),
+                        entry.getKey().getIsSpoiler(),
+                        isBlocked(user, entry.getValue()),
+                        entry.getKey().getIsHidden()))
                 .toList();
 
-        return CommentsGetResponse.of(comments.size(), responses);
+        return CommentsGetResponse.of(responses);
     }
 
     public void createReportedComment(Feed feed, Long commentId, User user, ReportedType reportedType) {
@@ -87,7 +88,11 @@ public class CommentService {
         boolean shouldHide = reportedCount >= 3;
 
         if (shouldHide) {
-            comment.hideComment();
+            if (reportedType.equals(SPOILER)) {
+                comment.spoiler();
+            } else if (reportedType.equals(IMPERTINENCE)) {
+                comment.hideComment();
+            }
         }
 
         messageService.sendDiscordWebhookMessage(
@@ -111,7 +116,8 @@ public class CommentService {
         return createdUser.equals(user);
     }
 
-    private Boolean isBlocked(User createdFeedUser, User user) {
-        return blockService.isBlockedRelationship(user.getUserId(), createdFeedUser.getUserId());
+    private Boolean isBlocked(User user, User createdFeedUser) {
+        return blockService.isBlocked(user.getUserId(), createdFeedUser.getUserId());
     }
+
 }
