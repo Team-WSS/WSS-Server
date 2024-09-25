@@ -21,6 +21,7 @@ import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
+import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
@@ -173,5 +174,10 @@ public class UserService {
 
     public void editMyInfo(User user, EditMyInfoRequest editMyInfoRequest) {
         user.editMyInfo(editMyInfoRequest);
+    }
+
+    @Transactional(readOnly = true)
+    public UserIdAndNicknameResponse getUserIdAndNickname(User user) {
+        return UserIdAndNicknameResponse.of(user);
     }
 }

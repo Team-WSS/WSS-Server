@@ -22,7 +22,6 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
-import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
@@ -30,6 +29,8 @@ import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
+import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
+import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserGenrePreferencesGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
@@ -191,7 +192,7 @@ public class UserController {
                 .status(OK)
                 .body(userNovelService.getUserAttractivePointsAndKeywords(visitor, ownerId));
     }
-  
+
     @PutMapping("/info")
     public ResponseEntity<Void> editMyInfo(Principal principal,
                                            @Valid @RequestBody EditMyInfoRequest editMyInfoRequest) {
@@ -200,5 +201,13 @@ public class UserController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserIdAndNicknameResponse> getUserIdAndNickname(Principal principal) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(userService.getUserIdAndNickname(user));
     }
 }
