@@ -72,9 +72,4 @@ public class BlockService {
     public boolean isBlocked(Long blockingId, Long blockedId) {
         return blockRepository.existsByBlockingIdAndBlockedId(blockingId, blockedId);
     }
-
-    public boolean isBlocked(Long blockingId, Long blockedId) {
-        return blockRepository.existsByBlockingIdAndBlockedId(blockingId, blockedId);
-    }
-
 }
