@@ -37,7 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.websoso.WSSServer.dto.user.LoginResponse;
+import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
 import org.websoso.WSSServer.service.UserService;
 
@@ -70,7 +70,7 @@ public class AppleService {
 
     private final UserService userService;
 
-    public LoginResponse getAppleInfo(String authorizationCode) {
+    public AuthResponse getAppleInfo(String authorizationCode) {
         validateAuthorizationCode(authorizationCode);
         String clientSecret = createClientSecret();
 
