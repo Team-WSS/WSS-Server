@@ -20,7 +20,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
@@ -48,11 +47,9 @@ public class Feed {
     @Column(nullable = false)
     private Boolean isSpoiler;
 
-    @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime createdDate;
 
-    @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime modifiedDate;
 
@@ -78,6 +75,8 @@ public class Feed {
         this.isSpoiler = isSpoiler;
         this.novelId = novelId;
         this.user = user;
+        this.createdDate = LocalDateTime.now();
+        this.modifiedDate = this.createdDate;
     }
 
     public void updateFeed(String feedContent, Boolean isSpoiler, Long novelId) {
