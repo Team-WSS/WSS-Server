@@ -204,10 +204,10 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserIdAndNicknameResponse> getUserIdAndNickname(Principal principal) {
+    public ResponseEntity<UserIdAndNicknameResponse> getUserIdAndNicknameAndGender(Principal principal) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body(userService.getUserIdAndNickname(user));
+                .body(userService.getUserIdAndNicknameAndGender(user));
     }
 }

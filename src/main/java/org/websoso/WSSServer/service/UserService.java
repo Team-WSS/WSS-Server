@@ -177,7 +177,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserIdAndNicknameResponse getUserIdAndNickname(User user) {
+    public UserIdAndNicknameResponse getUserIdAndNicknameAndGender(User user) {
         return UserIdAndNicknameResponse.of(user);
     }
 }
