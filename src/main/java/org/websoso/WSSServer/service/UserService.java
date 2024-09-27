@@ -149,7 +149,7 @@ public class UserService {
         genrePreferenceRepository.saveAll(preferGenres);
     }
 
-    public AuthResponse signUpOrSignInWithApple(String socialId, String email, String nickname) {
+    public AuthResponse authenticateWithApple(String socialId, String email, String nickname) {
         User user = userRepository.findBySocialId(socialId);
 
         if (user == null) {

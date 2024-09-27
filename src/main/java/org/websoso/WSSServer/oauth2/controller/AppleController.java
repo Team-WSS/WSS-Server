@@ -22,6 +22,6 @@ public class AppleController {
     public ResponseEntity<AuthResponse> callback(HttpServletRequest request) {
         return ResponseEntity
                 .status(OK)
-                .body(appleService.getAppleInfo(request.getParameter("code")));
+                .body(appleService.getAppleUserInfo(request.getParameter("code")));
     }
 }

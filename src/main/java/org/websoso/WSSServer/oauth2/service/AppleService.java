@@ -70,7 +70,7 @@ public class AppleService {
 
     private final UserService userService;
 
-    public AuthResponse getAppleInfo(String authorizationCode) {
+    public AuthResponse getAppleUserInfo(String authorizationCode) {
         validateAuthorizationCode(authorizationCode);
         String clientSecret = createClientSecret();
 
@@ -85,7 +85,7 @@ public class AppleService {
             String defaultNickname =
                     APPLE_PREFIX.charAt(0) + "*" + socialId.substring(2, 10);
 
-            return userService.signUpOrSignInWithApple(customSocialId, email, defaultNickname);
+            return userService.authenticateWithApple(customSocialId, email, defaultNickname);
         } catch (Exception e) {
             throw new CustomAppleLoginException(USER_INFO_RETRIEVAL_FAILED,
                     "Failed to retrieve user information from Apple");
