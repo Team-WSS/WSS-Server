@@ -82,8 +82,7 @@ public class AppleService {
             String email = (String) payload.get("email");
 
             String customSocialId = APPLE_PREFIX + "_" + socialId;
-            String defaultNickname =
-                    APPLE_PREFIX.charAt(0) + "*" + socialId.substring(2, 10);
+            String defaultNickname = APPLE_PREFIX.charAt(0) + "*" + socialId.substring(2, 10);
 
             return userService.authenticateWithApple(customSocialId, email, defaultNickname);
         } catch (Exception e) {
