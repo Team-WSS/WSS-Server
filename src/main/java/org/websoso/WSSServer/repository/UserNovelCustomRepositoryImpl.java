@@ -30,7 +30,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public UserNovelCountGetResponse findUserNovelStatistics(User user) {
+    public UserNovelCountGetResponse findUserNovelStatistics(Long userId) {
         return jpaQueryFactory
                 .select(Projections.constructor(UserNovelCountGetResponse.class,
                         userNovel.isInterest
@@ -59,7 +59,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                                 .coalesce(0)
                 ))
                 .from(userNovel)
-                .where(userNovel.user.eq(user))
+                .where(userNovel.user.userId.eq(userId))
                 .fetchOne();
     }
 

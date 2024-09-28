@@ -134,10 +134,10 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/user-novel-stats")
-    public ResponseEntity<UserNovelCountGetResponse> getUserNovelStatistics() {
+    public ResponseEntity<UserNovelCountGetResponse> getUserNovelStatistics(@PathVariable("userId") Long userId) {
         return ResponseEntity
                 .status(OK)
-                .body(userNovelService.getUserNovelStatistics(user));
+                .body(userNovelService.getUserNovelStatistics(userId));
     }
 
     @GetMapping("/{userId}/novels")
