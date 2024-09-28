@@ -134,8 +134,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/user-novel-stats")
-    public ResponseEntity<UserNovelCountGetResponse> getUserNovelStatistics(Principal principal) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+    public ResponseEntity<UserNovelCountGetResponse> getUserNovelStatistics() {
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserNovelStatistics(user));
