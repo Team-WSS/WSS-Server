@@ -133,7 +133,7 @@ public class UserController {
                 .build();
     }
 
-    @GetMapping("/user-novel-stats")
+    @GetMapping("/{userId}/user-novel-stats")
     public ResponseEntity<UserNovelCountGetResponse> getUserNovelStatistics(Principal principal) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
