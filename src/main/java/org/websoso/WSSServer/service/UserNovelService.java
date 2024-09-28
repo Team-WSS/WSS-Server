@@ -228,8 +228,8 @@ public class UserNovelService {
     }
 
     @Transactional(readOnly = true)
-    public UserNovelCountGetResponse getUserNovelStatistics(User user) {
-        return userNovelRepository.findUserNovelStatistics(user);
+    public UserNovelCountGetResponse getUserNovelStatistics(Long ownerId) {
+        return userNovelRepository.findUserNovelStatistics(ownerId);
     }
 
     @Transactional(readOnly = true)

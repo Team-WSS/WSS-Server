@@ -10,7 +10,7 @@ import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 
 public interface UserNovelCustomRepository {
 
-    UserNovelCountGetResponse findUserNovelStatistics(User user);
+    UserNovelCountGetResponse findUserNovelStatistics(Long userId);
 
     List<Long> findTodayPopularNovelsId(Pageable pageable);
 
