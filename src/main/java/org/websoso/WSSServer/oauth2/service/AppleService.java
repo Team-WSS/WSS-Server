@@ -47,8 +47,10 @@ public class AppleService {
 
     private static final String GRANT_TYPE = "authorization_code";
     private static final String CONTENT_TYPE = "application/x-www-form-urlencoded";
-    private static final long TOKEN_EXPIRATION_TIME = 179L * 24 * 60 * 60 * 1000;
     private static final String APPLE_PREFIX = "Apple";
+
+    @Value("${apple.auth.expiration-time}")
+    private long tokenExpirationTime;
 
     @Value("${apple.auth.team-id}")
     private String appleTeamId;
@@ -165,7 +167,7 @@ public class AppleService {
 
         claimsSet.setIssuer(appleTeamId);
         claimsSet.setIssueTime(now);
-        claimsSet.setExpirationTime(new Date(now.getTime() + TOKEN_EXPIRATION_TIME));
+        claimsSet.setExpirationTime(new Date(now.getTime() + tokenExpirationTime));
         claimsSet.setAudience(appleAuthUrl);
         claimsSet.setSubject(appleClientId);
 
