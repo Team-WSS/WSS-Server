@@ -18,11 +18,11 @@ import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
+import org.websoso.WSSServer.domain.RefreshToken;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
-import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
-import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
@@ -30,6 +30,8 @@ import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
+import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
+import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.exception.error.CustomUserError;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
@@ -37,6 +39,7 @@ import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
+import org.websoso.WSSServer.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Service
@@ -49,6 +52,7 @@ public class UserService {
     private final AvatarRepository avatarRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final GenreRepository genreRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional(readOnly = true)
     public NicknameValidation isNicknameAvailable(User user, String nickname) {
@@ -143,6 +147,24 @@ public class UserService {
         user.updateUserInfo(registerUserInfoRequest);
         List<GenrePreference> preferGenres = createGenrePreferences(user, registerUserInfoRequest.genrePreferences());
         genrePreferenceRepository.saveAll(preferGenres);
+    }
+
+    public AuthResponse authenticateWithApple(String socialId, String email, String nickname) {
+        User user = userRepository.findBySocialId(socialId);
+
+        if (user == null) {
+            user = userRepository.save(User.createBySocial(socialId, nickname, email));
+        }
+
+        UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
+        String accessToken = jwtProvider.generateAccessToken(userAuthentication);
+        String refreshToken = jwtProvider.generateRefreshToken(userAuthentication);
+
+        refreshTokenRepository.save(new RefreshToken(refreshToken, user.getUserId()));
+
+        boolean isRegister = !user.getNickname().contains("*");
+
+        return AuthResponse.of(accessToken, refreshToken, isRegister);
     }
 
     private void checkNicknameIfAlreadyExist(String nickname) {

@@ -67,6 +67,12 @@ dependencies {
 
     // spring data redis
     implementation 'org.springframework.data:spring-data-redis:3.3.2'
+
+    //Apple Login
+    implementation 'com.nimbusds:nimbus-jose-jwt:3.10'
+
+    //Json
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 }
 
 tasks.named('test') {

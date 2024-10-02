@@ -41,3 +41,6 @@ out/
 
 ## QClass ##
 src/main/generated/
+
+## Apple Login Auth Key File ##
+*.p8
