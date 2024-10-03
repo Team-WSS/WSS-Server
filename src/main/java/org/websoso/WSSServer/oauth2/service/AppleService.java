@@ -17,11 +17,13 @@ import com.nimbusds.jwt.ReadOnlyJWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.security.KeyFactory;
 import java.security.interfaces.ECPrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.json.simple.JSONObject;
@@ -188,7 +190,7 @@ public class AppleService {
 
     private byte[] readPrivateKey(String keyPath) {
         Resource resource = new ClassPathResource(keyPath);
-        try (PemReader pemReader = new PemReader(new FileReader(resource.getFile()))) {
+        try (PemReader pemReader = new PemReader(new InputStreamReader(resource.getInputStream()))) {
             PemObject pemObject = pemReader.readPemObject();
             return pemObject.getContent();
         } catch (IOException e) {
