@@ -12,10 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
+import org.websoso.WSSServer.domain.RefreshToken;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.exception.exception.CustomKakaoException;
 import org.websoso.WSSServer.oauth2.dto.KakaoUserInfo;
+import org.websoso.WSSServer.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Service
@@ -24,6 +26,7 @@ import org.websoso.WSSServer.repository.UserRepository;
 public class KakaoService {
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
 
     @Value("${kakao.user-info-url}")
@@ -57,6 +60,9 @@ public class KakaoService {
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
         String accessToken = jwtProvider.generateAccessToken(userAuthentication);
         String refreshToken = jwtProvider.generateRefreshToken(userAuthentication);
+
+        RefreshToken redisRefreshToken = new RefreshToken(refreshToken, user.getUserId());
+        refreshTokenRepository.save(redisRefreshToken);
 
     }
 }
