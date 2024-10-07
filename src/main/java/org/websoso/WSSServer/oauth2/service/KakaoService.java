@@ -64,5 +64,8 @@ public class KakaoService {
         RefreshToken redisRefreshToken = new RefreshToken(refreshToken, user.getUserId());
         refreshTokenRepository.save(redisRefreshToken);
 
+        boolean isRegister = !user.getNickname().contains("*");
+
+        return AuthResponse.of(accessToken, refreshToken, isRegister);
     }
 }
