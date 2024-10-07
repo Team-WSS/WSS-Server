@@ -9,13 +9,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.exception.exception.CustomKakaoException;
 import org.websoso.WSSServer.oauth2.dto.KakaoUserInfo;
+import org.websoso.WSSServer.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
 public class KakaoService {
+
+    private final UserRepository userRepository;
 
     @Value("${kakao.user-info-url}")
     private String kakaoUserInfoUrl;
@@ -36,6 +40,14 @@ public class KakaoService {
                             "kakao server error");
                 })
                 .body(KakaoUserInfo.class);
+
+        String socialId = "kakao_" + kakaoUserInfo.id();
+        String defaultNickname = "k*" + kakaoUserInfo.id().toString().substring(2, 10);
+
+        User user = userRepository.findBySocialId(socialId);
+        if (user == null) {
+            user = userRepository.save(User.createBySocial(socialId, defaultNickname, kakaoUserInfo.email()));
+        }
 
     }
 }
