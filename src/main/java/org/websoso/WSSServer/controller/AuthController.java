@@ -31,9 +31,8 @@ public class AuthController {
 
     @PostMapping("/auth/login/kakao")
     public ResponseEntity<AuthResponse> loginByKakao(@RequestHeader("Kakao-Access-Token") String kakaoAccessToken) {
-        AuthResponse authResponse = kakaoService.getUserInfoFromKakao(kakaoAccessToken);
         return ResponseEntity
                 .status(OK)
-                .body(authResponse);
+                .body(kakaoService.getUserInfoFromKakao(kakaoAccessToken));
     }
 }
