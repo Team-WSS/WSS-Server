@@ -9,6 +9,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.websoso.WSSServer.config.jwt.JwtProvider;
+import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.exception.exception.CustomKakaoException;
@@ -20,6 +22,7 @@ import org.websoso.WSSServer.repository.UserRepository;
 public class KakaoService {
 
     private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
 
     @Value("${kakao.user-info-url}")
     private String kakaoUserInfoUrl;
@@ -48,6 +51,10 @@ public class KakaoService {
         if (user == null) {
             user = userRepository.save(User.createBySocial(socialId, defaultNickname, kakaoUserInfo.email()));
         }
+
+        UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
+        String accessToken = jwtProvider.generateAccessToken(userAuthentication);
+        String refreshToken = jwtProvider.generateRefreshToken(userAuthentication);
 
     }
 }
