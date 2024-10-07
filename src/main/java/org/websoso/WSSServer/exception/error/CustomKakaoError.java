@@ -12,7 +12,8 @@ import org.websoso.WSSServer.exception.common.ICustomError;
 @AllArgsConstructor
 public enum CustomKakaoError implements ICustomError {
 
-    INVALID_KAKAO_ACCESS_TOKEN("KAKAO-001", "카카오에서 제공한 access token이 유효하지 않습니다.", UNAUTHORIZED);
+    INVALID_KAKAO_ACCESS_TOKEN("KAKAO-001", "카카오에서 제공한 access token이 유효하지 않습니다.", UNAUTHORIZED),
+    KAKAO_SERVER_ERROR("KAKAO-002", "카카오 서버 오류", SERVICE_UNAVAILABLE);
 
     private final String code;
     private final String description;
