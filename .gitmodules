@@ -1,0 +1,3 @@
+[submodule "WSS-Server-Submodule"]
+	path = WSS-Server-Submodule
+	url = https://github.com/Team-WSS/WSS-Server-Submodule.git
