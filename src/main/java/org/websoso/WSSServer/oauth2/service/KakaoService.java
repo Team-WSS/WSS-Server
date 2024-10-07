@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.oauth2.service;
 
 import static org.websoso.WSSServer.exception.error.CustomKakaoError.INVALID_KAKAO_ACCESS_TOKEN;
+import static org.websoso.WSSServer.exception.error.CustomKakaoError.KAKAO_SERVER_ERROR;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,10 @@ public class KakaoService {
                 .onStatus(HttpStatusCode::is4xxClientError, (request, response) -> {
                     throw new CustomKakaoException(INVALID_KAKAO_ACCESS_TOKEN,
                             "given access token from kakao is invalid");
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, (request, response) -> {
+                    throw new CustomKakaoException(KAKAO_SERVER_ERROR,
+                            "kakao server error");
                 })
                 .body(KakaoUserInfo.class);
 
