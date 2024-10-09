@@ -40,7 +40,8 @@ public class SecurityConfig {
             "/{userId}/preferences/genres",
             "/reissue",
             "/login/callback",
-            "/login/apple"
+            "/login/apple",
+            "/auth/login/kakao"
     };
 
     @Bean
