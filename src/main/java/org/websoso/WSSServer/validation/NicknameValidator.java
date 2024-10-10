@@ -1,10 +1,10 @@
 package org.websoso.WSSServer.validation;
 
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_NICKNAME_BLANK;
+import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_NICKNAME_CONTAINS_WHITESPACE;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_NICKNAME_LENGTH;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_NICKNAME_NULL;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_NICKNAME_PATTERN;
-import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_NICKNAME_START_OR_END_WITH_BLANK;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -29,9 +29,8 @@ public class NicknameValidator implements ConstraintValidator<NicknameConstraint
         if (nickname.isBlank()) {
             throw new CustomUserException(INVALID_NICKNAME_BLANK, "nickname cannot be blank");
         }
-        if (nickname.startsWith(" ") || nickname.endsWith(" ")) {
-            throw new CustomUserException(INVALID_NICKNAME_START_OR_END_WITH_BLANK,
-                    "nickname cannot start or end with whitespace");
+        if (nickname.contains(" ")) {
+            throw new CustomUserException(INVALID_NICKNAME_CONTAINS_WHITESPACE, "nickname cannot contain whitespace");
         }
         if (!(nickname.length() >= 2 && nickname.length() <= 10)) {
             throw new CustomUserException(INVALID_NICKNAME_LENGTH, "nickname must be 2 to 10 characters long");
