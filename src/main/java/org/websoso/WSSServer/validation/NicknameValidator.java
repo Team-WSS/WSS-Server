@@ -10,6 +10,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 
 @Component
@@ -29,7 +30,7 @@ public class NicknameValidator implements ConstraintValidator<NicknameConstraint
         if (nickname.isBlank()) {
             throw new CustomUserException(INVALID_NICKNAME_BLANK, "nickname cannot be blank");
         }
-        if (nickname.contains(" ")) {
+        if (StringUtils.containsWhitespace(nickname)) {
             throw new CustomUserException(INVALID_NICKNAME_CONTAINS_WHITESPACE, "nickname cannot contain whitespace");
         }
         if (!(nickname.length() >= 2 && nickname.length() <= 10)) {
