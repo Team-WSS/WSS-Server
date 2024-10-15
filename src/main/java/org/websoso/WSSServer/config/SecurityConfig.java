@@ -25,7 +25,6 @@ public class SecurityConfig {
 
     private final String[] permitAllPaths = {
             "/users/login",
-            "/users/nickname/check",
             "/actuator/health",
             "/novels",
             "/novels/{novelId}",
