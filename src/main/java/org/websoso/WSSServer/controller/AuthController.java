@@ -2,15 +2,18 @@ package org.websoso.WSSServer.controller;
 
 import static org.springframework.http.HttpStatus.OK;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.dto.auth.AppleLoginRequest;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.dto.auth.ReissueRequest;
 import org.websoso.WSSServer.dto.auth.ReissueResponse;
+import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.service.AuthService;
 
@@ -20,6 +23,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final KakaoService kakaoService;
+    private final AppleService appleService;
 
     @PostMapping("/reissue")
     public ResponseEntity<ReissueResponse> reissue(@RequestBody ReissueRequest reissueRequest) {
@@ -34,5 +38,12 @@ public class AuthController {
         return ResponseEntity
                 .status(OK)
                 .body(kakaoService.getUserInfoFromKakao(kakaoAccessToken));
+    }
+
+    @PostMapping("/auth/login/apple")
+    public ResponseEntity<AuthResponse> loginByApple(@Valid @RequestBody AppleLoginRequest request) {
+        return ResponseEntity
+                .status(OK)
+                .body(appleService.getUserInfoFromApple(request));
     }
 }
