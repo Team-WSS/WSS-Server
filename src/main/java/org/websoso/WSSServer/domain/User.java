@@ -52,7 +52,7 @@ public class User {
     @Column(columnDefinition = "varchar(60) default '안녕하세요'", nullable = false)
     private String intro;
 
-    @Column(columnDefinition = "varchar(320)", nullable = false)
+    @Column(columnDefinition = "varchar(320)")
     private String email;
 
     @Enumerated(EnumType.STRING)
