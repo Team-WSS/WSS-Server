@@ -7,6 +7,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -42,6 +43,10 @@ public class JWTUtil {
         } catch (IllegalArgumentException ex) {
             return JwtValidationType.EMPTY_TOKEN;
         }
+    }
+
+    public Date getExpiration(String token) {
+        return getClaim(token).getExpiration();
     }
 
     private Claims getClaim(final String token) {

@@ -3,6 +3,7 @@ package org.websoso.WSSServer.controller;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.auth.AppleLoginRequest;
+import org.websoso.WSSServer.dto.auth.AppleLogoutRequest;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.dto.auth.LogoutRequest;
 import org.websoso.WSSServer.dto.auth.ReissueRequest;
@@ -59,6 +61,15 @@ public class AuthController {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         String refreshToken = logoutRequest.refreshToken();
         kakaoService.kakaoLogout(user, refreshToken);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @PostMapping("/auth/logout/apple")
+    public ResponseEntity<AuthResponse> logoutByApple(HttpServletRequest httpServletRequest,
+                                                      @Valid @RequestBody AppleLogoutRequest request) {
+        appleService.logout(httpServletRequest, request.refreshToken());
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
