@@ -10,12 +10,14 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.websoso.WSSServer.service.RedisService;
 
 @Component
 @RequiredArgsConstructor
 public class JWTUtil {
 
     private final JwtProvider jwtProvider;
+    private final RedisService redisService;
 
     public Long getUserIdFromJwt(String token) {
         Claims claims = getClaim(token);
@@ -23,7 +25,11 @@ public class JWTUtil {
     }
 
     public JwtValidationType validateJWT(String token) {
+        String redisValue = redisService.getValue(token);
         try {
+            if (redisValue != null && redisValue.equals("logout")) {
+                return JwtValidationType.INACTIVE_TOKEN;
+            }
             final Claims claims = getClaim(token);
             String tokenType = claims.getSubject();
             if (tokenType.equals("access")) {
