@@ -35,6 +35,9 @@ public class KakaoService {
     @Value("${kakao.logout-url}")
     private String kakaoLogoutUrl;
 
+    @Value("${kakao.admin-key}")
+    private String kakaoAdminKey;
+
     public AuthResponse getUserInfoFromKakao(String kakaoAccessToken) {
         RestClient restClient = RestClient.create();
 
