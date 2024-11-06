@@ -25,9 +25,8 @@ public class JWTUtil {
     }
 
     public JwtValidationType validateJWT(String token) {
-        String redisValue = redisService.getValue(token);
         try {
-            if (redisValue != null && redisValue.equals("logout")) {
+            if (redisService.hasKeyBlackList(token)) {
                 return JwtValidationType.INACTIVE_TOKEN;
             }
             final Claims claims = getClaim(token);
