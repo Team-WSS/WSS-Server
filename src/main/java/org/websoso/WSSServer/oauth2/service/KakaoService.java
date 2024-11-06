@@ -92,6 +92,10 @@ public class KakaoService {
                 .header(HttpHeaders.AUTHORIZATION, "KakaoAK " + kakaoAdminKey)
                 .body(logoutInfoBodies)
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, (request, response) -> {
+                    throw new CustomKakaoException(INVALID_KAKAO_ACCESS_TOKEN,
+                            "Invalid access token for Kakao logout");
+                })
                 .toBodilessEntity();
     }
 }
