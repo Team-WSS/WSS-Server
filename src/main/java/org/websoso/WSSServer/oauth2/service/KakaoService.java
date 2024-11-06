@@ -78,5 +78,14 @@ public class KakaoService {
     public void kakaoLogout(User user) {
         String socialId = user.getSocialId();
         String kakaoUserInfoId = socialId.replaceFirst("kakao_", "");
+
+        RestClient restClient = RestClient.create();
+        restClient.post()
+                .uri(kakaoLogoutUrl)
+                .header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded")
+                .header(HttpHeaders.AUTHORIZATION, "KakaoAK " + kakaoAdminKey)
+                .body("target_id_type=user_id&target_id=" + kakaoUserInfoId)
+                .retrieve()
+                .toBodilessEntity();
     }
 }
