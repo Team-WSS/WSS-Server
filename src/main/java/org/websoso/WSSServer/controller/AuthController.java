@@ -4,12 +4,14 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
+import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.auth.AppleLoginRequest;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.dto.auth.ReissueRequest;
@@ -51,8 +53,9 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> kakaoLogout() {
-
+    public ResponseEntity<Void> kakaoLogout(Principal principal) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        kakaoService.kakaoLogout(user);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
