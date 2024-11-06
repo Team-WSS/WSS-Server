@@ -96,6 +96,10 @@ public class KakaoService {
                     throw new CustomKakaoException(INVALID_KAKAO_ACCESS_TOKEN,
                             "Invalid access token for Kakao logout");
                 })
+                .onStatus(HttpStatusCode::is5xxServerError, (request, response) -> {
+                    throw new CustomKakaoException(KAKAO_SERVER_ERROR,
+                            "Kakao server error during logout");
+                })
                 .toBodilessEntity();
     }
 }
