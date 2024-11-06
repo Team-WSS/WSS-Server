@@ -16,6 +16,7 @@ import org.websoso.WSSServer.dto.auth.ReissueResponse;
 import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.service.AuthService;
+import org.websoso.WSSServer.service.UserService;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,6 +25,7 @@ public class AuthController {
     private final AuthService authService;
     private final KakaoService kakaoService;
     private final AppleService appleService;
+    private final UserService userService;
 
     @PostMapping("/reissue")
     public ResponseEntity<ReissueResponse> reissue(@RequestBody ReissueRequest reissueRequest) {
