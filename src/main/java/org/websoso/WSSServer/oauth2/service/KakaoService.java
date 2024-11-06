@@ -9,6 +9,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
@@ -79,12 +81,16 @@ public class KakaoService {
         String socialId = user.getSocialId();
         String kakaoUserInfoId = socialId.replaceFirst("kakao_", "");
 
+        MultiValueMap<String, String> logoutInfoBodies = new LinkedMultiValueMap<>();
+        logoutInfoBodies.add("target_id_type", "user_id");
+        logoutInfoBodies.add("target_id", kakaoUserInfoId);
+
         RestClient restClient = RestClient.create();
         restClient.post()
                 .uri(kakaoLogoutUrl)
                 .header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded")
                 .header(HttpHeaders.AUTHORIZATION, "KakaoAK " + kakaoAdminKey)
-                .body("target_id_type=user_id&target_id=" + kakaoUserInfoId)
+                .body(logoutInfoBodies)
                 .retrieve()
                 .toBodilessEntity();
     }
