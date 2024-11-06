@@ -52,7 +52,7 @@ public class AuthController {
                 .body(appleService.getUserInfoFromApple(request));
     }
 
-    @PostMapping("/logout")
+    @PostMapping("/auth/logout/kakao")
     public ResponseEntity<Void> kakaoLogout(Principal principal) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         kakaoService.kakaoLogout(user);
