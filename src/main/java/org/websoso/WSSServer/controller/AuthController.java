@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.controller;
 
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
@@ -47,5 +48,14 @@ public class AuthController {
         return ResponseEntity
                 .status(OK)
                 .body(appleService.getUserInfoFromApple(request));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> kakaoLogout() {
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+        // TODO redis에서 refreshToken 삭제
     }
 }
