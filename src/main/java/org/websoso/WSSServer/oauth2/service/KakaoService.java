@@ -77,7 +77,9 @@ public class KakaoService {
         return AuthResponse.of(accessToken, refreshToken, isRegister);
     }
 
-    public void kakaoLogout(User user) {
+    public void kakaoLogout(User user, String refreshToken) {
+        refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
+
         String socialId = user.getSocialId();
         String kakaoUserInfoId = socialId.replaceFirst("kakao_", "");
 
