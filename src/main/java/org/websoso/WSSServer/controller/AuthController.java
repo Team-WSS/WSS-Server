@@ -1,21 +1,26 @@
 package org.websoso.WSSServer.controller;
 
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
+import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.auth.AppleLoginRequest;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
+import org.websoso.WSSServer.dto.auth.LogoutRequest;
 import org.websoso.WSSServer.dto.auth.ReissueRequest;
 import org.websoso.WSSServer.dto.auth.ReissueResponse;
 import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.service.AuthService;
+import org.websoso.WSSServer.service.UserService;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,6 +29,7 @@ public class AuthController {
     private final AuthService authService;
     private final KakaoService kakaoService;
     private final AppleService appleService;
+    private final UserService userService;
 
     @PostMapping("/reissue")
     public ResponseEntity<ReissueResponse> reissue(@RequestBody ReissueRequest reissueRequest) {
@@ -45,5 +51,16 @@ public class AuthController {
         return ResponseEntity
                 .status(OK)
                 .body(appleService.getUserInfoFromApple(request));
+    }
+
+    @PostMapping("/auth/logout/kakao")
+    public ResponseEntity<Void> kakaoLogout(Principal principal,
+                                            @RequestBody LogoutRequest logoutRequest) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        String refreshToken = logoutRequest.refreshToken();
+        kakaoService.kakaoLogout(user, refreshToken);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
     }
 }
