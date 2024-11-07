@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.auth.AppleLoginRequest;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
+import org.websoso.WSSServer.dto.auth.LogoutRequest;
 import org.websoso.WSSServer.dto.auth.ReissueRequest;
 import org.websoso.WSSServer.dto.auth.ReissueResponse;
 import org.websoso.WSSServer.oauth2.service.AppleService;
@@ -53,9 +54,11 @@ public class AuthController {
     }
 
     @PostMapping("/auth/logout/kakao")
-    public ResponseEntity<Void> kakaoLogout(Principal principal) {
+    public ResponseEntity<Void> kakaoLogout(Principal principal,
+                                            @RequestBody LogoutRequest logoutRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        kakaoService.kakaoLogout(user);
+        String refreshToken = logoutRequest.refreshToken();
+        kakaoService.kakaoLogout(user, refreshToken);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
