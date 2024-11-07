@@ -62,6 +62,5 @@ public class AuthController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
-        // TODO redis에서 refreshToken 삭제
     }
 }
