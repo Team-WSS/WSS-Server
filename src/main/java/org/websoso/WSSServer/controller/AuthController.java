@@ -3,7 +3,6 @@ package org.websoso.WSSServer.controller;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
@@ -67,9 +66,11 @@ public class AuthController {
     }
 
     @PostMapping("/auth/logout/apple")
-    public ResponseEntity<AuthResponse> logoutByApple(HttpServletRequest httpServletRequest,
+    public ResponseEntity<AuthResponse> logoutByApple(Principal principal,
                                                       @Valid @RequestBody AppleLogoutRequest request) {
-        appleService.logout(httpServletRequest, request.refreshToken());
+        userService.getUserOrException(Long.valueOf(principal.getName()));
+        appleService.logout(request.refreshToken());
+
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
