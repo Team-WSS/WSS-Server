@@ -1,28 +1,51 @@
 package org.websoso.WSSServer.oauth2.service;
 
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.CLIENT_SECRET_CREATION_FAILED;
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.PRIVATE_KEY_READ_FAILED;
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.TOKEN_REQUEST_FAILED;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.UnsupportedJwtException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.interfaces.ECPrivateKey;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
+import java.util.Date;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.websoso.WSSServer.dto.auth.AppleLoginRequest;
 import org.websoso.WSSServer.dto.auth.ApplePublicKey;
 import org.websoso.WSSServer.dto.auth.ApplePublicKeys;
+import org.websoso.WSSServer.dto.auth.AppleTokenResponse;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
+import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
 import org.websoso.WSSServer.service.UserService;
 
 @Service
@@ -41,14 +64,37 @@ public class AppleService { // TODO : 커스텀 예외로 수정
     private final UserService userService;
 
     @Value("${apple.public-keys-url}")
-    private String APPLE_PUBLIC_KEYS_URL;
+    private String applePublicKeysUrl;
+
+    @Value("${apple.expiration-time}")
+    private long tokenExpirationTime;
+
+    @Value("${apple.team-id}")
+    private String appleTeamId;
+
+    @Value("${apple.key.id}")
+    private String appleLoginKey;
+
+    @Value("${apple.client-id}")
+    private String appleClientId;
+
+    @Value("${apple.redirect-url}")
+    private String appleRedirectUrl;
+
+    @Value("${apple.key.path}")
+    private String appleKeyPath;
+
+    @Value("${apple.iss}")
+    private String appleAuthUrl;
 
     public AuthResponse getUserInfoFromApple(final AppleLoginRequest request) {
-        final String appleToken = request.appleToken();
+        final String appleToken = request.idToken();
         final Map<String, String> appleTokenHeader = parseAppleTokenHeader(appleToken);
         final ApplePublicKeys applePublicKeys = getApplePublicKeys();
         final PublicKey publicKey = generatePublicKeyFromHeaders(appleTokenHeader, applePublicKeys);
         final Claims claims = extractClaims(appleToken, publicKey);
+        
+        AppleTokenResponse tokenResponse = requestAppleToken(request.authorizationCode(), createClientSecret());
 
         final String email = claims.get(CLAIM_EMAIL, String.class);
         final String userIdentifier = claims.get(CLAIM_SUB, String.class);
@@ -56,6 +102,16 @@ public class AppleService { // TODO : 커스텀 예외로 수정
         String defaultNickname = APPLE_PREFIX.charAt(0) + "*" + userIdentifier.substring(7, 15);
 
         return userService.authenticateWithApple(customSocialId, email, defaultNickname);
+    }
+
+    private MultiValueMap<String, String> createTokenRequestParams(String authorizationCode, String clientSecret) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", appleClientId);
+        params.add("client_secret", clientSecret);
+        params.add("code", authorizationCode);
+        params.add("redirect_uri", appleRedirectUrl);
+        return params;
     }
 
     private Map<String, String> parseAppleTokenHeader(final String appleToken) {
@@ -73,7 +129,7 @@ public class AppleService { // TODO : 커스텀 예외로 수정
     private ApplePublicKeys getApplePublicKeys() {
         RestClient restClient = RestClient.create();
         return restClient.get()
-                .uri(APPLE_PUBLIC_KEYS_URL)
+                .uri(applePublicKeysUrl)
                 .retrieve()
                 .body(ApplePublicKeys.class);
     }
@@ -116,6 +172,69 @@ public class AppleService { // TODO : 커스텀 예외로 수정
             throw new IllegalArgumentException("비어있는 jwt");
         } catch (JwtException e) {
             throw new JwtException("jwt 검증 or 분석 오류");
+        }
+    }
+
+    private String createClientSecret() {
+        try {
+            JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.ES256).keyID(appleLoginKey).build();
+            JWTClaimsSet claimsSet = buildJwtClaimsSet();
+
+            SignedJWT jwt = new SignedJWT(header, claimsSet);
+            signJwt(jwt);
+
+            return jwt.serialize();
+        } catch (Exception e) {
+            throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "Failed to generate client secret");
+        }
+    }
+
+    private JWTClaimsSet buildJwtClaimsSet() {
+        Date now = new Date();
+        JWTClaimsSet claimsSet = new JWTClaimsSet();
+
+        claimsSet.setIssuer(appleTeamId);
+        claimsSet.setIssueTime(now);
+        claimsSet.setExpirationTime(new Date(now.getTime() + tokenExpirationTime));
+        claimsSet.setAudience(appleAuthUrl);
+        claimsSet.setSubject(appleClientId);
+
+        return claimsSet;
+    }
+
+    private void signJwt(SignedJWT jwt) {
+        try {
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(readPrivateKey(appleKeyPath));
+            KeyFactory keyFactory = KeyFactory.getInstance("EC");
+            ECPrivateKey ecPrivateKey = (ECPrivateKey) keyFactory.generatePrivate(spec);
+            JWSSigner signer = new ECDSASigner(ecPrivateKey.getS());
+            jwt.sign(signer);
+        } catch (Exception e) {
+            throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "Failed to create client secret");
+        }
+    }
+
+    private byte[] readPrivateKey(String keyPath) {
+        Resource resource = new ClassPathResource(keyPath);
+        try (PemReader pemReader = new PemReader(new FileReader(resource.getFile()))) {
+            PemObject pemObject = pemReader.readPemObject();
+            return pemObject.getContent();
+        } catch (IOException e) {
+            throw new CustomAppleLoginException(PRIVATE_KEY_READ_FAILED, "Failed to read private key");
+        }
+    }
+
+    private AppleTokenResponse requestAppleToken(String authorizationCode, String clientSecret) {
+        try {
+            RestClient restClient = RestClient.create();
+            return restClient.post()
+                    .uri(appleAuthUrl + "/auth/token")
+                    .headers(headers -> headers.add("Content-Type", "application/x-www-form-urlencoded"))
+                    .body(createTokenRequestParams(authorizationCode, clientSecret))
+                    .retrieve()
+                    .body(AppleTokenResponse.class);
+        } catch (Exception e) {
+            throw new CustomAppleLoginException(TOKEN_REQUEST_FAILED, "Failed to get token from Apple server");
         }
     }
 }
