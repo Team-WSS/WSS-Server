@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.auth.AppleLoginRequest;
-import org.websoso.WSSServer.dto.auth.AppleLogoutRequest;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.dto.auth.LogoutRequest;
 import org.websoso.WSSServer.dto.auth.ReissueRequest;
@@ -66,8 +65,8 @@ public class AuthController {
     }
 
     @PostMapping("/auth/logout/apple")
-    public ResponseEntity<AuthResponse> logoutByApple(Principal principal,
-                                                      @Valid @RequestBody AppleLogoutRequest request) {
+    public ResponseEntity<Void> logoutByApple(Principal principal,
+                                              @Valid @RequestBody LogoutRequest request) {
         userService.getUserOrException(Long.valueOf(principal.getName()));
         appleService.logout(request.refreshToken());
 
