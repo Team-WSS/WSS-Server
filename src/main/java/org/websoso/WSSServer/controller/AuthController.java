@@ -63,4 +63,12 @@ public class AuthController {
                 .status(NO_CONTENT)
                 .build();
     }
+
+    @PostMapping("/auth/withdraw/kakao")
+    public ResponseEntity<Void> withdrawUser(Principal principal) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
 }
