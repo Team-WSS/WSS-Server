@@ -40,6 +40,9 @@ public class KakaoService {
     @Value("${kakao.admin-key}")
     private String kakaoAdminKey;
 
+    @Value("${kakao.unlink-url}")
+    private String kakaoUnlinkUrl;
+
     public AuthResponse getUserInfoFromKakao(String kakaoAccessToken) {
         RestClient restClient = RestClient.create();
 
@@ -92,10 +95,32 @@ public class KakaoService {
                 .header(HttpHeaders.AUTHORIZATION, "KakaoAK " + kakaoAdminKey)
                 .body(logoutInfoBodies)
                 .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, (request, response) -> {
-                    throw new CustomKakaoException(INVALID_KAKAO_ACCESS_TOKEN,
-                            "Invalid access token for Kakao logout");
+                .onStatus(HttpStatusCode::is5xxServerError, (request, response) -> {
+                    throw new CustomKakaoException(KAKAO_SERVER_ERROR,
+                            "Kakao server error during logout");
                 })
+                .toBodilessEntity();
+    }
+
+    public void unlinkFromKakao(User user, String refreshToken) {
+        refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
+
+        String socialId = user.getSocialId();
+        String kakaoUserInfoId = socialId.replaceFirst("kakao_", "");
+
+        userRepository.delete(user);
+
+        MultiValueMap<String, String> withdrawInfoBodies = new LinkedMultiValueMap<>();
+        withdrawInfoBodies.add("target_id_type", "user_id");
+        withdrawInfoBodies.add("target_id", kakaoUserInfoId);
+
+        RestClient.create()
+                .post()
+                .uri(kakaoUnlinkUrl)
+                .header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded")
+                .header(HttpHeaders.AUTHORIZATION, "KakaoAK " + kakaoAdminKey)
+                .body(withdrawInfoBodies)
+                .retrieve()
                 .onStatus(HttpStatusCode::is5xxServerError, (request, response) -> {
                     throw new CustomKakaoException(KAKAO_SERVER_ERROR,
                             "Kakao server error during logout");

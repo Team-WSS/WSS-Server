@@ -17,6 +17,7 @@ import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.dto.auth.LogoutRequest;
 import org.websoso.WSSServer.dto.auth.ReissueRequest;
 import org.websoso.WSSServer.dto.auth.ReissueResponse;
+import org.websoso.WSSServer.dto.user.WithdrawalRequest;
 import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.service.AuthService;
@@ -59,6 +60,17 @@ public class AuthController {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         String refreshToken = request.refreshToken();
         userService.logout(user, refreshToken);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @PostMapping("/auth/withdraw")
+    public ResponseEntity<Void> withdrawUser(Principal principal,
+                                             @Valid @RequestBody WithdrawalRequest withdrawalRequest) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        String refreshToken = withdrawalRequest.refreshToken();
+        kakaoService.unlinkFromKakao(user, refreshToken);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
