@@ -36,6 +36,7 @@ import org.websoso.WSSServer.exception.error.CustomUserError;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
+import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
@@ -53,6 +54,8 @@ public class UserService {
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final GenreRepository genreRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final KakaoService kakaoService;
+    private static final String KAKAO_PREFIX = "kakao";
 
     @Transactional(readOnly = true)
     public NicknameValidation isNicknameAvailable(User user, String nickname) {
@@ -165,6 +168,13 @@ public class UserService {
         boolean isRegister = !user.getNickname().contains("*");
 
         return AuthResponse.of(accessToken, refreshToken, isRegister);
+    }
+
+    public void logout(User user, String refreshToken) {
+        refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
+        if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
+            kakaoService.kakaoLogout(user);
+        }
     }
 
     private void checkNicknameIfAlreadyExist(String nickname) {
