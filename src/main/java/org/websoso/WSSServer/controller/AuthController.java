@@ -67,7 +67,7 @@ public class AuthController {
 
     @PostMapping("/auth/withdraw/kakao")
     public ResponseEntity<Void> withdrawUser(Principal principal,
-                                             @RequestBody WithdrawalRequest withdrawalRequest) {
+                                             @Valid @RequestBody WithdrawalRequest withdrawalRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(NO_CONTENT)
