@@ -107,4 +107,8 @@ public class KakaoService {
                 })
                 .toBodilessEntity();
     }
+
+    public void unlinkFromKakao(User user) {
+        userRepository.delete(user);
+    }
 }
