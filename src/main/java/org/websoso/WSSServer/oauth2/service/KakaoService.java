@@ -108,7 +108,8 @@ public class KakaoService {
                 .toBodilessEntity();
     }
 
-    public void unlinkFromKakao(User user) {
+    public void unlinkFromKakao(User user, String refreshToken) {
+        refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
+
         userRepository.delete(user);
-    }
 }
