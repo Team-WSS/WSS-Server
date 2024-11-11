@@ -127,6 +127,10 @@ public class KakaoService {
                 .header(HttpHeaders.AUTHORIZATION, "KakaoAK " + kakaoAdminKey)
                 .body(withdrawInfoBodies)
                 .retrieve()
+                .onStatus(HttpStatusCode::is5xxServerError, (request, response) -> {
+                    throw new CustomKakaoException(KAKAO_SERVER_ERROR,
+                            "Kakao server error during logout");
+                })
                 .toBodilessEntity();
     }
 }
