@@ -65,7 +65,7 @@ public class AuthController {
                 .build();
     }
 
-    @PostMapping("/auth/withdraw/kakao")
+    @PostMapping("/auth/withdraw")
     public ResponseEntity<Void> withdrawUser(Principal principal,
                                              @Valid @RequestBody WithdrawalRequest withdrawalRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
