@@ -40,6 +40,9 @@ public class KakaoService {
     @Value("${kakao.admin-key}")
     private String kakaoAdminKey;
 
+    @Value("${kakao.unlink-url}")
+    private String kakaoUnlinkUrl;
+
     public AuthResponse getUserInfoFromKakao(String kakaoAccessToken) {
         RestClient restClient = RestClient.create();
 
