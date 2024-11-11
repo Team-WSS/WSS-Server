@@ -111,5 +111,22 @@ public class KakaoService {
     public void unlinkFromKakao(User user, String refreshToken) {
         refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
 
+        String socialId = user.getSocialId();
+        String kakaoUserInfoId = socialId.replaceFirst("kakao_", "");
+
         userRepository.delete(user);
+
+        MultiValueMap<String, String> withdrawInfoBodies = new LinkedMultiValueMap<>();
+        withdrawInfoBodies.add("target_id_type", "user_id");
+        withdrawInfoBodies.add("target_id", kakaoUserInfoId);
+
+        RestClient.create()
+                .post()
+                .uri(kakaoUnlinkUrl)
+                .header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded")
+                .header(HttpHeaders.AUTHORIZATION, "KakaoAK " + kakaoAdminKey)
+                .body(withdrawInfoBodies)
+                .retrieve()
+                .toBodilessEntity();
+    }
 }
