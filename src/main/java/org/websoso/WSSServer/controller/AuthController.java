@@ -53,12 +53,12 @@ public class AuthController {
                 .body(appleService.getUserInfoFromApple(request));
     }
 
-    @PostMapping("/auth/logout/kakao")
-    public ResponseEntity<Void> kakaoLogout(Principal principal,
-                                            @RequestBody LogoutRequest logoutRequest) {
+    @PostMapping("/auth/logout")
+    public ResponseEntity<Void> logout(Principal principal,
+                                       @Valid @RequestBody LogoutRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        String refreshToken = logoutRequest.refreshToken();
-        kakaoService.kakaoLogout(user, refreshToken);
+        String refreshToken = request.refreshToken();
+        userService.logout(user, refreshToken);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
