@@ -1,8 +1,14 @@
 package org.websoso.WSSServer.oauth2.service;
 
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.CLIENT_SECRET_CREATION_FAILED;
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.EMPTY_JWT;
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.HEADER_PARSING_FAILED;
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.INVALID_APPLE_KEY;
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.INVALID_APPLE_TOKEN_FORMAT;
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.JWT_VERIFICATION_FAILED;
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.PRIVATE_KEY_READ_FAILED;
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.TOKEN_REQUEST_FAILED;
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.UNSUPPORTED_JWT_TYPE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -50,7 +56,7 @@ import org.websoso.WSSServer.service.UserService;
 
 @Service
 @RequiredArgsConstructor
-public class AppleService { // TODO : 커스텀 예외로 수정
+public class AppleService {
 
     private static final String APPLE_PREFIX = "apple";
     private static final String CLAIM_EMAIL = "email";
@@ -87,42 +93,34 @@ public class AppleService { // TODO : 커스텀 예외로 수정
     @Value("${apple.iss}")
     private String appleAuthUrl;
 
-    public AuthResponse getUserInfoFromApple(final AppleLoginRequest request) {
-        final String appleToken = request.idToken();
-        final Map<String, String> appleTokenHeader = parseAppleTokenHeader(appleToken);
-        final ApplePublicKeys applePublicKeys = getApplePublicKeys();
-        final PublicKey publicKey = generatePublicKeyFromHeaders(appleTokenHeader, applePublicKeys);
-        final Claims claims = extractClaims(appleToken, publicKey);
-        
-        AppleTokenResponse tokenResponse = requestAppleToken(request.authorizationCode(), createClientSecret());
+    public AuthResponse getUserInfoFromApple(AppleLoginRequest request) {
+        String appleToken = request.idToken();
+        Map<String, String> appleTokenHeader = parseAppleTokenHeader(appleToken);
+        ApplePublicKeys applePublicKeys = getApplePublicKeys();
+        PublicKey publicKey = generatePublicKeyFromHeaders(appleTokenHeader, applePublicKeys);
+        Claims claims = extractClaims(appleToken, publicKey);
 
-        final String email = claims.get(CLAIM_EMAIL, String.class);
-        final String userIdentifier = claims.get(CLAIM_SUB, String.class);
+        requestAppleToken(request.authorizationCode(), createClientSecret());
+
+        String email = claims.get(CLAIM_EMAIL, String.class);
+        String userIdentifier = claims.get(CLAIM_SUB, String.class);
         String customSocialId = APPLE_PREFIX + "_" + userIdentifier;
         String defaultNickname = APPLE_PREFIX.charAt(0) + "*" + userIdentifier.substring(7, 15);
 
         return userService.authenticateWithApple(customSocialId, email, defaultNickname);
     }
 
-    private MultiValueMap<String, String> createTokenRequestParams(String authorizationCode, String clientSecret) {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "authorization_code");
-        params.add("client_id", appleClientId);
-        params.add("client_secret", clientSecret);
-        params.add("code", authorizationCode);
-        params.add("redirect_uri", appleRedirectUrl);
-        return params;
-    }
-
-    private Map<String, String> parseAppleTokenHeader(final String appleToken) {
+    private Map<String, String> parseAppleTokenHeader(String appleToken) {
         try {
-            final String encodedHeader = appleToken.split(IDENTITY_TOKEN_VALUE_DELIMITER)[HEADER_INDEX];
-            final String decodedHeader = new String(Base64.getUrlDecoder().decode(encodedHeader));
+            String encodedHeader = appleToken.split(IDENTITY_TOKEN_VALUE_DELIMITER)[HEADER_INDEX];
+            String decodedHeader = new String(Base64.getUrlDecoder().decode(encodedHeader));
             return objectMapper.readValue(decodedHeader, Map.class);
         } catch (JsonMappingException e) {
-            throw new RuntimeException("appleToken 값이 jwt 형식인지, 값이 정상적인지 확인해주세요.");
+            throw new CustomAppleLoginException(INVALID_APPLE_TOKEN_FORMAT,
+                    "make sure the idToken value is in jwt format and that the value is valid");
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("디코드된 헤더를 Map 형태로 분류할 수 없습니다. 헤더를 확인해주세요.");
+            throw new CustomAppleLoginException(HEADER_PARSING_FAILED,
+                    "the decoded header cannot be classified as a Map, please check the header");
         }
     }
 
@@ -134,32 +132,32 @@ public class AppleService { // TODO : 커스텀 예외로 수정
                 .body(ApplePublicKeys.class);
     }
 
-    private PublicKey generatePublicKeyFromHeaders(final Map<String, String> headers,
-                                                   final ApplePublicKeys publicKeys) {
-        final ApplePublicKey applePublicKey = publicKeys.getMatchingKey(
+    private PublicKey generatePublicKeyFromHeaders(Map<String, String> headers,
+                                                   ApplePublicKeys publicKeys) {
+        ApplePublicKey applePublicKey = publicKeys.getMatchingKey(
                 headers.get(SIGN_ALGORITHM_HEADER),
                 headers.get(KEY_ID_HEADER)
         );
         return generatePublicKey(applePublicKey);
     }
 
-    private PublicKey generatePublicKey(final ApplePublicKey applePublicKey) {
-        final byte[] nBytes = Base64.getUrlDecoder().decode(applePublicKey.n());
-        final byte[] eBytes = Base64.getUrlDecoder().decode(applePublicKey.e());
+    private PublicKey generatePublicKey(ApplePublicKey applePublicKey) {
+        byte[] nBytes = Base64.getUrlDecoder().decode(applePublicKey.n());
+        byte[] eBytes = Base64.getUrlDecoder().decode(applePublicKey.e());
 
-        final BigInteger n = new BigInteger(POSITIVE_SIGN_NUMBER, nBytes);
-        final BigInteger e = new BigInteger(POSITIVE_SIGN_NUMBER, eBytes);
-        final RSAPublicKeySpec rsaPublicKeySpec = new RSAPublicKeySpec(n, e);
+        BigInteger n = new BigInteger(POSITIVE_SIGN_NUMBER, nBytes);
+        BigInteger e = new BigInteger(POSITIVE_SIGN_NUMBER, eBytes);
+        RSAPublicKeySpec rsaPublicKeySpec = new RSAPublicKeySpec(n, e);
 
         try {
-            final KeyFactory keyFactory = KeyFactory.getInstance(applePublicKey.kty());
+            KeyFactory keyFactory = KeyFactory.getInstance(applePublicKey.kty());
             return keyFactory.generatePublic(rsaPublicKeySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException exception) {
-            throw new RuntimeException("잘못된 애플 키"); // TODO : 커스텀 예외로 수정
+            throw new CustomAppleLoginException(INVALID_APPLE_KEY, "invalid apple key");
         }
     }
 
-    private Claims extractClaims(final String appleToken, final PublicKey publicKey) {
+    private Claims extractClaims(String appleToken, PublicKey publicKey) {
         try {
             return Jwts.parserBuilder()
                     .setSigningKey(publicKey)
@@ -167,11 +165,11 @@ public class AppleService { // TODO : 커스텀 예외로 수정
                     .parseClaimsJws(appleToken)
                     .getBody();
         } catch (UnsupportedJwtException e) {
-            throw new UnsupportedJwtException("지원되지 않는 jwt 타입");
+            throw new CustomAppleLoginException(UNSUPPORTED_JWT_TYPE, "unsupported JWT types");
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("비어있는 jwt");
+            throw new CustomAppleLoginException(EMPTY_JWT, "empty jwt");
         } catch (JwtException e) {
-            throw new JwtException("jwt 검증 or 분석 오류");
+            throw new CustomAppleLoginException(JWT_VERIFICATION_FAILED, "jwt validation or analysis failed");
         }
     }
 
@@ -236,5 +234,15 @@ public class AppleService { // TODO : 커스텀 예외로 수정
         } catch (Exception e) {
             throw new CustomAppleLoginException(TOKEN_REQUEST_FAILED, "Failed to get token from Apple server");
         }
+    }
+
+    private MultiValueMap<String, String> createTokenRequestParams(String authorizationCode, String clientSecret) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", appleClientId);
+        params.add("client_secret", clientSecret);
+        params.add("code", authorizationCode);
+        params.add("redirect_uri", appleRedirectUrl);
+        return params;
     }
 }
