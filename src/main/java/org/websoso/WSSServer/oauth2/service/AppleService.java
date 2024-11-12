@@ -183,7 +183,7 @@ public class AppleService {
 
             return jwt.serialize();
         } catch (Exception e) {
-            throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "Failed to generate client secret");
+            throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "failed to generate client secret");
         }
     }
 
@@ -208,7 +208,7 @@ public class AppleService {
             JWSSigner signer = new ECDSASigner(ecPrivateKey.getS());
             jwt.sign(signer);
         } catch (Exception e) {
-            throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "Failed to create client secret");
+            throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "failed to create client secret");
         }
     }
 
@@ -218,7 +218,7 @@ public class AppleService {
             PemObject pemObject = pemReader.readPemObject();
             return pemObject.getContent();
         } catch (IOException e) {
-            throw new CustomAppleLoginException(PRIVATE_KEY_READ_FAILED, "Failed to read private key");
+            throw new CustomAppleLoginException(PRIVATE_KEY_READ_FAILED, "failed to read private key");
         }
     }
 
@@ -232,7 +232,8 @@ public class AppleService {
                     .retrieve()
                     .body(AppleTokenResponse.class);
         } catch (Exception e) {
-            throw new CustomAppleLoginException(TOKEN_REQUEST_FAILED, "Failed to get token from Apple server");
+            System.out.println(e.getMessage());
+            throw new CustomAppleLoginException(TOKEN_REQUEST_FAILED, "failed to get token from Apple server");
         }
     }
 
