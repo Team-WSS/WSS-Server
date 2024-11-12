@@ -1,6 +1,9 @@
 package org.websoso.WSSServer.dto.auth;
 
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.INVALID_APPLE_KEY;
+
 import java.util.List;
+import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
 
 public record ApplePublicKeys(
         List<ApplePublicKey> keys
@@ -10,6 +13,6 @@ public record ApplePublicKeys(
         return keys.stream()
                 .filter(key -> key.isSameAlg(alg) && key.isSameKid(kid))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("잘못된 토큰 형태입니다.")); // TODO : 커스텀 예외 수정
+                .orElseThrow(() -> new CustomAppleLoginException(INVALID_APPLE_KEY, "invalid apple key"));
     }
 }
