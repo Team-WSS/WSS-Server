@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.domain;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static org.websoso.WSSServer.domain.common.Gender.M;
 import static org.websoso.WSSServer.domain.common.Role.USER;
 
@@ -10,9 +11,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Year;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -73,6 +77,12 @@ public class User {
     @Column(nullable = false)
     @ColumnDefault("'USER'")
     private Role role;
+
+    @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
+    private List<GenrePreference> genrePreferences = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
+    private List<UserNovel> userNovels = new ArrayList<>();
 
     public void updateProfileStatus(Boolean profileStatus) {
         this.isProfilePublic = profileStatus;
