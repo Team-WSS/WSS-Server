@@ -4,8 +4,10 @@ import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
 
 @Repository
@@ -31,4 +33,9 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
             + "OR f.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = :userId)) "
             + "ORDER BY f.feedId DESC")
     Slice<Feed> findFeedsByNovelId(Long novelId, Long lastFeedId, Long userId, PageRequest pageRequest);
+
+    @Transactional
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Feed f SET f.user.userId = -1 WHERE f.user.userId = :userId")
+    void updateUserToUnknown(Long userId);
 }
