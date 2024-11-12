@@ -113,6 +113,7 @@ public class KakaoService {
         String kakaoUserInfoId = socialId.replaceFirst("kakao_", "");
 
         feedRepository.updateUserToUnknown(user.getUserId());
+        commentRepository.updateUserToUnknown(user.getUserId());
         userRepository.delete(user);
 
         MultiValueMap<String, String> withdrawInfoBodies = new LinkedMultiValueMap<>();
