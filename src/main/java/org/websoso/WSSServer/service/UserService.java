@@ -171,14 +171,17 @@ public class UserService {
 
     public void withdrawUser(User user, String refreshToken) {
         if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
-            kakaoService.unlinkFromKakao(user, refreshToken);
+            kakaoService.unlinkFromKakao(user);
         } else if (user.getSocialId().startsWith(APPLE_PREFIX)) {
-            appleService.unlinkFromApple(user, refreshToken);
+            appleService.unlinkFromApple(user);
         }
 
+        refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
         feedRepository.updateUserToUnknown(user.getUserId());
         commentRepository.updateUserToUnknown(user.getUserId());
         userRepository.delete(user);
+
+        // TODO : 디스코드 웹훅 알림 발송 로직 추가
     }
 
     private void checkNicknameIfAlreadyExist(String nickname) {

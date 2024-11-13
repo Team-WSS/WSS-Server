@@ -123,7 +123,7 @@ public class AppleService {
         return authenticate(customSocialId, email, defaultNickname, appleTokenResponse.getRefreshToken());
     }
 
-    public void unlinkFromApple(User user, String refreshToken) {
+    public void unlinkFromApple(User user) {
         String clientSecret = createClientSecret();
         UserAppleToken userAppleToken = userAppleTokenRepository.findByUser(user).orElseThrow(
                 () -> new CustomAppleLoginException(USER_APPLE_REFRESH_TOKEN_NOT_FOUND,
@@ -141,8 +141,6 @@ public class AppleService {
                     .retrieve()
                     .body(String.class);
         }
-
-        refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
     }
 
     private Map<String, String> parseAppleTokenHeader(String appleToken) {

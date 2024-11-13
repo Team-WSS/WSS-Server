@@ -102,9 +102,7 @@ public class KakaoService {
                 .toBodilessEntity();
     }
 
-    public void unlinkFromKakao(User user, String refreshToken) {
-        refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
-
+    public void unlinkFromKakao(User user) {
         String socialId = user.getSocialId();
         String kakaoUserInfoId = socialId.replaceFirst("kakao_", "");
 
