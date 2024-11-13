@@ -127,20 +127,14 @@ public class AppleService {
         UserAppleToken userAppleToken = userAppleTokenRepository.findByUser(user).orElseThrow(
                 () -> new CustomAppleLoginException(USER_APPLE_REFRESH_TOKEN_NOT_FOUND,
                         "cannot find the user Apple refresh token"));
-        String clientSecret = createClientSecret();
 
-        AppleTokenResponse appleTokenResponse = requestAppleTokenByRefreshToken(userAppleToken.getAppleRefreshToken(),
-                clientSecret);
-
-        if (appleTokenResponse.getAccessToken() != null) {
-            RestClient restClient = RestClient.create();
-            restClient.post()
-                    .uri(appleAuthUrl + "/auth/revoke")
-                    .headers(headers -> headers.add("Content-Type", "application/x-www-form-urlencoded"))
-                    .body(createUserRevokeParams(clientSecret, appleTokenResponse.getAccessToken()))
-                    .retrieve()
-                    .body(String.class);
-        }
+        RestClient restClient = RestClient.create();
+        restClient.post()
+                .uri(appleAuthUrl + "/auth/revoke")
+                .headers(headers -> headers.add("Content-Type", "application/x-www-form-urlencoded"))
+                .body(createUserRevokeParams(createClientSecret(), userAppleToken.getAppleRefreshToken()))
+                .retrieve()
+                .body(String.class);
     }
 
     private Map<String, String> parseAppleTokenHeader(String appleToken) {
@@ -329,11 +323,13 @@ public class AppleService {
         return params;
     }
 
-    private MultiValueMap<String, String> createUserRevokeParams(String clientSecret, String appleAccessToken) {
+    private MultiValueMap<String, String> createUserRevokeParams(String clientSecret, String appleRefreshToken) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "refresh_token");
         params.add("client_id", appleClientId);
         params.add("client_secret", clientSecret);
-        params.add("token", appleAccessToken);
+        params.add("token", appleRefreshToken);
+        params.add("token_type_hint", "refresh_token");
         return params;
     }
 }
