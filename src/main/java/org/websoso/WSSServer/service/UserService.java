@@ -20,6 +20,7 @@ import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.RefreshToken;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserAppleToken;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
@@ -41,6 +42,7 @@ import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
+import org.websoso.WSSServer.repository.UserAppleTokenRepository;
 import org.websoso.WSSServer.repository.UserRepository;
 
 @Service
@@ -54,6 +56,7 @@ public class UserService {
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final GenreRepository genreRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final UserAppleTokenRepository userAppleTokenRepository;
     private final KakaoService kakaoService;
     private static final String KAKAO_PREFIX = "kakao";
 
@@ -152,11 +155,13 @@ public class UserService {
         genrePreferenceRepository.saveAll(preferGenres);
     }
 
-    public AuthResponse authenticateWithApple(String socialId, String email, String nickname) {
+    public AuthResponse authenticateWithApple(String socialId, String email, String nickname,
+                                              String appleRefreshToken) {
         User user = userRepository.findBySocialId(socialId);
 
         if (user == null) {
             user = userRepository.save(User.createBySocial(socialId, nickname, email));
+            userAppleTokenRepository.save(UserAppleToken.create(user, appleRefreshToken));
         }
 
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
