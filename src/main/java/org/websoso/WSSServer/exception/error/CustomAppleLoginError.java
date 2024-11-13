@@ -2,6 +2,7 @@ package org.websoso.WSSServer.exception.error;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,7 +21,8 @@ public enum CustomAppleLoginError implements ICustomError {
     UNSUPPORTED_JWT_TYPE("APPLE-006", "지원되지 않는 jwt 타입입니다.", BAD_REQUEST),
     EMPTY_JWT("APPLE-007", "비어있는 jwt입니다.", BAD_REQUEST),
     JWT_VERIFICATION_FAILED("APPLE-008", "jwt 검증 또는 분석에 실패했습니다.", INTERNAL_SERVER_ERROR),
-    INVALID_APPLE_KEY("APPLE-009", "잘못된 애플 키입니다.", INTERNAL_SERVER_ERROR);
+    INVALID_APPLE_KEY("APPLE-009", "잘못된 애플 키입니다.", INTERNAL_SERVER_ERROR),
+    USER_APPLE_REFRESH_TOKEN_NOT_FOUND("APPLE-010", "유저의 애플 리프레시 토큰을 찾을 수 없습니다.", NOT_FOUND);
 
     private final String code;
     private final String description;

@@ -52,6 +52,7 @@ import org.websoso.WSSServer.dto.auth.ApplePublicKeys;
 import org.websoso.WSSServer.dto.auth.AppleTokenResponse;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
+import org.websoso.WSSServer.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.service.UserService;
 
 @Service
@@ -68,6 +69,7 @@ public class AppleService {
     private static final int POSITIVE_SIGN_NUMBER = 1;
     private final ObjectMapper objectMapper;
     private final UserService userService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${apple.public-keys-url}")
     private String applePublicKeysUrl;
@@ -109,6 +111,23 @@ public class AppleService {
 
         return userService.authenticateWithApple(customSocialId, email, defaultNickname,
                 appleTokenResponse.getRefreshToken());
+    }
+
+    public void unlinkFromApple(String refreshToken, String appleRefreshToken) {
+        String clientSecret = createClientSecret();
+        AppleTokenResponse appleTokenResponse = requestAppleTokenByRefreshToken(appleRefreshToken, clientSecret);
+
+        if (appleTokenResponse.getAccessToken() != null) {
+            RestClient restClient = RestClient.create();
+            restClient.post()
+                    .uri(appleAuthUrl + "/auth/revoke")
+                    .headers(headers -> headers.add("Content-Type", "application/x-www-form-urlencoded"))
+                    .body(createUserRevokeParams(clientSecret, appleTokenResponse.getAccessToken()))
+                    .retrieve()
+                    .body(String.class);
+        }
+
+        refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
     }
 
     private Map<String, String> parseAppleTokenHeader(String appleToken) {
@@ -251,6 +270,38 @@ public class AppleService {
         params.add("client_secret", clientSecret);
         params.add("code", authorizationCode);
         params.add("redirect_uri", appleRedirectUrl);
+        return params;
+    }
+
+    private AppleTokenResponse requestAppleTokenByRefreshToken(String appleRefreshToken, String clientSecret) {
+        try {
+            RestClient restClient = RestClient.create();
+            return restClient.post()
+                    .uri(appleAuthUrl + "/auth/token")
+                    .headers(headers -> headers.add("Content-Type", "application/x-www-form-urlencoded"))
+                    .body(createTokenRequestParamsByRefreshToken(appleRefreshToken, clientSecret))
+                    .retrieve()
+                    .body(AppleTokenResponse.class);
+        } catch (Exception e) {
+            throw new CustomAppleLoginException(TOKEN_REQUEST_FAILED, "failed to get token from Apple server");
+        }
+    }
+
+    private MultiValueMap<String, String> createTokenRequestParamsByRefreshToken(String appleRefreshToken,
+                                                                                 String clientSecret) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", appleClientId);
+        params.add("client_secret", clientSecret);
+        params.add("refresh_token", appleRefreshToken);
+        return params;
+    }
+
+    private MultiValueMap<String, String> createUserRevokeParams(String clientSecret, String appleAccessToken) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("client_id", appleClientId);
+        params.add("client_secret", clientSecret);
+        params.add("token", appleAccessToken);
         return params;
     }
 }

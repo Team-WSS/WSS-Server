@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.USER_APPLE_REFRESH_TOKEN_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_AVATAR;
@@ -35,11 +36,15 @@ import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.exception.error.CustomUserError;
+import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
+import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.repository.AvatarRepository;
+import org.websoso.WSSServer.repository.CommentRepository;
+import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
@@ -59,7 +64,11 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserAppleTokenRepository userAppleTokenRepository;
     private final KakaoService kakaoService;
+    private final AppleService appleService;
+    private final FeedRepository feedRepository;
+    private final CommentRepository commentRepository;
     private static final String KAKAO_PREFIX = "kakao";
+    private static final String APPLE_PREFIX = "apple";
 
     @Transactional(readOnly = true)
     public NicknameValidation isNicknameAvailable(User user, String nickname) {
@@ -185,6 +194,21 @@ public class UserService {
         if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
             kakaoService.kakaoLogout(user);
         }
+    }
+
+    public void withdrawUser(User user, String refreshToken) {
+        if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
+            kakaoService.unlinkFromKakao(user, refreshToken);
+        } else if (user.getSocialId().startsWith(APPLE_PREFIX)) {
+            UserAppleToken userAppleToken = userAppleTokenRepository.findByUser(user).orElseThrow(
+                    () -> new CustomAppleLoginException(USER_APPLE_REFRESH_TOKEN_NOT_FOUND,
+                            "cannot find the user Apple refresh token"));
+            appleService.unlinkFromApple(refreshToken, userAppleToken.getAppleRefreshToken());
+        }
+
+        feedRepository.updateUserToUnknown(user.getUserId());
+        commentRepository.updateUserToUnknown(user.getUserId());
+        userRepository.delete(user);
     }
 
     private void checkNicknameIfAlreadyExist(String nickname) {
