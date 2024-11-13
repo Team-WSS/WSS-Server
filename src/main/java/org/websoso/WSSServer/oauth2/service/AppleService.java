@@ -100,14 +100,15 @@ public class AppleService {
         PublicKey publicKey = generatePublicKeyFromHeaders(appleTokenHeader, applePublicKeys);
         Claims claims = extractClaims(appleToken, publicKey);
 
-        requestAppleToken(request.authorizationCode(), createClientSecret());
+        AppleTokenResponse appleTokenResponse = requestAppleToken(request.authorizationCode(), createClientSecret());
 
         String email = claims.get(CLAIM_EMAIL, String.class);
         String userIdentifier = claims.get(CLAIM_SUB, String.class);
         String customSocialId = APPLE_PREFIX + "_" + userIdentifier;
         String defaultNickname = APPLE_PREFIX.charAt(0) + "*" + userIdentifier.substring(7, 15);
 
-        return userService.authenticateWithApple(customSocialId, email, defaultNickname);
+        return userService.authenticateWithApple(customSocialId, email, defaultNickname,
+                appleTokenResponse.getRefreshToken());
     }
 
     private Map<String, String> parseAppleTokenHeader(String appleToken) {
