@@ -299,30 +299,6 @@ public class AppleService {
         return AuthResponse.of(accessToken, refreshToken, isRegister);
     }
 
-    private AppleTokenResponse requestAppleTokenByRefreshToken(String appleRefreshToken, String clientSecret) {
-        try {
-            RestClient restClient = RestClient.create();
-            return restClient.post()
-                    .uri(appleAuthUrl + "/auth/token")
-                    .headers(headers -> headers.add("Content-Type", "application/x-www-form-urlencoded"))
-                    .body(createTokenRequestParamsByRefreshToken(appleRefreshToken, clientSecret))
-                    .retrieve()
-                    .body(AppleTokenResponse.class);
-        } catch (Exception e) {
-            throw new CustomAppleLoginException(TOKEN_REQUEST_FAILED, "failed to get token from Apple server");
-        }
-    }
-
-    private MultiValueMap<String, String> createTokenRequestParamsByRefreshToken(String appleRefreshToken,
-                                                                                 String clientSecret) {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "authorization_code");
-        params.add("client_id", appleClientId);
-        params.add("client_secret", clientSecret);
-        params.add("refresh_token", appleRefreshToken);
-        return params;
-    }
-
     private MultiValueMap<String, String> createUserRevokeParams(String clientSecret, String appleRefreshToken) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "refresh_token");
