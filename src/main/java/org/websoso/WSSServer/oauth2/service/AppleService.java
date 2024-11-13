@@ -124,10 +124,10 @@ public class AppleService {
     }
 
     public void unlinkFromApple(User user) {
-        String clientSecret = createClientSecret();
         UserAppleToken userAppleToken = userAppleTokenRepository.findByUser(user).orElseThrow(
                 () -> new CustomAppleLoginException(USER_APPLE_REFRESH_TOKEN_NOT_FOUND,
                         "cannot find the user Apple refresh token"));
+        String clientSecret = createClientSecret();
 
         AppleTokenResponse appleTokenResponse = requestAppleTokenByRefreshToken(userAppleToken.getAppleRefreshToken(),
                 clientSecret);
