@@ -196,7 +196,8 @@ public class FeedService {
 
         messageService.sendDiscordWebhookMessage(
                 DiscordWebhookMessage.of(
-                        MessageFormatter.formatFeedReportMessage(feed, reportedType, reportedCount, shouldHide)));
+                        MessageFormatter.formatFeedReportMessage(feed, reportedType, reportedCount, shouldHide),
+                        "report"));
     }
 
     public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {

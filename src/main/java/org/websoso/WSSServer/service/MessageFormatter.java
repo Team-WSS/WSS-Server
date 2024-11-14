@@ -32,6 +32,13 @@ public class MessageFormatter {
                     "[신고 횟수]\n총 신고 횟수 %d회.\n" +
                     "%s\n```";
 
+    private static final String USER_WITHDRAW_MESSAGE =
+            "```[%s] 사용자가 탈퇴하였습니다.\n\n" +
+                    "[탈퇴한 사용자]\n" +
+                    "유저 아이디 : %d\n" +
+                    "유저 닉네임 : %s\n\n" +
+                    "[탈퇴 사유]\n%s\n\n```";
+
     public static String formatFeedReportMessage(Feed feed, ReportedType reportedType, int reportedCount,
                                                  boolean isHidden) {
         String hiddenMessage = isHidden ? "해당 피드는 숨김 처리되었습니다." : "해당 피드는 숨김 처리되지 않았습니다.";
@@ -71,4 +78,13 @@ public class MessageFormatter {
         );
     }
 
+    public static String formatUserWithdrawMessage(Long userId, String userNickname, String reason) {
+        return String.format(
+                USER_WITHDRAW_MESSAGE,
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)),
+                userId,
+                userNickname,
+                reason
+        );
+    }
 }

@@ -20,6 +20,7 @@ import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.LoginResponse;
@@ -31,6 +32,7 @@ import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
+import org.websoso.WSSServer.dto.user.WithdrawalRequest;
 import org.websoso.WSSServer.exception.error.CustomUserError;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
@@ -60,6 +62,7 @@ public class UserService {
     private final AppleService appleService;
     private final FeedRepository feedRepository;
     private final CommentRepository commentRepository;
+    private final MessageService messageService;
     private static final String KAKAO_PREFIX = "kakao";
     private static final String APPLE_PREFIX = "apple";
 
@@ -169,19 +172,26 @@ public class UserService {
         }
     }
 
-    public void withdrawUser(User user, String refreshToken) {
+    public void withdrawUser(User user, WithdrawalRequest withdrawalRequest) {
         if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
             kakaoService.unlinkFromKakao(user);
         } else if (user.getSocialId().startsWith(APPLE_PREFIX)) {
             appleService.unlinkFromApple(user);
         }
 
-        refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
+        Long userId = user.getUserId();
+        String userNickname = user.getNickname();
+
+        refreshTokenRepository.findByRefreshToken(withdrawalRequest.refreshToken())
+                .ifPresent(refreshTokenRepository::delete);
         feedRepository.updateUserToUnknown(user.getUserId());
         commentRepository.updateUserToUnknown(user.getUserId());
         userRepository.delete(user);
 
-        // TODO : 디스코드 웹훅 알림 발송 로직 추가
+        messageService.sendDiscordWebhookMessage(
+                DiscordWebhookMessage.of(
+                        MessageFormatter.formatUserWithdrawMessage(userId, userNickname, withdrawalRequest.reason()),
+                        "withdraw"));
     }
 
     private void checkNicknameIfAlreadyExist(String nickname) {
