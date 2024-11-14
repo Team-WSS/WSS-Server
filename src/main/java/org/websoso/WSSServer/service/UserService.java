@@ -7,6 +7,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_NICKNAME;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
+import static org.websoso.WSSServer.exception.error.CustomUserError.INACCESSIBLE_USER_PROFILE;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import java.util.List;
@@ -133,6 +134,10 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public ProfileGetResponse getProfileInfo(User visitor, Long ownerId) {
+        if (ownerId == -1L) {
+            throw new CustomUserException(INACCESSIBLE_USER_PROFILE,
+                    "The profile for this user is inaccessible: unknown");
+        }
         User owner = getUserOrException(ownerId);
         Byte avatarId = owner.getAvatarId();
         Avatar avatar = findAvatarByIdOrThrow(avatarId);
