@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.WITHDRAW;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_AVATAR;
@@ -173,25 +174,15 @@ public class UserService {
     }
 
     public void withdrawUser(User user, WithdrawalRequest withdrawalRequest) {
-        if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
-            kakaoService.unlinkFromKakao(user);
-        } else if (user.getSocialId().startsWith(APPLE_PREFIX)) {
-            appleService.unlinkFromApple(user);
-        }
+        unlinkSocialAccount(user);
 
-        Long userId = user.getUserId();
-        String userNickname = user.getNickname();
+        String messageContent = MessageFormatter.formatUserWithdrawMessage(user.getUserId(), user.getNickname(),
+                withdrawalRequest.reason());
 
-        refreshTokenRepository.findByRefreshToken(withdrawalRequest.refreshToken())
-                .ifPresent(refreshTokenRepository::delete);
-        feedRepository.updateUserToUnknown(user.getUserId());
-        commentRepository.updateUserToUnknown(user.getUserId());
-        userRepository.delete(user);
+        cleanupUserData(user.getUserId(), withdrawalRequest.refreshToken());
 
         messageService.sendDiscordWebhookMessage(
-                DiscordWebhookMessage.of(
-                        MessageFormatter.formatUserWithdrawMessage(userId, userNickname, withdrawalRequest.reason()),
-                        "withdraw"));
+                DiscordWebhookMessage.of(messageContent, WITHDRAW));
     }
 
     private void checkNicknameIfAlreadyExist(String nickname) {
@@ -219,6 +210,22 @@ public class UserService {
         return genreRepository.findByGenreName(genreName)
                 .orElseThrow(() ->
                         new CustomGenreException(GENRE_NOT_FOUND, "genre with the given genreName is not found"));
+    }
+
+    private void unlinkSocialAccount(User user) {
+        if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
+            kakaoService.unlinkFromKakao(user);
+        } else if (user.getSocialId().startsWith(APPLE_PREFIX)) {
+            appleService.unlinkFromApple(user);
+        }
+    }
+
+    private void cleanupUserData(Long userId, String refreshToken) {
+        refreshTokenRepository.findByRefreshToken(refreshToken)
+                .ifPresent(refreshTokenRepository::delete);
+        feedRepository.updateUserToUnknown(userId);
+        commentRepository.updateUserToUnknown(userId);
+        userRepository.deleteById(userId);
     }
 
     public void editMyInfo(User user, EditMyInfoRequest editMyInfoRequest) {
