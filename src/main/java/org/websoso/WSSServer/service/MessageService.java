@@ -2,6 +2,7 @@ package org.websoso.WSSServer.service;
 
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +31,7 @@ public class MessageService {
 
             RestTemplate template = new RestTemplate();
             ResponseEntity<String> response = template.exchange(
-                    message.type().equals("report") ?
+                    message.type() == REPORT ?
                             discordReportWebhookUrl :
                             discordWithdrawWebhookUrl,
                     POST,
