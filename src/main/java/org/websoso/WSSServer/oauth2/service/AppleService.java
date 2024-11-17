@@ -23,8 +23,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.UnsupportedJwtException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -220,7 +220,7 @@ public class AppleService {
         Resource resource = new ClassPathResource(keyPath);
         System.out.println("Resource exists: " + resource.exists());
         System.out.println("Resource file path: " + resource.getFilename());
-        try (PemReader pemReader = new PemReader(new InputStreamReader(resource.getInputStream()))) {
+        try (PemReader pemReader = new PemReader(new FileReader(resource.getFile()))) {
             PemObject pemObject = pemReader.readPemObject();
             return pemObject.getContent();
         } catch (IOException e) {
