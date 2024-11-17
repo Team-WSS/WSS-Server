@@ -31,6 +31,12 @@ jobs:
       run: |
         mkdir -p src/main/resources/static
         echo "${{ secrets.APPLE_AUTH_KEY }}" > src/main/resources/static/AuthKey_$API_KEY.p8
+    
+    - name: Verify file generation
+      run: |
+        mkdir -p src/main/resources/static/apple
+        echo "${{ secrets.APPLE_AUTH_KEY }}" > src/main/resources/static/apple/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
+        ls -la src/main/resources/static/apple
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew

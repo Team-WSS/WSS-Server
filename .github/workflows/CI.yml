@@ -11,7 +11,7 @@ jobs:
   build:  # job 이름: build
     runs-on: ubuntu-22.04  # VM의 OS 지정 (EC2와 동일 버전)
 
-    steps: 
+    steps:
     - name: Checkout
       uses: actions/checkout@v3
 
@@ -20,7 +20,7 @@ jobs:
       with:
         distribution: 'corretto'
         java-version: '17'
-        
+
     - name: Create application.yml and application-prod.yml
       run: | 
           mkdir src/main/resources
@@ -34,6 +34,12 @@ jobs:
       run: |
         mkdir -p src/main/resources/static
         echo "${{ secrets.APPLE_AUTH_KEY }}" > src/main/resources/static/AuthKey_$API_KEY.p8
+
+    - name: Verify file generation
+      run: |
+        mkdir -p src/main/resources/static/apple
+        echo "${{ secrets.APPLE_AUTH_KEY }}" > src/main/resources/static/apple/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
+        ls -la src/main/resources/static/apple
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
