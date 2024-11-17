@@ -170,6 +170,7 @@ public class AppleService {
         } catch (IllegalArgumentException e) {
             throw new CustomAppleLoginException(EMPTY_JWT, "empty jwt");
         } catch (JwtException e) {
+            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(JWT_VERIFICATION_FAILED, "jwt validation or analysis failed");
         }
     }
@@ -184,6 +185,7 @@ public class AppleService {
 
             return jwt.serialize();
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "failed to generate client secret");
         }
     }
@@ -209,6 +211,7 @@ public class AppleService {
             JWSSigner signer = new ECDSASigner(ecPrivateKey.getS());
             jwt.sign(signer);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "failed to create client secret");
         }
     }
@@ -219,6 +222,7 @@ public class AppleService {
             PemObject pemObject = pemReader.readPemObject();
             return pemObject.getContent();
         } catch (IOException e) {
+            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(PRIVATE_KEY_READ_FAILED, "failed to read private key");
         }
     }
