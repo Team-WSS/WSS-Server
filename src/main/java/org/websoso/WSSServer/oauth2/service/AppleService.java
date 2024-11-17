@@ -23,8 +23,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.UnsupportedJwtException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -170,6 +170,7 @@ public class AppleService {
         } catch (IllegalArgumentException e) {
             throw new CustomAppleLoginException(EMPTY_JWT, "empty jwt");
         } catch (JwtException e) {
+            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(JWT_VERIFICATION_FAILED, "jwt validation or analysis failed");
         }
     }
@@ -184,6 +185,7 @@ public class AppleService {
 
             return jwt.serialize();
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "failed to generate client secret");
         }
     }
@@ -209,16 +211,20 @@ public class AppleService {
             JWSSigner signer = new ECDSASigner(ecPrivateKey.getS());
             jwt.sign(signer);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "failed to create client secret");
         }
     }
 
     private byte[] readPrivateKey(String keyPath) {
         Resource resource = new ClassPathResource(keyPath);
-        try (PemReader pemReader = new PemReader(new FileReader(resource.getFile()))) {
+        System.out.println("Resource exists: " + resource.exists());
+        System.out.println("Resource file path: " + resource.getFilename());
+        try (PemReader pemReader = new PemReader(new InputStreamReader(resource.getInputStream()))) {
             PemObject pemObject = pemReader.readPemObject();
             return pemObject.getContent();
         } catch (IOException e) {
+            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(PRIVATE_KEY_READ_FAILED, "failed to read private key");
         }
     }
@@ -233,6 +239,7 @@ public class AppleService {
                     .retrieve()
                     .body(AppleTokenResponse.class);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(TOKEN_REQUEST_FAILED, "failed to get token from Apple server");
         }
     }
