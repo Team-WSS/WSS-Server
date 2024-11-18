@@ -21,6 +21,7 @@ import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.WithdrawalReason;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
@@ -47,6 +48,7 @@ import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.repository.UserRepository;
+import org.websoso.WSSServer.repository.WithdrawalReasonRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -64,6 +66,7 @@ public class UserService {
     private final FeedRepository feedRepository;
     private final CommentRepository commentRepository;
     private final MessageService messageService;
+    private final WithdrawalReasonRepository withdrawalReasonRepository;
     private static final String KAKAO_PREFIX = "kakao";
     private static final String APPLE_PREFIX = "apple";
 
@@ -183,6 +186,8 @@ public class UserService {
 
         messageService.sendDiscordWebhookMessage(
                 DiscordWebhookMessage.of(messageContent, WITHDRAW));
+
+        withdrawalReasonRepository.save(WithdrawalReason.create(withdrawalRequest.reason()));
     }
 
     private void checkNicknameIfAlreadyExist(String nickname) {
