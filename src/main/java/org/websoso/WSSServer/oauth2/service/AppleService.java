@@ -135,6 +135,8 @@ public class AppleService {
                 .body(createUserRevokeParams(createClientSecret(), userAppleToken.getAppleRefreshToken()))
                 .retrieve()
                 .body(String.class);
+
+        userAppleTokenRepository.delete(userAppleToken);
     }
 
     private Map<String, String> parseAppleTokenHeader(String appleToken) {
