@@ -11,13 +11,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.Action;
-import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.exception.exception.CustomCommentException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 
@@ -25,7 +25,7 @@ import org.websoso.WSSServer.exception.exception.CustomUserException;
 @Getter
 @DynamicInsert
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Comment extends BaseEntity {
+public class Comment {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
@@ -44,6 +44,12 @@ public class Comment extends BaseEntity {
     @Column(columnDefinition = "Boolean default false", nullable = false)
     private Boolean isSpoiler;
 
+    @Column(nullable = false)
+    private LocalDateTime createdDate;
+
+    @Column(nullable = false)
+    private LocalDateTime modifiedDate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feed_id", nullable = false)
     private Feed feed;
@@ -61,6 +67,7 @@ public class Comment extends BaseEntity {
 
     public void updateContent(String commentContent) {
         this.commentContent = commentContent;
+        this.modifiedDate = LocalDateTime.now();
     }
 
     public void validateFeedAssociation(Feed feed) {
@@ -74,6 +81,8 @@ public class Comment extends BaseEntity {
         this.commentContent = commentContent;
         this.userId = userId;
         this.feed = feed;
+        this.createdDate = LocalDateTime.now();
+        this.modifiedDate = this.createdDate;
     }
 
     public void hideComment() {
