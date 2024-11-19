@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.WITHDRAW;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_AVATAR;
@@ -19,10 +20,9 @@ import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
-import org.websoso.WSSServer.domain.RefreshToken;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.domain.UserAppleToken;
-import org.websoso.WSSServer.dto.auth.AuthResponse;
+import org.websoso.WSSServer.domain.WithdrawalReason;
+import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.LoginResponse;
@@ -34,17 +34,21 @@ import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
+import org.websoso.WSSServer.dto.user.WithdrawalRequest;
 import org.websoso.WSSServer.exception.error.CustomUserError;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
+import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.repository.AvatarRepository;
+import org.websoso.WSSServer.repository.CommentRepository;
+import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
-import org.websoso.WSSServer.repository.UserAppleTokenRepository;
 import org.websoso.WSSServer.repository.UserRepository;
+import org.websoso.WSSServer.repository.WithdrawalReasonRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -57,9 +61,14 @@ public class UserService {
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final GenreRepository genreRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final UserAppleTokenRepository userAppleTokenRepository;
     private final KakaoService kakaoService;
+    private final AppleService appleService;
+    private final FeedRepository feedRepository;
+    private final CommentRepository commentRepository;
+    private final MessageService messageService;
+    private final WithdrawalReasonRepository withdrawalReasonRepository;
     private static final String KAKAO_PREFIX = "kakao";
+    private static final String APPLE_PREFIX = "apple";
 
     @Transactional(readOnly = true)
     public NicknameValidation isNicknameAvailable(User user, String nickname) {
@@ -160,31 +169,25 @@ public class UserService {
         genrePreferenceRepository.saveAll(preferGenres);
     }
 
-    public AuthResponse authenticateWithApple(String socialId, String email, String nickname,
-                                              String appleRefreshToken) {
-        User user = userRepository.findBySocialId(socialId);
-
-        if (user == null) {
-            user = userRepository.save(User.createBySocial(socialId, nickname, email));
-            userAppleTokenRepository.save(UserAppleToken.create(user, appleRefreshToken));
-        }
-
-        UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
-        String accessToken = jwtProvider.generateAccessToken(userAuthentication);
-        String refreshToken = jwtProvider.generateRefreshToken(userAuthentication);
-
-        refreshTokenRepository.save(new RefreshToken(refreshToken, user.getUserId()));
-
-        boolean isRegister = !user.getNickname().contains("*");
-
-        return AuthResponse.of(accessToken, refreshToken, isRegister);
-    }
-
     public void logout(User user, String refreshToken) {
         refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
         if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
             kakaoService.kakaoLogout(user);
         }
+    }
+
+    public void withdrawUser(User user, WithdrawalRequest withdrawalRequest) {
+        unlinkSocialAccount(user);
+
+        String messageContent = MessageFormatter.formatUserWithdrawMessage(user.getUserId(), user.getNickname(),
+                withdrawalRequest.reason());
+
+        cleanupUserData(user.getUserId(), withdrawalRequest.refreshToken());
+
+        messageService.sendDiscordWebhookMessage(
+                DiscordWebhookMessage.of(messageContent, WITHDRAW));
+
+        withdrawalReasonRepository.save(WithdrawalReason.create(withdrawalRequest.reason()));
     }
 
     private void checkNicknameIfAlreadyExist(String nickname) {
@@ -212,6 +215,22 @@ public class UserService {
         return genreRepository.findByGenreName(genreName)
                 .orElseThrow(() ->
                         new CustomGenreException(GENRE_NOT_FOUND, "genre with the given genreName is not found"));
+    }
+
+    private void unlinkSocialAccount(User user) {
+        if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
+            kakaoService.unlinkFromKakao(user);
+        } else if (user.getSocialId().startsWith(APPLE_PREFIX)) {
+            appleService.unlinkFromApple(user);
+        }
+    }
+
+    private void cleanupUserData(Long userId, String refreshToken) {
+        refreshTokenRepository.findByRefreshToken(refreshToken)
+                .ifPresent(refreshTokenRepository::delete);
+        feedRepository.updateUserToUnknown(userId);
+        commentRepository.updateUserToUnknown(userId);
+        userRepository.deleteById(userId);
     }
 
     public void editMyInfo(User user, EditMyInfoRequest editMyInfoRequest) {

@@ -84,6 +84,12 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
     private List<UserNovel> userNovels = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
+    private List<ReportedFeed> reportedFeeds = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
+    private List<ReportedComment> reportedComments = new ArrayList<>();
+
     public void updateProfileStatus(Boolean profileStatus) {
         this.isProfilePublic = profileStatus;
     }

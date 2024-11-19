@@ -2,6 +2,7 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
+import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
 import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
 import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 import static org.websoso.WSSServer.exception.error.CustomCommentError.COMMENT_NOT_FOUND;
@@ -98,7 +99,7 @@ public class CommentService {
         messageService.sendDiscordWebhookMessage(
                 DiscordWebhookMessage.of(
                         MessageFormatter.formatCommentReportMessage(comment, reportedType, commentCreatedUser,
-                                reportedCount, shouldHide)));
+                                reportedCount, shouldHide), REPORT));
     }
 
     private Comment getCommentOrException(Long commentId) {
