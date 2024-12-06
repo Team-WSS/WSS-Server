@@ -8,7 +8,7 @@ on:
 
 # workflow의 세부 작업 단위 job 정의
 jobs:
-  build:  # job 이름: build
+  build-develop:  # job 이름: build-develop
     runs-on: ubuntu-22.04  # VM의 OS 지정 (EC2와 동일 버전)
 
     steps:
