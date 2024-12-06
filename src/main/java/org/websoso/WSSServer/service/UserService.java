@@ -88,7 +88,7 @@ public class UserService {
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
         String token = jwtProvider.generateAccessToken(userAuthentication);
 
-        return LoginResponse.of(token);
+        return LoginResponse.of("테스트!");
     }
 
     @Transactional(readOnly = true)
