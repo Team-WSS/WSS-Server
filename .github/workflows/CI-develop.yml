@@ -26,7 +26,7 @@ jobs:
           mkdir src/main/resources
           cd src/main/resources
           echo "${{ secrets.APPLICATION }}" > ./application.yml
-          echo "${{ secrets.APPLICATION_PROD }}" > ./application-prod.yml
+          echo "${{ secrets.APPLICATION_PROD_DEVELOP }}" > ./application-prod.yml
 
     - name: Create apple login key file
       env:
