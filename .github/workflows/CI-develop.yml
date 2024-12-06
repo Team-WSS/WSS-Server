@@ -1,14 +1,14 @@
-# workflow 이름: CI-release
-name: CI-release
+# workflow 이름: CI-develop
+name: CI-devleop
 
-# trigger: main 브랜치에 PR 발생할 때
+# trigger: dev 브랜치에 PR 발생할 때
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "dev" ]
 
 # workflow의 세부 작업 단위 job 정의
 jobs:
-  build:  # job 이름: build
+  build-develop:  # job 이름: build-develop
     runs-on: ubuntu-22.04  # VM의 OS 지정 (EC2와 동일 버전)
 
     steps:
@@ -26,7 +26,7 @@ jobs:
           mkdir src/main/resources
           cd src/main/resources
           echo "${{ secrets.APPLICATION }}" > ./application.yml
-          echo "${{ secrets.APPLICATION_PROD }}" > ./application-prod.yml
+          echo "${{ secrets.APPLICATION_PROD_DEVELOP }}" > ./application-prod.yml
 
     - name: Create apple login key file
       env:

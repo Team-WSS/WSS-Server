@@ -1,11 +1,11 @@
-name: CD-release
+name: CD-develop
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev" ]
 
 jobs:
-  deploy-ci-release:
+  deploy-ci-develop:
     runs-on: ubuntu-22.04
 
     steps: 
@@ -23,7 +23,7 @@ jobs:
           mkdir src/main/resources
           cd src/main/resources
           echo "${{ secrets.APPLICATION }}" > ./application.yml
-          echo "${{ secrets.APPLICATION_PROD }}" > ./application-prod.yml
+          echo "${{ secrets.APPLICATION_PROD_DEVELOP }}" > ./application-prod.yml
 
     - name: Create apple login key file
       env:
@@ -54,17 +54,17 @@ jobs:
         docker build --platform linux/amd64 -t websoso/websoso-image .
         docker push websoso/websoso-image
 
-  deploy-cd-release:
-    needs: deploy-ci-release
+  deploy-cd-develop:      
+    needs: deploy-ci-develop
     runs-on: ubuntu-22.04
 
     steps:    
     - name: Run Docker container
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.RELEASE_SERVER_IP }}
-        username: ${{ secrets.RELEASE_SERVER_USER }}
-        key: ${{ secrets.RELEASE_SERVER_KEY }}
+        host: ${{ secrets.DEVELOP_SERVER_IP }}
+        username: ${{ secrets.DEVELOP_SERVER_USER }}
+        key: ${{ secrets.DEVELOP_SERVER_KEY }}
         script: |
           cd ~
           ./deploy.sh
