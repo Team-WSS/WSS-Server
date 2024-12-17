@@ -2,6 +2,7 @@ package org.websoso.WSSServer.service;
 
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,8 +17,11 @@ import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 @Slf4j
 public class MessageService {
 
-    @Value("${logging.discord.webhook-url}")
-    String discordWebhookUrl;
+    @Value("${logging.discord.report-webhook-url}")
+    private String discordReportWebhookUrl;
+
+    @Value("${logging.discord.withdraw-webhook-url}")
+    private String discordWithdrawWebhookUrl;
 
     public void sendDiscordWebhookMessage(DiscordWebhookMessage message) {
         try {
@@ -27,7 +31,9 @@ public class MessageService {
 
             RestTemplate template = new RestTemplate();
             ResponseEntity<String> response = template.exchange(
-                    discordWebhookUrl,
+                    message.type() == REPORT ?
+                            discordReportWebhookUrl :
+                            discordWithdrawWebhookUrl,
                     POST,
                     messageEntity,
                     String.class
@@ -41,5 +47,4 @@ public class MessageService {
             log.error("에러 발생 :: " + e);
         }
     }
-
 }

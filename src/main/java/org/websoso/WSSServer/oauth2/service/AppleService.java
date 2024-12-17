@@ -9,6 +9,7 @@ import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.JWT_VE
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.PRIVATE_KEY_READ_FAILED;
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.TOKEN_REQUEST_FAILED;
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.UNSUPPORTED_JWT_TYPE;
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.USER_APPLE_REFRESH_TOKEN_NOT_FOUND;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -43,17 +44,26 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.websoso.WSSServer.config.jwt.JwtProvider;
+import org.websoso.WSSServer.config.jwt.UserAuthentication;
+import org.websoso.WSSServer.domain.RefreshToken;
+import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserAppleToken;
 import org.websoso.WSSServer.dto.auth.AppleLoginRequest;
 import org.websoso.WSSServer.dto.auth.ApplePublicKey;
 import org.websoso.WSSServer.dto.auth.ApplePublicKeys;
 import org.websoso.WSSServer.dto.auth.AppleTokenResponse;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
-import org.websoso.WSSServer.service.UserService;
+import org.websoso.WSSServer.repository.RefreshTokenRepository;
+import org.websoso.WSSServer.repository.UserAppleTokenRepository;
+import org.websoso.WSSServer.repository.UserRepository;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class AppleService {
@@ -67,7 +77,10 @@ public class AppleService {
     private static final String KEY_ID_HEADER = "kid";
     private static final int POSITIVE_SIGN_NUMBER = 1;
     private final ObjectMapper objectMapper;
-    private final UserService userService;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserRepository userRepository;
+    private final UserAppleTokenRepository userAppleTokenRepository;
+    private final JwtProvider jwtProvider;
 
     @Value("${apple.public-keys-url}")
     private String applePublicKeysUrl;
@@ -107,8 +120,23 @@ public class AppleService {
         String customSocialId = APPLE_PREFIX + "_" + userIdentifier;
         String defaultNickname = APPLE_PREFIX.charAt(0) + "*" + userIdentifier.substring(7, 15);
 
-        return userService.authenticateWithApple(customSocialId, email, defaultNickname,
-                appleTokenResponse.getRefreshToken());
+        return authenticate(customSocialId, email, defaultNickname, appleTokenResponse.getRefreshToken());
+    }
+
+    public void unlinkFromApple(User user) {
+        UserAppleToken userAppleToken = userAppleTokenRepository.findByUser(user).orElseThrow(
+                () -> new CustomAppleLoginException(USER_APPLE_REFRESH_TOKEN_NOT_FOUND,
+                        "cannot find the user Apple refresh token"));
+
+        RestClient restClient = RestClient.create();
+        restClient.post()
+                .uri(appleAuthUrl + "/auth/revoke")
+                .headers(headers -> headers.add("Content-Type", "application/x-www-form-urlencoded"))
+                .body(createUserRevokeParams(createClientSecret(), userAppleToken.getAppleRefreshToken()))
+                .retrieve()
+                .body(String.class);
+
+        userAppleTokenRepository.delete(userAppleToken);
     }
 
     private Map<String, String> parseAppleTokenHeader(String appleToken) {
@@ -170,7 +198,6 @@ public class AppleService {
         } catch (IllegalArgumentException e) {
             throw new CustomAppleLoginException(EMPTY_JWT, "empty jwt");
         } catch (JwtException e) {
-            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(JWT_VERIFICATION_FAILED, "jwt validation or analysis failed");
         }
     }
@@ -185,7 +212,6 @@ public class AppleService {
 
             return jwt.serialize();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "failed to generate client secret");
         }
     }
@@ -211,20 +237,16 @@ public class AppleService {
             JWSSigner signer = new ECDSASigner(ecPrivateKey.getS());
             jwt.sign(signer);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "failed to create client secret");
         }
     }
 
     private byte[] readPrivateKey(String keyPath) {
         Resource resource = new ClassPathResource(keyPath);
-        System.out.println("Resource exists: " + resource.exists());
-        System.out.println("Resource file path: " + resource.getFilename());
         try (PemReader pemReader = new PemReader(new InputStreamReader(resource.getInputStream()))) {
             PemObject pemObject = pemReader.readPemObject();
             return pemObject.getContent();
         } catch (IOException e) {
-            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(PRIVATE_KEY_READ_FAILED, "failed to read private key");
         }
     }
@@ -239,7 +261,6 @@ public class AppleService {
                     .retrieve()
                     .body(AppleTokenResponse.class);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             throw new CustomAppleLoginException(TOKEN_REQUEST_FAILED, "failed to get token from Apple server");
         }
     }
@@ -251,6 +272,35 @@ public class AppleService {
         params.add("client_secret", clientSecret);
         params.add("code", authorizationCode);
         params.add("redirect_uri", appleRedirectUrl);
+        return params;
+    }
+
+    private AuthResponse authenticate(String socialId, String email, String nickname, String appleRefreshToken) {
+        User user = userRepository.findBySocialId(socialId);
+
+        if (user == null) {
+            user = userRepository.save(User.createBySocial(socialId, nickname, email));
+            userAppleTokenRepository.save(UserAppleToken.create(user, appleRefreshToken));
+        }
+
+        UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
+        String accessToken = jwtProvider.generateAccessToken(userAuthentication);
+        String refreshToken = jwtProvider.generateRefreshToken(userAuthentication);
+
+        refreshTokenRepository.save(new RefreshToken(refreshToken, user.getUserId()));
+
+        boolean isRegister = !user.getNickname().contains("*");
+
+        return AuthResponse.of(accessToken, refreshToken, isRegister);
+    }
+
+    private MultiValueMap<String, String> createUserRevokeParams(String clientSecret, String appleRefreshToken) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "refresh_token");
+        params.add("client_id", appleClientId);
+        params.add("client_secret", clientSecret);
+        params.add("token", appleRefreshToken);
+        params.add("token_type_hint", "refresh_token");
         return params;
     }
 }

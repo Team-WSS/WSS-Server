@@ -41,7 +41,8 @@ public class SecurityConfig {
             "/login/callback",
             "/login/apple",
             "/auth/login/kakao",
-            "/auth/login/apple"
+            "/auth/login/apple",
+            "/minimum-version"
     };
 
     @Bean

@@ -12,7 +12,7 @@ public enum CategoryName {
     fantasy("판타지"),
     modernFantasy("현판"),
     drama("드라마"),
-    lightNovel("라이트노벨"),
+    lightNovel("라노벨"),
     wuxia("무협"),
     mystery("미스터리"),
     BL("BL"),

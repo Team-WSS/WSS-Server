@@ -69,8 +69,7 @@ public class AuthController {
     public ResponseEntity<Void> withdrawUser(Principal principal,
                                              @Valid @RequestBody WithdrawalRequest withdrawalRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        String refreshToken = withdrawalRequest.refreshToken();
-        kakaoService.unlinkFromKakao(user, refreshToken);
+        userService.withdrawUser(user, withdrawalRequest);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

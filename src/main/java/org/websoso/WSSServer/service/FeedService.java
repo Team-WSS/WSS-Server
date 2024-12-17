@@ -2,6 +2,7 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
+import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER_ACCESS;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
@@ -196,7 +197,8 @@ public class FeedService {
 
         messageService.sendDiscordWebhookMessage(
                 DiscordWebhookMessage.of(
-                        MessageFormatter.formatFeedReportMessage(feed, reportedType, reportedCount, shouldHide)));
+                        MessageFormatter.formatFeedReportMessage(feed, reportedType, reportedCount, shouldHide),
+                        REPORT));
     }
 
     public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
