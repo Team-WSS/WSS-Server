@@ -34,6 +34,7 @@ public class AvatarService {
         Byte representativeAvatarId = user.getAvatarId();
         List<Avatar> avatars = avatarRepository.findAll();
         List<AvatarGetResponse> avatarGetResponses = avatars.stream()
+                .filter(avatar -> avatar.getAvatarId() >= 0)
                 .map(avatar -> {
                     List<AvatarLine> avatarLines = avatar.getAvatarLines();
                     return AvatarGetResponse.of(avatar, getRandomAvatarLine(avatarLines), representativeAvatarId);
