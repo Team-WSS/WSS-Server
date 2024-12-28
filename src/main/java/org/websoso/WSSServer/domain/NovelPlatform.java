@@ -33,7 +33,7 @@ public class NovelPlatform {
     @JoinColumn(name = "platform_id", nullable = false)
     private Platform platform;
 
-    @Column(columnDefinition = "Boolean default false", nullable = false)
+    @Column(name = "is_19", columnDefinition = "Boolean default false", nullable = false)
     private Boolean is19;
 
 }
