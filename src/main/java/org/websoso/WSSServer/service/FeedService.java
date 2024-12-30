@@ -89,8 +89,8 @@ public class FeedService {
         Feed feed = getFeedOrException(feedId);
         feed.validateUserAuthorization(user, UPDATE);
 
-        if (feed.isNovelChanged(request.novelId())) {
-            novelService.getNovelOrException(feed.getNovelId());
+        if (request.novelId() != null && feed.isNovelChanged(request.novelId())) {
+            novelService.getNovelOrException(request.novelId());
         }
         feed.updateFeed(request.feedContent(), request.isSpoiler(), request.novelId());
         feedCategoryService.updateFeedCategory(feed, request.relevantCategories());
