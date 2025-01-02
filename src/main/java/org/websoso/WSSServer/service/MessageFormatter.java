@@ -9,6 +9,7 @@ import org.websoso.WSSServer.domain.Comment;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.ReportedType;
+import org.websoso.WSSServer.domain.common.SocialLoginType;
 
 public class MessageFormatter {
 
@@ -38,6 +39,13 @@ public class MessageFormatter {
                     "유저 아이디 : %d\n" +
                     "유저 닉네임 : %s\n\n" +
                     "[탈퇴 사유]\n%s\n\n```";
+
+    private static final String USER_JOIN_MESSAGE =
+            "```[%s] 새로운 사용자가 가입하였습니다.\n\n" +
+                    "[가입한 사용자]\n" +
+                    "로그인 방식 : %s\n" +
+                    "유저 아이디 : %d\n" +
+                    "가입을 환영합니다!\n\n```";
 
     public static String formatFeedReportMessage(Feed feed, ReportedType reportedType, int reportedCount,
                                                  boolean isHidden) {
@@ -85,6 +93,15 @@ public class MessageFormatter {
                 userId,
                 userNickname,
                 reason
+        );
+    }
+
+    public static String formatUserJoinMessage(User user, SocialLoginType socialLoginType) {
+        return String.format(
+                USER_JOIN_MESSAGE,
+                user.getCreatedDate(),
+                socialLoginType.getLabel(),
+                user.getUserId()
         );
     }
 }

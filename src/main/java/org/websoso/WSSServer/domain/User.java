@@ -21,6 +21,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.domain.common.Role;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
@@ -39,7 +40,7 @@ import org.websoso.WSSServer.dto.user.UserBasicInfo;
                 name = "UNIQUE_SOCIAL_ID_CONSTRAINT",
                 columnNames = "social_id")
 })
-public class User {
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

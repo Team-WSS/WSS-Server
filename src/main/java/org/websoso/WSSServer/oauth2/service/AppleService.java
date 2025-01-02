@@ -1,5 +1,7 @@
 package org.websoso.WSSServer.oauth2.service;
 
+import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.JOIN;
+import static org.websoso.WSSServer.domain.common.SocialLoginType.APPLE;
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.CLIENT_SECRET_CREATION_FAILED;
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.EMPTY_JWT;
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.HEADER_PARSING_FAILED;
@@ -53,6 +55,7 @@ import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.RefreshToken;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserAppleToken;
+import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.dto.auth.AppleLoginRequest;
 import org.websoso.WSSServer.dto.auth.ApplePublicKey;
 import org.websoso.WSSServer.dto.auth.ApplePublicKeys;
@@ -62,6 +65,8 @@ import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.repository.UserAppleTokenRepository;
 import org.websoso.WSSServer.repository.UserRepository;
+import org.websoso.WSSServer.service.MessageFormatter;
+import org.websoso.WSSServer.service.MessageService;
 
 @Transactional
 @Service
@@ -81,6 +86,7 @@ public class AppleService {
     private final UserRepository userRepository;
     private final UserAppleTokenRepository userAppleTokenRepository;
     private final JwtProvider jwtProvider;
+    private final MessageService messageService;
 
     @Value("${apple.public-keys-url}")
     private String applePublicKeysUrl;
@@ -278,9 +284,12 @@ public class AppleService {
     private AuthResponse authenticate(String socialId, String email, String nickname, String appleRefreshToken) {
         User user = userRepository.findBySocialId(socialId);
 
+        boolean isNewUser = false;
+
         if (user == null) {
             user = userRepository.save(User.createBySocial(socialId, nickname, email));
             userAppleTokenRepository.save(UserAppleToken.create(user, appleRefreshToken));
+            isNewUser = true;
         }
 
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
@@ -290,6 +299,11 @@ public class AppleService {
         refreshTokenRepository.save(new RefreshToken(refreshToken, user.getUserId()));
 
         boolean isRegister = !user.getNickname().contains("*");
+
+        if (isNewUser) {
+            messageService.sendDiscordWebhookMessage(
+                    DiscordWebhookMessage.of(MessageFormatter.formatUserJoinMessage(user, APPLE), JOIN));
+        }
 
         return AuthResponse.of(accessToken, refreshToken, isRegister);
     }
