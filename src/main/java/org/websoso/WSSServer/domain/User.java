@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,6 +79,9 @@ public class User {
     @ColumnDefault("'USER'")
     private Role role;
 
+    @Column(nullable = false)
+    private LocalDateTime created_date;
+
     @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
     private List<GenrePreference> genrePreferences = new ArrayList<>();
 
@@ -126,6 +130,7 @@ public class User {
         this.socialId = socialId;
         this.nickname = nickname;
         this.email = email;
+        this.created_date = LocalDateTime.now();
     }
 
     public static User createBySocial(String socialId, String nickname, String email) {
