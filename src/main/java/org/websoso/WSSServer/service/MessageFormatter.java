@@ -99,7 +99,7 @@ public class MessageFormatter {
     public static String formatUserJoinMessage(User user, SocialLoginType socialLoginType) {
         return String.format(
                 USER_JOIN_MESSAGE,
-                user.getCreated_date(),
+                user.getCreatedDate(),
                 socialLoginType.getLabel(),
                 user.getUserId()
         );

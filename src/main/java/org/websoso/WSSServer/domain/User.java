@@ -14,7 +14,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +21,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.domain.common.Role;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
@@ -40,7 +40,7 @@ import org.websoso.WSSServer.dto.user.UserBasicInfo;
                 name = "UNIQUE_SOCIAL_ID_CONSTRAINT",
                 columnNames = "social_id")
 })
-public class User {
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -78,9 +78,6 @@ public class User {
     @Column(nullable = false)
     @ColumnDefault("'USER'")
     private Role role;
-
-    @Column(nullable = false)
-    private LocalDateTime created_date;
 
     @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
     private List<GenrePreference> genrePreferences = new ArrayList<>();
@@ -130,7 +127,6 @@ public class User {
         this.socialId = socialId;
         this.nickname = nickname;
         this.email = email;
-        this.created_date = LocalDateTime.now();
     }
 
     public static User createBySocial(String socialId, String nickname, String email) {
