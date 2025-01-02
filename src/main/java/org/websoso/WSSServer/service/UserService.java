@@ -1,8 +1,6 @@
 package org.websoso.WSSServer.service;
 
-import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.JOIN;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.WITHDRAW;
-import static org.websoso.WSSServer.domain.common.SocialLoginType.KAKAO;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_AVATAR;
@@ -89,9 +87,6 @@ public class UserService {
 
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
         String token = jwtProvider.generateAccessToken(userAuthentication);
-
-        messageService.sendDiscordWebhookMessage(
-                DiscordWebhookMessage.of(MessageFormatter.formatUserJoinMessage(user, KAKAO), JOIN));
 
         return LoginResponse.of(token);
     }
