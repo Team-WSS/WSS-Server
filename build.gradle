@@ -70,6 +70,9 @@ dependencies {
 
     //Apple Login
     implementation 'com.nimbusds:nimbus-jose-jwt:3.10'
+
+    // FCM
+    implementation 'com.google.firebase:firebase-admin:8.1.0'
 }
 
 tasks.named('test') {
