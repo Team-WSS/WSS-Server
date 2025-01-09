@@ -4,8 +4,11 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,17 +37,23 @@ public class Notice extends BaseEntity {
     @Column
     private Long userId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "notice_category_id", nullable = false)
+    private NoticeCategory noticeCategory;
+
     @Builder
-    private Notice(String noticeTitle, String noticeContent, Long userId) {
+    private Notice(String noticeTitle, String noticeContent, Long userId, NoticeCategory noticeCategory) {
         this.noticeTitle = noticeTitle;
         this.noticeContent = noticeContent;
         this.userId = userId;
+        this.noticeCategory = noticeCategory;
     }
 
-    public void updateNotice(String noticeTitle, String noticeContent, Long userId) {
+    public void updateNotice(String noticeTitle, String noticeContent, Long userId, NoticeCategory noticeCategory) {
         this.noticeTitle = noticeTitle;
         this.noticeContent = noticeContent;
         this.userId = userId;
+        this.noticeCategory = noticeCategory;
     }
 
 }
