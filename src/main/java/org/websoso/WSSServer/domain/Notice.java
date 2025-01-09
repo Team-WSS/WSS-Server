@@ -28,6 +28,9 @@ public class Notice extends BaseEntity {
     @Column(columnDefinition = "varchar(2000)", nullable = false)
     private String noticeContent;
 
+    @Column(columnDefinition = "text", nullable = false)
+    private String noticeIcon;
+
     @Column
     private Long userId;
 
