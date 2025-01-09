@@ -15,6 +15,8 @@ public record NoticeEditRequest(
         String noticeContent,
 
         @ZeroAllowedUserIdConstraint
-        Long userId
+        Long userId,
+
+        Byte noticeCategoryId
 ) {
 }
