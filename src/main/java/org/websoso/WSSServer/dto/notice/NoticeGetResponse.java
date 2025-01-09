@@ -7,6 +7,7 @@ import org.websoso.WSSServer.domain.Notice;
 public record NoticeGetResponse(
         String noticeTitle,
         String noticeContent,
+        String noticeCategoryImage,
         String createdDate
 ) {
 
@@ -14,6 +15,7 @@ public record NoticeGetResponse(
         return new NoticeGetResponse(
                 notice.getNoticeTitle(),
                 notice.getNoticeContent(),
+                notice.getNoticeCategory().getNoticeCategoryImage(),
                 formatDateString(notice.getCreatedDate())
         );
     }
