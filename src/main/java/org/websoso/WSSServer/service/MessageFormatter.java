@@ -1,5 +1,9 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.COMMENT_REPORT;
+import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.FEED_REPORT;
+import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.USER_JOIN;
+import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.USER_WITHDRAW;
 import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
 import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 
@@ -18,7 +22,7 @@ public class MessageFormatter {
                 ? "해당 수다는 숨김 처리되었습니다."
                 : "해당 수다는 숨김 처리되지 않았습니다.";
         return String.format(
-                DiscordMessageTemplate.FEED_REPORT.getTemplate(),
+                FEED_REPORT.getTemplate(),
                 DiscordMessageTemplate.getCurrentDateTime(),
                 reportedType.getDescription(),
                 user.getNickname(),
@@ -43,7 +47,7 @@ public class MessageFormatter {
             }
         }
         return String.format(
-                DiscordMessageTemplate.COMMENT_REPORT.getTemplate(),
+                COMMENT_REPORT.getTemplate(),
                 DiscordMessageTemplate.getCurrentDateTime(),
                 reportedType.getDescription(),
                 user.getNickname(),
@@ -61,7 +65,7 @@ public class MessageFormatter {
 
     public static String formatUserWithdrawMessage(Long userId, String userNickname, String reason) {
         return String.format(
-                DiscordMessageTemplate.USER_WITHDRAW.getTemplate(),
+                USER_WITHDRAW.getTemplate(),
                 DiscordMessageTemplate.getCurrentDateTime(),
                 userId,
                 userNickname,
@@ -71,7 +75,7 @@ public class MessageFormatter {
 
     public static String formatUserJoinMessage(User user, SocialLoginType socialLoginType) {
         return String.format(
-                DiscordMessageTemplate.USER_JOIN.getTemplate(),
+                USER_JOIN.getTemplate(),
                 user.getCreatedDate(),
                 socialLoginType.getLabel(),
                 user.getUserId()
