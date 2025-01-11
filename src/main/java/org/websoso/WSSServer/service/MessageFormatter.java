@@ -15,8 +15,8 @@ public class MessageFormatter {
     public static String formatFeedReportMessage(User user, Feed feed, ReportedType reportedType, int reportedCount,
                                                  boolean isHidden) {
         String hiddenMessage = isHidden
-                ? "해당 피드는 숨김 처리되었습니다."
-                : "해당 피드는 숨김 처리되지 않았습니다.";
+                ? "해당 수다는 숨김 처리되었습니다."
+                : "해당 수다는 숨김 처리되지 않았습니다.";
         return String.format(
                 DiscordMessageTemplate.FEED_REPORT.getTemplate(),
                 DiscordMessageTemplate.getCurrentDateTime(),
