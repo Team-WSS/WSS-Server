@@ -86,7 +86,7 @@ public class CommentService {
         reportedCommentService.createReportedComment(comment, user, reportedType);
 
         int reportedCount = reportedCommentService.getReportedCountByReportedType(comment, reportedType);
-        boolean shouldHide = reportedCount >= 3;
+        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
 
         if (shouldHide) {
             if (reportedType.equals(SPOILER)) {
