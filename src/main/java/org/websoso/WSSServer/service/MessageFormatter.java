@@ -21,17 +21,17 @@ public class MessageFormatter {
                 DiscordMessageTemplate.FEED_REPORT.getTemplate(),
                 DiscordMessageTemplate.getCurrentDateTime(),
                 reportedType.getDescription(),
-                user.getUserId(),
                 user.getNickname(),
-                feed.getUser().getUserId(),
+                user.getUserId(),
                 feed.getUser().getNickname(),
+                feed.getUser().getUserId(),
                 feed.getFeedContent(),
                 reportedCount,
                 hiddenMessage
         );
     }
 
-    public static String formatCommentReportMessage(User user, String feedContent, Comment comment,
+    public static String formatCommentReportMessage(User user, Feed feed, Comment comment,
                                                     ReportedType reportedType, User commentCreatedUser,
                                                     int reportedCount, boolean isHidden) {
         String hiddenMessage = "해당 댓글은 현재 숨김 처리되지 않은 상태입니다.";
@@ -46,12 +46,14 @@ public class MessageFormatter {
                 DiscordMessageTemplate.COMMENT_REPORT.getTemplate(),
                 DiscordMessageTemplate.getCurrentDateTime(),
                 reportedType.getDescription(),
-                user.getUserId(),
                 user.getNickname(),
-                commentCreatedUser.getUserId(),
+                user.getUserId(),
                 commentCreatedUser.getNickname(),
-                feedContent,
+                commentCreatedUser.getUserId(),
                 comment.getCommentContent(),
+                feed.getUser().getNickname(),
+                feed.getUser().getUserId(),
+                feed.getFeedContent(),
                 reportedCount,
                 hiddenMessage
         );

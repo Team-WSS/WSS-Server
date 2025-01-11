@@ -97,7 +97,7 @@ public class CommentService {
         }
 
         messageService.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
-                MessageFormatter.formatCommentReportMessage(user, feed.getFeedContent(), comment, reportedType,
+                MessageFormatter.formatCommentReportMessage(user, feed, comment, reportedType,
                         commentCreatedUser, reportedCount,
                         shouldHide), REPORT));
     }
