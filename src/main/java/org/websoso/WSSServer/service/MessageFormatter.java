@@ -12,7 +12,7 @@ import org.websoso.WSSServer.domain.common.SocialLoginType;
 
 public class MessageFormatter {
 
-    public static String formatFeedReportMessage(Feed feed, ReportedType reportedType, int reportedCount,
+    public static String formatFeedReportMessage(User user, Feed feed, ReportedType reportedType, int reportedCount,
                                                  boolean isHidden) {
         String hiddenMessage = isHidden
                 ? "해당 피드는 숨김 처리되었습니다."
@@ -21,6 +21,8 @@ public class MessageFormatter {
                 DiscordMessageTemplate.FEED_REPORT.getTemplate(),
                 DiscordMessageTemplate.getCurrentDateTime(),
                 reportedType.getDescription(),
+                user.getUserId(),
+                user.getNickname(),
                 feed.getUser().getUserId(),
                 feed.getUser().getNickname(),
                 feed.getFeedContent(),
@@ -29,7 +31,8 @@ public class MessageFormatter {
         );
     }
 
-    public static String formatCommentReportMessage(Comment comment, ReportedType reportedType, User user,
+    public static String formatCommentReportMessage(User user, String feedContent, Comment comment,
+                                                    ReportedType reportedType, User commentCreatedUser,
                                                     int reportedCount, boolean isHidden) {
         String hiddenMessage = "해당 댓글은 현재 숨김 처리되지 않은 상태입니다.";
         if (isHidden) {
@@ -45,6 +48,9 @@ public class MessageFormatter {
                 reportedType.getDescription(),
                 user.getUserId(),
                 user.getNickname(),
+                commentCreatedUser.getUserId(),
+                commentCreatedUser.getNickname(),
+                feedContent,
                 comment.getCommentContent(),
                 reportedCount,
                 hiddenMessage

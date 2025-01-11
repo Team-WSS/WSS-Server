@@ -96,10 +96,10 @@ public class CommentService {
             }
         }
 
-        messageService.sendDiscordWebhookMessage(
-                DiscordWebhookMessage.of(
-                        MessageFormatter.formatCommentReportMessage(comment, reportedType, commentCreatedUser,
-                                reportedCount, shouldHide), REPORT));
+        messageService.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
+                MessageFormatter.formatCommentReportMessage(user, feed.getFeedContent(), comment, reportedType,
+                        commentCreatedUser, reportedCount,
+                        shouldHide), REPORT));
     }
 
     private Comment getCommentOrException(Long commentId) {
