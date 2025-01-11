@@ -189,7 +189,7 @@ public class FeedService {
         reportedFeedService.createReportedFeed(feed, user, reportedType);
 
         int reportedCount = reportedFeedService.getReportedCountByReportedType(feed, reportedType);
-        boolean shouldHide = reportedCount >= 3;
+        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
 
         if (shouldHide) {
             feed.hideFeed();
