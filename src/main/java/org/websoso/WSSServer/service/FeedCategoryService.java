@@ -53,7 +53,7 @@ public class FeedCategoryService {
         }
 
         for (Category category : categories) {
-            feedcategoryRepository.deleteByCategory(category);
+            feedcategoryRepository.deleteByCategoryAndFeed(category, feed);
         }
     }
 
