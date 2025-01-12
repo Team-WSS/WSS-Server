@@ -15,7 +15,7 @@ public interface FeedCategoryRepository extends JpaRepository<FeedCategory, Long
 
     List<FeedCategory> findByFeed(Feed feed);
 
-    void deleteByCategory(Category category);
+    void deleteByCategoryAndFeed(Category category, Feed feed);
 
     @Query(value = "SELECT fc.feed FROM FeedCategory fc "
             + "WHERE fc.category = :category "
