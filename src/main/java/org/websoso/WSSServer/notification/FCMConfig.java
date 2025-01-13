@@ -23,5 +23,7 @@ public class FCMConfig {
         if (FirebaseApp.getApps().isEmpty()) {
             FirebaseApp.initializeApp(firebaseOptions);
         }
+
+        return FirebaseMessaging.getInstance();
     }
 }
