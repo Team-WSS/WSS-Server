@@ -76,7 +76,7 @@ public class MessageFormatter {
     public static String formatUserJoinMessage(User user, SocialLoginType socialLoginType) {
         return String.format(
                 USER_JOIN.getTemplate(),
-                user.getCreatedDate(),
+                DiscordMessageTemplate.getCurrentDateTime(),
                 socialLoginType.getLabel(),
                 user.getUserId()
         );
