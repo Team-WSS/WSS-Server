@@ -23,9 +23,9 @@ public class NotificationController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<NotificationsGetResponse> getAlarms(Principal principal,
-                                                              @RequestParam("lastNotificationId") Long lastNotificationId,
-                                                              @RequestParam("size") int size) {
+    public ResponseEntity<NotificationsGetResponse> getNotifications(Principal principal,
+                                                                     @RequestParam("lastNotificationId") Long lastNotificationId,
+                                                                     @RequestParam("size") int size) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
