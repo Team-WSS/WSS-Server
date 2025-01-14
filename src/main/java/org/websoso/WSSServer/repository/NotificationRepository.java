@@ -4,8 +4,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Notification;
 
+@Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
     @Query(value = "SELECT n FROM Notification n WHERE "
