@@ -5,6 +5,8 @@ import com.google.firebase.messaging.AndroidNotification;
 import com.google.firebase.messaging.ApnsConfig;
 import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,16 @@ public class FCMService {
                 .setAps(Aps.builder()
                         .setCategory(clickAction)
                         .build())
+                .build();
+
+        Message message = Message.builder()
+                .setToken(targetFCMToken)
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build())
+                .setAndroidConfig(androidConfig)
+                .setApnsConfig(apnsConfig)
                 .build();
     }
 }
