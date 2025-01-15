@@ -2,6 +2,8 @@ package org.websoso.WSSServer.notification;
 
 import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.AndroidNotification;
+import com.google.firebase.messaging.ApnsConfig;
+import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.FirebaseMessaging;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,12 @@ public class FCMService {
                         .setClickAction(clickAction)
                         .build()
                 )
+                .build();
+
+        ApnsConfig apnsConfig = ApnsConfig.builder()
+                .setAps(Aps.builder()
+                        .setCategory(clickAction)
+                        .build())
                 .build();
     }
 }
