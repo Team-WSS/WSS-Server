@@ -49,6 +49,7 @@ public class FCMService {
             firebaseMessaging.send(message);
         } catch (FirebaseMessagingException e) {
             log.error("[FirebaseMessagingException] exception ", e);
+            // TODO: discord로 알림 추가 혹은 후속 작업 논의 후 추가
         }
     }
 }
