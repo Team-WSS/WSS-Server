@@ -41,5 +41,7 @@ public class FCMService {
                 .setAndroidConfig(androidConfig)
                 .setApnsConfig(apnsConfig)
                 .build();
+
+        firebaseMessaging.send(message);
     }
 }
