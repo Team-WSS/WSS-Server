@@ -49,6 +49,9 @@ public class User {
     @Column(nullable = false)
     private String socialId;
 
+    @Column
+    private String fcmToken;
+
     @Column(columnDefinition = "varchar(10)", nullable = false)
     private String nickname;
     //TODO 일부 특수문자 제외, 앞뒤 공백 불가능
