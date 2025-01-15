@@ -213,7 +213,7 @@ public class UserController {
 
     @PostMapping("/fcm-token")
     public ResponseEntity<Void> registerFCMToken(Principal principal,
-                                                 @RequestBody FCMTokenRequest fcmTokenRequest) {
+                                                 @Valid @RequestBody FCMTokenRequest fcmTokenRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.registerFCMToken(user, fcmTokenRequest.fcmToken());
         return ResponseEntity
