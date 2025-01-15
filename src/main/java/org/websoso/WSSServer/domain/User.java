@@ -139,4 +139,8 @@ public class User {
         this.gender = Gender.valueOf(editMyInfoRequest.gender());
         this.birth = Year.of(editMyInfoRequest.birth());
     }
+
+    public void updateFCMToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
 }
