@@ -20,9 +20,9 @@ public class FCMService {
     private final FirebaseMessaging firebaseMessaging;
 
     public void sendPushMessage(String targetFCMToken, String title, String body, String clickAction) {
-        try {
-            Message message = createMessage(targetFCMToken, title, body, clickAction);
+        Message message = createMessage(targetFCMToken, title, body, clickAction);
 
+        try {
             firebaseMessaging.send(message);
         } catch (FirebaseMessagingException e) {
             log.error("[FirebaseMessagingException] exception ", e);
