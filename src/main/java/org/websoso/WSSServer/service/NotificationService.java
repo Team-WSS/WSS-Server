@@ -2,6 +2,7 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_READ_FORBIDDEN;
+import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_TYPE_INVALID;
 
 import java.util.List;
 import java.util.Set;
@@ -37,16 +38,6 @@ public class NotificationService {
                         "notification with the given id is not found"));
     }
 
-    private void validateNotificationRecipient(User user, Notification notification) {
-        Long userId = user.getUserId();
-        Long notificationUserId = notification.getUserId();
-        if (notificationUserId == 0 || notificationUserId.equals(userId)) {
-            return;
-        }
-        throw new CustomNotificationException(NOTIFICATION_READ_FORBIDDEN,
-                "User does not have permission to access this notification.");
-    }
-
     @Transactional(readOnly = true)
     public NotificationsGetResponse getNotifications(Long lastNotificationId, int size, User user) {
         Slice<Notification> notifications = notificationRepository.findNotifications(lastNotificationId,
@@ -65,10 +56,30 @@ public class NotificationService {
 
     public NotificationGetResponse getNotification(User user, Long notificationId) {
         Notification notification = getNotificationOrException(notificationId);
+        verifyIsNotice(notification);
         validateNotificationRecipient(user, notification);
         if (!readNotificationRepository.existsByUserAndNotification(user, notification)) {
             readNotificationRepository.save(ReadNotification.create(notification, user));
         }
         return NotificationGetResponse.of(notification);
+    }
+
+    public void verifyIsNotice(Notification notification) {
+        Set<String> noticeTypes = Set.of("공지", "이벤트");
+        if (noticeTypes.contains(notification.getNotificationType().getNotificationTypeName())) {
+            return;
+        }
+        throw new CustomNotificationException(NOTIFICATION_TYPE_INVALID,
+                "Notification does not have a type suitable for a notice.");
+    }
+
+    private void validateNotificationRecipient(User user, Notification notification) {
+        Long userId = user.getUserId();
+        Long notificationUserId = notification.getUserId();
+        if (notificationUserId == 0 || notificationUserId.equals(userId)) {
+            return;
+        }
+        throw new CustomNotificationException(NOTIFICATION_READ_FORBIDDEN,
+                "User does not have permission to access this notification.");
     }
 }
