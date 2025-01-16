@@ -67,7 +67,9 @@ public class NotificationService {
     public NotificationGetResponse getNotification(User user, Long notificationId) {
         Notification notification = getNotificationOrException(notificationId);
         validateNotificationRecipient(user, notification);
-        ReadNotification.create(notification, user);
+        if (!readNotificationRepository.existsByUserAndNotification(user, notification)) {
+            ReadNotification.create(notification, user);
+        }
         return NotificationGetResponse.of(notification);
     }
 }
