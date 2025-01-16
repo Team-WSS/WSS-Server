@@ -4,7 +4,6 @@ import static org.websoso.WSSServer.domain.common.Role.ADMIN;
 import static org.websoso.WSSServer.exception.error.CustomNoticeError.NOTICE_FORBIDDEN;
 import static org.websoso.WSSServer.exception.error.CustomNoticeError.NOTICE_NOT_FOUND;
 
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +12,6 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.Role;
 import org.websoso.WSSServer.dto.notice.NoticeEditRequest;
 import org.websoso.WSSServer.dto.notice.NoticePostRequest;
-import org.websoso.WSSServer.dto.notice.NoticesGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNoticeException;
 import org.websoso.WSSServer.repository.NoticeRepository;
 
@@ -46,12 +44,6 @@ public class NoticeService {
             throw new CustomNoticeException(NOTICE_FORBIDDEN,
                     "user who tried to create or modify or delete the notice is not ADMIN");
         }
-    }
-
-    @Transactional(readOnly = true)
-    public NoticesGetResponse getNotices(User user) {
-        List<Notice> notices = noticeRepository.findByUserId(user.getUserId());
-        return NoticesGetResponse.of(notices);
     }
 
     public void deleteNotice(User user, Long noticeId) {
