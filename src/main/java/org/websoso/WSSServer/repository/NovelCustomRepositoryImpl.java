@@ -34,11 +34,10 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public Page<Novel> findSearchedNovels(Pageable pageable, String query) {
-        String searchQuery = query.replaceAll("\\s+", "");
+    public Page<Novel> findSearchedNovels(Pageable pageable, String searchQuery) {
 
-        BooleanExpression titleContainsQuery = getSpaceRemovedString(novel.title).containsIgnoreCase(searchQuery);
-        BooleanExpression authorContainsQuery = getSpaceRemovedString(novel.author).containsIgnoreCase(searchQuery);
+        BooleanExpression titleContainsQuery = getCleanedString(novel.title).containsIgnoreCase(searchQuery);
+        BooleanExpression authorContainsQuery = getCleanedString(novel.author).containsIgnoreCase(searchQuery);
 
         List<Novel> novelsByTitle = jpaQueryFactory
                 .selectFrom(novel)
@@ -67,9 +66,9 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
         return new PageImpl<>(result.subList(start, end), pageable, total);
     }
 
-    private StringTemplate getSpaceRemovedString(StringPath stringPath) {
+    private StringTemplate getCleanedString(StringPath stringPath) {
         return Expressions.stringTemplate(
-                "REPLACE(REPLACE({0}, ' ', ''), CHAR(9), '')",
+                "CAST(REGEXP_REPLACE(REPLACE(REPLACE({0}, ' ', ''), CHAR(9), ''), '[^a-zA-Z0-9가-힣]', '') AS STRING)",
                 stringPath
         );
     }
