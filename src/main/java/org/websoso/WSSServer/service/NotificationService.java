@@ -64,7 +64,7 @@ public class NotificationService {
         return NotificationGetResponse.of(notification);
     }
 
-    public void verifyIsNotice(Notification notification) {
+    private void verifyIsNotice(Notification notification) {
         Set<String> noticeTypes = Set.of("공지", "이벤트");
         if (noticeTypes.contains(notification.getNotificationType().getNotificationTypeName())) {
             return;
