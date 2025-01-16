@@ -63,12 +63,11 @@ public class NotificationService {
         return NotificationsGetResponse.of(notifications.hasNext(), notificationInfos);
     }
 
-    @Transactional(readOnly = true)
     public NotificationGetResponse getNotification(User user, Long notificationId) {
         Notification notification = getNotificationOrException(notificationId);
         validateNotificationRecipient(user, notification);
         if (!readNotificationRepository.existsByUserAndNotification(user, notification)) {
-            ReadNotification.create(notification, user);
+            readNotificationRepository.save(ReadNotification.create(notification, user));
         }
         return NotificationGetResponse.of(notification);
     }
