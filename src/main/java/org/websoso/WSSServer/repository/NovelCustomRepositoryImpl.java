@@ -34,8 +34,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public Page<Novel> findSearchedNovels(Pageable pageable, String query) {
-        String searchQuery = query.replaceAll("\\s+", "").replaceAll("[^a-zA-Z0-9가-힣]", "");
+    public Page<Novel> findSearchedNovels(Pageable pageable, String searchQuery) {
 
         BooleanExpression titleContainsQuery = getCleanedString(novel.title).containsIgnoreCase(searchQuery);
         BooleanExpression authorContainsQuery = getCleanedString(novel.author).containsIgnoreCase(searchQuery);
