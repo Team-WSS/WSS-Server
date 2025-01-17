@@ -14,7 +14,7 @@ public record NotificationGetResponse(
         return new NotificationGetResponse(
                 notification.getNotificationTitle(),
                 notification.getCreatedDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN)),
-                notification.getNotificationDescription()
+                notification.getNotificationContent()
         );
     }
 }
