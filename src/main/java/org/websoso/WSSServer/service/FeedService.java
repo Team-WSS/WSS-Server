@@ -56,6 +56,7 @@ public class FeedService {
 
     private static final String DEFAULT_CATEGORY = "all";
     private static final int DEFAULT_PAGE_NUMBER = 0;
+    private static final int POPULAR_FEED_LIKE_THRESHOLD = 5;
     private final FeedRepository feedRepository;
     private final FeedCategoryService feedCategoryService;
     private final NovelService novelService;
@@ -107,12 +108,9 @@ public class FeedService {
         checkHiddenFeed(feed);
         checkBlocked(feed.getUser(), user);
 
-        boolean isPopularFeed = false;
-        if (feed.getLikes().size() == 9) {
-            isPopularFeed = true;
-        }
         likeService.createLike(user, feed);
-        if (isPopularFeed) {
+
+        if (feed.getLikes().size() == POPULAR_FEED_LIKE_THRESHOLD) {
             popularFeedService.createPopularFeed(feed);
         }
     }
