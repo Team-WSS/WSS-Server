@@ -78,6 +78,7 @@ public class MessageFormatter {
                 USER_JOIN.getTemplate(),
                 DiscordMessageTemplate.getCurrentDateTime(),
                 socialLoginType.getLabel(),
+                user.getNickname(),
                 user.getUserId()
         );
     }

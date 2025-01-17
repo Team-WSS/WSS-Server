@@ -44,7 +44,7 @@ public enum DiscordMessageTemplate {
             "```[%s] 🎉 새로운 사용자가 가입하였습니다 🎉\n\n"
                     + "[가입한 사용자]\n"
                     + "- 로그인 방식: %s\n"
-                    + "- ID: %d\n"
+                    + "- 닉네임: %s (ID: %d)\n"
                     + "환영합니다!\n\n```");
 
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm";
