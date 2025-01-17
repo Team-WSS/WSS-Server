@@ -28,9 +28,9 @@ public class Notification extends BaseEntity {
     private String notificationTitle;
 
     @Column(nullable = false)
-    private String notificationDescription;
+    private String notificationBody;
 
-    private String notificationContent;
+    private String notificationDetail;
 
     @Column(nullable = false)
     private Long userId;
@@ -41,20 +41,20 @@ public class Notification extends BaseEntity {
     @JoinColumn(name = "notification_type_id", nullable = false)
     private NotificationType notificationType;
 
-    private Notification(String notificationTitle, String notificationDescription, String notificationContent,
+    private Notification(String notificationTitle, String notificationBody, String notificationDetail,
                          Long userId, Long feedId, NotificationType notificationType) {
         this.notificationTitle = notificationTitle;
-        this.notificationDescription = notificationDescription;
-        this.notificationContent = notificationContent;
+        this.notificationBody = notificationBody;
+        this.notificationDetail = notificationDetail;
         this.userId = userId;
         this.feedId = feedId;
         this.notificationType = notificationType;
     }
 
-    public static Notification create(String notificationTitle, String notificationDescription,
-                                      String notificationContent, Long userId, Long feedId,
+    public static Notification create(String notificationTitle, String notificationBody,
+                                      String notificationDetail, Long userId, Long feedId,
                                       NotificationType notificationType) {
-        return new Notification(notificationTitle, notificationDescription, notificationContent, userId, feedId,
+        return new Notification(notificationTitle, notificationBody, notificationDetail, userId, feedId,
                 notificationType);
     }
 }
