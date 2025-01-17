@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.JOIN;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.WITHDRAW;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
@@ -23,6 +24,7 @@ import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.WithdrawalReason;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
+import org.websoso.WSSServer.domain.common.SocialLoginType;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.LoginResponse;
@@ -167,6 +169,9 @@ public class UserService {
         user.updateUserInfo(registerUserInfoRequest);
         List<GenrePreference> preferGenres = createGenrePreferences(user, registerUserInfoRequest.genrePreferences());
         genrePreferenceRepository.saveAll(preferGenres);
+
+        messageService.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
+                MessageFormatter.formatUserJoinMessage(user, SocialLoginType.fromSocialId(user.getSocialId())), JOIN));
     }
 
     public void logout(User user, String refreshToken) {
