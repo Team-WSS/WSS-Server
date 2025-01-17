@@ -33,7 +33,7 @@ public class NotificationController {
                 .body(notificationService.getNotifications(lastNotificationId, size, user));
     }
 
-    @GetMapping
+    @GetMapping("/unread")
     public ResponseEntity<NotificationsReadStatusGetResponse> checkNotificationsReadStatus(Principal principal) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
