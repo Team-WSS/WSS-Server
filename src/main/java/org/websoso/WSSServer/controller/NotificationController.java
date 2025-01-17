@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.notification.NotificationGetResponse;
 import org.websoso.WSSServer.dto.notification.NotificationsGetResponse;
+import org.websoso.WSSServer.dto.notification.NotificationsReadStatusGetResponse;
 import org.websoso.WSSServer.service.NotificationService;
 import org.websoso.WSSServer.service.UserService;
 
@@ -32,6 +33,14 @@ public class NotificationController {
         return ResponseEntity
                 .status(OK)
                 .body(notificationService.getNotifications(lastNotificationId, size, user));
+    }
+
+    @GetMapping("/unread")
+    public ResponseEntity<NotificationsReadStatusGetResponse> checkNotificationsReadStatus(Principal principal) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(notificationService.checkNotificationsReadStatus(user));
     }
 
     @GetMapping("/{notificationId}")

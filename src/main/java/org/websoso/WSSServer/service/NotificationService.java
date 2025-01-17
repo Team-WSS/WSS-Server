@@ -18,6 +18,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.notification.NotificationGetResponse;
 import org.websoso.WSSServer.dto.notification.NotificationInfo;
 import org.websoso.WSSServer.dto.notification.NotificationsGetResponse;
+import org.websoso.WSSServer.dto.notification.NotificationsReadStatusGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.ReadNotificationRepository;
@@ -36,6 +37,13 @@ public class NotificationService {
         return notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new CustomNotificationException(NOTIFICATION_NOT_FOUND,
                         "notification with the given id is not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public NotificationsReadStatusGetResponse checkNotificationsReadStatus(User user) {
+        Boolean hasUnreadNotifications = notificationRepository.existsUnreadNotifications(
+                Set.of(0L, user.getUserId()), user);
+        return NotificationsReadStatusGetResponse.of(hasUnreadNotifications);
     }
 
     @Transactional(readOnly = true)
