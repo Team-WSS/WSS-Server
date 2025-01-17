@@ -3,6 +3,7 @@ package org.websoso.WSSServer.dto.notification;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Set;
 import org.websoso.WSSServer.domain.Notification;
 
 public record NotificationInfo(
@@ -22,6 +23,7 @@ public record NotificationInfo(
     private static final String DATE_PATTERN = "yyyy.MM.dd";
 
     static public NotificationInfo of(Notification notification, Boolean isRead) {
+        Set<String> validNoticeTypes = Set.of("공지", "이벤트");
         return new NotificationInfo(
                 notification.getNotificationId(),
                 notification.getNotificationType().getNotificationTypeImage(),
@@ -29,7 +31,7 @@ public record NotificationInfo(
                 notification.getNotificationBody(),
                 formatCreatedDate(notification.getCreatedDate()),
                 isRead,
-                notification.getNotificationType().getNotificationTypeName().equals("공지"),
+                validNoticeTypes.contains(notification.getNotificationType().getNotificationTypeName()),
                 notification.getFeedId()
         );
     }
