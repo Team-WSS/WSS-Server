@@ -86,7 +86,7 @@ public class CommentService {
         reportedCommentService.createReportedComment(comment, user, reportedType);
 
         int reportedCount = reportedCommentService.getReportedCountByReportedType(comment, reportedType);
-        boolean shouldHide = reportedCount >= 3;
+        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
 
         if (shouldHide) {
             if (reportedType.equals(SPOILER)) {
@@ -96,10 +96,10 @@ public class CommentService {
             }
         }
 
-        messageService.sendDiscordWebhookMessage(
-                DiscordWebhookMessage.of(
-                        MessageFormatter.formatCommentReportMessage(comment, reportedType, commentCreatedUser,
-                                reportedCount, shouldHide), REPORT));
+        messageService.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
+                MessageFormatter.formatCommentReportMessage(user, feed, comment, reportedType,
+                        commentCreatedUser, reportedCount,
+                        shouldHide), REPORT));
     }
 
     private Comment getCommentOrException(Long commentId) {

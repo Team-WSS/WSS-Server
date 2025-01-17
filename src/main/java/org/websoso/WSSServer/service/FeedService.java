@@ -189,16 +189,14 @@ public class FeedService {
         reportedFeedService.createReportedFeed(feed, user, reportedType);
 
         int reportedCount = reportedFeedService.getReportedCountByReportedType(feed, reportedType);
-        boolean shouldHide = reportedCount >= 3;
+        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
 
         if (shouldHide) {
             feed.hideFeed();
         }
 
-        messageService.sendDiscordWebhookMessage(
-                DiscordWebhookMessage.of(
-                        MessageFormatter.formatFeedReportMessage(feed, reportedType, reportedCount, shouldHide),
-                        REPORT));
+        messageService.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
+                MessageFormatter.formatFeedReportMessage(user, feed, reportedType, reportedCount, shouldHide), REPORT));
     }
 
     public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
