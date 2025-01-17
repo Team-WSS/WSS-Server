@@ -6,7 +6,7 @@ import org.websoso.WSSServer.domain.Notification;
 public record NotificationGetResponse(
         String notificationTitle,
         String notificationCreatedDate,
-        String notificationContent
+        String notificationDetail
 ) {
     private static final String DATE_PATTERN = "yyyy.MM.dd";
 
@@ -14,7 +14,7 @@ public record NotificationGetResponse(
         return new NotificationGetResponse(
                 notification.getNotificationTitle(),
                 notification.getCreatedDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN)),
-                notification.getNotificationContent()
+                notification.getNotificationDetail()
         );
     }
 }
