@@ -44,6 +44,7 @@ import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
+import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
@@ -70,6 +71,7 @@ public class FeedService {
     private final MessageService messageService;
     private final UserService userService;
     private final NovelRepository novelRepository;
+    private final FCMService fcmService;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
