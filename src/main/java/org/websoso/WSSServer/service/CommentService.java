@@ -38,8 +38,8 @@ public class CommentService {
     private final MessageService messageService;
     private final FCMService fcmService;
 
-    public void createComment(Long userId, Feed feed, String commentContent) {
-        commentRepository.save(Comment.create(userId, feed, commentContent));
+    public void createComment(User user, Feed feed, String commentContent) {
+        commentRepository.save(Comment.create(user.getUserId(), feed, commentContent));
     }
 
     public void updateComment(Long userId, Feed feed, Long commentId, String commentContent) {

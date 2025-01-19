@@ -178,7 +178,7 @@ public class FeedService {
     public void createComment(User user, Long feedId, CommentCreateRequest request) {
         Feed feed = getFeedOrException(feedId);
         validateFeedAccess(feed, user);
-        commentService.createComment(user.getUserId(), feed, request.commentContent());
+        commentService.createComment(user, feed, request.commentContent());
     }
 
     public void updateComment(User user, Long feedId, Long commentId, CommentUpdateRequest request) {
