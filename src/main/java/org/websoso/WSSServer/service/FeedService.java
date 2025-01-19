@@ -124,18 +124,20 @@ public class FeedService {
     private void sendLikePushMessage(User liker, Feed feed) {
         String targetFCMToken = feed.getUser().getFcmToken();
 
-        String title;
-        Novel novel = novelService.getNovelOrException(feed.getNovelId());
-        if (feed.getNovelId() == null) {
-            title = String.format("%s...", feed.getFeedContent());
-        } else {
-            title = novel.getTitle();
-        }
+        String title = createNotificationTitle(feed);
         String body = String.format("%s님이 내 수다글을 좋아해요.", liker.getNickname());
         String feedId = String.valueOf(feed.getFeedId());
         String view = "feedDetail";
 
         fcmService.sendPushMessage(targetFCMToken, title, body, feedId, view);
+    }
+
+    private String createNotificationTitle(Feed feed) {
+        if (feed.getNovelId() == null) {
+            return String.format("%s...", feed.getFeedContent());
+        }
+        Novel novel = novelService.getNovelOrException(feed.getNovelId());
+        return novel.getTitle();
     }
 
     public void unLikeFeed(User user, Long feedId) {
