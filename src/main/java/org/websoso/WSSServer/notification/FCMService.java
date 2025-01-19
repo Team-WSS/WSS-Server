@@ -6,6 +6,8 @@ import com.google.firebase.messaging.ApsAlert;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.MulticastMessage;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,33 @@ public class FCMService {
 
         return Message.builder()
                 .setToken(targetFCMToken)
+                .putData("title", title)
+                .putData("body", body)
+                .putData("feedId", feedId)
+                .putData("view", view)
+                .setApnsConfig(apnsConfig)
+                .build();
+    }
+
+    public void sendMulticastMessage(List<String> targetFCMTokens, String title,
+                                     String body, String feedId, String view) {
+        MulticastMessage multicastMessage = createMulticastMessage(targetFCMTokens, title, body, feedId, view);
+        firebaseMessaging.sendMulticast(multicastMessage);
+    }
+
+    private MulticastMessage createMulticastMessage(List<String> targetFCMTokens, String title,
+                                                    String body, String feedId, String view) {
+        ApnsConfig apnsConfig = ApnsConfig.builder()
+                .setAps(Aps.builder()
+                        .setAlert(ApsAlert.builder()
+                                .setTitle(title)
+                                .setBody(body)
+                                .build())
+                        .build())
+                .build();
+
+        return MulticastMessage.builder()
+                .addAllTokens(targetFCMTokens)
                 .putData("title", title)
                 .putData("body", body)
                 .putData("feedId", feedId)
