@@ -37,6 +37,7 @@ public class CommentService {
     private final ReportedCommentService reportedCommentService;
     private final MessageService messageService;
     private final FCMService fcmService;
+    private final NovelService novelService;
 
     public void createComment(User user, Feed feed, String commentContent) {
         commentRepository.save(Comment.create(user.getUserId(), feed, commentContent));
