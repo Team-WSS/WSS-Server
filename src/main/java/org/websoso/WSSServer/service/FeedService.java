@@ -129,8 +129,13 @@ public class FeedService {
                     "feedDetail"
             );
         } else { //연결 작품 O
+            Novel novel = novelService.getNovelOrException(feed.getNovelId());
             fcmService.sendPushMessage(
-
+                    targetFCMToken,
+                    novel.getTitle(),
+                    String.format("%s님이 내 수다글을 좋아해요.", user.getNickname()),
+                    String.valueOf(feedId),
+                    "feedDetail"
             );
         }
     }
