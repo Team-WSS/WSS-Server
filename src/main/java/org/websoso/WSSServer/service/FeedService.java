@@ -122,7 +122,11 @@ public class FeedService {
 
         if (feed.getNovelId() == null) { //연결 작품 X
             fcmService.sendPushMessage(
-
+                    targetFCMToken,
+                    String.format("%s...", feed.getFeedContent()),
+                    String.format("%s님이 내 수다글을 좋아해요.", user.getNickname()),
+                    String.valueOf(feedId),
+                    "feedDetail"
             );
         } else { //연결 작품 O
             fcmService.sendPushMessage(
