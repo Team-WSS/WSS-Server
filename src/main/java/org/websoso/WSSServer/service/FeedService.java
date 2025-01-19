@@ -122,14 +122,12 @@ public class FeedService {
     }
 
     private void sendLikePushMessage(User liker, Feed feed) {
-        String targetFCMToken = feed.getUser().getFcmToken();
-
-        String title = createNotificationTitle(feed);
-        String body = String.format("%s님이 내 수다글을 좋아해요.", liker.getNickname());
-        String feedId = String.valueOf(feed.getFeedId());
-        String view = "feedDetail";
-
-        fcmService.sendPushMessage(targetFCMToken, title, body, feedId, view);
+        fcmService.sendPushMessage(
+                feed.getUser().getFcmToken(),
+                createNotificationTitle(feed),
+                String.format("%s님이 내 수다글을 좋아해요.", liker.getNickname()),
+                String.valueOf(feed.getFeedId()),
+                "feedDetail");
     }
 
     private String createNotificationTitle(Feed feed) {
