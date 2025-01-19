@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.PopularFeed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
@@ -24,7 +25,33 @@ public class PopularFeedService {
     public void createPopularFeed(Feed feed) {
         if (!popularFeedRepository.existsByFeed(feed)) {
             popularFeedRepository.save(PopularFeed.create(feed));
+
+            sendPopularFeedPushMessage(feed);
         }
+    }
+
+    private void sendPopularFeedPushMessage(Feed feed) {
+        fcmService.sendPushMessage(
+                feed.getUser().getFcmToken(),
+                "지금 뜨는 수다글 등극",
+                createNotificationBody(feed),
+                String.valueOf(feed.getFeedId()),
+                "feedDetail");
+    }
+
+    private String createNotificationBody(Feed feed) {
+        String tmp;
+        if (feed.getNovelId() == null) {
+            String feedContent = feed.getFeedContent();
+            tmp = feedContent.length() <= 12
+                    ? feedContent
+                    : feedContent.substring(0, 12) + "...";
+        } else {
+            Novel novel = novelService.getNovelOrException(feed.getNovelId());
+            tmp = String.format("<%s>", novel.getTitle());
+        }
+
+        return String.format("내가 남긴 %s 글이 관심 받고 있어요!", tmp);
     }
 
     @Transactional(readOnly = true)
