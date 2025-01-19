@@ -122,6 +122,9 @@ public class FeedService {
     }
 
     private void sendLikePushMessage(User liker, Feed feed) {
+        if (liker.equals(feed.getUser())) {
+            return;
+        }
         fcmService.sendPushMessage(
                 feed.getUser().getFcmToken(),
                 createNotificationTitle(feed),

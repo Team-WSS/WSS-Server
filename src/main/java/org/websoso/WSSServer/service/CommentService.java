@@ -43,10 +43,13 @@ public class CommentService {
     public void createComment(User user, Feed feed, String commentContent) {
         commentRepository.save(Comment.create(user.getUserId(), feed, commentContent));
         sendCommentPushMessageToFeedOwner(user, feed);
-        sendCommentPushMessageToCommenters(feed);
+        sendCommentPushMessageToCommenters(user, feed);
     }
 
     private void sendCommentPushMessageToFeedOwner(User user, Feed feed) {
+        if (isUserCommentOwner(user, feed.getUser())) {
+            return;
+        }
         fcmService.sendPushMessage(
                 feed.getUser().getFcmToken(),
                 createNotificationTitle(feed),
@@ -67,10 +70,11 @@ public class CommentService {
         return novel.getTitle();
     }
 
-    private void sendCommentPushMessageToCommenters(Feed feed) {
+    private void sendCommentPushMessageToCommenters(User user, Feed feed) {
         List<String> commentersUserId = feed.getComments()
                 .stream()
                 .map(Comment::getUserId)
+                .filter(userId -> !userId.equals(user.getUserId()))
                 .map(userService::getUserOrException)
                 .map(User::getFcmToken)
                 .toList();
