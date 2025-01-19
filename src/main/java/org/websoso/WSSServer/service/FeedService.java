@@ -119,6 +119,16 @@ public class FeedService {
         }
 
         String targetFCMToken = feed.getUser().getFcmToken();
+
+        if (feed.getNovelId() == null) { //연결 작품 X
+            fcmService.sendPushMessage(
+
+            );
+        } else { //연결 작품 O
+            fcmService.sendPushMessage(
+
+            );
+        }
     }
 
     public void unLikeFeed(User user, Long feedId) {
