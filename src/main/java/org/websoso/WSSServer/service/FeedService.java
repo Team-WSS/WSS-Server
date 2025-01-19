@@ -135,7 +135,7 @@ public class FeedService {
             String feedContent = feed.getFeedContent();
             return feedContent.length() <= 12
                     ? feedContent
-                    : feedContent.substring(0, 12) + "...";
+                    : "'" + feedContent.substring(0, 12) + "...'";
         }
         Novel novel = novelService.getNovelOrException(feed.getNovelId());
         return novel.getTitle();
