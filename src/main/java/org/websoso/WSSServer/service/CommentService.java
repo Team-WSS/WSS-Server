@@ -74,7 +74,7 @@ public class CommentService {
                 .map(userService::getUserOrException)
                 .map(User::getFcmToken)
                 .toList();
-        fcmService.sendMulticastMessage(
+        fcmService.sendMulticastPushMessage(
                 commentersUserId,
                 createNotificationTitle(feed),
                 "내가 댓글 단 수다글에 또 다른 댓글이 달렸어요.",

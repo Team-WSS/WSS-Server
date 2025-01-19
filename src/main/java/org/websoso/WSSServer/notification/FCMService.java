@@ -52,7 +52,7 @@ public class FCMService {
                 .build();
     }
 
-    public void sendMulticastMessage(List<String> targetFCMTokens, String title,
+    public void sendMulticastPushMessage(List<String> targetFCMTokens, String title,
                                      String body, String feedId, String view) {
         MulticastMessage multicastMessage = createMulticastMessage(targetFCMTokens, title, body, feedId, view);
         try {
