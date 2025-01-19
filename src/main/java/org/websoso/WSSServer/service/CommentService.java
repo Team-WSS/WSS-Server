@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Comment;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
@@ -41,7 +42,30 @@ public class CommentService {
 
     public void createComment(User user, Feed feed, String commentContent) {
         commentRepository.save(Comment.create(user.getUserId(), feed, commentContent));
+        sendCommentPushMessage(user, feed);
     }
+
+    private void sendCommentPushMessage(User user, Feed feed) {
+        fcmService.sendPushMessage(
+                feed.getUser().getFcmToken(),
+                createNotificationTitle(feed),
+                String.format("%s님이 내 수다글에 댓글을 남겼어요", user.getNickname()),
+                String.valueOf(feed.getFeedId()),
+                "feedDetail"
+        );
+    }
+
+    private String createNotificationTitle(Feed feed) {
+        if (feed.getNovelId() == null) { //연결X
+            String feedContent = feed.getFeedContent();
+            return feedContent.length() <= 12
+                    ? feedContent
+                    : "'" + feedContent.substring(0, 12) + "...'";
+        }
+        Novel novel = novelService.getNovelOrException(feed.getNovelId());
+        return novel.getTitle();
+    }
+
 
     public void updateComment(Long userId, Feed feed, Long commentId, String commentContent) {
         Comment comment = getCommentOrException(commentId);
