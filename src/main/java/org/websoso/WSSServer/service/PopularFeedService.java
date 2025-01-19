@@ -40,18 +40,18 @@ public class PopularFeedService {
     }
 
     private String createNotificationBody(Feed feed) {
-        String tmp;
+        return String.format("내가 남긴 %s 글이 관심 받고 있어요!", generateNotificationBodyFragment(feed));
+    }
+
+    private String generateNotificationBodyFragment(Feed feed) {
         if (feed.getNovelId() == null) {
             String feedContent = feed.getFeedContent();
-            tmp = feedContent.length() <= 12
+            return feedContent.length() <= 12
                     ? feedContent
                     : feedContent.substring(0, 12) + "...";
-        } else {
-            Novel novel = novelService.getNovelOrException(feed.getNovelId());
-            tmp = String.format("<%s>", novel.getTitle());
         }
-
-        return String.format("내가 남긴 %s 글이 관심 받고 있어요!", tmp);
+        Novel novel = novelService.getNovelOrException(feed.getNovelId());
+        return String.format("<%s>", novel.getTitle());
     }
 
     @Transactional(readOnly = true)
