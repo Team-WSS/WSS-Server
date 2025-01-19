@@ -18,6 +18,7 @@ import org.websoso.WSSServer.repository.PopularFeedRepository;
 public class PopularFeedService {
 
     private final PopularFeedRepository popularFeedRepository;
+    private final NovelService novelService;
     private final FCMService fcmService;
 
     public void createPopularFeed(Feed feed) {
