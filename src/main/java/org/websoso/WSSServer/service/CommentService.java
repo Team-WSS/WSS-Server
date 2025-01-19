@@ -43,6 +43,7 @@ public class CommentService {
     public void createComment(User user, Feed feed, String commentContent) {
         commentRepository.save(Comment.create(user.getUserId(), feed, commentContent));
         sendCommentPushMessageToFeedOwner(user, feed);
+        sendCommentPushMessageToCommenters(feed);
     }
 
     private void sendCommentPushMessageToFeedOwner(User user, Feed feed) {
@@ -66,6 +67,21 @@ public class CommentService {
         return novel.getTitle();
     }
 
+    private void sendCommentPushMessageToCommenters(Feed feed) {
+        List<String> commentersUserId = feed.getComments()
+                .stream()
+                .map(Comment::getUserId)
+                .map(userService::getUserOrException)
+                .map(User::getFcmToken)
+                .toList();
+        fcmService.sendMulticastMessage(
+                commentersUserId,
+                createNotificationTitle(feed),
+                "내가 댓글 단 수다글에 또 다른 댓글이 달렸어요.",
+                String.valueOf(feed.getFeedId()),
+                "feedDetail"
+        );
+    }
 
     public void updateComment(Long userId, Feed feed, Long commentId, String commentContent) {
         Comment comment = getCommentOrException(commentId);
