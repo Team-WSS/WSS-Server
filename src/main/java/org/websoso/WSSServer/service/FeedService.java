@@ -117,6 +117,8 @@ public class FeedService {
         if (isPopularFeed) {
             popularFeedService.createPopularFeed(feed);
         }
+
+        String targetFCMToken = feed.getUser().getFcmToken();
     }
 
     public void unLikeFeed(User user, Long feedId) {
