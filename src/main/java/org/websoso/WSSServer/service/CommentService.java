@@ -56,7 +56,7 @@ public class CommentService {
     }
 
     private String createNotificationTitle(Feed feed) {
-        if (feed.getNovelId() == null) { //연결X
+        if (feed.getNovelId() == null) {
             String feedContent = feed.getFeedContent();
             return feedContent.length() <= 12
                     ? feedContent
