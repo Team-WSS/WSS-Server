@@ -45,6 +45,7 @@ import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.notification.FCMService;
+import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
@@ -125,12 +126,17 @@ public class FeedService {
         if (liker.equals(feed.getUser())) {
             return;
         }
-        fcmService.sendPushMessage(
-                feed.getUser().getFcmToken(),
+
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 createNotificationTitle(feed),
                 String.format("%s님이 내 수다글을 좋아해요.", liker.getNickname()),
                 String.valueOf(feed.getFeedId()),
-                "feedDetail");
+                "feedDetail"
+        );
+        fcmService.sendPushMessage(
+                feed.getUser().getFcmToken(),
+                fcmMessageRequest
+        );
     }
 
     private String createNotificationTitle(Feed feed) {

@@ -24,6 +24,7 @@ import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomCommentException;
 import org.websoso.WSSServer.notification.FCMService;
+import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.CommentRepository;
 
 @Service
@@ -50,12 +51,16 @@ public class CommentService {
         if (isUserCommentOwner(user, feed.getUser())) {
             return;
         }
-        fcmService.sendPushMessage(
-                feed.getUser().getFcmToken(),
+
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 createNotificationTitle(feed),
                 String.format("%s님이 내 수다글에 댓글을 남겼어요", user.getNickname()),
                 String.valueOf(feed.getFeedId()),
                 "feedDetail"
+        );
+        fcmService.sendPushMessage(
+                feed.getUser().getFcmToken(),
+                fcmMessageRequest
         );
     }
 
@@ -78,12 +83,16 @@ public class CommentService {
                 .map(userService::getUserOrException)
                 .map(User::getFcmToken)
                 .toList();
-        fcmService.sendMulticastPushMessage(
-                commentersUserId,
+
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 createNotificationTitle(feed),
                 "내가 댓글 단 수다글에 또 다른 댓글이 달렸어요.",
                 String.valueOf(feed.getFeedId()),
                 "feedDetail"
+        );
+        fcmService.sendMulticastPushMessage(
+                commentersUserId,
+                fcmMessageRequest
         );
     }
 

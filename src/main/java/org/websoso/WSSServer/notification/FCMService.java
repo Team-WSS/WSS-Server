@@ -11,6 +11,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 
 @Slf4j
 @Service
@@ -19,10 +20,8 @@ public class FCMService {
 
     private final FirebaseMessaging firebaseMessaging;
 
-    public void sendPushMessage(String targetFCMToken, String title, String body, String clickAction) {
-        Message message = createMessage(targetFCMToken, title, body, clickAction);
-    public void sendPushMessage(String targetFCMToken, String title, String body, String feedId, String view) {
-        Message message = createMessage(targetFCMToken, title, body, feedId, view);
+    public void sendPushMessage(String targetFCMToken, FCMMessageRequest fcmMessageRequest) {
+        Message message = createMessage(targetFCMToken, fcmMessageRequest);
 
         try {
             firebaseMessaging.send(message);
@@ -32,29 +31,28 @@ public class FCMService {
         }
     }
 
-    private Message createMessage(String targetFCMToken, String title, String body, String feedId, String view) {
+    private Message createMessage(String targetFCMToken, FCMMessageRequest fcmMessageRequest) {
         ApnsConfig apnsConfig = ApnsConfig.builder()
                 .setAps(Aps.builder()
                         .setAlert(ApsAlert.builder()
-                                .setTitle(title)
-                                .setBody(body)
+                                .setTitle(fcmMessageRequest.title())
+                                .setBody(fcmMessageRequest.body())
                                 .build())
                         .build())
                 .build();
 
         return Message.builder()
                 .setToken(targetFCMToken)
-                .putData("title", title)
-                .putData("body", body)
-                .putData("feedId", feedId)
-                .putData("view", view)
+                .putData("title", fcmMessageRequest.title())
+                .putData("body", fcmMessageRequest.body())
+                .putData("feedId", fcmMessageRequest.feedId())
+                .putData("view", fcmMessageRequest.view())
                 .setApnsConfig(apnsConfig)
                 .build();
     }
 
-    public void sendMulticastPushMessage(List<String> targetFCMTokens, String title,
-                                     String body, String feedId, String view) {
-        MulticastMessage multicastMessage = createMulticastMessage(targetFCMTokens, title, body, feedId, view);
+    public void sendMulticastPushMessage(List<String> targetFCMTokens, FCMMessageRequest fcmMessageRequest) {
+        MulticastMessage multicastMessage = createMulticastMessage(targetFCMTokens, fcmMessageRequest);
         try {
             firebaseMessaging.sendMulticast(multicastMessage);
         } catch (Exception e) {
@@ -63,23 +61,22 @@ public class FCMService {
         }
     }
 
-    private MulticastMessage createMulticastMessage(List<String> targetFCMTokens, String title,
-                                                    String body, String feedId, String view) {
+    private MulticastMessage createMulticastMessage(List<String> targetFCMTokens, FCMMessageRequest fcmMessageRequest) {
         ApnsConfig apnsConfig = ApnsConfig.builder()
                 .setAps(Aps.builder()
                         .setAlert(ApsAlert.builder()
-                                .setTitle(title)
-                                .setBody(body)
+                                .setTitle(fcmMessageRequest.title())
+                                .setBody(fcmMessageRequest.body())
                                 .build())
                         .build())
                 .build();
 
         return MulticastMessage.builder()
                 .addAllTokens(targetFCMTokens)
-                .putData("title", title)
-                .putData("body", body)
-                .putData("feedId", feedId)
-                .putData("view", view)
+                .putData("title", fcmMessageRequest.title())
+                .putData("body", fcmMessageRequest.body())
+                .putData("feedId", fcmMessageRequest.feedId())
+                .putData("view", fcmMessageRequest.view())
                 .setApnsConfig(apnsConfig)
                 .build();
     }

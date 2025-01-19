@@ -11,6 +11,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.notification.FCMService;
+import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.PopularFeedRepository;
 
 @Service
@@ -31,12 +32,16 @@ public class PopularFeedService {
     }
 
     private void sendPopularFeedPushMessage(Feed feed) {
-        fcmService.sendPushMessage(
-                feed.getUser().getFcmToken(),
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 "지금 뜨는 수다글 등극",
                 createNotificationBody(feed),
                 String.valueOf(feed.getFeedId()),
-                "feedDetail");
+                "feedDetail"
+        );
+        fcmService.sendPushMessage(
+                feed.getUser().getFcmToken(),
+                fcmMessageRequest
+        );
     }
 
     private String createNotificationBody(Feed feed) {
