@@ -9,6 +9,7 @@ import org.websoso.WSSServer.domain.PopularFeed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
+import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.repository.PopularFeedRepository;
 
 @Service
@@ -17,6 +18,7 @@ import org.websoso.WSSServer.repository.PopularFeedRepository;
 public class PopularFeedService {
 
     private final PopularFeedRepository popularFeedRepository;
+    private final FCMService fcmService;
 
     public void createPopularFeed(Feed feed) {
         if (!popularFeedRepository.existsByFeed(feed)) {
