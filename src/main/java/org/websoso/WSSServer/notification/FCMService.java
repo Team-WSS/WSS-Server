@@ -55,7 +55,12 @@ public class FCMService {
     public void sendMulticastMessage(List<String> targetFCMTokens, String title,
                                      String body, String feedId, String view) {
         MulticastMessage multicastMessage = createMulticastMessage(targetFCMTokens, title, body, feedId, view);
-        firebaseMessaging.sendMulticast(multicastMessage);
+        try {
+            firebaseMessaging.sendMulticast(multicastMessage);
+        } catch (Exception e) {
+            log.error("[FirebaseMessagingException] exception ", e);
+            // TODO: discord로 알림 추가 혹은 후속 작업 논의 후 추가
+        }
     }
 
     private MulticastMessage createMulticastMessage(List<String> targetFCMTokens, String title,
