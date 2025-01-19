@@ -118,26 +118,24 @@ public class FeedService {
             popularFeedService.createPopularFeed(feed);
         }
 
+        sendLikePushMessage(user, feed);
+    }
+
+    private void sendLikePushMessage(User liker, Feed feed) {
         String targetFCMToken = feed.getUser().getFcmToken();
 
-        if (feed.getNovelId() == null) { //연결 작품 X
-            fcmService.sendPushMessage(
-                    targetFCMToken,
-                    String.format("%s...", feed.getFeedContent()),
-                    String.format("%s님이 내 수다글을 좋아해요.", user.getNickname()),
-                    String.valueOf(feedId),
-                    "feedDetail"
-            );
-        } else { //연결 작품 O
-            Novel novel = novelService.getNovelOrException(feed.getNovelId());
-            fcmService.sendPushMessage(
-                    targetFCMToken,
-                    novel.getTitle(),
-                    String.format("%s님이 내 수다글을 좋아해요.", user.getNickname()),
-                    String.valueOf(feedId),
-                    "feedDetail"
-            );
+        String title;
+        Novel novel = novelService.getNovelOrException(feed.getNovelId());
+        if (feed.getNovelId() == null) {
+            title = String.format("%s...", feed.getFeedContent());
+        } else {
+            title = novel.getTitle();
         }
+        String body = String.format("%s님이 내 수다글을 좋아해요.", liker.getNickname());
+        String feedId = String.valueOf(feed.getFeedId());
+        String view = "feedDetail";
+
+        fcmService.sendPushMessage(targetFCMToken, title, body, feedId, view);
     }
 
     public void unLikeFeed(User user, Long feedId) {
