@@ -42,10 +42,10 @@ public class CommentService {
 
     public void createComment(User user, Feed feed, String commentContent) {
         commentRepository.save(Comment.create(user.getUserId(), feed, commentContent));
-        sendCommentPushMessage(user, feed);
+        sendCommentPushMessageToFeedOwner(user, feed);
     }
 
-    private void sendCommentPushMessage(User user, Feed feed) {
+    private void sendCommentPushMessageToFeedOwner(User user, Feed feed) {
         fcmService.sendPushMessage(
                 feed.getUser().getFcmToken(),
                 createNotificationTitle(feed),
