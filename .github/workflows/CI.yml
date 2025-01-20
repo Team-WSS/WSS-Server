@@ -21,13 +21,20 @@ jobs:
         distribution: 'corretto'
         java-version: '17'
 
-    - name: Create application.yml and application-prod.yml and websoso-fcm.json
+    - name: Create application.yml and application-prod.yml
       run: | 
           mkdir src/main/resources
           cd src/main/resources
           echo "${{ secrets.APPLICATION }}" > ./application.yml
           echo "${{ secrets.APPLICATION_PROD }}" > ./application-prod.yml
-          echo "${{ secrets.WEBSOSOFCM_JSON }}" > ./websoso-fcm.json
+
+    - name: create-json
+      id: create-json
+      uses: jsdaniell/create-json@1.1.2
+      with:
+        name: "websoso-fcm.json"
+        json: ${{ secrets.WEBSOSOFCM_JSON }}
+        dir: 'src/main/resources/'
 
     - name: Create apple login key file
       env:
