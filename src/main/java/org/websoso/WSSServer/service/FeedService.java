@@ -44,6 +44,8 @@ import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
+import org.websoso.WSSServer.notification.FCMService;
+import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
@@ -71,6 +73,7 @@ public class FeedService {
     private final MessageService messageService;
     private final UserService userService;
     private final NovelRepository novelRepository;
+    private final FCMService fcmService;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
@@ -113,6 +116,36 @@ public class FeedService {
         if (feed.getLikes().size() == POPULAR_FEED_LIKE_THRESHOLD) {
             popularFeedService.createPopularFeed(feed);
         }
+
+        sendLikePushMessage(user, feed);
+    }
+
+    private void sendLikePushMessage(User liker, Feed feed) {
+        if (liker.equals(feed.getUser())) {
+            return;
+        }
+
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+                createNotificationTitle(feed),
+                String.format("%s님이 내 수다글을 좋아해요.", liker.getNickname()),
+                String.valueOf(feed.getFeedId()),
+                "feedDetail"
+        );
+        fcmService.sendPushMessage(
+                feed.getUser().getFcmToken(),
+                fcmMessageRequest
+        );
+    }
+
+    private String createNotificationTitle(Feed feed) {
+        if (feed.getNovelId() == null) {
+            String feedContent = feed.getFeedContent();
+            return feedContent.length() <= 12
+                    ? feedContent
+                    : "'" + feedContent.substring(0, 12) + "...'";
+        }
+        Novel novel = novelService.getNovelOrException(feed.getNovelId());
+        return novel.getTitle();
     }
 
     public void unLikeFeed(User user, Long feedId) {
@@ -152,7 +185,7 @@ public class FeedService {
     public void createComment(User user, Long feedId, CommentCreateRequest request) {
         Feed feed = getFeedOrException(feedId);
         validateFeedAccess(feed, user);
-        commentService.createComment(user.getUserId(), feed, request.commentContent());
+        commentService.createComment(user, feed, request.commentContent());
     }
 
     public void updateComment(User user, Long feedId, Long commentId, CommentUpdateRequest request) {

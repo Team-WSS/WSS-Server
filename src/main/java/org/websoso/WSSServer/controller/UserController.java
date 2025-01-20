@@ -22,6 +22,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
+import org.websoso.WSSServer.dto.user.FCMTokenRequest;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
@@ -208,5 +209,15 @@ public class UserController {
         return ResponseEntity
                 .status(OK)
                 .body(userService.getUserIdAndNicknameAndGender(user));
+    }
+
+    @PostMapping("/fcm-token")
+    public ResponseEntity<Void> registerFCMToken(Principal principal,
+                                                 @Valid @RequestBody FCMTokenRequest fcmTokenRequest) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        userService.registerFCMToken(user, fcmTokenRequest.fcmToken());
+        return ResponseEntity
+                .status(OK)
+                .build();
     }
 }

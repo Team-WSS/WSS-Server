@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Comment;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
@@ -22,6 +23,8 @@ import org.websoso.WSSServer.dto.comment.CommentGetResponse;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomCommentException;
+import org.websoso.WSSServer.notification.FCMService;
+import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.CommentRepository;
 
 @Service
@@ -35,9 +38,63 @@ public class CommentService {
     private final BlockService blockService;
     private final ReportedCommentService reportedCommentService;
     private final MessageService messageService;
+    private final FCMService fcmService;
+    private final NovelService novelService;
 
-    public void createComment(Long userId, Feed feed, String commentContent) {
-        commentRepository.save(Comment.create(userId, feed, commentContent));
+    public void createComment(User user, Feed feed, String commentContent) {
+        commentRepository.save(Comment.create(user.getUserId(), feed, commentContent));
+        sendCommentPushMessageToFeedOwner(user, feed);
+        sendCommentPushMessageToCommenters(user, feed);
+    }
+
+    private void sendCommentPushMessageToFeedOwner(User user, Feed feed) {
+        if (isUserCommentOwner(user, feed.getUser())) {
+            return;
+        }
+
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+                createNotificationTitle(feed),
+                String.format("%s님이 내 수다글에 댓글을 남겼어요", user.getNickname()),
+                String.valueOf(feed.getFeedId()),
+                "feedDetail"
+        );
+        fcmService.sendPushMessage(
+                feed.getUser().getFcmToken(),
+                fcmMessageRequest
+        );
+    }
+
+    private String createNotificationTitle(Feed feed) {
+        if (feed.getNovelId() == null) {
+            String feedContent = feed.getFeedContent();
+            return feedContent.length() <= 12
+                    ? feedContent
+                    : "'" + feedContent.substring(0, 12) + "...'";
+        }
+        Novel novel = novelService.getNovelOrException(feed.getNovelId());
+        return novel.getTitle();
+    }
+
+    private void sendCommentPushMessageToCommenters(User user, Feed feed) {
+        List<String> commentersUserId = feed.getComments()
+                .stream()
+                .map(Comment::getUserId)
+                .filter(userId -> !userId.equals(user.getUserId()))
+                .distinct()
+                .map(userService::getUserOrException)
+                .map(User::getFcmToken)
+                .toList();
+
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+                createNotificationTitle(feed),
+                "내가 댓글 단 수다글에 또 다른 댓글이 달렸어요.",
+                String.valueOf(feed.getFeedId()),
+                "feedDetail"
+        );
+        fcmService.sendMulticastPushMessage(
+                commentersUserId,
+                fcmMessageRequest
+        );
     }
 
     public void updateComment(Long userId, Feed feed, Long commentId, String commentContent) {

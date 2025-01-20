@@ -5,10 +5,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.PopularFeed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
+import org.websoso.WSSServer.notification.FCMService;
+import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.PopularFeedRepository;
 
 @Service
@@ -17,11 +20,43 @@ import org.websoso.WSSServer.repository.PopularFeedRepository;
 public class PopularFeedService {
 
     private final PopularFeedRepository popularFeedRepository;
+    private final NovelService novelService;
+    private final FCMService fcmService;
 
     public void createPopularFeed(Feed feed) {
         if (!popularFeedRepository.existsByFeed(feed)) {
             popularFeedRepository.save(PopularFeed.create(feed));
+
+            sendPopularFeedPushMessage(feed);
         }
+    }
+
+    private void sendPopularFeedPushMessage(Feed feed) {
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+                "지금 뜨는 수다글 등극\uD83D\uDE4C",
+                createNotificationBody(feed),
+                String.valueOf(feed.getFeedId()),
+                "feedDetail"
+        );
+        fcmService.sendPushMessage(
+                feed.getUser().getFcmToken(),
+                fcmMessageRequest
+        );
+    }
+
+    private String createNotificationBody(Feed feed) {
+        return String.format("내가 남긴 %s 글이 관심 받고 있어요!", generateNotificationBodyFragment(feed));
+    }
+
+    private String generateNotificationBodyFragment(Feed feed) {
+        if (feed.getNovelId() == null) {
+            String feedContent = feed.getFeedContent();
+            return feedContent.length() <= 12
+                    ? feedContent
+                    : "'" + feedContent.substring(0, 12) + "...'";
+        }
+        Novel novel = novelService.getNovelOrException(feed.getNovelId());
+        return String.format("<%s>", novel.getTitle());
     }
 
     @Transactional(readOnly = true)
