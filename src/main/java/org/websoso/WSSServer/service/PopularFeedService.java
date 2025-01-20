@@ -33,7 +33,7 @@ public class PopularFeedService {
 
     private void sendPopularFeedPushMessage(Feed feed) {
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
-                "지금 뜨는 수다글 등극",
+                "지금 뜨는 수다글 등극\uD83D\uDE4C",
                 createNotificationBody(feed),
                 String.valueOf(feed.getFeedId()),
                 "feedDetail"
