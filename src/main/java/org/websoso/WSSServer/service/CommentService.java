@@ -80,6 +80,7 @@ public class CommentService {
                 .stream()
                 .map(Comment::getUserId)
                 .filter(userId -> !userId.equals(user.getUserId()))
+                .distinct()
                 .map(userService::getUserOrException)
                 .map(User::getFcmToken)
                 .toList();
