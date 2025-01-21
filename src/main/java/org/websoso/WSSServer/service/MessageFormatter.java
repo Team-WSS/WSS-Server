@@ -67,8 +67,8 @@ public class MessageFormatter {
         return String.format(
                 USER_WITHDRAW.getTemplate(),
                 DiscordMessageTemplate.getCurrentDateTime(),
-                userId,
                 userNickname,
+                userId,
                 reason
         );
     }
