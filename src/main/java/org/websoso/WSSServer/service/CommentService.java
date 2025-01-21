@@ -85,6 +85,10 @@ public class CommentService {
                 .map(User::getFcmToken)
                 .toList();
 
+        if (commentersUserId.isEmpty()) {
+            return;
+        }
+
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 createNotificationTitle(feed),
                 "내가 댓글 단 수다글에 또 다른 댓글이 달렸어요.",
