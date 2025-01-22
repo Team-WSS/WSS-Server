@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
+import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.FCMTokenRequest;
@@ -219,5 +220,13 @@ public class UserController {
         return ResponseEntity
                 .status(OK)
                 .build();
+    }
+
+    @GetMapping("/push-settings")
+    public ResponseEntity<PushSettingGetResponse> getPushSettingValue() {
+
+        return ResponseEntity
+                .status(OK)
+                .body();
     }
 }
