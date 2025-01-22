@@ -25,6 +25,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.WithdrawalReason;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
+import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.LoginResponse;
@@ -249,5 +250,10 @@ public class UserService {
 
     public void registerFCMToken(User user, String fcmToken) {
         user.updateFCMToken(fcmToken);
+    }
+
+    @Transactional(readOnly = true)
+    public PushSettingGetResponse getPushSettingValue(User user) {
+        return PushSettingGetResponse.of(user.getIsPushEnabled());
     }
 }

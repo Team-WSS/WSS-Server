@@ -223,10 +223,10 @@ public class UserController {
     }
 
     @GetMapping("/push-settings")
-    public ResponseEntity<PushSettingGetResponse> getPushSettingValue() {
-
+    public ResponseEntity<PushSettingGetResponse> getPushSettingValue(Principal principal) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body();
+                .body(userService.getPushSettingValue(user));
     }
 }
