@@ -77,6 +77,9 @@ public class User extends BaseEntity {
     @Column(columnDefinition = "Boolean default true", nullable = false)
     private Boolean isProfilePublic;
 
+    @Column(columnDefinition = "Boolean default true", nullable = false)
+    private Boolean isPushEnabled;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'USER'")
