@@ -247,7 +247,6 @@ public class UserService {
         return UserIdAndNicknameResponse.of(user);
     }
 
-    @Transactional
     public void registerFCMToken(User user, String fcmToken) {
         user.updateFCMToken(fcmToken);
     }
