@@ -74,6 +74,7 @@ public class CommentService {
                 feedId,
                 notificationTypeComment
         );
+        notificationRepository.save(notification);
 
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 notificationTitle,
