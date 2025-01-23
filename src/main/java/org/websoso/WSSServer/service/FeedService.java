@@ -51,6 +51,7 @@ import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
@@ -79,6 +80,7 @@ public class FeedService {
     private final NovelRepository novelRepository;
     private final FCMService fcmService;
     private final NotificationTypeRepository notificationTypeRepository;
+    private final NotificationRepository notificationRepository;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
