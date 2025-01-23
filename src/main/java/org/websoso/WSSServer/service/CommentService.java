@@ -29,6 +29,7 @@ import org.websoso.WSSServer.exception.exception.CustomCommentException;
 import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.CommentRepository;
+import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 
 @Service
@@ -45,6 +46,7 @@ public class CommentService {
     private final FCMService fcmService;
     private final NovelService novelService;
     private final NotificationTypeRepository notificationTypeRepository;
+    private final NotificationRepository notificationRepository;
 
     public void createComment(User user, Feed feed, String commentContent) {
         commentRepository.save(Comment.create(user.getUserId(), feed, commentContent));
