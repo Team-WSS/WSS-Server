@@ -217,7 +217,7 @@ public class UserController {
                                                  @Valid @RequestBody FCMTokenRequest fcmTokenRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return userService.registerFCMToken(user, fcmTokenRequest)
-                ? ResponseEntity.status(OK).build()
+                ? ResponseEntity.status(CREATED).build()
                 : ResponseEntity.status(NO_CONTENT).build();
     }
 
