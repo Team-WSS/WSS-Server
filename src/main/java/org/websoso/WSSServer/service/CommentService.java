@@ -126,37 +126,32 @@ public class CommentService {
         String notificationBody = "내가 댓글 단 수다글에 또 다른 댓글이 달렸어요.";
         Long feedId = feed.getFeedId();
 
-        List<Notification> notifications = commenters.stream()
-                .map(commenter -> Notification.create(
-                        notificationTitle,
-                        notificationBody,
-                        null,
-                        commenter.getUserId(),
-                        feedId,
-                        notificationTypeComment
-                ))
-                .toList();
-        notificationRepository.saveAll(notifications);
+        commenters.forEach(commenter -> {
+            Notification notification = Notification.create(
+                    notificationTitle,
+                    notificationBody,
+                    null,
+                    commenter.getUserId(),
+                    feedId,
+                    notificationTypeComment
+            );
+            notificationRepository.save(notification);
 
-        List<String> targetFCMTokens = commenters.stream()
-                .flatMap(commenter -> commenter.getUserDevices().stream())
-                .map(UserDevice::getFcmToken)
-                .distinct()
-                .toList();
+            List<String> targetFCMTokens = commenter.getUserDevices()
+                    .stream()
+                    .map(UserDevice::getFcmToken)
+                    .distinct()
+                    .toList();
 
-        List<FCMMessageRequest> fcmMessageRequests = notifications.stream()
-                .map(notification -> FCMMessageRequest.of(
-                        notificationTitle,
-                        notificationBody,
-                        String.valueOf(feedId),
-                        "feedDetail",
-                        String.valueOf(notification.getNotificationId())
-                ))
-                .toList();
-
-        fcmMessageRequests.forEach(fcmMessageRequest
-                -> fcmService.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest)
-        );
+            FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+                    notificationTitle,
+                    notificationBody,
+                    String.valueOf(feedId),
+                    "feedDetail",
+                    String.valueOf(notification.getNotificationId())
+            );
+            fcmService.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
+        });
     }
 
     public void updateComment(Long userId, Feed feed, Long commentId, String commentContent) {
