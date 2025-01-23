@@ -269,6 +269,10 @@ public class UserService {
                 });
     }
 
+    public void registerPushSetting(User user, Boolean isPushEnabled) {
+        user.updatePushSetting(isPushEnabled);
+    }
+
     @Transactional(readOnly = true)
     public PushSettingGetResponse getPushSettingValue(User user) {
         return PushSettingGetResponse.of(user.getIsPushEnabled());
