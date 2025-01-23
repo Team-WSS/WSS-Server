@@ -144,12 +144,16 @@ public class CommentService {
                 .distinct()
                 .toList();
 
-        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
-                notificationTitle,
-                notificationBody,
-                String.valueOf(feedId),
-                "feedDetail"
-        );
+        List<FCMMessageRequest> fcmMessageRequests = notifications.stream()
+                .map(notification -> FCMMessageRequest.of(
+                        notificationTitle,
+                        notificationBody,
+                        String.valueOf(feedId),
+                        "feedDetail",
+                        String.valueOf(notification.getNotificationId())
+                ))
+                .toList();
+
         fcmService.sendMulticastPushMessage(
                 targetFCMTokens,
                 fcmMessageRequest
