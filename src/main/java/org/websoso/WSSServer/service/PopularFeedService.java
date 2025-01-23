@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.PopularFeed;
 import org.websoso.WSSServer.domain.User;
@@ -37,9 +39,22 @@ public class PopularFeedService {
     }
 
     private void sendPopularFeedPushMessage(Feed feed) {
+        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("지금뜨는수다글");
+
         Long feedId = feed.getFeedId();
         String notificationTitle = "지금 뜨는 수다글 등극\uD83D\uDE4C";
         String notificationBody = createNotificationBody(feed);
+
+        Notification notification = Notification.create(
+                notificationTitle,
+                notificationBody,
+                null,
+                feed.getUser().getUserId(),
+                feedId,
+                notificationTypeComment
+        );
+        notificationRepository.save(notification);
+
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 notificationTitle,
                 notificationBody,
