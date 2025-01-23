@@ -53,7 +53,8 @@ public class CommentService {
     }
 
     private void sendCommentPushMessageToFeedOwner(User user, Feed feed) {
-        if (isUserCommentOwner(user, feed.getUser())) {
+        User feedOwner = feed.getUser();
+        if (isUserCommentOwner(user, feedOwner)) {
             return;
         }
 
@@ -63,7 +64,7 @@ public class CommentService {
                 createNotificationTitle(feed),
                 String.format("%s님이 내 수다글에 댓글을 남겼어요", user.getNickname()),
                 null,
-                feed.getUser().getUserId(),
+                feedOwner.getUserId(),
                 feed.getFeedId(),
                 notificationTypeComment
         );
@@ -76,7 +77,7 @@ public class CommentService {
                 String.valueOf(notification.getNotificationId())
         );
 
-        List<String> targetFCMTokens = feed.getUser()
+        List<String> targetFCMTokens = feedOwner
                 .getUserDevices()
                 .stream()
                 .map(UserDevice::getFcmToken)
