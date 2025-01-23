@@ -1,5 +1,8 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.FEED;
+import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.NOTICE;
+import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_ALREADY_READ;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_READ_FORBIDDEN;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_TYPE_INVALID;
@@ -13,8 +16,10 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.ReadNotification;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.common.NotificationTypeGroup;
 import org.websoso.WSSServer.dto.notification.NotificationGetResponse;
 import org.websoso.WSSServer.dto.notification.NotificationInfo;
 import org.websoso.WSSServer.dto.notification.NotificationsGetResponse;
@@ -31,13 +36,6 @@ public class NotificationService {
     private static final int DEFAULT_PAGE_NUMBER = 0;
     private final NotificationRepository notificationRepository;
     private final ReadNotificationRepository readNotificationRepository;
-
-    @Transactional(readOnly = true)
-    public Notification getNotificationOrException(Long notificationId) {
-        return notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new CustomNotificationException(NOTIFICATION_NOT_FOUND,
-                        "notification with the given id is not found"));
-    }
 
     @Transactional(readOnly = true)
     public NotificationsReadStatusGetResponse checkNotificationsReadStatus(User user) {
@@ -63,31 +61,52 @@ public class NotificationService {
     }
 
     public NotificationGetResponse getNotification(User user, Long notificationId) {
-        Notification notification = getNotificationOrException(notificationId);
-        verifyIsNotice(notification);
-        validateNotificationRecipient(user, notification);
+        Notification notification = getAndValidateNotification(user, notificationId, NOTICE);
         if (!readNotificationRepository.existsByUserAndNotification(user, notification)) {
             readNotificationRepository.save(ReadNotification.create(notification, user));
         }
         return NotificationGetResponse.of(notification);
     }
 
-    private void verifyIsNotice(Notification notification) {
-        Set<String> noticeTypes = Set.of("공지", "이벤트");
-        if (noticeTypes.contains(notification.getNotificationType().getNotificationTypeName())) {
-            return;
-        }
-        throw new CustomNotificationException(NOTIFICATION_TYPE_INVALID,
-                "Notification does not have a type suitable for a notice.");
+    public void createNotificationAsRead(User user, Long notificationId) {
+        Notification notification = getAndValidateNotification(user, notificationId, FEED);
+        checkIfNotificationAlreadyRead(user, notification);
+        readNotificationRepository.save(ReadNotification.create(notification, user));
     }
 
-    private void validateNotificationRecipient(User user, Notification notification) {
-        Long userId = user.getUserId();
-        Long notificationUserId = notification.getUserId();
-        if (notificationUserId == 0 || notificationUserId.equals(userId)) {
+    private Notification getAndValidateNotification(User user, Long notificationId,
+                                                    NotificationTypeGroup notificationTypeGroup) {
+        Notification notification = getNotificationOrException(notificationId);
+        validateNotification(notification.getNotificationType(), notificationTypeGroup);
+        validateNotificationRecipient(user.getUserId(), notification.getUserId());
+        return notification;
+    }
+
+    private Notification getNotificationOrException(Long notificationId) {
+        return notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new CustomNotificationException(NOTIFICATION_NOT_FOUND,
+                        "notification with the given id is not found"));
+    }
+
+    private void validateNotification(NotificationType notificationType, NotificationTypeGroup notificationTypeGroup) {
+        if (NotificationTypeGroup.isTypeInGroup(notificationType.getNotificationTypeName(), notificationTypeGroup)) {
+            return;
+        }
+        throw new CustomNotificationException(NOTIFICATION_TYPE_INVALID, "notification type is incorrect");
+    }
+
+    private void validateNotificationRecipient(Long userId, Long recipientUserId) {
+        if (recipientUserId == 0 || recipientUserId.equals(userId)) {
             return;
         }
         throw new CustomNotificationException(NOTIFICATION_READ_FORBIDDEN,
                 "User does not have permission to access this notification.");
+    }
+
+    private void checkIfNotificationAlreadyRead(User user, Notification notification) {
+        if (readNotificationRepository.existsByUserAndNotification(user, notification)) {
+            throw new CustomNotificationException(NOTIFICATION_ALREADY_READ,
+                    "notifications that the user has already read");
+        }
     }
 }
