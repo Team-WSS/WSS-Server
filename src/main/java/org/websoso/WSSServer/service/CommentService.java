@@ -136,6 +136,7 @@ public class CommentService {
                         notificationTypeComment
                 ))
                 .toList();
+        notificationRepository.saveAll(notifications);
 
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 notificationTitle,
