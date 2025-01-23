@@ -70,6 +70,7 @@ public class UserService {
     private final CommentRepository commentRepository;
     private final MessageService messageService;
     private final WithdrawalReasonRepository withdrawalReasonRepository;
+    private final UserDeviceRepository userDeviceRepository;
     private static final String KAKAO_PREFIX = "kakao";
     private static final String APPLE_PREFIX = "apple";
 
