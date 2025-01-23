@@ -120,9 +120,22 @@ public class CommentService {
             return;
         }
 
+        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("댓글");
+
         String notificationTitle = createNotificationTitle(feed);
         String notificationBody = "내가 댓글 단 수다글에 또 다른 댓글이 달렸어요.";
         Long feedId = feed.getFeedId();
+
+        List<Notification> notifications = commenters.stream()
+                .map(commenter -> Notification.create(
+                        notificationTitle,
+                        notificationBody,
+                        null,
+                        commenter.getUserId(),
+                        feedId,
+                        notificationTypeComment
+                ))
+                .toList();
 
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 notificationTitle,
