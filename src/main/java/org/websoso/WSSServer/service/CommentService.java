@@ -72,7 +72,8 @@ public class CommentService {
                 createNotificationTitle(feed),
                 String.format("%s님이 내 수다글에 댓글을 남겼어요", user.getNickname()),
                 String.valueOf(feed.getFeedId()),
-                "feedDetail"
+                "feedDetail",
+                String.valueOf(notification.getNotificationId())
         );
 
         List<String> targetFCMTokens = feed.getUser()
