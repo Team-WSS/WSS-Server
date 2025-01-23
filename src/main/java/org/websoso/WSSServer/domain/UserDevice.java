@@ -41,4 +41,8 @@ public class UserDevice {
     public static UserDevice create(String fcmToken, String deviceIdentifier, User user) {
         return new UserDevice(fcmToken, deviceIdentifier, user);
     }
+
+    public void updateFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
 }
