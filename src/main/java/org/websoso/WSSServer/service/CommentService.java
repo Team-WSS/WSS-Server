@@ -108,18 +108,15 @@ public class CommentService {
     }
 
     private void sendCommentPushMessageToCommenters(User user, Feed feed) {
-        List<String> commentersUserId = feed.getComments()
+        List<User> commenters = feed.getComments()
                 .stream()
                 .map(Comment::getUserId)
                 .filter(userId -> !userId.equals(user.getUserId()))
                 .distinct()
                 .map(userService::getUserOrException)
-                .map(User::getUserDevices)
-                .flatMap(List::stream)
-                .map(UserDevice::getFcmToken)
                 .toList();
 
-        if (commentersUserId.isEmpty()) {
+        if (commenters.isEmpty()) {
             return;
         }
 
