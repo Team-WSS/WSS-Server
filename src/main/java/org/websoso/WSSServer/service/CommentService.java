@@ -60,19 +60,23 @@ public class CommentService {
 
         NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("댓글");
 
+        String notificationTitle = createNotificationTitle(feed);
+        String notificationBody = String.format("%s님이 내 수다글에 댓글을 남겼어요", user.getNickname());
+        Long feedId = feed.getFeedId();
+
         Notification notification = Notification.create(
-                createNotificationTitle(feed),
-                String.format("%s님이 내 수다글에 댓글을 남겼어요", user.getNickname()),
+                notificationTitle,
+                notificationBody,
                 null,
                 feedOwner.getUserId(),
-                feed.getFeedId(),
+                feedId,
                 notificationTypeComment
         );
 
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
-                createNotificationTitle(feed),
-                String.format("%s님이 내 수다글에 댓글을 남겼어요", user.getNickname()),
-                String.valueOf(feed.getFeedId()),
+                notificationTitle,
+                notificationBody,
+                String.valueOf(feedId),
                 "feedDetail",
                 String.valueOf(notification.getNotificationId())
         );
