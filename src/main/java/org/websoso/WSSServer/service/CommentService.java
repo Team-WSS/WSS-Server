@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Comment;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserDevice;
@@ -54,6 +56,17 @@ public class CommentService {
         if (isUserCommentOwner(user, feed.getUser())) {
             return;
         }
+
+        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("댓글");
+
+        Notification notification = Notification.create(
+                createNotificationTitle(feed),
+                String.format("%s님이 내 수다글에 댓글을 남겼어요", user.getNickname()),
+                null,
+                feed.getUser().getUserId(),
+                feed.getFeedId(),
+                notificationTypeComment
+        );
 
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 createNotificationTitle(feed),
