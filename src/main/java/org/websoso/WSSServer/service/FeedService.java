@@ -25,6 +25,7 @@ import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
@@ -131,8 +132,14 @@ public class FeedService {
                 String.valueOf(feed.getFeedId()),
                 "feedDetail"
         );
-        fcmService.sendPushMessage(
-                feed.getUser().getFcmToken(),
+
+        List<String> targetFCMTokens = feed.getUser()
+                .getUserDevices()
+                .stream()
+                .map(UserDevice::getFcmToken)
+                .toList();
+        fcmService.sendMulticastPushMessage(
+                targetFCMTokens,
                 fcmMessageRequest
         );
     }

@@ -17,6 +17,7 @@ import org.websoso.WSSServer.domain.Comment;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentGetResponse;
@@ -58,8 +59,15 @@ public class CommentService {
                 String.valueOf(feed.getFeedId()),
                 "feedDetail"
         );
-        fcmService.sendPushMessage(
-                feed.getUser().getFcmToken(),
+
+        List<String> targetFCMTokens = feed.getUser()
+                .getUserDevices()
+                .stream()
+                .map(UserDevice::getFcmToken)
+                .toList();
+
+        fcmService.sendMulticastPushMessage(
+                targetFCMTokens,
                 fcmMessageRequest
         );
     }
@@ -82,7 +90,9 @@ public class CommentService {
                 .filter(userId -> !userId.equals(user.getUserId()))
                 .distinct()
                 .map(userService::getUserOrException)
-                .map(User::getFcmToken)
+                .map(User::getUserDevices)
+                .flatMap(List::stream)
+                .map(UserDevice::getFcmToken)
                 .toList();
 
         if (commentersUserId.isEmpty()) {

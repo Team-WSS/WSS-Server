@@ -8,6 +8,7 @@ import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.PopularFeed;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.notification.FCMService;
@@ -38,8 +39,14 @@ public class PopularFeedService {
                 String.valueOf(feed.getFeedId()),
                 "feedDetail"
         );
-        fcmService.sendPushMessage(
-                feed.getUser().getFcmToken(),
+
+        List<String> targetFCMTokens = feed.getUser()
+                .getUserDevices()
+                .stream()
+                .map(UserDevice::getFcmToken)
+                .toList();
+        fcmService.sendMulticastPushMessage(
+                targetFCMTokens,
                 fcmMessageRequest
         );
     }
