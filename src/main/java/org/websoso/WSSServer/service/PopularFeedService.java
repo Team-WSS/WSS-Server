@@ -59,6 +59,8 @@ public class PopularFeedService {
                 notificationTitle,
                 notificationBody,
                 String.valueOf(feedId),
+                "feedDetail",
+                String.valueOf(notification.getNotificationId())
         );
 
         List<String> targetFCMTokens = feed.getUser()
