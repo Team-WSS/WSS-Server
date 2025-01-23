@@ -50,9 +50,6 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String socialId;
 
-    @Column
-    private String fcmToken;
-
     @Column(columnDefinition = "varchar(10)", nullable = false)
     private String nickname;
     //TODO 일부 특수문자 제외, 앞뒤 공백 불가능
@@ -142,9 +139,5 @@ public class User extends BaseEntity {
     public void editMyInfo(EditMyInfoRequest editMyInfoRequest) {
         this.gender = Gender.valueOf(editMyInfoRequest.gender());
         this.birth = Year.of(editMyInfoRequest.birth());
-    }
-
-    public void updateFCMToken(String fcmToken) {
-        this.fcmToken = fcmToken;
     }
 }
