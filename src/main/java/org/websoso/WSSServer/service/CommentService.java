@@ -154,9 +154,8 @@ public class CommentService {
                 ))
                 .toList();
 
-        fcmService.sendMulticastPushMessage(
-                targetFCMTokens,
-                fcmMessageRequest
+        fcmMessageRequests.forEach(fcmMessageRequest
+                -> fcmService.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest)
         );
     }
 
