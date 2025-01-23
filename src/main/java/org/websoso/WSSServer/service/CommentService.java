@@ -138,6 +138,12 @@ public class CommentService {
                 .toList();
         notificationRepository.saveAll(notifications);
 
+        List<String> targetFCMTokens = commenters.stream()
+                .flatMap(commenter -> commenter.getUserDevices().stream())
+                .map(UserDevice::getFcmToken)
+                .distinct()
+                .toList();
+
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 notificationTitle,
                 notificationBody,
@@ -145,7 +151,7 @@ public class CommentService {
                 "feedDetail"
         );
         fcmService.sendMulticastPushMessage(
-                commentersUserId,
+                targetFCMTokens,
                 fcmMessageRequest
         );
     }
