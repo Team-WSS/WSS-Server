@@ -133,7 +133,7 @@ public class FeedService {
             return;
         }
 
-        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("댓글");
+        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("좋아요");
 
         String notificationTitle = createNotificationTitle(feed);
         String notificationBody = String.format("%s님이 내 수다글을 좋아해요.", liker.getNickname());
