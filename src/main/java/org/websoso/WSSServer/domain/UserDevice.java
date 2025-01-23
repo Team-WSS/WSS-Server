@@ -31,4 +31,14 @@ public class UserDevice {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    private UserDevice(String fcmToken, String deviceIdentifier, User user) {
+        this.fcmToken = fcmToken;
+        this.deviceIdentifier = deviceIdentifier;
+        this.user = user;
+    }
+
+    public static UserDevice create(String fcmToken, String deviceIdentifier, User user) {
+        return new UserDevice(fcmToken, deviceIdentifier, user);
+    }
 }
