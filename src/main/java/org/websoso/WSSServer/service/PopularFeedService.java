@@ -13,6 +13,7 @@ import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
+import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.PopularFeedRepository;
 
@@ -25,6 +26,7 @@ public class PopularFeedService {
     private final NovelService novelService;
     private final FCMService fcmService;
     private final NotificationTypeRepository notificationTypeRepository;
+    private final NotificationRepository notificationRepository;
 
     public void createPopularFeed(Feed feed) {
         if (!popularFeedRepository.existsByFeed(feed)) {
