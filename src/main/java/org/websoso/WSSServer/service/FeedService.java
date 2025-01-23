@@ -153,7 +153,8 @@ public class FeedService {
                 notificationTitle,
                 notificationBody,
                 String.valueOf(feedId),
-                "feedDetail"
+                "feedDetail",
+                String.valueOf(notification.getNotificationId())
         );
 
         List<String> targetFCMTokens = feedOwner
