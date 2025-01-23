@@ -123,10 +123,14 @@ public class CommentService {
             return;
         }
 
+        String notificationTitle = createNotificationTitle(feed);
+        String notificationBody = "내가 댓글 단 수다글에 또 다른 댓글이 달렸어요.";
+        Long feedId = feed.getFeedId();
+
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
-                createNotificationTitle(feed),
-                "내가 댓글 단 수다글에 또 다른 댓글이 달렸어요.",
-                String.valueOf(feed.getFeedId()),
+                notificationTitle,
+                notificationBody,
+                String.valueOf(feedId),
                 "feedDetail"
         );
         fcmService.sendMulticastPushMessage(
