@@ -33,11 +33,13 @@ public class PopularFeedService {
     }
 
     private void sendPopularFeedPushMessage(Feed feed) {
+        Long feedId = feed.getFeedId();
+        String notificationTitle = "지금 뜨는 수다글 등극\uD83D\uDE4C";
+        String notificationBody = createNotificationBody(feed);
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
-                "지금 뜨는 수다글 등극\uD83D\uDE4C",
-                createNotificationBody(feed),
-                String.valueOf(feed.getFeedId()),
-                "feedDetail"
+                notificationTitle,
+                notificationBody,
+                String.valueOf(feedId),
         );
 
         List<String> targetFCMTokens = feed.getUser()
