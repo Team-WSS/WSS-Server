@@ -126,6 +126,7 @@ public class User extends BaseEntity {
         this.birth = Year.now();
         this.avatarId = 1;
         this.isProfilePublic = true;
+        this.isPushEnabled = true;
         this.role = USER;
         this.socialId = socialId;
         this.nickname = nickname;
