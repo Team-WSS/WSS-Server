@@ -122,18 +122,23 @@ public class FeedService {
     }
 
     private void sendLikePushMessage(User liker, Feed feed) {
-        if (liker.equals(feed.getUser())) {
+        User feedOwner = feed.getUser();
+        if (liker.equals(feedOwner)) {
             return;
         }
 
+        String notificationTitle = createNotificationTitle(feed);
+        String notificationBody = String.format("%s님이 내 수다글을 좋아해요.", liker.getNickname());
+        Long feedId = feed.getFeedId();
+
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
-                createNotificationTitle(feed),
-                String.format("%s님이 내 수다글을 좋아해요.", liker.getNickname()),
-                String.valueOf(feed.getFeedId()),
+                notificationTitle,
+                notificationBody,
+                String.valueOf(feedId),
                 "feedDetail"
         );
 
-        List<String> targetFCMTokens = feed.getUser()
+        List<String> targetFCMTokens = feedOwner
                 .getUserDevices()
                 .stream()
                 .map(UserDevice::getFcmToken)
