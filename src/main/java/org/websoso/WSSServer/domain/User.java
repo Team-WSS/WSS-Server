@@ -141,4 +141,8 @@ public class User extends BaseEntity {
         this.gender = Gender.valueOf(editMyInfoRequest.gender());
         this.birth = Year.of(editMyInfoRequest.birth());
     }
+
+    public void updatePushSetting(boolean isPushEnabled) {
+        this.isPushEnabled = isPushEnabled;
+    }
 }
