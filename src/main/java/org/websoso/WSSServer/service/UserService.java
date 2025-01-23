@@ -252,19 +252,21 @@ public class UserService {
         return UserIdAndNicknameResponse.of(user);
     }
 
-    public void registerFCMToken(User user, FCMTokenRequest fcmTokenRequest) {
-        userDeviceRepository.findByDeviceIdentifier(fcmTokenRequest.deviceIdentifier())
-                .ifPresentOrElse(
-                        userDevice -> userDevice.updateFcmToken(fcmTokenRequest.fcmToken()),
-                        () -> {
-                            UserDevice userDevice = UserDevice.create(
-                                    fcmTokenRequest.fcmToken(),
-                                    fcmTokenRequest.deviceIdentifier(),
-                                    user
-                            );
-                            userDeviceRepository.save(userDevice);
-                        }
-                );
+    public boolean registerFCMToken(User user, FCMTokenRequest fcmTokenRequest) {
+        return userDeviceRepository.findByDeviceIdentifier(fcmTokenRequest.deviceIdentifier())
+                .map(userDevice -> {
+                    userDevice.updateFcmToken(fcmTokenRequest.fcmToken());
+                    return false;
+                })
+                .orElseGet(() -> {
+                    UserDevice userDevice = UserDevice.create(
+                            fcmTokenRequest.fcmToken(),
+                            fcmTokenRequest.deviceIdentifier(),
+                            user
+                    );
+                    userDeviceRepository.save(userDevice);
+                    return true;
+                });
     }
 
     @Transactional(readOnly = true)
