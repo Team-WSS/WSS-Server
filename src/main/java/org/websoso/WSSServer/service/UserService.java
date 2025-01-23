@@ -22,12 +22,14 @@ import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.WithdrawalReason;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
 import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
+import org.websoso.WSSServer.dto.user.FCMTokenRequest;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
@@ -50,6 +52,7 @@ import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
+import org.websoso.WSSServer.repository.UserDeviceRepository;
 import org.websoso.WSSServer.repository.UserRepository;
 import org.websoso.WSSServer.repository.WithdrawalReasonRepository;
 
@@ -249,8 +252,19 @@ public class UserService {
         return UserIdAndNicknameResponse.of(user);
     }
 
-    public void registerFCMToken(User user, String fcmToken) {
-        user.updateFCMToken(fcmToken);
+    public void registerFCMToken(User user, FCMTokenRequest fcmTokenRequest) {
+        userDeviceRepository.findByDeviceIdentifier(fcmTokenRequest.deviceIdentifier())
+                .ifPresentOrElse(
+                        userDevice -> userDevice.updateFcmToken(fcmTokenRequest.fcmToken()),
+                        () -> {
+                            UserDevice userDevice = UserDevice.create(
+                                    fcmTokenRequest.fcmToken(),
+                                    fcmTokenRequest.deviceIdentifier(),
+                                    user
+                            );
+                            userDeviceRepository.save(userDevice);
+                        }
+                );
     }
 
     @Transactional(readOnly = true)

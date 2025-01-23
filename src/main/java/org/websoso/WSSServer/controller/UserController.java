@@ -216,7 +216,7 @@ public class UserController {
     public ResponseEntity<Void> registerFCMToken(Principal principal,
                                                  @Valid @RequestBody FCMTokenRequest fcmTokenRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        userService.registerFCMToken(user, fcmTokenRequest.fcmToken());
+        userService.registerFCMToken(user, fcmTokenRequest);
         return ResponseEntity
                 .status(OK)
                 .build();
