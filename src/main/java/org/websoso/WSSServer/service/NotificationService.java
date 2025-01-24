@@ -10,7 +10,7 @@ import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTI
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.ReadNotificationRepository;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Transactional
 public class NotificationService {
 

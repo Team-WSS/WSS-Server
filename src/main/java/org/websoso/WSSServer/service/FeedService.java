@@ -23,8 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
@@ -48,6 +51,8 @@ import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.repository.NotificationRepository;
+import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
 
@@ -74,6 +79,8 @@ public class FeedService {
     private final UserService userService;
     private final NovelRepository novelRepository;
     private final FCMService fcmService;
+    private final NotificationTypeRepository notificationTypeRepository;
+    private final NotificationRepository notificationRepository;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
@@ -121,18 +128,42 @@ public class FeedService {
     }
 
     private void sendLikePushMessage(User liker, Feed feed) {
-        if (liker.equals(feed.getUser())) {
+        User feedOwner = feed.getUser();
+        if (liker.equals(feedOwner)) {
             return;
         }
 
-        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
-                createNotificationTitle(feed),
-                String.format("%s님이 내 수다글을 좋아해요.", liker.getNickname()),
-                String.valueOf(feed.getFeedId()),
-                "feedDetail"
+        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("좋아요");
+
+        String notificationTitle = createNotificationTitle(feed);
+        String notificationBody = String.format("%s님이 내 수다글을 좋아해요.", liker.getNickname());
+        Long feedId = feed.getFeedId();
+
+        Notification notification = Notification.create(
+                notificationTitle,
+                notificationBody,
+                null,
+                feedOwner.getUserId(),
+                feedId,
+                notificationTypeComment
         );
-        fcmService.sendPushMessage(
-                feed.getUser().getFcmToken(),
+        notificationRepository.save(notification);
+
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+                notificationTitle,
+                notificationBody,
+                String.valueOf(feedId),
+                "feedDetail",
+                String.valueOf(notification.getNotificationId())
+        );
+
+        List<String> targetFCMTokens = feedOwner
+                .getUserDevices()
+                .stream()
+                .map(UserDevice::getFcmToken)
+                .toList();
+        fcmService.sendMulticastPushMessage(
+                targetFCMTokens,
                 fcmMessageRequest
         );
     }

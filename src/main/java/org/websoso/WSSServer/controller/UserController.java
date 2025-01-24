@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
+import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
+import org.websoso.WSSServer.dto.notification.PushSettingRequest;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.FCMTokenRequest;
@@ -215,9 +217,26 @@ public class UserController {
     public ResponseEntity<Void> registerFCMToken(Principal principal,
                                                  @Valid @RequestBody FCMTokenRequest fcmTokenRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        userService.registerFCMToken(user, fcmTokenRequest.fcmToken());
+        return userService.registerFCMToken(user, fcmTokenRequest)
+                ? ResponseEntity.status(CREATED).build()
+                : ResponseEntity.status(NO_CONTENT).build();
+    }
+
+    @GetMapping("/push-settings")
+    public ResponseEntity<PushSettingGetResponse> getPushSettingValue(Principal principal) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
+                .body(userService.getPushSettingValue(user));
+    }
+
+    @PostMapping("/push-settings")
+    public ResponseEntity<Void> registerPushSetting(Principal principal,
+                                                    @Valid @RequestBody PushSettingRequest pushSettingRequest) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        userService.registerPushSetting(user, pushSettingRequest.isPushEnabled());
+        return ResponseEntity
+                .status(NO_CONTENT)
                 .build();
     }
 }

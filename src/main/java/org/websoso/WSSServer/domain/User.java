@@ -50,9 +50,6 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String socialId;
 
-    @Column
-    private String fcmToken;
-
     @Column(columnDefinition = "varchar(10)", nullable = false)
     private String nickname;
     //TODO 일부 특수문자 제외, 앞뒤 공백 불가능
@@ -77,6 +74,9 @@ public class User extends BaseEntity {
     @Column(columnDefinition = "Boolean default true", nullable = false)
     private Boolean isProfilePublic;
 
+    @Column(columnDefinition = "Boolean default true", nullable = false)
+    private Boolean isPushEnabled;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'USER'")
@@ -93,6 +93,9 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
     private List<ReportedComment> reportedComments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
+    private List<UserDevice> userDevices = new ArrayList<>();
 
     public void updateProfileStatus(Boolean profileStatus) {
         this.isProfilePublic = profileStatus;
@@ -126,6 +129,7 @@ public class User extends BaseEntity {
         this.birth = Year.now();
         this.avatarId = 1;
         this.isProfilePublic = true;
+        this.isPushEnabled = true;
         this.role = USER;
         this.socialId = socialId;
         this.nickname = nickname;
@@ -141,7 +145,7 @@ public class User extends BaseEntity {
         this.birth = Year.of(editMyInfoRequest.birth());
     }
 
-    public void updateFCMToken(String fcmToken) {
-        this.fcmToken = fcmToken;
+    public void updatePushSetting(boolean isPushEnabled) {
+        this.isPushEnabled = isPushEnabled;
     }
 }

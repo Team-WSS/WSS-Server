@@ -22,11 +22,14 @@ import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.WithdrawalReason;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
+import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
+import org.websoso.WSSServer.dto.user.FCMTokenRequest;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
@@ -49,6 +52,7 @@ import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
+import org.websoso.WSSServer.repository.UserDeviceRepository;
 import org.websoso.WSSServer.repository.UserRepository;
 import org.websoso.WSSServer.repository.WithdrawalReasonRepository;
 
@@ -69,6 +73,7 @@ public class UserService {
     private final CommentRepository commentRepository;
     private final MessageService messageService;
     private final WithdrawalReasonRepository withdrawalReasonRepository;
+    private final UserDeviceRepository userDeviceRepository;
     private static final String KAKAO_PREFIX = "kakao";
     private static final String APPLE_PREFIX = "apple";
 
@@ -247,8 +252,29 @@ public class UserService {
         return UserIdAndNicknameResponse.of(user);
     }
 
-    @Transactional
-    public void registerFCMToken(User user, String fcmToken) {
-        user.updateFCMToken(fcmToken);
+    public boolean registerFCMToken(User user, FCMTokenRequest fcmTokenRequest) {
+        return userDeviceRepository.findByDeviceIdentifier(fcmTokenRequest.deviceIdentifier())
+                .map(userDevice -> {
+                    userDevice.updateFcmToken(fcmTokenRequest.fcmToken());
+                    return false;
+                })
+                .orElseGet(() -> {
+                    UserDevice userDevice = UserDevice.create(
+                            fcmTokenRequest.fcmToken(),
+                            fcmTokenRequest.deviceIdentifier(),
+                            user
+                    );
+                    userDeviceRepository.save(userDevice);
+                    return true;
+                });
+    }
+
+    public void registerPushSetting(User user, Boolean isPushEnabled) {
+        user.updatePushSetting(isPushEnabled);
+    }
+
+    @Transactional(readOnly = true)
+    public PushSettingGetResponse getPushSettingValue(User user) {
+        return PushSettingGetResponse.of(user.getIsPushEnabled());
     }
 }

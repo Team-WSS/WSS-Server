@@ -5,13 +5,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.PopularFeed;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
+import org.websoso.WSSServer.repository.NotificationRepository;
+import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.PopularFeedRepository;
 
 @Service
@@ -22,6 +27,8 @@ public class PopularFeedService {
     private final PopularFeedRepository popularFeedRepository;
     private final NovelService novelService;
     private final FCMService fcmService;
+    private final NotificationTypeRepository notificationTypeRepository;
+    private final NotificationRepository notificationRepository;
 
     public void createPopularFeed(Feed feed) {
         if (!popularFeedRepository.existsByFeed(feed)) {
@@ -32,14 +39,38 @@ public class PopularFeedService {
     }
 
     private void sendPopularFeedPushMessage(Feed feed) {
-        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
-                "지금 뜨는 수다글 등극\uD83D\uDE4C",
-                createNotificationBody(feed),
-                String.valueOf(feed.getFeedId()),
-                "feedDetail"
+        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("지금뜨는수다글");
+
+        User feedOwner = feed.getUser();
+        Long feedId = feed.getFeedId();
+        String notificationTitle = "지금 뜨는 수다글 등극\uD83D\uDE4C";
+        String notificationBody = createNotificationBody(feed);
+
+        Notification notification = Notification.create(
+                notificationTitle,
+                notificationBody,
+                null,
+                feedOwner.getUserId(),
+                feedId,
+                notificationTypeComment
         );
-        fcmService.sendPushMessage(
-                feed.getUser().getFcmToken(),
+        notificationRepository.save(notification);
+
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+                notificationTitle,
+                notificationBody,
+                String.valueOf(feedId),
+                "feedDetail",
+                String.valueOf(notification.getNotificationId())
+        );
+
+        List<String> targetFCMTokens = feed.getUser()
+                .getUserDevices()
+                .stream()
+                .map(UserDevice::getFcmToken)
+                .toList();
+        fcmService.sendMulticastPushMessage(
+                targetFCMTokens,
                 fcmMessageRequest
         );
     }

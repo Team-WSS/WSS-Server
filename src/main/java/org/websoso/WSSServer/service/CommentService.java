@@ -15,8 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Comment;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentGetResponse;
@@ -26,6 +29,8 @@ import org.websoso.WSSServer.exception.exception.CustomCommentException;
 import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.CommentRepository;
+import org.websoso.WSSServer.repository.NotificationRepository;
+import org.websoso.WSSServer.repository.NotificationTypeRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +45,8 @@ public class CommentService {
     private final MessageService messageService;
     private final FCMService fcmService;
     private final NovelService novelService;
+    private final NotificationTypeRepository notificationTypeRepository;
+    private final NotificationRepository notificationRepository;
 
     public void createComment(User user, Feed feed, String commentContent) {
         commentRepository.save(Comment.create(user.getUserId(), feed, commentContent));
@@ -48,18 +55,43 @@ public class CommentService {
     }
 
     private void sendCommentPushMessageToFeedOwner(User user, Feed feed) {
-        if (isUserCommentOwner(user, feed.getUser())) {
+        User feedOwner = feed.getUser();
+        if (isUserCommentOwner(user, feedOwner)) {
             return;
         }
 
-        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
-                createNotificationTitle(feed),
-                String.format("%s님이 내 수다글에 댓글을 남겼어요", user.getNickname()),
-                String.valueOf(feed.getFeedId()),
-                "feedDetail"
+        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("댓글");
+
+        String notificationTitle = createNotificationTitle(feed);
+        String notificationBody = String.format("%s님이 내 수다글에 댓글을 남겼어요", user.getNickname());
+        Long feedId = feed.getFeedId();
+
+        Notification notification = Notification.create(
+                notificationTitle,
+                notificationBody,
+                null,
+                feedOwner.getUserId(),
+                feedId,
+                notificationTypeComment
         );
-        fcmService.sendPushMessage(
-                feed.getUser().getFcmToken(),
+        notificationRepository.save(notification);
+
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+                notificationTitle,
+                notificationBody,
+                String.valueOf(feedId),
+                "feedDetail",
+                String.valueOf(notification.getNotificationId())
+        );
+
+        List<String> targetFCMTokens = feedOwner
+                .getUserDevices()
+                .stream()
+                .map(UserDevice::getFcmToken)
+                .toList();
+
+        fcmService.sendMulticastPushMessage(
+                targetFCMTokens,
                 fcmMessageRequest
         );
     }
@@ -76,29 +108,50 @@ public class CommentService {
     }
 
     private void sendCommentPushMessageToCommenters(User user, Feed feed) {
-        List<String> commentersUserId = feed.getComments()
+        List<User> commenters = feed.getComments()
                 .stream()
                 .map(Comment::getUserId)
                 .filter(userId -> !userId.equals(user.getUserId()))
                 .distinct()
                 .map(userService::getUserOrException)
-                .map(User::getFcmToken)
                 .toList();
 
-        if (commentersUserId.isEmpty()) {
+        if (commenters.isEmpty()) {
             return;
         }
 
-        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
-                createNotificationTitle(feed),
-                "내가 댓글 단 수다글에 또 다른 댓글이 달렸어요.",
-                String.valueOf(feed.getFeedId()),
-                "feedDetail"
-        );
-        fcmService.sendMulticastPushMessage(
-                commentersUserId,
-                fcmMessageRequest
-        );
+        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("댓글");
+
+        String notificationTitle = createNotificationTitle(feed);
+        String notificationBody = "내가 댓글 단 수다글에 또 다른 댓글이 달렸어요.";
+        Long feedId = feed.getFeedId();
+
+        commenters.forEach(commenter -> {
+            Notification notification = Notification.create(
+                    notificationTitle,
+                    notificationBody,
+                    null,
+                    commenter.getUserId(),
+                    feedId,
+                    notificationTypeComment
+            );
+            notificationRepository.save(notification);
+
+            List<String> targetFCMTokens = commenter.getUserDevices()
+                    .stream()
+                    .map(UserDevice::getFcmToken)
+                    .distinct()
+                    .toList();
+
+            FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+                    notificationTitle,
+                    notificationBody,
+                    String.valueOf(feedId),
+                    "feedDetail",
+                    String.valueOf(notification.getNotificationId())
+            );
+            fcmService.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
+        });
     }
 
     public void updateComment(Long userId, Feed feed, Long commentId, String commentContent) {

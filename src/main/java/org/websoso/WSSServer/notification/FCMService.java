@@ -47,6 +47,7 @@ public class FCMService {
                 .putData("body", fcmMessageRequest.body())
                 .putData("feedId", fcmMessageRequest.feedId())
                 .putData("view", fcmMessageRequest.view())
+                .putData("notificationId", fcmMessageRequest.notificationId())
                 .setApnsConfig(apnsConfig)
                 .build();
     }
@@ -77,6 +78,7 @@ public class FCMService {
                 .putData("body", fcmMessageRequest.body())
                 .putData("feedId", fcmMessageRequest.feedId())
                 .putData("view", fcmMessageRequest.view())
+                .putData("notificationId", fcmMessageRequest.notificationId())
                 .setApnsConfig(apnsConfig)
                 .build();
     }
