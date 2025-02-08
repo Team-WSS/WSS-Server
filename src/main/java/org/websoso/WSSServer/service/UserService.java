@@ -253,7 +253,7 @@ public class UserService {
     }
 
     public boolean registerFCMToken(User user, FCMTokenRequest fcmTokenRequest) {
-        return userDeviceRepository.findByDeviceIdentifier(fcmTokenRequest.deviceIdentifier())
+        return userDeviceRepository.findByDeviceIdentifierAndUser(fcmTokenRequest.deviceIdentifier(), user)
                 .map(userDevice -> {
                     userDevice.updateFcmToken(fcmTokenRequest.fcmToken());
                     return false;
