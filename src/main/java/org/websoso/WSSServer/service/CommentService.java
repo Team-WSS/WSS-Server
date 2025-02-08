@@ -76,6 +76,11 @@ public class CommentService {
         );
         notificationRepository.save(notification);
 
+        List<UserDevice> feedOwnerDevices = feedOwner.getUserDevices();
+        if (feedOwnerDevices.isEmpty()) {
+            return;
+        }
+
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 notificationTitle,
                 notificationBody,
@@ -84,8 +89,7 @@ public class CommentService {
                 String.valueOf(notification.getNotificationId())
         );
 
-        List<String> targetFCMTokens = feedOwner
-                .getUserDevices()
+        List<String> targetFCMTokens = feedOwnerDevices
                 .stream()
                 .map(UserDevice::getFcmToken)
                 .toList();
