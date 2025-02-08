@@ -141,7 +141,12 @@ public class CommentService {
             );
             notificationRepository.save(notification);
 
-            List<String> targetFCMTokens = commenter.getUserDevices()
+            List<UserDevice> commenterDevices = commenter.getUserDevices();
+            if (commenterDevices.isEmpty()) {
+                return;
+            }
+
+            List<String> targetFCMTokens = commenterDevices
                     .stream()
                     .map(UserDevice::getFcmToken)
                     .distinct()
