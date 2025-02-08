@@ -181,6 +181,7 @@ public class UserService {
 
     public void logout(User user, String refreshToken) {
         refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
+        userDeviceRepository.deleteByUser(user);
         if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
             kakaoService.kakaoLogout(user);
         }

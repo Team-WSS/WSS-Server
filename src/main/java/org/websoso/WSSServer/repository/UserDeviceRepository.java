@@ -10,4 +10,6 @@ import org.websoso.WSSServer.domain.UserDevice;
 public interface UserDeviceRepository extends JpaRepository<UserDevice, Long> {
 
     Optional<UserDevice> findByDeviceIdentifierAndUser(String deviceIdentifier, User user);
+
+    void deleteByUser(User user);
 }
