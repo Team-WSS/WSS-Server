@@ -159,7 +159,10 @@ public class CommentService {
                     "feedDetail",
                     String.valueOf(notification.getNotificationId())
             );
-            fcmService.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
+            fcmService.sendMulticastPushMessage(
+                    targetFCMTokens,
+                    fcmMessageRequest
+            );
         });
     }
 
