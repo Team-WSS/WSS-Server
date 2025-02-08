@@ -56,6 +56,11 @@ public class PopularFeedService {
         );
         notificationRepository.save(notification);
 
+        List<UserDevice> feedOwnerDevices = feedOwner.getUserDevices();
+        if (feedOwnerDevices.isEmpty()) {
+            return;
+        }
+
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 notificationTitle,
                 notificationBody,
@@ -64,8 +69,7 @@ public class PopularFeedService {
                 String.valueOf(notification.getNotificationId())
         );
 
-        List<String> targetFCMTokens = feed.getUser()
-                .getUserDevices()
+        List<String> targetFCMTokens = feedOwnerDevices
                 .stream()
                 .map(UserDevice::getFcmToken)
                 .toList();
