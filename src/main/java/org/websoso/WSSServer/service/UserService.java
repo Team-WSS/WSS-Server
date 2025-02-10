@@ -284,4 +284,9 @@ public class UserService {
         return ConsentSettingGetResponse.of(user.getIsTermsAgreed(), user.getIsPrivacyConsented(),
                 user.getIsMarketingConsented());
     }
+
+    public void updateConsentSettings(User user, Boolean isTermsAgreed, Boolean isPrivacyConsented,
+                                      Boolean isMarketingConsented) {
+        user.updateConsentSettings(isTermsAgreed, isPrivacyConsented, isMarketingConsented);
+    }
 }
