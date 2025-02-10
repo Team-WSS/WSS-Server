@@ -77,6 +77,15 @@ public class User extends BaseEntity {
     @Column(columnDefinition = "Boolean default true", nullable = false)
     private Boolean isPushEnabled;
 
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isTermsAgreed;
+
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isPrivacyConsented;
+
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean isMarketingConsented;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'USER'")
