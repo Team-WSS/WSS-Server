@@ -27,6 +27,7 @@ import org.websoso.WSSServer.domain.WithdrawalReason;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
 import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
+import org.websoso.WSSServer.dto.user.ConsentSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.FCMTokenRequest;
@@ -276,5 +277,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public PushSettingGetResponse getPushSettingValue(User user) {
         return PushSettingGetResponse.of(user.getIsPushEnabled());
+    }
+
+    @Transactional(readOnly = true)
+    public ConsentSettingGetResponse getConsentSettingValue(User user) {
+        return ConsentSettingGetResponse.of(user.getIsTermsAgreed(), user.getIsPrivacyConsented(),
+                user.getIsMarketingConsented());
     }
 }
