@@ -114,6 +114,7 @@ public class CommentService {
                 .filter(userId -> !userId.equals(user.getUserId()))
                 .distinct()
                 .map(userService::getUserOrException)
+                .filter(commenter -> !blockService.isBlocked(commenter.getUserId(), user.getUserId()))
                 .toList();
 
         if (commenters.isEmpty()) {
