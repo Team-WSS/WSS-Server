@@ -56,7 +56,7 @@ public class CommentService {
 
     private void sendCommentPushMessageToFeedOwner(User user, Feed feed) {
         User feedOwner = feed.getUser();
-        if (isUserCommentOwner(user, feedOwner)) {
+        if (isUserCommentOwner(user, feedOwner) || blockService.isBlocked(feedOwner.getUserId(), user.getUserId())) {
             return;
         }
 
