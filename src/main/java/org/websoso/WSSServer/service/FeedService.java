@@ -115,8 +115,9 @@ public class FeedService {
 
     public void likeFeed(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
+        User feedOwner = feed.getUser();
         checkHiddenFeed(feed);
-        checkBlocked(feed.getUser(), user);
+        checkBlocked(feedOwner, user);
 
         likeService.createLike(user, feed);
 
@@ -124,7 +125,9 @@ public class FeedService {
             popularFeedService.createPopularFeed(feed);
         }
 
-        sendLikePushMessage(user, feed);
+        if (!blockService.isBlocked(feedOwner.getUserId(), user.getUserId())) {
+            sendLikePushMessage(user, feed);
+        }
     }
 
     private void sendLikePushMessage(User liker, Feed feed) {
