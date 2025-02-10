@@ -23,6 +23,7 @@ import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.notification.PushSettingRequest;
 import org.websoso.WSSServer.dto.user.ConsentSettingGetResponse;
+import org.websoso.WSSServer.dto.user.ConsentSettingRequest;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.FCMTokenRequest;
@@ -247,5 +248,16 @@ public class UserController {
         return ResponseEntity
                 .status(OK)
                 .body(userService.getConsentSettingValue(user));
+    }
+
+    @PatchMapping("/consent-settings")
+    public ResponseEntity<Void> updateConsentSettings(Principal principal,
+                                                      @Valid @RequestBody ConsentSettingRequest consentSettingRequest) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        userService.updateConsentSettings(user, consentSettingRequest.isTermsAgreed(),
+                consentSettingRequest.isPrivacyConsented(), consentSettingRequest.isMarketingConsented());
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
     }
 }
