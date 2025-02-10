@@ -1,10 +1,12 @@
 package org.websoso.WSSServer.dto.notification;
 
+import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.NOTICE;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Set;
 import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.domain.common.NotificationTypeGroup;
 
 public record NotificationInfo(
         Long notificationId,
@@ -23,7 +25,6 @@ public record NotificationInfo(
     private static final String DATE_PATTERN = "yyyy.MM.dd";
 
     static public NotificationInfo of(Notification notification, Boolean isRead) {
-        Set<String> validNoticeTypes = Set.of("공지", "이벤트");
         return new NotificationInfo(
                 notification.getNotificationId(),
                 notification.getNotificationType().getNotificationTypeImage(),
@@ -31,7 +32,8 @@ public record NotificationInfo(
                 notification.getNotificationBody(),
                 formatCreatedDate(notification.getCreatedDate()),
                 isRead,
-                validNoticeTypes.contains(notification.getNotificationType().getNotificationTypeName()),
+                NotificationTypeGroup.isTypeInGroup(notification.getNotificationType().getNotificationTypeName(),
+                        NOTICE),
                 notification.getFeedId()
         );
     }
