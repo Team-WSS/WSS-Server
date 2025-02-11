@@ -27,7 +27,6 @@ import org.websoso.WSSServer.domain.WithdrawalReason;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
 import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
-import org.websoso.WSSServer.dto.user.ConsentSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.FCMTokenRequest;
@@ -37,6 +36,7 @@ import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
+import org.websoso.WSSServer.dto.user.TermsSettingGetResponse;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
@@ -280,8 +280,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public ConsentSettingGetResponse getConsentSettingValue(User user) {
-        return ConsentSettingGetResponse.of(user.getServiceAgreed(), user.getPrivacyAgreed(),
+    public TermsSettingGetResponse getConsentSettingValue(User user) {
+        return TermsSettingGetResponse.of(user.getServiceAgreed(), user.getPrivacyAgreed(),
                 user.getMarketingAgreed());
     }
 }
