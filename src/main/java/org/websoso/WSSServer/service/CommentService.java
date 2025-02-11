@@ -112,10 +112,10 @@ public class CommentService {
                 .stream()
                 .map(Comment::getUserId)
                 .filter(userId -> !userId.equals(user.getUserId()))
+                .filter(userId -> !blockService.isBlocked(userId, user.getUserId())
+                        && !blockService.isBlocked(userId, feed.getUser().getUserId()))
                 .distinct()
                 .map(userService::getUserOrException)
-                .filter(commenter -> !blockService.isBlocked(commenter.getUserId(), user.getUserId())
-                        && !blockService.isBlocked(commenter.getUserId(), feed.getUser().getUserId()))
                 .toList();
 
         if (commenters.isEmpty()) {
