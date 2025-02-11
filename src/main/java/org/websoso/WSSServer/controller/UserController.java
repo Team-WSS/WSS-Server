@@ -250,7 +250,7 @@ public class UserController {
                 .body(userService.getTermsSettingValue(user));
     }
 
-    @PatchMapping("/consent-settings")
+    @PatchMapping("/terms-settings")
     public ResponseEntity<Void> updateConsentSettings(Principal principal,
                                                       @Valid @RequestBody ConsentSettingRequest consentSettingRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
