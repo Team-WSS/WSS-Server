@@ -22,7 +22,6 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.notification.PushSettingRequest;
-import org.websoso.WSSServer.dto.user.ConsentSettingRequest;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.FCMTokenRequest;
@@ -33,6 +32,7 @@ import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
 import org.websoso.WSSServer.dto.user.TermsSettingGetResponse;
+import org.websoso.WSSServer.dto.user.TermsSettingRequest;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
@@ -252,10 +252,10 @@ public class UserController {
 
     @PatchMapping("/terms-settings")
     public ResponseEntity<Void> updateConsentSettings(Principal principal,
-                                                      @Valid @RequestBody ConsentSettingRequest consentSettingRequest) {
+                                                      @Valid @RequestBody TermsSettingRequest termsSettingRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        userService.updateConsentSettings(user, consentSettingRequest.serviceAgreed(),
-                consentSettingRequest.privacyAgreed(), consentSettingRequest.marketingAgreed());
+        userService.updateConsentSettings(user, termsSettingRequest.serviceAgreed(),
+                termsSettingRequest.privacyAgreed(), termsSettingRequest.marketingAgreed());
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
