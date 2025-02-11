@@ -78,13 +78,13 @@ public class User extends BaseEntity {
     private Boolean isPushEnabled;
 
     @Column(columnDefinition = "Boolean default false", nullable = false)
-    private Boolean isTermsAgreed;
+    private Boolean serviceAgreed;
 
     @Column(columnDefinition = "Boolean default false", nullable = false)
-    private Boolean isPrivacyConsented;
+    private Boolean privacyAgreed;
 
     @Column(columnDefinition = "Boolean default false", nullable = false)
-    private Boolean isMarketingConsented;
+    private Boolean marketingAgreed;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -139,9 +139,9 @@ public class User extends BaseEntity {
         this.avatarId = 1;
         this.isProfilePublic = true;
         this.isPushEnabled = true;
-        this.isTermsAgreed = false;
-        this.isPrivacyConsented = false;
-        this.isMarketingConsented = false;
+        this.serviceAgreed = false;
+        this.privacyAgreed = false;
+        this.marketingAgreed = false;
         this.role = USER;
         this.socialId = socialId;
         this.nickname = nickname;

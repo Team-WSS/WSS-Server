@@ -22,7 +22,6 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.notification.PushSettingRequest;
-import org.websoso.WSSServer.dto.user.ConsentSettingGetResponse;
 import org.websoso.WSSServer.dto.user.ConsentSettingRequest;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
@@ -33,6 +32,7 @@ import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
+import org.websoso.WSSServer.dto.user.TermsSettingGetResponse;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
@@ -242,12 +242,12 @@ public class UserController {
                 .build();
     }
 
-    @GetMapping("/consent-settings")
-    public ResponseEntity<ConsentSettingGetResponse> getConsentSettingValue(Principal principal) {
+    @GetMapping("/terms-settings")
+    public ResponseEntity<TermsSettingGetResponse> getTermsSettingValue(Principal principal) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body(userService.getConsentSettingValue(user));
+                .body(userService.getTermsSettingValue(user));
     }
 
     @PatchMapping("/consent-settings")
