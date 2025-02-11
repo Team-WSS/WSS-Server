@@ -281,7 +281,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public ConsentSettingGetResponse getConsentSettingValue(User user) {
-        return ConsentSettingGetResponse.of(user.getIsTermsAgreed(), user.getIsPrivacyConsented(),
-                user.getIsMarketingConsented());
+        return ConsentSettingGetResponse.of(user.getServiceAgreed(), user.getPrivacyAgreed(),
+                user.getMarketingAgreed());
     }
 }

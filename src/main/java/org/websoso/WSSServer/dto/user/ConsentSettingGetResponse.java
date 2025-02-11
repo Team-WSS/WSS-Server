@@ -1,16 +1,15 @@
 package org.websoso.WSSServer.dto.user;
 
 public record ConsentSettingGetResponse(
-        Boolean isTermsAgreed,
-        Boolean isPrivacyConsented,
-        Boolean isMarketingConsented
+        Boolean serviceAgreed,
+        Boolean privacyAgreed,
+        Boolean marketingAgreed
 ) {
-    public static ConsentSettingGetResponse of(Boolean isTermsAgreed, Boolean isPrivacyConsented,
-                                               Boolean isMarketingConsented) {
+    public static ConsentSettingGetResponse of(Boolean serviceAgreed, Boolean privacyAgreed, Boolean marketingAgreed) {
         return new ConsentSettingGetResponse(
-                isTermsAgreed,
-                isPrivacyConsented,
-                isMarketingConsented
+                serviceAgreed,
+                privacyAgreed,
+                marketingAgreed
         );
     }
 }
