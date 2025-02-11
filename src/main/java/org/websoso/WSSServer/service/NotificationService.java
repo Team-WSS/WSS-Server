@@ -2,10 +2,13 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.FEED;
 import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.NOTICE;
+import static org.websoso.WSSServer.domain.common.Role.ADMIN;
+import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_ADMIN_ONLY;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_ALREADY_READ;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_READ_FORBIDDEN;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_TYPE_INVALID;
+import static org.websoso.WSSServer.exception.error.CustomNotificationTypeError.NOTIFICATION_TYPE_NOT_FOUND;
 
 import java.util.List;
 import java.util.Set;
@@ -20,12 +23,15 @@ import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.ReadNotification;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.NotificationTypeGroup;
+import org.websoso.WSSServer.dto.notification.NotificationCreateRequest;
 import org.websoso.WSSServer.dto.notification.NotificationGetResponse;
 import org.websoso.WSSServer.dto.notification.NotificationInfo;
 import org.websoso.WSSServer.dto.notification.NotificationsGetResponse;
 import org.websoso.WSSServer.dto.notification.NotificationsReadStatusGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
+import org.websoso.WSSServer.exception.exception.CustomNotificationTypeException;
 import org.websoso.WSSServer.repository.NotificationRepository;
+import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.ReadNotificationRepository;
 
 @Service
@@ -36,6 +42,7 @@ public class NotificationService {
     private static final int DEFAULT_PAGE_NUMBER = 0;
     private final NotificationRepository notificationRepository;
     private final ReadNotificationRepository readNotificationRepository;
+    private final NotificationTypeRepository notificationTypeRepository;
 
     @Transactional(readOnly = true)
     public NotificationsReadStatusGetResponse checkNotificationsReadStatus(User user) {
@@ -108,5 +115,33 @@ public class NotificationService {
             throw new CustomNotificationException(NOTIFICATION_ALREADY_READ,
                     "notifications that the user has already read");
         }
+    }
+
+    public void createNotification(User user, NotificationCreateRequest request) {
+        validateAdminPrivilege(user);
+        NotificationType notificationType = getNotificationTypeOrException(request.notificationTypeName());
+
+        notificationRepository.save(Notification.create(
+                request.notificationTitle(),
+                request.notificationBody(),
+                request.notificationDetail(),
+                request.userId(),
+                null,
+                notificationType)
+        );
+    }
+
+    private void validateAdminPrivilege(User user) {
+        if (user.getRole() != ADMIN) {
+            throw new CustomNotificationException(NOTIFICATION_ADMIN_ONLY,
+                    "User who tried to create, modify, or delete the notice is not an ADMIN.");
+        }
+    }
+
+    private NotificationType getNotificationTypeOrException(String notificationTypeName) {
+        return notificationTypeRepository
+                .findOptionalByNotificationTypeName(notificationTypeName)
+                .orElseThrow(() -> new CustomNotificationTypeException(NOTIFICATION_TYPE_NOT_FOUND,
+                        "notification type with the given name is not found"));
     }
 }
