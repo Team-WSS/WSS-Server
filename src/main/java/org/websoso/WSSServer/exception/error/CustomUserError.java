@@ -31,7 +31,8 @@ public enum CustomUserError implements ICustomError {
     PRIVATE_PROFILE_STATUS("USER-015", "프로필 공개 설정이 비공개이므로 접근할 수 없습니다.", FORBIDDEN),
     ALREADY_SET_AVATAR("USER-016", "아바타는 이미 설정된 아바타와 동일합니다.", BAD_REQUEST),
     ALREADY_SET_INTRO("USER-017", "소개글은 이미 설정된 소개글과 동일합니다.", BAD_REQUEST),
-    INACCESSIBLE_USER_PROFILE("USER-018", "해당 사용자는 접근할 수 없는 상태입니다.", FORBIDDEN);
+    INACCESSIBLE_USER_PROFILE("USER-018", "해당 사용자는 접근할 수 없는 상태입니다.", FORBIDDEN),
+    TERMS_AGREEMENT_REQUIRED("USER-019", "서비스 이용약관 및 개인정보 수집 동의는 필수입니다.", BAD_REQUEST);
 
     private final String code;
     private final String description;
