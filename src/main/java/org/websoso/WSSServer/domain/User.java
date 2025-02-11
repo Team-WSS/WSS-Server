@@ -106,6 +106,9 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
     private List<UserDevice> userDevices = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
+    private List<ReadNotification> readNotifications = new ArrayList<>();
+
     public void updateProfileStatus(Boolean profileStatus) {
         this.isProfilePublic = profileStatus;
     }
