@@ -56,7 +56,7 @@ public class CommentService {
 
     private void sendCommentPushMessageToFeedOwner(User user, Feed feed) {
         User feedOwner = feed.getUser();
-        if (isUserCommentOwner(user, feedOwner)) {
+        if (isUserCommentOwner(user, feedOwner) || blockService.isBlocked(feedOwner.getUserId(), user.getUserId())) {
             return;
         }
 
@@ -112,6 +112,8 @@ public class CommentService {
                 .stream()
                 .map(Comment::getUserId)
                 .filter(userId -> !userId.equals(user.getUserId()))
+                .filter(userId -> !blockService.isBlocked(userId, user.getUserId())
+                        && !blockService.isBlocked(userId, feed.getUser().getUserId()))
                 .distinct()
                 .map(userService::getUserOrException)
                 .toList();
