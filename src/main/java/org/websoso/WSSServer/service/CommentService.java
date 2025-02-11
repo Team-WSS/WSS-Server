@@ -63,7 +63,7 @@ public class CommentService {
         NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("댓글");
 
         String notificationTitle = createNotificationTitle(feed);
-        String notificationBody = String.format("%s님이 내 수다글에 댓글을 남겼어요", user.getNickname());
+        String notificationBody = String.format("%s님이 내 수다글에 댓글을 남겼어요.", user.getNickname());
         Long feedId = feed.getFeedId();
 
         Notification notification = Notification.create(
@@ -103,9 +103,10 @@ public class CommentService {
     private String createNotificationTitle(Feed feed) {
         if (feed.getNovelId() == null) {
             String feedContent = feed.getFeedContent();
-            return feedContent.length() <= 12
+            feedContent = feedContent.length() <= 12
                     ? feedContent
-                    : "'" + feedContent.substring(0, 12) + "...'";
+                    : feedContent.substring(0, 12);
+            return "'" + feedContent + "...'";
         }
         Novel novel = novelService.getNovelOrException(feed.getNovelId());
         return novel.getTitle();

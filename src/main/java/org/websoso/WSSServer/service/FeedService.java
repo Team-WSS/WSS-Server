@@ -175,9 +175,10 @@ public class FeedService {
     private String createNotificationTitle(Feed feed) {
         if (feed.getNovelId() == null) {
             String feedContent = feed.getFeedContent();
-            return feedContent.length() <= 12
+            feedContent = feedContent.length() <= 12
                     ? feedContent
-                    : "'" + feedContent.substring(0, 12) + "...'";
+                    : feedContent.substring(0, 12);
+            return "'" + feedContent + "...'";
         }
         Novel novel = novelService.getNovelOrException(feed.getNovelId());
         return novel.getTitle();
