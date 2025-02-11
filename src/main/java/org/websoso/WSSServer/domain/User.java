@@ -161,7 +161,7 @@ public class User extends BaseEntity {
         this.isPushEnabled = isPushEnabled;
     }
 
-    public void updateConsentSettings(boolean serviceAgreed, boolean privacyAgreed, boolean marketingAgreed) {
+    public void updateTermsSetting(boolean serviceAgreed, boolean privacyAgreed, boolean marketingAgreed) {
         this.serviceAgreed = serviceAgreed;
         this.privacyAgreed = privacyAgreed;
         this.marketingAgreed = marketingAgreed;

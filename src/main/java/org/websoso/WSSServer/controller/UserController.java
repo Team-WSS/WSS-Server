@@ -254,8 +254,8 @@ public class UserController {
     public ResponseEntity<Void> updateConsentSettings(Principal principal,
                                                       @Valid @RequestBody TermsSettingRequest termsSettingRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        userService.updateConsentSettings(user, termsSettingRequest.serviceAgreed(),
-                termsSettingRequest.privacyAgreed(), termsSettingRequest.marketingAgreed());
+        userService.updateTermsSetting(user, termsSettingRequest.serviceAgreed(), termsSettingRequest.privacyAgreed(),
+                termsSettingRequest.marketingAgreed());
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
