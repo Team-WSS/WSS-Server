@@ -241,7 +241,7 @@ public class UserController {
                 .build();
     }
 
-    @GetMapping("/consent-settings")
+    @GetMapping("/terms-settings")
     public ResponseEntity<ConsentSettingGetResponse> getConsentSettingValue(Principal principal) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
