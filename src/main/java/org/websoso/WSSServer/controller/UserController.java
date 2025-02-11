@@ -251,8 +251,8 @@ public class UserController {
     }
 
     @PatchMapping("/terms-settings")
-    public ResponseEntity<Void> updateConsentSettings(Principal principal,
-                                                      @Valid @RequestBody TermsSettingRequest termsSettingRequest) {
+    public ResponseEntity<Void> updateTermsSetting(Principal principal,
+                                                   @Valid @RequestBody TermsSettingRequest termsSettingRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.updateTermsSetting(user, termsSettingRequest.serviceAgreed(), termsSettingRequest.privacyAgreed(),
                 termsSettingRequest.marketingAgreed());
