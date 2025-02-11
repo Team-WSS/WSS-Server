@@ -6,6 +6,7 @@ import static org.websoso.WSSServer.domain.common.Role.ADMIN;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_ADMIN_ONLY;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_ALREADY_READ;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_NOT_NOTICE_TYPE;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_READ_FORBIDDEN;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_TYPE_INVALID;
 import static org.websoso.WSSServer.exception.error.CustomNotificationTypeError.NOTIFICATION_TYPE_NOT_FOUND;
@@ -22,6 +23,7 @@ import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.ReadNotification;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.NotificationTypeGroup;
 import org.websoso.WSSServer.dto.notification.NotificationCreateRequest;
 import org.websoso.WSSServer.dto.notification.NotificationGetResponse;
@@ -30,9 +32,12 @@ import org.websoso.WSSServer.dto.notification.NotificationsGetResponse;
 import org.websoso.WSSServer.dto.notification.NotificationsReadStatusGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
 import org.websoso.WSSServer.exception.exception.CustomNotificationTypeException;
+import org.websoso.WSSServer.notification.FCMService;
+import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.ReadNotificationRepository;
+import org.websoso.WSSServer.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +48,9 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final ReadNotificationRepository readNotificationRepository;
     private final NotificationTypeRepository notificationTypeRepository;
+    private final UserRepository userRepository;
+    private final FCMService fcmService;
+    private final UserService userService;
 
     @Transactional(readOnly = true)
     public NotificationsReadStatusGetResponse checkNotificationsReadStatus(User user) {
@@ -117,18 +125,20 @@ public class NotificationService {
         }
     }
 
-    public void createNotification(User user, NotificationCreateRequest request) {
+    public void createNoticeNotification(User user, NotificationCreateRequest request) {
         validateAdminPrivilege(user);
-        NotificationType notificationType = getNotificationTypeOrException(request.notificationTypeName());
+        validateNoticeType(request.notificationTypeName());
 
-        notificationRepository.save(Notification.create(
+        Notification notification = notificationRepository.save(Notification.create(
                 request.notificationTitle(),
                 request.notificationBody(),
                 request.notificationDetail(),
                 request.userId(),
                 null,
-                notificationType)
+                getNotificationTypeOrException(request.notificationTypeName()))
         );
+
+        sendAnnouncementPushMessage(request.userId(), notification);
     }
 
     private void validateAdminPrivilege(User user) {
@@ -138,10 +148,46 @@ public class NotificationService {
         }
     }
 
+    private void validateNoticeType(String notificationTypeName) {
+        if (!NotificationTypeGroup.isTypeInGroup(notificationTypeName, NOTICE)) {
+            throw new CustomNotificationException(NOTIFICATION_NOT_NOTICE_TYPE,
+                    "given notification type does not belong to the NOTICE category");
+        }
+    }
+
     private NotificationType getNotificationTypeOrException(String notificationTypeName) {
         return notificationTypeRepository
                 .findOptionalByNotificationTypeName(notificationTypeName)
                 .orElseThrow(() -> new CustomNotificationTypeException(NOTIFICATION_TYPE_NOT_FOUND,
                         "notification type with the given name is not found"));
+    }
+
+    private void sendAnnouncementPushMessage(Long userId, Notification notification) {
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+                notification.getNotificationTitle(),
+                notification.getNotificationBody(),
+                "",
+                "",
+                String.valueOf(notification.getNotificationId())
+        );
+
+        List<String> targetFCMTokens;
+        if (userId.equals(0L)) {
+            targetFCMTokens = userRepository.findAllByIsPushEnabledTrue()
+                    .stream()
+                    .flatMap(user -> user.getUserDevices().stream())
+                    .map(UserDevice::getFcmToken)
+                    .distinct()
+                    .toList();
+        } else {
+            targetFCMTokens = userService.getUserOrException(userId)
+                    .getUserDevices()
+                    .stream()
+                    .map(UserDevice::getFcmToken)
+                    .distinct()
+                    .toList();
+        }
+
+        fcmService.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
     }
 }
