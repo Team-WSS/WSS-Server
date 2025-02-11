@@ -36,6 +36,7 @@ import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
+import org.websoso.WSSServer.dto.user.TermsSettingGetResponse;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
@@ -276,5 +277,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public PushSettingGetResponse getPushSettingValue(User user) {
         return PushSettingGetResponse.of(user.getIsPushEnabled());
+    }
+
+    @Transactional(readOnly = true)
+    public TermsSettingGetResponse getTermsSettingValue(User user) {
+        return TermsSettingGetResponse.of(user.getServiceAgreed(), user.getPrivacyAgreed(),
+                user.getMarketingAgreed());
     }
 }
