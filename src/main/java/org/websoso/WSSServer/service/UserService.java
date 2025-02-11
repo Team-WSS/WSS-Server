@@ -285,8 +285,8 @@ public class UserService {
                 user.getMarketingAgreed());
     }
 
-    public void updateConsentSettings(User user, Boolean isTermsAgreed, Boolean isPrivacyConsented,
-                                      Boolean isMarketingConsented) {
-        user.updateConsentSettings(isTermsAgreed, isPrivacyConsented, isMarketingConsented);
+    public void updateConsentSettings(User user, Boolean serviceAgreed, Boolean privacyAgreed,
+                                      Boolean marketingAgreed) {
+        user.updateConsentSettings(serviceAgreed, privacyAgreed, marketingAgreed);
     }
 }
