@@ -182,8 +182,9 @@ public class UserService {
                 MessageFormatter.formatUserJoinMessage(user, SocialLoginType.fromSocialId(user.getSocialId())), JOIN));
     }
 
-    public void logout(User user, String refreshToken) {
+    public void logout(User user, String refreshToken, String deviceIdentifier) {
         refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
+        userDeviceRepository.deleteByUserAndDeviceIdentifier(user, deviceIdentifier);
         if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
             kakaoService.kakaoLogout(user);
         }
@@ -256,7 +257,7 @@ public class UserService {
     }
 
     public boolean registerFCMToken(User user, FCMTokenRequest fcmTokenRequest) {
-        return userDeviceRepository.findByDeviceIdentifier(fcmTokenRequest.deviceIdentifier())
+        return userDeviceRepository.findByDeviceIdentifierAndUser(fcmTokenRequest.deviceIdentifier(), user)
                 .map(userDevice -> {
                     userDevice.updateFcmToken(fcmTokenRequest.fcmToken());
                     return false;
