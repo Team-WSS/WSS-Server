@@ -242,10 +242,10 @@ public class UserController {
     }
 
     @GetMapping("/terms-settings")
-    public ResponseEntity<TermsSettingGetResponse> getConsentSettingValue(Principal principal) {
+    public ResponseEntity<TermsSettingGetResponse> getTermsSettingValue(Principal principal) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body(userService.getConsentSettingValue(user));
+                .body(userService.getTermsSettingValue(user));
     }
 }

@@ -280,7 +280,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public TermsSettingGetResponse getConsentSettingValue(User user) {
+    public TermsSettingGetResponse getTermsSettingValue(User user) {
         return TermsSettingGetResponse.of(user.getServiceAgreed(), user.getPrivacyAgreed(),
                 user.getMarketingAgreed());
     }
