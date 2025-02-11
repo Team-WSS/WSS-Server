@@ -129,7 +129,7 @@ public class FeedService {
 
     private void sendLikePushMessage(User liker, Feed feed) {
         User feedOwner = feed.getUser();
-        if (liker.equals(feedOwner)) {
+        if (liker.equals(feedOwner) || blockService.isBlocked(feedOwner.getUserId(), liker.getUserId())) {
             return;
         }
 
