@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static java.lang.Boolean.FALSE;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.JOIN;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.WITHDRAW;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
@@ -10,6 +11,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INACCESSIBLE_USER_PROFILE;
+import static org.websoso.WSSServer.exception.error.CustomUserError.TERMS_AGREEMENT_REQUIRED;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import java.util.List;
@@ -283,5 +285,14 @@ public class UserService {
     public TermsSettingGetResponse getTermsSettingValue(User user) {
         return TermsSettingGetResponse.of(user.getServiceAgreed(), user.getPrivacyAgreed(),
                 user.getMarketingAgreed());
+    }
+
+    public void updateTermsSetting(User user, Boolean serviceAgreed, Boolean privacyAgreed,
+                                   Boolean marketingAgreed) {
+        if (FALSE.equals(serviceAgreed) || FALSE.equals(privacyAgreed)) {
+            throw new CustomUserException(TERMS_AGREEMENT_REQUIRED,
+                    "service terms and personal information consent are mandatory");
+        }
+        user.updateTermsSetting(serviceAgreed, privacyAgreed, marketingAgreed);
     }
 }

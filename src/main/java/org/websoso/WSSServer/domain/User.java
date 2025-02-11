@@ -160,4 +160,10 @@ public class User extends BaseEntity {
     public void updatePushSetting(boolean isPushEnabled) {
         this.isPushEnabled = isPushEnabled;
     }
+
+    public void updateTermsSetting(boolean serviceAgreed, boolean privacyAgreed, boolean marketingAgreed) {
+        this.serviceAgreed = serviceAgreed;
+        this.privacyAgreed = privacyAgreed;
+        this.marketingAgreed = marketingAgreed;
+    }
 }
