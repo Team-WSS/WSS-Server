@@ -77,6 +77,15 @@ public class User extends BaseEntity {
     @Column(columnDefinition = "Boolean default true", nullable = false)
     private Boolean isPushEnabled;
 
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean serviceAgreed;
+
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean privacyAgreed;
+
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private Boolean marketingAgreed;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'USER'")
@@ -130,6 +139,9 @@ public class User extends BaseEntity {
         this.avatarId = 1;
         this.isProfilePublic = true;
         this.isPushEnabled = true;
+        this.serviceAgreed = false;
+        this.privacyAgreed = false;
+        this.marketingAgreed = false;
         this.role = USER;
         this.socialId = socialId;
         this.nickname = nickname;
@@ -147,5 +159,11 @@ public class User extends BaseEntity {
 
     public void updatePushSetting(boolean isPushEnabled) {
         this.isPushEnabled = isPushEnabled;
+    }
+
+    public void updateTermsSetting(boolean serviceAgreed, boolean privacyAgreed, boolean marketingAgreed) {
+        this.serviceAgreed = serviceAgreed;
+        this.privacyAgreed = privacyAgreed;
+        this.marketingAgreed = marketingAgreed;
     }
 }
