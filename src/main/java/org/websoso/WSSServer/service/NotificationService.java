@@ -167,7 +167,7 @@ public class NotificationService {
                 notification.getNotificationTitle(),
                 notification.getNotificationBody(),
                 "",
-                "",
+                "NotificationDetail",
                 String.valueOf(notification.getNotificationId())
         );
 
