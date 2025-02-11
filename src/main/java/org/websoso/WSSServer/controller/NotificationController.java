@@ -69,10 +69,10 @@ public class NotificationController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createNotification(Principal principal,
-                                                   @Valid @RequestBody NotificationCreateRequest notificationCreateRequest) {
+    public ResponseEntity<Void> createNoticeNotification(Principal principal,
+                                                         @Valid @RequestBody NotificationCreateRequest notificationCreateRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        notificationService.createNotification(user, notificationCreateRequest);
+        notificationService.createNoticeNotification(user, notificationCreateRequest);
         return ResponseEntity
                 .status(CREATED)
                 .build();
