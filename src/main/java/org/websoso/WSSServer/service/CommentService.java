@@ -113,10 +113,13 @@ public class CommentService {
     }
 
     private void sendCommentPushMessageToCommenters(User user, Feed feed) {
+        User feedOwner = feed.getUser();
+
         List<User> commenters = feed.getComments()
                 .stream()
                 .map(Comment::getUserId)
                 .filter(userId -> !userId.equals(user.getUserId()))
+                .filter(userId -> !userId.equals(feedOwner.getUserId()))
                 .filter(userId -> !blockService.isBlocked(userId, user.getUserId())
                         && !blockService.isBlocked(userId, feed.getUser().getUserId()))
                 .distinct()
