@@ -129,7 +129,7 @@ public class FeedService {
 
     private void sendLikePushMessage(User liker, Feed feed) {
         User feedOwner = feed.getUser();
-        if (liker.equals(feedOwner)) {
+        if (liker.equals(feedOwner) || blockService.isBlocked(feedOwner.getUserId(), liker.getUserId())) {
             return;
         }
 
@@ -149,6 +149,11 @@ public class FeedService {
         );
         notificationRepository.save(notification);
 
+        List<UserDevice> feedOwnerDevices = feedOwner.getUserDevices();
+        if (feedOwnerDevices.isEmpty()) {
+            return;
+        }
+
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 notificationTitle,
                 notificationBody,
@@ -157,8 +162,7 @@ public class FeedService {
                 String.valueOf(notification.getNotificationId())
         );
 
-        List<String> targetFCMTokens = feedOwner
-                .getUserDevices()
+        List<String> targetFCMTokens = feedOwnerDevices
                 .stream()
                 .map(UserDevice::getFcmToken)
                 .toList();
@@ -171,9 +175,10 @@ public class FeedService {
     private String createNotificationTitle(Feed feed) {
         if (feed.getNovelId() == null) {
             String feedContent = feed.getFeedContent();
-            return feedContent.length() <= 12
+            feedContent = feedContent.length() <= 12
                     ? feedContent
-                    : "'" + feedContent.substring(0, 12) + "...'";
+                    : feedContent.substring(0, 12);
+            return "'" + feedContent + "...'";
         }
         Novel novel = novelService.getNovelOrException(feed.getNovelId());
         return novel.getTitle();

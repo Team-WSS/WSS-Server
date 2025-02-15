@@ -59,7 +59,8 @@ public class AuthController {
                                        @Valid @RequestBody LogoutRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         String refreshToken = request.refreshToken();
-        userService.logout(user, refreshToken);
+        String deviceIdentifier = request.deviceIdentifier();
+        userService.logout(user, refreshToken, deviceIdentifier);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

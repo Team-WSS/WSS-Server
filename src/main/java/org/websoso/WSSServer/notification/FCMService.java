@@ -3,10 +3,12 @@ package org.websoso.WSSServer.notification;
 import com.google.firebase.messaging.ApnsConfig;
 import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.ApsAlert;
+import com.google.firebase.messaging.BatchResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
+import com.google.firebase.messaging.SendResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +57,17 @@ public class FCMService {
     public void sendMulticastPushMessage(List<String> targetFCMTokens, FCMMessageRequest fcmMessageRequest) {
         MulticastMessage multicastMessage = createMulticastMessage(targetFCMTokens, fcmMessageRequest);
         try {
-            firebaseMessaging.sendEachForMulticast(multicastMessage);
+            BatchResponse batchResponse = firebaseMessaging.sendEachForMulticast(multicastMessage);
+            // 푸시알림 전송 실패한 메시지 로그 기록
+            List<SendResponse> responses = batchResponse.getResponses();
+            for (int i = 0; i < responses.size(); i++) {
+                if (responses.get(i).isSuccessful()) {
+                    log.info("[FCM 전송 성공] Token: {}", targetFCMTokens.get(i));
+                } else {
+                    log.error("[FCM 전송 실패] Token: {} - Error: {}", targetFCMTokens.get(i),
+                            responses.get(i).getException().getMessage());
+                }
+            }
         } catch (Exception e) {
             log.error("[FirebaseMessagingException] exception ", e);
             // TODO: discord로 알림 추가 혹은 후속 작업 논의 후 추가

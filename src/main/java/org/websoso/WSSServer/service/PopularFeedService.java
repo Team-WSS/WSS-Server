@@ -56,6 +56,11 @@ public class PopularFeedService {
         );
         notificationRepository.save(notification);
 
+        List<UserDevice> feedOwnerDevices = feedOwner.getUserDevices();
+        if (feedOwnerDevices.isEmpty()) {
+            return;
+        }
+
         FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
                 notificationTitle,
                 notificationBody,
@@ -64,8 +69,7 @@ public class PopularFeedService {
                 String.valueOf(notification.getNotificationId())
         );
 
-        List<String> targetFCMTokens = feed.getUser()
-                .getUserDevices()
+        List<String> targetFCMTokens = feedOwnerDevices
                 .stream()
                 .map(UserDevice::getFcmToken)
                 .toList();
@@ -82,9 +86,10 @@ public class PopularFeedService {
     private String generateNotificationBodyFragment(Feed feed) {
         if (feed.getNovelId() == null) {
             String feedContent = feed.getFeedContent();
-            return feedContent.length() <= 12
+            feedContent = feedContent.length() <= 12
                     ? feedContent
-                    : "'" + feedContent.substring(0, 12) + "...'";
+                    : feedContent.substring(0, 12);
+            return "'" + feedContent + "...'";
         }
         Novel novel = novelService.getNovelOrException(feed.getNovelId());
         return String.format("<%s>", novel.getTitle());

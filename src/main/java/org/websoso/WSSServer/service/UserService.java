@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static java.lang.Boolean.FALSE;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.JOIN;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.WITHDRAW;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
@@ -10,6 +11,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INACCESSIBLE_USER_PROFILE;
+import static org.websoso.WSSServer.exception.error.CustomUserError.TERMS_AGREEMENT_REQUIRED;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import java.util.List;
@@ -36,6 +38,7 @@ import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
+import org.websoso.WSSServer.dto.user.TermsSettingGetResponse;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
@@ -179,8 +182,9 @@ public class UserService {
                 MessageFormatter.formatUserJoinMessage(user, SocialLoginType.fromSocialId(user.getSocialId())), JOIN));
     }
 
-    public void logout(User user, String refreshToken) {
+    public void logout(User user, String refreshToken, String deviceIdentifier) {
         refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
+        userDeviceRepository.deleteByUserAndDeviceIdentifier(user, deviceIdentifier);
         if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
             kakaoService.kakaoLogout(user);
         }
@@ -253,7 +257,7 @@ public class UserService {
     }
 
     public boolean registerFCMToken(User user, FCMTokenRequest fcmTokenRequest) {
-        return userDeviceRepository.findByDeviceIdentifier(fcmTokenRequest.deviceIdentifier())
+        return userDeviceRepository.findByDeviceIdentifierAndUser(fcmTokenRequest.deviceIdentifier(), user)
                 .map(userDevice -> {
                     userDevice.updateFcmToken(fcmTokenRequest.fcmToken());
                     return false;
@@ -276,5 +280,20 @@ public class UserService {
     @Transactional(readOnly = true)
     public PushSettingGetResponse getPushSettingValue(User user) {
         return PushSettingGetResponse.of(user.getIsPushEnabled());
+    }
+
+    @Transactional(readOnly = true)
+    public TermsSettingGetResponse getTermsSettingValue(User user) {
+        return TermsSettingGetResponse.of(user.getServiceAgreed(), user.getPrivacyAgreed(),
+                user.getMarketingAgreed());
+    }
+
+    public void updateTermsSetting(User user, Boolean serviceAgreed, Boolean privacyAgreed,
+                                   Boolean marketingAgreed) {
+        if (FALSE.equals(serviceAgreed) || FALSE.equals(privacyAgreed)) {
+            throw new CustomUserException(TERMS_AGREEMENT_REQUIRED,
+                    "service terms and personal information consent are mandatory");
+        }
+        user.updateTermsSetting(serviceAgreed, privacyAgreed, marketingAgreed);
     }
 }

@@ -31,6 +31,8 @@ import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
+import org.websoso.WSSServer.dto.user.TermsSettingGetResponse;
+import org.websoso.WSSServer.dto.user.TermsSettingRequest;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
@@ -235,6 +237,25 @@ public class UserController {
                                                     @Valid @RequestBody PushSettingRequest pushSettingRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.registerPushSetting(user, pushSettingRequest.isPushEnabled());
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @GetMapping("/terms-settings")
+    public ResponseEntity<TermsSettingGetResponse> getTermsSettingValue(Principal principal) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        return ResponseEntity
+                .status(OK)
+                .body(userService.getTermsSettingValue(user));
+    }
+
+    @PatchMapping("/terms-settings")
+    public ResponseEntity<Void> updateTermsSetting(Principal principal,
+                                                   @Valid @RequestBody TermsSettingRequest termsSettingRequest) {
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        userService.updateTermsSetting(user, termsSettingRequest.serviceAgreed(), termsSettingRequest.privacyAgreed(),
+                termsSettingRequest.marketingAgreed());
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
