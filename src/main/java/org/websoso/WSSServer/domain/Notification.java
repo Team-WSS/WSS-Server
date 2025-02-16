@@ -24,12 +24,13 @@ public class Notification extends BaseEntity {
     @Column(nullable = false)
     private Long notificationId;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "varchar(200)", nullable = false)
     private String notificationTitle;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "varchar(200)", nullable = false)
     private String notificationBody;
 
+    @Column(columnDefinition = "varchar(2000)")
     private String notificationDetail;
 
     @Column(nullable = false)
