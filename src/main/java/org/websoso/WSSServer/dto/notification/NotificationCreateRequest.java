@@ -3,7 +3,6 @@ package org.websoso.WSSServer.dto.notification;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.websoso.WSSServer.validation.FeedIdConstraint;
 import org.websoso.WSSServer.validation.ZeroAllowedUserIdConstraint;
 
 public record NotificationCreateRequest(
@@ -23,9 +22,6 @@ public record NotificationCreateRequest(
         @NotNull(message = "유저 ID는 필수입니다.")
         @ZeroAllowedUserIdConstraint
         Long userId,
-
-        @FeedIdConstraint
-        Long feedId,
 
         @NotBlank(message = "알림 타입 이름은 필수입니다.")
         String notificationTypeName
