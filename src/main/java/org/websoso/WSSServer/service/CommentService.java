@@ -147,6 +147,10 @@ public class CommentService {
             );
             notificationRepository.save(notification);
 
+            if (!TRUE.equals(commenter.getIsPushEnabled())) {
+                return;
+            }
+
             List<UserDevice> commenterDevices = commenter.getUserDevices();
             if (commenterDevices.isEmpty()) {
                 return;
