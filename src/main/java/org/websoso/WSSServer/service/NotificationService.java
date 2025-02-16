@@ -159,23 +159,25 @@ public class NotificationService {
                 String.valueOf(notification.getNotificationId())
         );
 
-        List<String> targetFCMTokens;
+        List<String> targetFCMTokens = getTargetFCMTokens(userId);
+
+        fcmService.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
+    }
+
+    private List<String> getTargetFCMTokens(Long userId) {
         if (userId.equals(0L)) {
-            targetFCMTokens = userRepository.findAllByIsPushEnabledTrue()
+            return userRepository.findAllByIsPushEnabledTrue()
                     .stream()
                     .flatMap(user -> user.getUserDevices().stream())
                     .map(UserDevice::getFcmToken)
                     .distinct()
                     .toList();
-        } else {
-            targetFCMTokens = userService.getUserOrException(userId)
-                    .getUserDevices()
-                    .stream()
-                    .map(UserDevice::getFcmToken)
-                    .distinct()
-                    .toList();
         }
-
-        fcmService.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
+        return userService.getUserOrException(userId)
+                .getUserDevices()
+                .stream()
+                .map(UserDevice::getFcmToken)
+                .distinct()
+                .toList();
     }
 }
