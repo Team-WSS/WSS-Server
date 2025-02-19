@@ -15,7 +15,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Query(value = "SELECT n FROM Notification n WHERE "
             + "(:lastNotificationId = 0 OR n.notificationId < :lastNotificationId) "
             + "AND (n.userId = 0 OR n.userId = :userId) "
-            + "ORDER BY n.createdDate DESC")
+            + "ORDER BY n.notificationId DESC")
     Slice<Notification> findNotifications(Long lastNotificationId, Long userId, PageRequest pageRequest);
 
     @Query("SELECT CASE WHEN COUNT(n) > 0 THEN TRUE ELSE FALSE END " +
