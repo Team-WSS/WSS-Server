@@ -1,5 +1,7 @@
 package org.websoso.WSSServer.service;
 
+import static java.lang.Boolean.TRUE;
+
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -55,6 +57,10 @@ public class PopularFeedService {
                 notificationTypeComment
         );
         notificationRepository.save(notification);
+
+        if (!TRUE.equals(feedOwner.getIsPushEnabled())) {
+            return;
+        }
 
         List<UserDevice> feedOwnerDevices = feedOwner.getUserDevices();
         if (feedOwnerDevices.isEmpty()) {
