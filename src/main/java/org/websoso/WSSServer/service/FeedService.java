@@ -1,34 +1,61 @@
 package org.websoso.WSSServer.service;
 
+import static java.lang.Boolean.TRUE;
+import static org.websoso.WSSServer.domain.common.Action.DELETE;
+import static org.websoso.WSSServer.domain.common.Action.UPDATE;
+import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER_ACCESS;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_NOT_ALLOWED;
+import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.*;
+import org.websoso.WSSServer.domain.Avatar;
+import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.domain.NotificationType;
+import org.websoso.WSSServer.domain.Novel;
+import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
+import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
-import org.websoso.WSSServer.dto.feed.*;
+import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
+import org.websoso.WSSServer.dto.feed.FeedGetResponse;
+import org.websoso.WSSServer.dto.feed.FeedInfo;
+import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
+import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.InterestFeedGetResponse;
+import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
+import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
-import org.websoso.WSSServer.repository.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.lang.Boolean.TRUE;
-import static org.websoso.WSSServer.domain.common.Action.DELETE;
-import static org.websoso.WSSServer.domain.common.Action.UPDATE;
-import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.*;
-import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
+import org.websoso.WSSServer.repository.AvatarRepository;
+import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.repository.NotificationRepository;
+import org.websoso.WSSServer.repository.NotificationTypeRepository;
+import org.websoso.WSSServer.repository.NovelRepository;
+import org.websoso.WSSServer.repository.UserNovelRepository;
 
 @Service
 @RequiredArgsConstructor

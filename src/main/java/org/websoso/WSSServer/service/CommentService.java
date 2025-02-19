@@ -1,9 +1,26 @@
 package org.websoso.WSSServer.service;
 
+import static java.lang.Boolean.TRUE;
+import static org.websoso.WSSServer.domain.common.Action.DELETE;
+import static org.websoso.WSSServer.domain.common.Action.UPDATE;
+import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
+import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
+import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
+import static org.websoso.WSSServer.exception.error.CustomCommentError.COMMENT_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomCommentError.SELF_REPORT_NOT_ALLOWED;
+
+import java.util.AbstractMap;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.*;
+import org.websoso.WSSServer.domain.Comment;
+import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.domain.NotificationType;
+import org.websoso.WSSServer.domain.Novel;
+import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentGetResponse;
@@ -15,18 +32,6 @@ import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.CommentRepository;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
-
-import java.util.AbstractMap;
-import java.util.List;
-
-import static java.lang.Boolean.TRUE;
-import static org.websoso.WSSServer.domain.common.Action.DELETE;
-import static org.websoso.WSSServer.domain.common.Action.UPDATE;
-import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
-import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
-import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
-import static org.websoso.WSSServer.exception.error.CustomCommentError.COMMENT_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.CustomCommentError.SELF_REPORT_NOT_ALLOWED;
 
 @Service
 @RequiredArgsConstructor
