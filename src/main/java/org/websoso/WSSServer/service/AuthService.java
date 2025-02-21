@@ -22,6 +22,7 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final UserService userService;
 
     public ReissueResponse reissue(String refreshToken) {
         RefreshToken storedRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken)
@@ -31,12 +32,13 @@ public class AuthService {
             throw new CustomAuthException(INVALID_TOKEN, "given token is invalid token for reissue");
         }
 
+        refreshTokenRepository.delete(storedRefreshToken);
         Long userId = jwtUtil.getUserIdFromJwt(refreshToken);
+        userService.getUserOrException(userId);
+
         UserAuthentication userAuthentication = new UserAuthentication(userId, null, null);
         String newAccessToken = jwtProvider.generateAccessToken(userAuthentication);
         String newRefreshToken = jwtProvider.generateRefreshToken(userAuthentication);
-
-        refreshTokenRepository.delete(storedRefreshToken);
         refreshTokenRepository.save(new RefreshToken(newRefreshToken, userId));
 
         return ReissueResponse.of(newAccessToken, newRefreshToken);
