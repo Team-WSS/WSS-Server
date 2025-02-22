@@ -196,7 +196,7 @@ public class UserService {
         String messageContent = MessageFormatter.formatUserWithdrawMessage(user.getUserId(), user.getNickname(),
                 withdrawalRequest.reason());
 
-        cleanupUserData(user.getUserId(), withdrawalRequest.refreshToken());
+        cleanupUserData(user.getUserId());
 
         messageService.sendDiscordWebhookMessage(
                 DiscordWebhookMessage.of(messageContent, WITHDRAW));
@@ -239,9 +239,8 @@ public class UserService {
         }
     }
 
-    private void cleanupUserData(Long userId, String refreshToken) {
-        refreshTokenRepository.findByRefreshToken(refreshToken)
-                .ifPresent(refreshTokenRepository::delete);
+    private void cleanupUserData(Long userId) {
+        refreshTokenRepository.deleteAll(refreshTokenRepository.findAllByUserId(userId));
         feedRepository.updateUserToUnknown(userId);
         commentRepository.updateUserToUnknown(userId);
         userRepository.deleteById(userId);
