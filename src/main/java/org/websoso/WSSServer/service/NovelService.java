@@ -280,12 +280,13 @@ public class NovelService {
     @Transactional(readOnly = true)
     public SearchedNovelsGetResponse searchNovels(String query, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
+        String searchQuery = query.replaceAll("\\s+", "").replaceAll("[^a-zA-Z0-9가-힣]", "");
 
-        if (query.isBlank()) {
+        if (searchQuery.isBlank()) {
             return SearchedNovelsGetResponse.of(0L, false, Collections.emptyList());
         }
 
-        Page<Novel> novels = novelRepository.findSearchedNovels(pageRequest, query);
+        Page<Novel> novels = novelRepository.findSearchedNovels(pageRequest, searchQuery);
 
         List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream()
                 .map(this::convertToDTO)

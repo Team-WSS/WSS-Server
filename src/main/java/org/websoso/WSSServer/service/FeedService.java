@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static java.lang.Boolean.TRUE;
 import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
@@ -23,8 +24,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
@@ -44,8 +48,12 @@ import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
+import org.websoso.WSSServer.notification.FCMService;
+import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.repository.NotificationRepository;
+import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
 
@@ -56,6 +64,7 @@ public class FeedService {
 
     private static final String DEFAULT_CATEGORY = "all";
     private static final int DEFAULT_PAGE_NUMBER = 0;
+    private static final int POPULAR_FEED_LIKE_THRESHOLD = 5;
     private final FeedRepository feedRepository;
     private final FeedCategoryService feedCategoryService;
     private final NovelService novelService;
@@ -70,6 +79,9 @@ public class FeedService {
     private final MessageService messageService;
     private final UserService userService;
     private final NovelRepository novelRepository;
+    private final FCMService fcmService;
+    private final NotificationTypeRepository notificationTypeRepository;
+    private final NotificationRepository notificationRepository;
 
     public void createFeed(User user, FeedCreateRequest request) {
         if (request.novelId() != null) {
@@ -107,14 +119,74 @@ public class FeedService {
         checkHiddenFeed(feed);
         checkBlocked(feed.getUser(), user);
 
-        boolean isPopularFeed = false;
-        if (feed.getLikes().size() == 9) {
-            isPopularFeed = true;
-        }
         likeService.createLike(user, feed);
-        if (isPopularFeed) {
+
+        if (feed.getLikes().size() == POPULAR_FEED_LIKE_THRESHOLD) {
             popularFeedService.createPopularFeed(feed);
         }
+
+        sendLikePushMessage(user, feed);
+    }
+
+    private void sendLikePushMessage(User liker, Feed feed) {
+        User feedOwner = feed.getUser();
+        if (liker.equals(feedOwner) || blockService.isBlocked(feedOwner.getUserId(), liker.getUserId())) {
+            return;
+        }
+
+        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("좋아요");
+
+        String notificationTitle = createNotificationTitle(feed);
+        String notificationBody = String.format("%s님이 내 수다글을 좋아해요.", liker.getNickname());
+        Long feedId = feed.getFeedId();
+
+        Notification notification = Notification.create(
+                notificationTitle,
+                notificationBody,
+                null,
+                feedOwner.getUserId(),
+                feedId,
+                notificationTypeComment
+        );
+        notificationRepository.save(notification);
+
+        if (!TRUE.equals(feedOwner.getIsPushEnabled())) {
+            return;
+        }
+
+        List<UserDevice> feedOwnerDevices = feedOwner.getUserDevices();
+        if (feedOwnerDevices.isEmpty()) {
+            return;
+        }
+
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+                notificationTitle,
+                notificationBody,
+                String.valueOf(feedId),
+                "feedDetail",
+                String.valueOf(notification.getNotificationId())
+        );
+
+        List<String> targetFCMTokens = feedOwnerDevices
+                .stream()
+                .map(UserDevice::getFcmToken)
+                .toList();
+        fcmService.sendMulticastPushMessage(
+                targetFCMTokens,
+                fcmMessageRequest
+        );
+    }
+
+    private String createNotificationTitle(Feed feed) {
+        if (feed.getNovelId() == null) {
+            String feedContent = feed.getFeedContent();
+            feedContent = feedContent.length() <= 12
+                    ? feedContent
+                    : feedContent.substring(0, 12);
+            return "'" + feedContent + "...'";
+        }
+        Novel novel = novelService.getNovelOrException(feed.getNovelId());
+        return novel.getTitle();
     }
 
     public void unLikeFeed(User user, Long feedId) {
@@ -154,7 +226,7 @@ public class FeedService {
     public void createComment(User user, Long feedId, CommentCreateRequest request) {
         Feed feed = getFeedOrException(feedId);
         validateFeedAccess(feed, user);
-        commentService.createComment(user.getUserId(), feed, request.commentContent());
+        commentService.createComment(user, feed, request.commentContent());
     }
 
     public void updateComment(User user, Long feedId, Long commentId, CommentUpdateRequest request) {
@@ -189,16 +261,14 @@ public class FeedService {
         reportedFeedService.createReportedFeed(feed, user, reportedType);
 
         int reportedCount = reportedFeedService.getReportedCountByReportedType(feed, reportedType);
-        boolean shouldHide = reportedCount >= 3;
+        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
 
         if (shouldHide) {
             feed.hideFeed();
         }
 
-        messageService.sendDiscordWebhookMessage(
-                DiscordWebhookMessage.of(
-                        MessageFormatter.formatFeedReportMessage(feed, reportedType, reportedCount, shouldHide),
-                        REPORT));
+        messageService.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
+                MessageFormatter.formatFeedReportMessage(user, feed, reportedType, reportedCount, shouldHide), REPORT));
     }
 
     public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {

@@ -31,7 +31,7 @@ public record TasteNovelGetResponse(
     private static Long getInterestCount(Novel tasteNovel) {
         return tasteNovel.getUserNovels()
                 .stream()
-                .map(UserNovel::getIsInterest)
+                .filter(UserNovel::getIsInterest)
                 .count();
     }
 

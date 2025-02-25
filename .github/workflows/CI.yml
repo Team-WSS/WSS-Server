@@ -28,6 +28,14 @@ jobs:
           echo "${{ secrets.APPLICATION }}" > ./application.yml
           echo "${{ secrets.APPLICATION_PROD }}" > ./application-prod.yml
 
+    - name: create-json
+      id: create-json
+      uses: jsdaniell/create-json@1.1.2
+      with:
+        name: "websoso-fcm.json"
+        json: ${{ secrets.WEBSOSOFCM_JSON }}
+        dir: 'src/main/resources/'
+
     - name: Create apple login key file
       env:
         API_KEY: ${{ secrets.APPSTORE_API_KEY_ID }}

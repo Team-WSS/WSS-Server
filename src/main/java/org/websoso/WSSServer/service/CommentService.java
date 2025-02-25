@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.service;
 
+import static java.lang.Boolean.TRUE;
 import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
@@ -15,14 +16,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Comment;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.domain.NotificationType;
+import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentGetResponse;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomCommentException;
+import org.websoso.WSSServer.notification.FCMService;
+import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.CommentRepository;
+import org.websoso.WSSServer.repository.NotificationRepository;
+import org.websoso.WSSServer.repository.NotificationTypeRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -35,9 +44,141 @@ public class CommentService {
     private final BlockService blockService;
     private final ReportedCommentService reportedCommentService;
     private final MessageService messageService;
+    private final FCMService fcmService;
+    private final NovelService novelService;
+    private final NotificationTypeRepository notificationTypeRepository;
+    private final NotificationRepository notificationRepository;
 
-    public void createComment(Long userId, Feed feed, String commentContent) {
-        commentRepository.save(Comment.create(userId, feed, commentContent));
+    public void createComment(User user, Feed feed, String commentContent) {
+        commentRepository.save(Comment.create(user.getUserId(), feed, commentContent));
+        sendCommentPushMessageToFeedOwner(user, feed);
+        sendCommentPushMessageToCommenters(user, feed);
+    }
+
+    private void sendCommentPushMessageToFeedOwner(User user, Feed feed) {
+        User feedOwner = feed.getUser();
+        if (isUserCommentOwner(user, feedOwner) || blockService.isBlocked(feedOwner.getUserId(), user.getUserId())) {
+            return;
+        }
+
+        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("댓글");
+
+        String notificationTitle = createNotificationTitle(feed);
+        String notificationBody = String.format("%s님이 내 수다글에 댓글을 남겼어요.", user.getNickname());
+        Long feedId = feed.getFeedId();
+
+        Notification notification = Notification.create(
+                notificationTitle,
+                notificationBody,
+                null,
+                feedOwner.getUserId(),
+                feedId,
+                notificationTypeComment
+        );
+        notificationRepository.save(notification);
+
+        if (!TRUE.equals(feedOwner.getIsPushEnabled())) {
+            return;
+        }
+
+        List<UserDevice> feedOwnerDevices = feedOwner.getUserDevices();
+        if (feedOwnerDevices.isEmpty()) {
+            return;
+        }
+
+        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+                notificationTitle,
+                notificationBody,
+                String.valueOf(feedId),
+                "feedDetail",
+                String.valueOf(notification.getNotificationId())
+        );
+
+        List<String> targetFCMTokens = feedOwnerDevices
+                .stream()
+                .map(UserDevice::getFcmToken)
+                .toList();
+
+        fcmService.sendMulticastPushMessage(
+                targetFCMTokens,
+                fcmMessageRequest
+        );
+    }
+
+    private String createNotificationTitle(Feed feed) {
+        if (feed.getNovelId() == null) {
+            String feedContent = feed.getFeedContent();
+            feedContent = feedContent.length() <= 12
+                    ? feedContent
+                    : feedContent.substring(0, 12);
+            return "'" + feedContent + "...'";
+        }
+        Novel novel = novelService.getNovelOrException(feed.getNovelId());
+        return novel.getTitle();
+    }
+
+    private void sendCommentPushMessageToCommenters(User user, Feed feed) {
+        User feedOwner = feed.getUser();
+
+        List<User> commenters = feed.getComments()
+                .stream()
+                .map(Comment::getUserId)
+                .filter(userId -> !userId.equals(user.getUserId()))
+                .filter(userId -> !userId.equals(feedOwner.getUserId()))
+                .filter(userId -> !blockService.isBlocked(userId, user.getUserId())
+                        && !blockService.isBlocked(userId, feed.getUser().getUserId()))
+                .distinct()
+                .map(userService::getUserOrException)
+                .toList();
+
+        if (commenters.isEmpty()) {
+            return;
+        }
+
+        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("댓글");
+
+        String notificationTitle = createNotificationTitle(feed);
+        String notificationBody = "내가 댓글 단 수다글에 또 다른 댓글이 달렸어요.";
+        Long feedId = feed.getFeedId();
+
+        commenters.forEach(commenter -> {
+            Notification notification = Notification.create(
+                    notificationTitle,
+                    notificationBody,
+                    null,
+                    commenter.getUserId(),
+                    feedId,
+                    notificationTypeComment
+            );
+            notificationRepository.save(notification);
+
+            if (!TRUE.equals(commenter.getIsPushEnabled())) {
+                return;
+            }
+
+            List<UserDevice> commenterDevices = commenter.getUserDevices();
+            if (commenterDevices.isEmpty()) {
+                return;
+            }
+
+            List<String> targetFCMTokens = commenterDevices
+                    .stream()
+                    .map(UserDevice::getFcmToken)
+                    .distinct()
+                    .toList();
+
+            FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+                    notificationTitle,
+                    notificationBody,
+                    String.valueOf(feedId),
+                    "feedDetail",
+                    String.valueOf(notification.getNotificationId())
+            );
+            fcmService.sendMulticastPushMessage(
+                    targetFCMTokens,
+                    fcmMessageRequest
+            );
+        });
     }
 
     public void updateComment(Long userId, Feed feed, Long commentId, String commentContent) {
@@ -86,7 +227,7 @@ public class CommentService {
         reportedCommentService.createReportedComment(comment, user, reportedType);
 
         int reportedCount = reportedCommentService.getReportedCountByReportedType(comment, reportedType);
-        boolean shouldHide = reportedCount >= 3;
+        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
 
         if (shouldHide) {
             if (reportedType.equals(SPOILER)) {
@@ -96,10 +237,10 @@ public class CommentService {
             }
         }
 
-        messageService.sendDiscordWebhookMessage(
-                DiscordWebhookMessage.of(
-                        MessageFormatter.formatCommentReportMessage(comment, reportedType, commentCreatedUser,
-                                reportedCount, shouldHide), REPORT));
+        messageService.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
+                MessageFormatter.formatCommentReportMessage(user, feed, comment, reportedType,
+                        commentCreatedUser, reportedCount,
+                        shouldHide), REPORT));
     }
 
     private Comment getCommentOrException(Long commentId) {

@@ -1,5 +1,7 @@
 package org.websoso.WSSServer.service;
 
+import static java.lang.Boolean.FALSE;
+import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.JOIN;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.WITHDRAW;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
@@ -9,6 +11,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INACCESSIBLE_USER_PROFILE;
+import static org.websoso.WSSServer.exception.error.CustomUserError.TERMS_AGREEMENT_REQUIRED;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import java.util.List;
@@ -21,16 +24,21 @@ import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.WithdrawalReason;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
+import org.websoso.WSSServer.domain.common.SocialLoginType;
+import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
+import org.websoso.WSSServer.dto.user.FCMTokenRequest;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileGetResponse;
 import org.websoso.WSSServer.dto.user.ProfileStatusResponse;
 import org.websoso.WSSServer.dto.user.RegisterUserInfoRequest;
+import org.websoso.WSSServer.dto.user.TermsSettingGetResponse;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
@@ -47,6 +55,7 @@ import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
+import org.websoso.WSSServer.repository.UserDeviceRepository;
 import org.websoso.WSSServer.repository.UserRepository;
 import org.websoso.WSSServer.repository.WithdrawalReasonRepository;
 
@@ -67,6 +76,7 @@ public class UserService {
     private final CommentRepository commentRepository;
     private final MessageService messageService;
     private final WithdrawalReasonRepository withdrawalReasonRepository;
+    private final UserDeviceRepository userDeviceRepository;
     private static final String KAKAO_PREFIX = "kakao";
     private static final String APPLE_PREFIX = "apple";
 
@@ -167,10 +177,14 @@ public class UserService {
         user.updateUserInfo(registerUserInfoRequest);
         List<GenrePreference> preferGenres = createGenrePreferences(user, registerUserInfoRequest.genrePreferences());
         genrePreferenceRepository.saveAll(preferGenres);
+
+        messageService.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
+                MessageFormatter.formatUserJoinMessage(user, SocialLoginType.fromSocialId(user.getSocialId())), JOIN));
     }
 
-    public void logout(User user, String refreshToken) {
+    public void logout(User user, String refreshToken, String deviceIdentifier) {
         refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
+        userDeviceRepository.deleteByUserAndDeviceIdentifier(user, deviceIdentifier);
         if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
             kakaoService.kakaoLogout(user);
         }
@@ -240,5 +254,46 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserIdAndNicknameResponse getUserIdAndNicknameAndGender(User user) {
         return UserIdAndNicknameResponse.of(user);
+    }
+
+    public boolean registerFCMToken(User user, FCMTokenRequest fcmTokenRequest) {
+        return userDeviceRepository.findByDeviceIdentifierAndUser(fcmTokenRequest.deviceIdentifier(), user)
+                .map(userDevice -> {
+                    userDevice.updateFcmToken(fcmTokenRequest.fcmToken());
+                    return false;
+                })
+                .orElseGet(() -> {
+                    UserDevice userDevice = UserDevice.create(
+                            fcmTokenRequest.fcmToken(),
+                            fcmTokenRequest.deviceIdentifier(),
+                            user
+                    );
+                    userDeviceRepository.save(userDevice);
+                    return true;
+                });
+    }
+
+    public void registerPushSetting(User user, Boolean isPushEnabled) {
+        user.updatePushSetting(isPushEnabled);
+    }
+
+    @Transactional(readOnly = true)
+    public PushSettingGetResponse getPushSettingValue(User user) {
+        return PushSettingGetResponse.of(user.getIsPushEnabled());
+    }
+
+    @Transactional(readOnly = true)
+    public TermsSettingGetResponse getTermsSettingValue(User user) {
+        return TermsSettingGetResponse.of(user.getServiceAgreed(), user.getPrivacyAgreed(),
+                user.getMarketingAgreed());
+    }
+
+    public void updateTermsSetting(User user, Boolean serviceAgreed, Boolean privacyAgreed,
+                                   Boolean marketingAgreed) {
+        if (FALSE.equals(serviceAgreed) || FALSE.equals(privacyAgreed)) {
+            throw new CustomUserException(TERMS_AGREEMENT_REQUIRED,
+                    "service terms and personal information consent are mandatory");
+        }
+        user.updateTermsSetting(serviceAgreed, privacyAgreed, marketingAgreed);
     }
 }

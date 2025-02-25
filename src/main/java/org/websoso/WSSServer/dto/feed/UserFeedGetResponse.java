@@ -97,7 +97,7 @@ public record UserFeedGetResponse(
             return null;
         }
         return novelRatingCount > 0
-                ? getNovelRatingSum(novel) / novelRatingCount
+                ? Math.round(getNovelRatingSum(novel) / novelRatingCount * 10) / 10.0f
                 : 0.0f;
     }
 }

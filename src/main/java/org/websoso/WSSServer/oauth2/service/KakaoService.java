@@ -1,7 +1,5 @@
 package org.websoso.WSSServer.oauth2.service;
 
-import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.JOIN;
-import static org.websoso.WSSServer.domain.common.SocialLoginType.KAKAO;
 import static org.websoso.WSSServer.exception.error.CustomKakaoError.INVALID_KAKAO_ACCESS_TOKEN;
 import static org.websoso.WSSServer.exception.error.CustomKakaoError.KAKAO_SERVER_ERROR;
 
@@ -18,13 +16,11 @@ import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.RefreshToken;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.exception.exception.CustomKakaoException;
 import org.websoso.WSSServer.oauth2.dto.KakaoUserInfo;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.repository.UserRepository;
-import org.websoso.WSSServer.service.MessageFormatter;
 import org.websoso.WSSServer.service.MessageService;
 
 @Service
@@ -69,11 +65,9 @@ public class KakaoService {
         String socialId = "kakao_" + kakaoUserInfo.id();
         String defaultNickname = "k*" + kakaoUserInfo.id().toString().substring(2, 10);
 
-        boolean isNewUser = false;
         User user = userRepository.findBySocialId(socialId);
         if (user == null) {
             user = userRepository.save(User.createBySocial(socialId, defaultNickname, kakaoUserInfo.email()));
-            isNewUser = true;
         }
 
         UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
@@ -84,11 +78,6 @@ public class KakaoService {
         refreshTokenRepository.save(redisRefreshToken);
 
         boolean isRegister = !user.getNickname().contains("*");
-
-        if (isNewUser) {
-            messageService.sendDiscordWebhookMessage(
-                    DiscordWebhookMessage.of(MessageFormatter.formatUserJoinMessage(user, KAKAO), JOIN));
-        }
         return AuthResponse.of(accessToken, refreshToken, isRegister);
     }
 

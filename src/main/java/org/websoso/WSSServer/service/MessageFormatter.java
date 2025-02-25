@@ -1,69 +1,42 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.COMMENT_REPORT;
+import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.FEED_REPORT;
+import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.USER_JOIN;
+import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.USER_WITHDRAW;
 import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
 import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import org.websoso.WSSServer.domain.Comment;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.common.DiscordMessageTemplate;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
 
 public class MessageFormatter {
 
-    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm";
-
-    private static final String FEED_REPORT_MESSAGE =
-            "```[%s] 피드 %s 신고가 접수되었습니다.\n\n" +
-                    "[신고된 피드 작성자]\n" +
-                    "유저 아이디 : %d\n" +
-                    "유저 닉네임 : %s\n\n" +
-                    "[신고된 피드 내용]\n%s\n\n" +
-                    "[신고 횟수]\n총 신고 횟수 %d회.\n" +
-                    "%s\n```";
-
-    private static final String COMMENT_REPORT_MESSAGE =
-            "```[%s] 피드 댓글 %s 신고가 접수되었습니다.\n\n" +
-                    "[신고된 댓글 작성자]\n" +
-                    "유저 아이디 : %d\n" +
-                    "유저 닉네임 : %s\n\n" +
-                    "[신고된 댓글 내용]\n%s\n\n" +
-                    "[신고 횟수]\n총 신고 횟수 %d회.\n" +
-                    "%s\n```";
-
-    private static final String USER_WITHDRAW_MESSAGE =
-            "```[%s] 사용자가 탈퇴하였습니다.\n\n" +
-                    "[탈퇴한 사용자]\n" +
-                    "유저 아이디 : %d\n" +
-                    "유저 닉네임 : %s\n\n" +
-                    "[탈퇴 사유]\n%s\n\n```";
-
-    private static final String USER_JOIN_MESSAGE =
-            "```[%s] 새로운 사용자가 가입하였습니다.\n\n" +
-                    "[가입한 사용자]\n" +
-                    "로그인 방식 : %s\n" +
-                    "유저 아이디 : %d\n" +
-                    "가입을 환영합니다!\n\n```";
-
-    public static String formatFeedReportMessage(Feed feed, ReportedType reportedType, int reportedCount,
+    public static String formatFeedReportMessage(User user, Feed feed, ReportedType reportedType, int reportedCount,
                                                  boolean isHidden) {
-        String hiddenMessage = isHidden ? "해당 피드는 숨김 처리되었습니다." : "해당 피드는 숨김 처리되지 않았습니다.";
-
+        String hiddenMessage = isHidden
+                ? "해당 수다는 숨김 처리되었습니다."
+                : "해당 수다는 숨김 처리되지 않았습니다.";
         return String.format(
-                FEED_REPORT_MESSAGE,
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)),
+                FEED_REPORT.getTemplate(),
+                DiscordMessageTemplate.getCurrentDateTime(),
                 reportedType.getDescription(),
-                feed.getUser().getUserId(),
+                user.getNickname(),
+                user.getUserId(),
                 feed.getUser().getNickname(),
+                feed.getUser().getUserId(),
                 feed.getFeedContent(),
                 reportedCount,
                 hiddenMessage
         );
     }
 
-    public static String formatCommentReportMessage(Comment comment, ReportedType reportedType, User user,
+    public static String formatCommentReportMessage(User user, Feed feed, Comment comment,
+                                                    ReportedType reportedType, User commentCreatedUser,
                                                     int reportedCount, boolean isHidden) {
         String hiddenMessage = "해당 댓글은 현재 숨김 처리되지 않은 상태입니다.";
         if (isHidden) {
@@ -73,14 +46,18 @@ public class MessageFormatter {
                 hiddenMessage = "해당 댓글은 부적절한 내용으로 인해 숨김 처리되었습니다.";
             }
         }
-
         return String.format(
-                COMMENT_REPORT_MESSAGE,
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)),
+                COMMENT_REPORT.getTemplate(),
+                DiscordMessageTemplate.getCurrentDateTime(),
                 reportedType.getDescription(),
-                user.getUserId(),
                 user.getNickname(),
+                user.getUserId(),
+                commentCreatedUser.getNickname(),
+                commentCreatedUser.getUserId(),
                 comment.getCommentContent(),
+                feed.getUser().getNickname(),
+                feed.getUser().getUserId(),
+                feed.getFeedContent(),
                 reportedCount,
                 hiddenMessage
         );
@@ -88,19 +65,20 @@ public class MessageFormatter {
 
     public static String formatUserWithdrawMessage(Long userId, String userNickname, String reason) {
         return String.format(
-                USER_WITHDRAW_MESSAGE,
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)),
-                userId,
+                USER_WITHDRAW.getTemplate(),
+                DiscordMessageTemplate.getCurrentDateTime(),
                 userNickname,
+                userId,
                 reason
         );
     }
 
     public static String formatUserJoinMessage(User user, SocialLoginType socialLoginType) {
         return String.format(
-                USER_JOIN_MESSAGE,
-                user.getCreatedDate(),
+                USER_JOIN.getTemplate(),
+                DiscordMessageTemplate.getCurrentDateTime(),
                 socialLoginType.getLabel(),
+                user.getNickname(),
                 user.getUserId()
         );
     }
