@@ -5,10 +5,10 @@ import static org.websoso.WSSServer.exception.error.CustomAuthError.INVALID_TOKE
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.config.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.config.jwt.JWTUtil;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.JwtValidationType;
-import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.RefreshToken;
 import org.websoso.WSSServer.dto.auth.ReissueResponse;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
@@ -32,9 +32,9 @@ public class AuthService {
         }
 
         Long userId = jwtUtil.getUserIdFromJwt(refreshToken);
-        UserAuthentication userAuthentication = new UserAuthentication(userId, null, null);
-        String newAccessToken = jwtProvider.generateAccessToken(userAuthentication);
-        String newRefreshToken = jwtProvider.generateRefreshToken(userAuthentication);
+        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(userId, null, null);
+        String newAccessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
+        String newRefreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
 
         refreshTokenRepository.delete(storedRefreshToken);
         refreshTokenRepository.save(new RefreshToken(newRefreshToken, userId));

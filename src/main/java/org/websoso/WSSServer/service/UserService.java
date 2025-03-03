@@ -18,8 +18,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.config.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
-import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
@@ -95,8 +95,8 @@ public class UserService {
     public LoginResponse login(Long userId) {
         User user = getUserOrException(userId);
 
-        UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
-        String token = jwtProvider.generateAccessToken(userAuthentication);
+        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null, null);
+        String token = jwtProvider.generateAccessToken(customAuthenticationToken);
 
         return LoginResponse.of(token);
     }
