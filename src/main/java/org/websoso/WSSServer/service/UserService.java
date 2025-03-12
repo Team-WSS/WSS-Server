@@ -120,8 +120,8 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public User getUserOrException(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() ->
-                new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
     }
 
     @Transactional(readOnly = true)
