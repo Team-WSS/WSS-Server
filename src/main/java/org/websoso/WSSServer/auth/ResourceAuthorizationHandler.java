@@ -3,6 +3,7 @@ package org.websoso.WSSServer.auth;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.auth.validator.ResourceAuthorizationValidator;
@@ -21,10 +22,8 @@ public class ResourceAuthorizationHandler {
     }
 
     public boolean hasPermission(Long resourceId, User user, Class<?> resourceType) {
-        ResourceAuthorizationValidator validator = validatorMap.get(resourceType);
-        if (validator == null) {
-            throw new RuntimeException();
-        }
-        return validator.hasPermission(resourceId, user);
+        return Optional.ofNullable(validatorMap.get(resourceType))
+                .orElseThrow(RuntimeException::new)
+                .hasPermission(resourceId, user);
     }
 }
