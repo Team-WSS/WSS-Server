@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.auth.validator.ResourceAuthorizationValidator;
+import org.websoso.WSSServer.domain.User;
 
 @Component
 public class ResourceAuthorizationHandler {
@@ -17,5 +18,13 @@ public class ResourceAuthorizationHandler {
         for (ResourceAuthorizationValidator validator : validators) {
             validatorMap.put(validator.getResourceType(), validator);
         }
+    }
+
+    public boolean hasPermission(Long resourceId, User user, Class<?> resourceType) {
+        ResourceAuthorizationValidator validator = validatorMap.get(resourceType);
+        if (validator == null) {
+            throw new RuntimeException();
+        }
+        return validator.hasPermission(resourceId, user);
     }
 }
