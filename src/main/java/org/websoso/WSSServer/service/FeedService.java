@@ -1,7 +1,6 @@
 package org.websoso.WSSServer.service;
 
 import static java.lang.Boolean.TRUE;
-import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER_ACCESS;
@@ -109,8 +108,6 @@ public class FeedService {
     }
 
     public void deleteFeed(User user, Long feedId) {
-        Feed feed = getFeedOrException(feedId);
-        feed.validateUserAuthorization(user, DELETE);
         feedRepository.delete(feed);
     }
 
