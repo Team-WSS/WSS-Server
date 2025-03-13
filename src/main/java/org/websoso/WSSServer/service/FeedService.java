@@ -108,7 +108,7 @@ public class FeedService {
     }
 
     public void deleteFeed(Long feedId) {
-        feedRepository.delete(feed);
+        feedRepository.deleteById(feedId);
     }
 
     public void likeFeed(User user, Long feedId) {
