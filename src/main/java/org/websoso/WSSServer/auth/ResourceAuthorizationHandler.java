@@ -21,7 +21,7 @@ public class ResourceAuthorizationHandler {
         }
     }
 
-    public boolean hasPermission(Long resourceId, User user, Class<?> resourceType) {
+    public boolean authorizeResourceAccess(Long resourceId, User user, Class<?> resourceType) {
         return Optional.ofNullable(validatorMap.get(resourceType))
                 .orElseThrow(RuntimeException::new)
                 .hasPermission(resourceId, user);
