@@ -21,8 +21,7 @@ public class FeedAuthorizationValidator implements ResourceAuthorizationValidato
     public boolean hasPermission(Long feedId, User user) {
         Feed feed = getFeedOrException(feedId);
 
-        if (!feed.getUser().getUserId()
-                .equals(user.getUserId())) {
+        if (!isFeedOwner(feed, user)) {
             throw new CustomUserException(INVALID_AUTHORIZED,
                     "User with ID " + user.getUserId() + " is not the owner of feed " + feed.getFeedId());
         }
@@ -32,6 +31,10 @@ public class FeedAuthorizationValidator implements ResourceAuthorizationValidato
     private Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId)
                 .orElseThrow(() -> new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
+    }
+
+    private boolean isFeedOwner(Feed feed, User user) {
+        return feed.getUser().getUserId().equals(user.getUserId());
     }
 
     @Override
