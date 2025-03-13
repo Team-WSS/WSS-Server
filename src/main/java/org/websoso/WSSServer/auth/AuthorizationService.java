@@ -13,9 +13,12 @@ import org.websoso.WSSServer.repository.UserRepository;
 public class AuthorizationService {
 
     private final UserRepository userRepository;
+    private final ResourceAuthorizationHandler resourceAuthorizationHandler;
 
     public boolean validate(Long resourceId, Long userId, Class<?> resourceType) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
+
+        return resourceAuthorizationHandler.authorizeResourceAccess(resourceId, user, resourceType);
     }
 }
