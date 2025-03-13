@@ -2,6 +2,7 @@ package org.websoso.WSSServer.auth.validator;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.repository.FeedRepository;
 
@@ -18,6 +19,6 @@ public class FeedAuthorizationValidator implements ResourceAuthorizationValidato
 
     @Override
     public Class<?> getResourceType() {
-        return null;
+        return Feed.class;
     }
 }
