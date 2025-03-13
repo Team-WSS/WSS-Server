@@ -71,8 +71,7 @@ public class FeedController {
     @PreAuthorize("@authorizationService.validate(#feedId, #userId, T(org.websoso.WSSServer.domain.Feed))")
     public ResponseEntity<Void> deleteFeed(@AuthenticationPrincipal Long userId,
                                            @PathVariable("feedId") Long feedId) {
-        feedService.deleteFeed(user, feedId);
-
+        feedService.deleteFeed(feedId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

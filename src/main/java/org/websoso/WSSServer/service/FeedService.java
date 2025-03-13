@@ -107,7 +107,7 @@ public class FeedService {
         feedCategoryService.updateFeedCategory(feed, request.relevantCategories());
     }
 
-    public void deleteFeed(User user, Long feedId) {
+    public void deleteFeed(Long feedId) {
         feedRepository.delete(feed);
     }
 
