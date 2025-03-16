@@ -10,7 +10,7 @@ public class AuthorizationService {
 
     private final ResourceAuthorizationHandler resourceAuthorizationHandler;
 
-    public boolean validate(Long resourceId, Long userId, Class<?> resourceType) {
+    public boolean validate(Long resourceId, User user, Class<?> resourceType) {
         return resourceAuthorizationHandler.authorizeResourceAccess(resourceId, user, resourceType);
     }
 }
