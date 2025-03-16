@@ -14,6 +14,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -47,9 +49,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } else if (validationResult == INVALID_TOKEN || validationResult == INVALID_SIGNATURE) {
                 handleInvalidToken(response);
                 return;
-            } else {
-
             }
+        } else {
+            SecurityContextHolder.getContext().setAuthentication(
+                    new AnonymousAuthenticationToken(
+                            "anonymous",
+                            "anonymousUser",
+                            AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"))
+            );
         }
         filterChain.doFilter(request, response);
     }
