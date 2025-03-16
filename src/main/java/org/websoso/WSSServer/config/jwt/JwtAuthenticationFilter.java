@@ -33,18 +33,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String token = getJwtFromRequest(request);
-        final JwtValidationType validationResult = jwtUtil.validateJWT(token);
-        if (validationResult == VALID_ACCESS) {
-            Long userId = jwtUtil.getUserIdFromJwt(token);
-            CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(userId, null, null);
-            customAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(customAuthenticationToken);
-        } else if (validationResult == EXPIRED_ACCESS) {
-            handleExpiredAccessToken(request, response);
-            return;
-        } else if (validationResult == INVALID_TOKEN || validationResult == INVALID_SIGNATURE) {
-            handleInvalidToken(response);
-            return;
+
+        if (StringUtils.hasText(token)) {
+            final JwtValidationType validationResult = jwtUtil.validateJWT(token);
+            if (validationResult == VALID_ACCESS) {
+                Long userId = jwtUtil.getUserIdFromJwt(token);
+                CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(userId, null, null);
+                customAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(customAuthenticationToken);
+            } else if (validationResult == EXPIRED_ACCESS) {
+                handleExpiredAccessToken(request, response);
+                return;
+            } else if (validationResult == INVALID_TOKEN || validationResult == INVALID_SIGNATURE) {
+                handleInvalidToken(response);
+                return;
+            } else {
+
+            }
         }
         filterChain.doFilter(request, response);
     }
