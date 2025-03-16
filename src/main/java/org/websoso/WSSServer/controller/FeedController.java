@@ -32,7 +32,6 @@ import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.PopularFeedService;
-import org.websoso.WSSServer.service.UserService;
 
 @RequestMapping("/feeds")
 @RestController
@@ -40,7 +39,6 @@ import org.websoso.WSSServer.service.UserService;
 public class FeedController {
 
     private final FeedService feedService;
-    private final UserService userService;
     private final PopularFeedService popularFeedService;
 
     @PostMapping
