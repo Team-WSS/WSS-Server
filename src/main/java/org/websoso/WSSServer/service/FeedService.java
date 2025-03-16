@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -83,9 +84,8 @@ public class FeedService {
     private final NotificationRepository notificationRepository;
 
     public void createFeed(User user, FeedCreateRequest request) {
-        if (request.novelId() != null) {
-            novelService.getNovelOrException(request.novelId());
-        }
+        Optional.ofNullable(request.novelId())
+                .ifPresent(novelService::getNovelOrException);
         Feed feed = Feed.create(request.feedContent(), request.novelId(), request.isSpoiler(), user);
         feedRepository.save(feed);
         feedCategoryService.createFeedCategory(feed, request.relevantCategories());
