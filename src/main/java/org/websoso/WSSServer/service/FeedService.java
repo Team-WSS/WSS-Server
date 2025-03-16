@@ -86,12 +86,7 @@ public class FeedService {
         if (request.novelId() != null) {
             novelService.getNovelOrException(request.novelId());
         }
-        Feed feed = Feed.builder()
-                .feedContent(request.feedContent())
-                .isSpoiler(request.isSpoiler())
-                .novelId(request.novelId())
-                .user(user)
-                .build();
+        Feed feed = Feed.create(request.feedContent(), request.novelId(), request.isSpoiler(), user);
         feedRepository.save(feed);
         feedCategoryService.createFeedCategory(feed, request.relevantCategories());
     }
