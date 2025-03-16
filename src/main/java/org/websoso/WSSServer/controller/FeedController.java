@@ -50,6 +50,24 @@ public class FeedController {
                 .build();
     }
 
+    @GetMapping("/{feedId}")
+    public ResponseEntity<FeedGetResponse> getFeed(@AuthenticationPrincipal User user,
+                                                   @PathVariable("feedId") Long feedId) {
+        return ResponseEntity
+                .status(OK)
+                .body(feedService.getFeedById(user, feedId));
+    }
+
+    @GetMapping
+    public ResponseEntity<FeedsGetResponse> getFeeds(@AuthenticationPrincipal User user,
+                                                     @RequestParam(value = "category", required = false) String category,
+                                                     @RequestParam("lastFeedId") Long lastFeedId,
+                                                     @RequestParam("size") int size) {
+        return ResponseEntity
+                .status(OK)
+                .body(feedService.getFeeds(user, category, lastFeedId, size));
+    }
+
     @PutMapping("/{feedId}")
     public ResponseEntity<Void> updateFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId,
@@ -88,29 +106,11 @@ public class FeedController {
                 .build();
     }
 
-    @GetMapping("/{feedId}")
-    public ResponseEntity<FeedGetResponse> getFeed(@AuthenticationPrincipal User user,
-                                                   @PathVariable("feedId") Long feedId) {
-        return ResponseEntity
-                .status(OK)
-                .body(feedService.getFeedById(user, feedId));
-    }
-
     @GetMapping("/popular")
     public ResponseEntity<PopularFeedsGetResponse> getPopularFeeds(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
                 .body(popularFeedService.getPopularFeeds(user));
-    }
-
-    @GetMapping
-    public ResponseEntity<FeedsGetResponse> getFeeds(@AuthenticationPrincipal User user,
-                                                     @RequestParam(value = "category", required = false) String category,
-                                                     @RequestParam("lastFeedId") Long lastFeedId,
-                                                     @RequestParam("size") int size) {
-        return ResponseEntity
-                .status(OK)
-                .body(feedService.getFeeds(user, category, lastFeedId, size));
     }
 
     @GetMapping("/interest")
@@ -128,6 +128,14 @@ public class FeedController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
+    }
+
+    @GetMapping("/{feedId}/comments")
+    public ResponseEntity<CommentsGetResponse> getComments(@AuthenticationPrincipal User user,
+                                                           @PathVariable("feedId") Long feedId) {
+        return ResponseEntity
+                .status(OK)
+                .body(feedService.getComments(user, feedId));
     }
 
     @PutMapping("/{feedId}/comments/{commentId}")
@@ -149,14 +157,6 @@ public class FeedController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
-    }
-
-    @GetMapping("/{feedId}/comments")
-    public ResponseEntity<CommentsGetResponse> getComments(@AuthenticationPrincipal User user,
-                                                           @PathVariable("feedId") Long feedId) {
-        return ResponseEntity
-                .status(OK)
-                .body(feedService.getComments(user, feedId));
     }
 
     @PostMapping("/{feedId}/spoiler")
