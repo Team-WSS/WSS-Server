@@ -1,6 +1,8 @@
 package org.websoso.WSSServer.config.jwt;
 
 import static org.websoso.WSSServer.config.jwt.JwtValidationType.EXPIRED_ACCESS;
+import static org.websoso.WSSServer.config.jwt.JwtValidationType.INVALID_SIGNATURE;
+import static org.websoso.WSSServer.config.jwt.JwtValidationType.INVALID_TOKEN;
 import static org.websoso.WSSServer.config.jwt.JwtValidationType.VALID_ACCESS;
 
 import jakarta.servlet.FilterChain;
@@ -40,6 +42,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } else if (validationResult == EXPIRED_ACCESS) {
             handleExpiredAccessToken(request, response);
             return;
+        } else if (validationResult == INVALID_TOKEN || validationResult == INVALID_SIGNATURE) {
+            handleInvalidToken(response);
+            return;
         }
         filterChain.doFilter(request, response);
     }
@@ -58,5 +63,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter()
                 .write("{\"code\": \"AUTH-000\", \"message\": \"Access Token Expired. Use Refresh Token to reissue.\"}");
+    }
+
+    private void handleInvalidToken(HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter()
+                .write("{\"code\": \"AUTH-001\", \"message\": \"Invalid token.\"}");
     }
 }
