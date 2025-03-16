@@ -46,9 +46,7 @@ public class FeedController {
     @PostMapping
     public ResponseEntity<Void> createFeed(@AuthenticationPrincipal User user,
                                            @Valid @RequestBody FeedCreateRequest request) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.createFeed(user, request);
-
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -58,9 +56,7 @@ public class FeedController {
     public ResponseEntity<Void> updateFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId,
                                            @Valid @RequestBody FeedUpdateRequest request) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.updateFeed(user, feedId, request);
-
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -79,9 +75,7 @@ public class FeedController {
     @PostMapping("/{feedId}/likes")
     public ResponseEntity<Void> likeFeed(@AuthenticationPrincipal User user,
                                          @PathVariable("feedId") Long feedId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.likeFeed(user, feedId);
-
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -90,9 +84,7 @@ public class FeedController {
     @DeleteMapping("/{feedId}/likes")
     public ResponseEntity<Void> unLikeFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.unLikeFeed(user, feedId);
-
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -101,8 +93,6 @@ public class FeedController {
     @GetMapping("/{feedId}")
     public ResponseEntity<FeedGetResponse> getFeed(@AuthenticationPrincipal User user,
                                                    @PathVariable("feedId") Long feedId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getFeedById(user, feedId));
@@ -110,9 +100,6 @@ public class FeedController {
 
     @GetMapping("/popular")
     public ResponseEntity<PopularFeedsGetResponse> getPopularFeeds(@AuthenticationPrincipal User user) {
-        User user = principal == null ?
-                null :
-                userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(popularFeedService.getPopularFeeds(user));
@@ -123,8 +110,6 @@ public class FeedController {
                                                      @RequestParam(value = "category", required = false) String category,
                                                      @RequestParam("lastFeedId") Long lastFeedId,
                                                      @RequestParam("size") int size) {
-        User user = principal == null ? null : userService.getUserOrException(Long.valueOf(principal.getName()));
-
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getFeeds(user, category, lastFeedId, size));
@@ -132,9 +117,6 @@ public class FeedController {
 
     @GetMapping("/interest")
     public ResponseEntity<InterestFeedsGetResponse> getInterestFeeds(@AuthenticationPrincipal User user) {
-        User user = principal == null
-                ? null
-                : userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getInterestFeeds(user));
@@ -144,9 +126,7 @@ public class FeedController {
     public ResponseEntity<Void> createComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @Valid @RequestBody CommentCreateRequest request) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.createComment(user, feedId, request);
-
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -157,9 +137,7 @@ public class FeedController {
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId,
                                               @Valid @RequestBody CommentUpdateRequest request) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.updateComment(user, feedId, commentId, request);
-
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -169,9 +147,7 @@ public class FeedController {
     public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.deleteComment(user, feedId, commentId);
-
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -180,8 +156,6 @@ public class FeedController {
     @GetMapping("/{feedId}/comments")
     public ResponseEntity<CommentsGetResponse> getComments(@AuthenticationPrincipal User user,
                                                            @PathVariable("feedId") Long feedId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getComments(user, feedId));
@@ -190,9 +164,7 @@ public class FeedController {
     @PostMapping("/{feedId}/spoiler")
     public ResponseEntity<Void> reportFeedSpoiler(@AuthenticationPrincipal User user,
                                                   @PathVariable("feedId") Long feedId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.reportFeed(user, feedId, SPOILER);
-
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -201,9 +173,7 @@ public class FeedController {
     @PostMapping("/{feedId}/impertinence")
     public ResponseEntity<Void> reportedFeedImpertinence(@AuthenticationPrincipal User user,
                                                          @PathVariable("feedId") Long feedId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.reportFeed(user, feedId, IMPERTINENCE);
-
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -213,9 +183,7 @@ public class FeedController {
     public ResponseEntity<Void> reportCommentSpoiler(@AuthenticationPrincipal User user,
                                                      @PathVariable("feedId") Long feedId,
                                                      @PathVariable("commentId") Long commentId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.reportComment(user, feedId, commentId, SPOILER);
-
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -225,9 +193,7 @@ public class FeedController {
     public ResponseEntity<Void> reportCommentImpertinence(@AuthenticationPrincipal User user,
                                                           @PathVariable("feedId") Long feedId,
                                                           @PathVariable("commentId") Long commentId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         feedService.reportComment(user, feedId, commentId, IMPERTINENCE);
-
         return ResponseEntity
                 .status(CREATED)
                 .build();
