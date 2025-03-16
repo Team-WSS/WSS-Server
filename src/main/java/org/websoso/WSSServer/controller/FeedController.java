@@ -42,6 +42,7 @@ public class FeedController {
     private final PopularFeedService popularFeedService;
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> createFeed(@AuthenticationPrincipal User user,
                                            @Valid @RequestBody FeedCreateRequest request) {
         feedService.createFeed(user, request);
@@ -51,6 +52,7 @@ public class FeedController {
     }
 
     @GetMapping("/{feedId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<FeedGetResponse> getFeed(@AuthenticationPrincipal User user,
                                                    @PathVariable("feedId") Long feedId) {
         return ResponseEntity
@@ -69,6 +71,7 @@ public class FeedController {
     }
 
     @PutMapping("/{feedId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> updateFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId,
                                            @Valid @RequestBody FeedUpdateRequest request) {
@@ -79,7 +82,7 @@ public class FeedController {
     }
 
     @DeleteMapping("/{feedId}")
-    @PreAuthorize("@authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.domain.Feed))")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId) {
         feedService.deleteFeed(feedId);
@@ -89,6 +92,7 @@ public class FeedController {
     }
 
     @PostMapping("/{feedId}/likes")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> likeFeed(@AuthenticationPrincipal User user,
                                          @PathVariable("feedId") Long feedId) {
         feedService.likeFeed(user, feedId);
@@ -98,6 +102,7 @@ public class FeedController {
     }
 
     @DeleteMapping("/{feedId}/likes")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unLikeFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId) {
         feedService.unLikeFeed(user, feedId);
@@ -114,6 +119,7 @@ public class FeedController {
     }
 
     @GetMapping("/interest")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<InterestFeedsGetResponse> getInterestFeeds(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
@@ -121,6 +127,7 @@ public class FeedController {
     }
 
     @PostMapping("/{feedId}/comments")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> createComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @Valid @RequestBody CommentCreateRequest request) {
@@ -131,6 +138,7 @@ public class FeedController {
     }
 
     @GetMapping("/{feedId}/comments")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CommentsGetResponse> getComments(@AuthenticationPrincipal User user,
                                                            @PathVariable("feedId") Long feedId) {
         return ResponseEntity
@@ -139,6 +147,7 @@ public class FeedController {
     }
 
     @PutMapping("/{feedId}/comments/{commentId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> updateComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId,
@@ -150,6 +159,7 @@ public class FeedController {
     }
 
     @DeleteMapping("/{feedId}/comments/{commentId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId) {
@@ -160,6 +170,7 @@ public class FeedController {
     }
 
     @PostMapping("/{feedId}/spoiler")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> reportFeedSpoiler(@AuthenticationPrincipal User user,
                                                   @PathVariable("feedId") Long feedId) {
         feedService.reportFeed(user, feedId, SPOILER);
@@ -169,6 +180,7 @@ public class FeedController {
     }
 
     @PostMapping("/{feedId}/impertinence")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> reportedFeedImpertinence(@AuthenticationPrincipal User user,
                                                          @PathVariable("feedId") Long feedId) {
         feedService.reportFeed(user, feedId, IMPERTINENCE);
@@ -178,6 +190,7 @@ public class FeedController {
     }
 
     @PostMapping("/{feedId}/comments/{commentId}/spoiler")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> reportCommentSpoiler(@AuthenticationPrincipal User user,
                                                      @PathVariable("feedId") Long feedId,
                                                      @PathVariable("commentId") Long commentId) {
@@ -188,6 +201,7 @@ public class FeedController {
     }
 
     @PostMapping("/{feedId}/comments/{commentId}/impertinence")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> reportCommentImpertinence(@AuthenticationPrincipal User user,
                                                           @PathVariable("feedId") Long feedId,
                                                           @PathVariable("commentId") Long commentId) {
