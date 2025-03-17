@@ -6,6 +6,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +29,7 @@ public class BlockController {
     private final BlockService blockService;
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> block(@AuthenticationPrincipal User blocker,
                                       @RequestParam("userId") @UserIdConstraint Long blockedId) {
         blockService.block(blocker, blockedId);
@@ -37,6 +39,7 @@ public class BlockController {
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<BlocksGetResponse> getBlockList(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
@@ -44,6 +47,7 @@ public class BlockController {
     }
 
     @DeleteMapping("/{blockId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteBlock(@AuthenticationPrincipal User user,
                                             @PathVariable("blockId") @BlockIdConstraint Long blockId) {
         blockService.deleteBlock(user, blockId);
