@@ -26,7 +26,6 @@ public class AvatarController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AvatarsGetResponse> getAvatarList(@AuthenticationPrincipal User user) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(avatarService.getAvatarList(user));
