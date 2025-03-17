@@ -19,14 +19,13 @@ import org.websoso.WSSServer.repository.BlockRepository;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class BlockService {
 
     private final UserService userService;
     private final AvatarService avatarService;
     private final BlockRepository blockRepository;
 
-    @Transactional
     public void block(User blocker, Long blockedId) {
         User blockedUser = userService.getUserOrException(blockedId);
         if (blockedUser.getRole() == ADMIN) {
@@ -45,6 +44,7 @@ public class BlockService {
         blockRepository.save(Block.create(blockingId, blockedId));
     }
 
+    @Transactional(readOnly = true)
     public BlocksGetResponse getBlockList(User user) {
         List<Block> blocks = blockRepository.findByBlockingId(user.getUserId());
         List<BlockGetResponse> blockGetResponses = blocks.stream()
@@ -56,11 +56,11 @@ public class BlockService {
         return new BlocksGetResponse(blockGetResponses);
     }
 
-    @Transactional
     public void deleteBlock(Long blockId) {
         blockRepository.deleteById(blockId);
     }
 
+    @Transactional(readOnly = true)
     public boolean isBlocked(Long blockingId, Long blockedId) {
         return blockRepository.existsByBlockingIdAndBlockedId(blockingId, blockedId);
     }
