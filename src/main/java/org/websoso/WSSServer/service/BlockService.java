@@ -57,8 +57,8 @@ public class BlockService {
     }
 
     @Transactional
-    public void deleteBlock(User user, Long blockId) {
-        blockRepository.delete(block);
+    public void deleteBlock(Long blockId) {
+        blockRepository.deleteById(blockId);
     }
 
     public boolean isBlocked(Long blockingId, Long blockedId) {
