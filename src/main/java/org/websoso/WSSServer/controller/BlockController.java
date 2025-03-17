@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.block.BlocksGetResponse;
 import org.websoso.WSSServer.service.BlockService;
-import org.websoso.WSSServer.service.UserService;
 import org.websoso.WSSServer.validation.BlockIdConstraint;
 import org.websoso.WSSServer.validation.UserIdConstraint;
 
@@ -26,7 +25,6 @@ import org.websoso.WSSServer.validation.UserIdConstraint;
 @RequiredArgsConstructor
 public class BlockController {
 
-    private final UserService userService;
     private final BlockService blockService;
 
     @PostMapping
