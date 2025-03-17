@@ -4,9 +4,9 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -55,7 +55,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/logout")
-    public ResponseEntity<Void> logout(Principal principal,
+    public ResponseEntity<Void> logout(@AuthenticationPrincipal User user,
                                        @Valid @RequestBody LogoutRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         String refreshToken = request.refreshToken();
@@ -67,7 +67,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/withdraw")
-    public ResponseEntity<Void> withdrawUser(Principal principal,
+    public ResponseEntity<Void> withdrawUser(@AuthenticationPrincipal User user,
                                              @Valid @RequestBody WithdrawalRequest withdrawalRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.withdrawUser(user, withdrawalRequest);
