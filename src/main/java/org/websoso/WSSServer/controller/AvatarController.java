@@ -4,6 +4,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,7 @@ public class AvatarController {
 
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AvatarsGetResponse> getAvatarList(@AuthenticationPrincipal User user) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
