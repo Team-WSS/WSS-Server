@@ -57,7 +57,6 @@ public class AuthController {
     @PostMapping("/auth/logout")
     public ResponseEntity<Void> logout(@AuthenticationPrincipal User user,
                                        @Valid @RequestBody LogoutRequest request) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         String refreshToken = request.refreshToken();
         String deviceIdentifier = request.deviceIdentifier();
         userService.logout(user, refreshToken, deviceIdentifier);
@@ -69,7 +68,6 @@ public class AuthController {
     @PostMapping("/auth/withdraw")
     public ResponseEntity<Void> withdrawUser(@AuthenticationPrincipal User user,
                                              @Valid @RequestBody WithdrawalRequest withdrawalRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.withdrawUser(user, withdrawalRequest);
         return ResponseEntity
                 .status(NO_CONTENT)
