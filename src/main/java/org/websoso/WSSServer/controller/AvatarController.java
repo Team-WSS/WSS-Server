@@ -2,9 +2,9 @@ package org.websoso.WSSServer.controller;
 
 import static org.springframework.http.HttpStatus.OK;
 
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +23,7 @@ public class AvatarController {
 
 
     @GetMapping
-    public ResponseEntity<AvatarsGetResponse> getAvatarList(Principal principal) {
+    public ResponseEntity<AvatarsGetResponse> getAvatarList(@AuthenticationPrincipal User user) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
