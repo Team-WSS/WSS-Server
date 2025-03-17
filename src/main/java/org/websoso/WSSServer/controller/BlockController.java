@@ -4,9 +4,9 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,7 +30,7 @@ public class BlockController {
     private final BlockService blockService;
 
     @PostMapping
-    public ResponseEntity<Void> block(Principal principal,
+    public ResponseEntity<Void> block(@AuthenticationPrincipal User user,
                                       @RequestParam("userId") @UserIdConstraint Long blockedId) {
         User blocker = userService.getUserOrException(Long.valueOf(principal.getName()));
         blockService.block(blocker, blockedId);
@@ -40,7 +40,7 @@ public class BlockController {
     }
 
     @GetMapping
-    public ResponseEntity<BlocksGetResponse> getBlockList(Principal principal) {
+    public ResponseEntity<BlocksGetResponse> getBlockList(@AuthenticationPrincipal User user) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
@@ -48,7 +48,7 @@ public class BlockController {
     }
 
     @DeleteMapping("/{blockId}")
-    public ResponseEntity<Void> deleteBlock(Principal principal,
+    public ResponseEntity<Void> deleteBlock(@AuthenticationPrincipal User user,
                                             @PathVariable("blockId") @BlockIdConstraint Long blockId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         blockService.deleteBlock(user, blockId);
