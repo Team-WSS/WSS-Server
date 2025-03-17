@@ -32,7 +32,6 @@ public class BlockController {
     @PostMapping
     public ResponseEntity<Void> block(@AuthenticationPrincipal User user,
                                       @RequestParam("userId") @UserIdConstraint Long blockedId) {
-        User blocker = userService.getUserOrException(Long.valueOf(principal.getName()));
         blockService.block(blocker, blockedId);
         return ResponseEntity
                 .status(CREATED)
@@ -41,7 +40,6 @@ public class BlockController {
 
     @GetMapping
     public ResponseEntity<BlocksGetResponse> getBlockList(@AuthenticationPrincipal User user) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(blockService.getBlockList(user));
@@ -50,7 +48,6 @@ public class BlockController {
     @DeleteMapping("/{blockId}")
     public ResponseEntity<Void> deleteBlock(@AuthenticationPrincipal User user,
                                             @PathVariable("blockId") @BlockIdConstraint Long blockId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         blockService.deleteBlock(user, blockId);
         return ResponseEntity
                 .status(NO_CONTENT)
