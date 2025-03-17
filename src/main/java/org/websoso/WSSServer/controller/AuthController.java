@@ -6,6 +6,7 @@ import static org.springframework.http.HttpStatus.OK;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,6 +56,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/logout")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> logout(@AuthenticationPrincipal User user,
                                        @Valid @RequestBody LogoutRequest request) {
         String refreshToken = request.refreshToken();
@@ -66,6 +68,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/withdraw")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> withdrawUser(@AuthenticationPrincipal User user,
                                              @Valid @RequestBody WithdrawalRequest withdrawalRequest) {
         userService.withdrawUser(user, withdrawalRequest);
