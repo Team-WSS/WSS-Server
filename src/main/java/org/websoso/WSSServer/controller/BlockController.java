@@ -30,7 +30,7 @@ public class BlockController {
     private final BlockService blockService;
 
     @PostMapping
-    public ResponseEntity<Void> block(@AuthenticationPrincipal User user,
+    public ResponseEntity<Void> block(@AuthenticationPrincipal User blocker,
                                       @RequestParam("userId") @UserIdConstraint Long blockedId) {
         blockService.block(blocker, blockedId);
         return ResponseEntity
