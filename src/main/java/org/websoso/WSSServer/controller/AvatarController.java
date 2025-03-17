@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.avatar.AvatarsGetResponse;
 import org.websoso.WSSServer.service.AvatarService;
-import org.websoso.WSSServer.service.UserService;
 
 @RequestMapping("/avatars")
 @RestController
@@ -20,8 +19,6 @@ import org.websoso.WSSServer.service.UserService;
 public class AvatarController {
 
     private final AvatarService avatarService;
-    private final UserService userService;
-
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
