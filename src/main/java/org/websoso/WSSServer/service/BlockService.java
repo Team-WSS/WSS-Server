@@ -2,9 +2,7 @@ package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Role.ADMIN;
 import static org.websoso.WSSServer.exception.error.CustomBlockError.ALREADY_BLOCKED;
-import static org.websoso.WSSServer.exception.error.CustomBlockError.BLOCK_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomBlockError.CANNOT_ADMIN_BLOCK;
-import static org.websoso.WSSServer.exception.error.CustomBlockError.INVALID_AUTHORIZED_BLOCK;
 import static org.websoso.WSSServer.exception.error.CustomBlockError.SELF_BLOCKED;
 
 import java.util.List;
@@ -60,12 +58,6 @@ public class BlockService {
 
     @Transactional
     public void deleteBlock(User user, Long blockId) {
-        Block block = blockRepository.findById(blockId).orElseThrow(() ->
-                new CustomBlockException(BLOCK_NOT_FOUND, "block with the given blockId was not found"));
-        if (!block.getBlockingId().equals(user.getUserId())) {
-            throw new CustomBlockException(INVALID_AUTHORIZED_BLOCK,
-                    "block with the given blockId is not from user with the given userId");
-        }
         blockRepository.delete(block);
     }
 
