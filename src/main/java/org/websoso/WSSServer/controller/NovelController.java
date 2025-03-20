@@ -114,10 +114,10 @@ public class NovelController {
 
     @GetMapping("/popular")
     public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(Principal principal) {
-        //TODO 차단 관계에 있는 유저의 피드글 처리
+        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body(novelService.getTodayPopularNovels());
+                .body(novelService.getTodayPopularNovels(user));
     }
 
     @GetMapping("/taste")
