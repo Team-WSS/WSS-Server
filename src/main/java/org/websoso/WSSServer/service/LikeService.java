@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_LIKED;
-
+import static org.websoso.WSSServer.exception.error.CustomFeedError.NOT_LIKED;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +26,9 @@ public class LikeService {
     }
 
     public void deleteLike(User user, Feed feed) {
+        if (!isUserLikedFeed(user, feed)) {
+            throw new CustomFeedException(NOT_LIKED, "user has not liked that feed");
+        }
         likeRepository.deleteByUserIdAndFeed(user.getUserId(), feed);
     }
 

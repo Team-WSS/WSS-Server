@@ -16,9 +16,8 @@ import org.websoso.WSSServer.domain.common.SocialLoginType;
 
 public class MessageFormatter {
 
-    public static String formatFeedReportMessage(User user, Feed feed, ReportedType reportedType, int reportedCount,
-                                                 boolean isHidden) {
-        String hiddenMessage = isHidden
+    public static String formatFeedReportMessage(User user, Feed feed, ReportedType reportedType, int reportedCount) {
+        String hiddenMessage = reportedCount >= 3
                 ? "해당 수다는 숨김 처리되었습니다."
                 : "해당 수다는 숨김 처리되지 않았습니다.";
         return String.format(
@@ -37,9 +36,9 @@ public class MessageFormatter {
 
     public static String formatCommentReportMessage(User user, Feed feed, Comment comment,
                                                     ReportedType reportedType, User commentCreatedUser,
-                                                    int reportedCount, boolean isHidden) {
+                                                    int reportedCount) {
         String hiddenMessage = "해당 댓글은 현재 숨김 처리되지 않은 상태입니다.";
-        if (isHidden) {
+        if (reportedCount >= 3) {
             if (reportedType.equals(SPOILER)) {
                 hiddenMessage = "해당 댓글은 스포일러 댓글로 지정되었습니다.";
             } else if (reportedType.equals(IMPERTINENCE)) {

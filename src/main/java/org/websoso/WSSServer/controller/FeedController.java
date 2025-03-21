@@ -29,8 +29,7 @@ import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
-import org.websoso.WSSServer.service.FeedService;
-import org.websoso.WSSServer.service.PopularFeedService;
+import org.websoso.WSSServer.facade.FeedFacade;
 import org.websoso.WSSServer.service.UserService;
 
 @RequestMapping("/feeds")
@@ -38,19 +37,15 @@ import org.websoso.WSSServer.service.UserService;
 @RequiredArgsConstructor
 public class FeedController {
 
-    private final FeedService feedService;
+    private final FeedFacade feedFacade;
     private final UserService userService;
-    private final PopularFeedService popularFeedService;
 
     @PostMapping
     public ResponseEntity<Void> createFeed(Principal principal,
-                                           @Valid @RequestBody FeedCreateRequest request) {
+                                         @Valid @RequestBody FeedCreateRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.createFeed(user, request);
-
-        return ResponseEntity
-                .status(CREATED)
-                .build();
+        feedFacade.createFeed(user, request);
+        return ResponseEntity.status(CREATED).build();
     }
 
     @PutMapping("/{feedId}")
@@ -58,7 +53,7 @@ public class FeedController {
                                            @PathVariable("feedId") Long feedId,
                                            @Valid @RequestBody FeedUpdateRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.updateFeed(user, feedId, request);
+        feedFacade.updateFeed(user, feedId, request);
 
         return ResponseEntity
                 .status(NO_CONTENT)
@@ -69,7 +64,7 @@ public class FeedController {
     public ResponseEntity<Void> deleteFeed(Principal principal,
                                            @PathVariable("feedId") Long feedId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.deleteFeed(user, feedId);
+        feedFacade.deleteFeed(user, feedId);
 
         return ResponseEntity
                 .status(NO_CONTENT)
@@ -80,7 +75,7 @@ public class FeedController {
     public ResponseEntity<Void> likeFeed(Principal principal,
                                          @PathVariable("feedId") Long feedId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.likeFeed(user, feedId);
+        feedFacade.likeFeed(user, feedId);
 
         return ResponseEntity
                 .status(NO_CONTENT)
@@ -91,7 +86,7 @@ public class FeedController {
     public ResponseEntity<Void> unLikeFeed(Principal principal,
                                            @PathVariable("feedId") Long feedId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.unLikeFeed(user, feedId);
+        feedFacade.unlikeFeed(user, feedId);
 
         return ResponseEntity
                 .status(NO_CONTENT)
@@ -105,7 +100,7 @@ public class FeedController {
 
         return ResponseEntity
                 .status(OK)
-                .body(feedService.getFeedById(user, feedId));
+                .body(feedFacade.getFeed(user, feedId));
     }
 
     @GetMapping("/popular")
@@ -115,7 +110,7 @@ public class FeedController {
                 userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body(popularFeedService.getPopularFeeds(user));
+                .body(feedFacade.getPopularFeeds(user));
     }
 
     @GetMapping
@@ -127,7 +122,7 @@ public class FeedController {
 
         return ResponseEntity
                 .status(OK)
-                .body(feedService.getFeeds(user, category, lastFeedId, size));
+                .body(feedFacade.getFeeds(user, category, lastFeedId, size));
     }
 
     @GetMapping("/interest")
@@ -137,7 +132,7 @@ public class FeedController {
                 : userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
-                .body(feedService.getInterestFeeds(user));
+                .body(feedFacade.getInterestFeeds(user));
     }
 
     @PostMapping("/{feedId}/comments")
@@ -145,7 +140,7 @@ public class FeedController {
                                               @PathVariable("feedId") Long feedId,
                                               @Valid @RequestBody CommentCreateRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.createComment(user, feedId, request);
+        feedFacade.createComment(user, feedId, request);
 
         return ResponseEntity
                 .status(NO_CONTENT)
@@ -158,7 +153,7 @@ public class FeedController {
                                               @PathVariable("commentId") Long commentId,
                                               @Valid @RequestBody CommentUpdateRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.updateComment(user, feedId, commentId, request);
+        feedFacade.updateComment(user, feedId, commentId, request);
 
         return ResponseEntity
                 .status(NO_CONTENT)
@@ -170,7 +165,7 @@ public class FeedController {
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.deleteComment(user, feedId, commentId);
+        feedFacade.deleteComment(user, feedId, commentId);
 
         return ResponseEntity
                 .status(NO_CONTENT)
@@ -184,14 +179,14 @@ public class FeedController {
 
         return ResponseEntity
                 .status(OK)
-                .body(feedService.getComments(user, feedId));
+                .body(feedFacade.getComments(user, feedId));
     }
 
     @PostMapping("/{feedId}/spoiler")
     public ResponseEntity<Void> reportFeedSpoiler(Principal principal,
                                                   @PathVariable("feedId") Long feedId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.reportFeed(user, feedId, SPOILER);
+        feedFacade.reportFeed(user, feedId, SPOILER);
 
         return ResponseEntity
                 .status(CREATED)
@@ -202,7 +197,7 @@ public class FeedController {
     public ResponseEntity<Void> reportedFeedImpertinence(Principal principal,
                                                          @PathVariable("feedId") Long feedId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.reportFeed(user, feedId, IMPERTINENCE);
+        feedFacade.reportFeed(user, feedId, IMPERTINENCE);
 
         return ResponseEntity
                 .status(CREATED)
@@ -214,7 +209,7 @@ public class FeedController {
                                                      @PathVariable("feedId") Long feedId,
                                                      @PathVariable("commentId") Long commentId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.reportComment(user, feedId, commentId, SPOILER);
+        feedFacade.reportComment(user, feedId, commentId, SPOILER);
 
         return ResponseEntity
                 .status(CREATED)
@@ -226,7 +221,7 @@ public class FeedController {
                                                           @PathVariable("feedId") Long feedId,
                                                           @PathVariable("commentId") Long commentId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        feedService.reportComment(user, feedId, commentId, IMPERTINENCE);
+        feedFacade.reportComment(user, feedId, commentId, IMPERTINENCE);
 
         return ResponseEntity
                 .status(CREATED)
