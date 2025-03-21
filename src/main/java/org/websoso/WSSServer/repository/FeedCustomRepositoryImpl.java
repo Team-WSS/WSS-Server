@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.repository;
 
 
+import static org.websoso.WSSServer.domain.QBlock.block;
 import static org.websoso.WSSServer.domain.QFeed.feed;
 import static org.websoso.WSSServer.domain.QLike.like;
 
@@ -21,12 +22,19 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<Feed> findPopularFeedsByNovelIds(List<Long> novelIds) {
+    public List<Feed> findPopularFeedsByNovelIds(User user, List<Long> novelIds) {
+        List<Long> blockedUserIds = jpaQueryFactory
+                .select(block.blockedId)
+                .from(block)
+                .where(block.blockingId.eq(user.getUserId()))
+                .fetch();
+
         return novelIds.stream()
                 .map(novelId -> jpaQueryFactory
                         .selectFrom(feed)
                         .leftJoin(feed.likes, like)
-                        .where(feed.novelId.eq(novelId))
+                        .where(feed.novelId.eq(novelId)
+                                .and(feed.user.userId.notIn(blockedUserIds)))
                         .groupBy(feed.feedId)
                         .orderBy(like.count().desc())
                         .fetchFirst())
