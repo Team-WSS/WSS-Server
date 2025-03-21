@@ -101,8 +101,12 @@ public class Feed {
         return !Objects.equals(this.novelId, novelId);
     }
 
-    public void hideFeed() {
+    public void hide() {
         this.isHidden = true;
+    }
+
+    public void spoiler() {
+        this.isSpoiler = true;
     }
 
 }
