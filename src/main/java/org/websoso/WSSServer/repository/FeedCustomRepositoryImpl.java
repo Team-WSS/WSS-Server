@@ -1,15 +1,18 @@
 package org.websoso.WSSServer.repository;
 
-
 import static org.websoso.WSSServer.domain.QBlock.block;
 import static org.websoso.WSSServer.domain.QFeed.feed;
 import static org.websoso.WSSServer.domain.QLike.like;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -24,6 +27,10 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
 
     @Override
     public List<Feed> findPopularFeedsByNovelIds(User user, List<Long> novelIds) {
+        if (novelIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         List<Long> blockedUserIds = (user != null) ?
                 jpaQueryFactory
                         .select(block.blockedId)
@@ -32,17 +39,25 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                         .fetch()
                 : Collections.emptyList();
 
-        return novelIds.stream()
-                .map(novelId -> jpaQueryFactory
-                        .selectFrom(feed)
-                        .leftJoin(feed.likes, like)
-                        .where(feed.novelId.eq(novelId)
-                                .and(feed.user.userId.notIn(blockedUserIds)))
-                        .groupBy(feed.feedId)
-                        .orderBy(like.count().desc())
-                        .fetchFirst())
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        List<Tuple> results = jpaQueryFactory
+                .select(feed, like.count())
+                .from(feed)
+                .leftJoin(feed.likes, like)
+                .where(feed.novelId.in(novelIds)
+                        .and(feed.user.userId.notIn(blockedUserIds)))
+                .groupBy(feed.feedId)
+                .orderBy(like.count().desc())
+                .fetch();
+
+        Map<Long, Feed> topFeedsByNovel = results.stream()
+                .map(tuple -> tuple.get(feed))
+                .collect(Collectors.toMap(
+                        Feed::getNovelId,
+                        Function.identity(),
+                        (existing, replacement) -> existing
+                ));
+
+        return new ArrayList<>(topFeedsByNovel.values());
     }
 
     @Override
