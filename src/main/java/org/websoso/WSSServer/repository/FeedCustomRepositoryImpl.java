@@ -7,11 +7,9 @@ import static org.websoso.WSSServer.domain.QLike.like;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -26,51 +24,32 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<Feed> findPopularFeedsByNovelIds(User user, List<Long> novelIds) {
+    public Map<Long, Feed> findPopularFeedsByNovelIds(User user, List<Long> novelIds) {
         if (novelIds.isEmpty()) {
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
 
-        List<Long> blockedUserIds = (user != null) ?
-                jpaQueryFactory
-                        .select(block.blockedId)
-                        .from(block)
-                        .where(block.blockingId.eq(user.getUserId()))
-                        .fetch()
-                : Collections.emptyList();
+        List<Long> blockedUserIds = (user != null) ? jpaQueryFactory.select(block.blockedId).from(block)
+                .where(block.blockingId.eq(user.getUserId())).fetch() : Collections.emptyList();
 
-        List<Tuple> results = jpaQueryFactory
-                .select(feed, like.count())
-                .from(feed)
-                .leftJoin(feed.likes, like)
-                .where(feed.novelId.in(novelIds)
-                        .and(feed.user.userId.notIn(blockedUserIds)))
-                .groupBy(feed.feedId)
-                .orderBy(like.count().desc())
-                .fetch();
+        List<Tuple> results = jpaQueryFactory.select(feed, like.count()).from(feed).leftJoin(feed.likes, like)
+                .where(feed.novelId.in(novelIds).and(feed.user.userId.notIn(blockedUserIds))).groupBy(feed.feedId)
+                .orderBy(like.count().desc()).fetch();
 
-        Map<Long, Feed> topFeedsByNovel = results.stream()
+        return results
+                .stream()
                 .map(tuple -> tuple.get(feed))
                 .collect(Collectors.toMap(
                         Feed::getNovelId,
                         Function.identity(),
                         (existing, replacement) -> existing
                 ));
-
-        return new ArrayList<>(topFeedsByNovel.values());
     }
 
     @Override
     public List<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size) {
-        return jpaQueryFactory
-                .selectFrom(feed)
-                .where(
-                        feed.user.eq(owner),
-                        ltFeedId(lastFeedId)
-                )
-                .orderBy(feed.feedId.desc())
-                .limit(size)
-                .fetch();
+        return jpaQueryFactory.selectFrom(feed).where(feed.user.eq(owner), ltFeedId(lastFeedId))
+                .orderBy(feed.feedId.desc()).limit(size).fetch();
     }
 
     private BooleanExpression ltFeedId(Long lastFeedId) {
