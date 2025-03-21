@@ -32,9 +32,14 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
         List<Long> blockedUserIds = (user != null) ? jpaQueryFactory.select(block.blockedId).from(block)
                 .where(block.blockingId.eq(user.getUserId())).fetch() : Collections.emptyList();
 
-        List<Tuple> results = jpaQueryFactory.select(feed, like.count()).from(feed).leftJoin(feed.likes, like)
-                .where(feed.novelId.in(novelIds).and(feed.user.userId.notIn(blockedUserIds))).groupBy(feed.feedId)
-                .orderBy(like.count().desc()).fetch();
+        List<Tuple> results = jpaQueryFactory
+                .select(feed, like.count())
+                .from(feed)
+                .leftJoin(feed.likes, like)
+                .where(feed.novelId.in(novelIds).and(feed.user.userId.notIn(blockedUserIds)))
+                .groupBy(feed.feedId)
+                .orderBy(like.count().desc())
+                .fetch();
 
         return results
                 .stream()
@@ -48,8 +53,15 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
 
     @Override
     public List<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size) {
-        return jpaQueryFactory.selectFrom(feed).where(feed.user.eq(owner), ltFeedId(lastFeedId))
-                .orderBy(feed.feedId.desc()).limit(size).fetch();
+        return jpaQueryFactory
+                .selectFrom(feed)
+                .where(
+                        feed.user.eq(owner),
+                        ltFeedId(lastFeedId)
+                )
+                .orderBy(feed.feedId.desc())
+                .limit(size)
+                .fetch();
     }
 
     private BooleanExpression ltFeedId(Long lastFeedId) {
