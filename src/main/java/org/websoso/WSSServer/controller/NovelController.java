@@ -114,7 +114,9 @@ public class NovelController {
 
     @GetMapping("/popular")
     public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(Principal principal) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+        User user = principal == null
+                ? null
+                : userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(novelService.getTodayPopularNovels(user));

@@ -7,6 +7,7 @@ import static org.websoso.WSSServer.domain.QLike.like;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -23,11 +24,13 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
 
     @Override
     public List<Feed> findPopularFeedsByNovelIds(User user, List<Long> novelIds) {
-        List<Long> blockedUserIds = jpaQueryFactory
-                .select(block.blockedId)
-                .from(block)
-                .where(block.blockingId.eq(user.getUserId()))
-                .fetch();
+        List<Long> blockedUserIds = (user != null) ?
+                jpaQueryFactory
+                        .select(block.blockedId)
+                        .from(block)
+                        .where(block.blockingId.eq(user.getUserId()))
+                        .fetch()
+                : Collections.emptyList();
 
         return novelIds.stream()
                 .map(novelId -> jpaQueryFactory
