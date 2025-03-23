@@ -28,6 +28,15 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
+    @PostMapping
+    public ResponseEntity<Void> createNoticeNotification(@AuthenticationPrincipal User user,
+                                                         @Valid @RequestBody NotificationCreateRequest notificationCreateRequest) {
+        notificationService.createNoticeNotification(user, notificationCreateRequest);
+        return ResponseEntity
+                .status(CREATED)
+                .build();
+    }
+
     @GetMapping
     public ResponseEntity<NotificationsGetResponse> getNotifications(@AuthenticationPrincipal User user,
                                                                      @RequestParam("lastNotificationId") Long lastNotificationId,
@@ -35,14 +44,6 @@ public class NotificationController {
         return ResponseEntity
                 .status(OK)
                 .body(notificationService.getNotifications(lastNotificationId, size, user));
-    }
-
-    @GetMapping("/unread")
-    public ResponseEntity<NotificationsReadStatusGetResponse> checkNotificationsReadStatus(
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity
-                .status(OK)
-                .body(notificationService.checkNotificationsReadStatus(user));
     }
 
     @GetMapping("/{notificationId}")
@@ -53,19 +54,18 @@ public class NotificationController {
                 .body(notificationService.getNotification(user, notificationId));
     }
 
+    @GetMapping("/unread")
+    public ResponseEntity<NotificationsReadStatusGetResponse> checkNotificationsReadStatus(
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity
+                .status(OK)
+                .body(notificationService.checkNotificationsReadStatus(user));
+    }
+
     @PostMapping("/{notificationId}/read")
     public ResponseEntity<Void> createNotificationAsRead(@AuthenticationPrincipal User user,
                                                          @PathVariable("notificationId") Long notificationId) {
         notificationService.createNotificationAsRead(user, notificationId);
-        return ResponseEntity
-                .status(CREATED)
-                .build();
-    }
-
-    @PostMapping
-    public ResponseEntity<Void> createNoticeNotification(@AuthenticationPrincipal User user,
-                                                         @Valid @RequestBody NotificationCreateRequest notificationCreateRequest) {
-        notificationService.createNoticeNotification(user, notificationCreateRequest);
         return ResponseEntity
                 .status(CREATED)
                 .build();
