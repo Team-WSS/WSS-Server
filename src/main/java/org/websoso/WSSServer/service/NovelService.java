@@ -352,13 +352,11 @@ public class NovelService {
     }
 
     @Transactional(readOnly = true)
-    public PopularNovelsGetResponse getTodayPopularNovels() {
+    public PopularNovelsGetResponse getTodayPopularNovels(User user) {
         List<Long> novelIdsFromPopularNovel = getNovelIdsFromPopularNovel();
         List<Long> selectedNovelIdsFromPopularNovel = getSelectedNovelIdsFromPopularNovel(novelIdsFromPopularNovel);
         List<Novel> popularNovels = getSelectedPopularNovels(selectedNovelIdsFromPopularNovel);
-        List<Feed> popularFeedsFromPopularNovels = getPopularFeedsFromPopularNovels(selectedNovelIdsFromPopularNovel);
-
-        Map<Long, Feed> feedMap = createFeedMap(popularFeedsFromPopularNovels);
+        Map<Long, Feed> feedMap = getPopularFeedsFromPopularNovels(user, selectedNovelIdsFromPopularNovel);
         Map<Byte, Avatar> avatarMap = createAvatarMap(feedMap);
 
         return createPopularNovelsGetResponse(popularNovels, feedMap, avatarMap);
@@ -382,13 +380,8 @@ public class NovelService {
         return novelRepository.findAllById(selectedPopularNovelIds);
     }
 
-    private List<Feed> getPopularFeedsFromPopularNovels(List<Long> selectedPopularNovelIds) {
-        return feedRepository.findPopularFeedsByNovelIds(selectedPopularNovelIds);
-    }
-
-    private static Map<Long, Feed> createFeedMap(List<Feed> popularFeedsFromPopularNovels) {
-        return popularFeedsFromPopularNovels.stream()
-                .collect(Collectors.toMap(Feed::getNovelId, feed -> feed));
+    private Map<Long, Feed> getPopularFeedsFromPopularNovels(User user, List<Long> selectedPopularNovelIds) {
+        return feedRepository.findPopularFeedsByNovelIds(user, selectedPopularNovelIds);
     }
 
     private Map<Byte, Avatar> createAvatarMap(Map<Long, Feed> feedMap) {
