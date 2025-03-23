@@ -4,9 +4,9 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +31,7 @@ public class NotificationController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<NotificationsGetResponse> getNotifications(Principal principal,
+    public ResponseEntity<NotificationsGetResponse> getNotifications(@AuthenticationPrincipal User user,
                                                                      @RequestParam("lastNotificationId") Long lastNotificationId,
                                                                      @RequestParam("size") int size) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
@@ -41,7 +41,8 @@ public class NotificationController {
     }
 
     @GetMapping("/unread")
-    public ResponseEntity<NotificationsReadStatusGetResponse> checkNotificationsReadStatus(Principal principal) {
+    public ResponseEntity<NotificationsReadStatusGetResponse> checkNotificationsReadStatus(
+            @AuthenticationPrincipal User user) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
@@ -49,7 +50,7 @@ public class NotificationController {
     }
 
     @GetMapping("/{notificationId}")
-    public ResponseEntity<NotificationGetResponse> getNotification(Principal principal,
+    public ResponseEntity<NotificationGetResponse> getNotification(@AuthenticationPrincipal User user,
                                                                    @PathVariable("notificationId") Long notificationId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
 
@@ -59,7 +60,7 @@ public class NotificationController {
     }
 
     @PostMapping("/{notificationId}/read")
-    public ResponseEntity<Void> createNotificationAsRead(Principal principal,
+    public ResponseEntity<Void> createNotificationAsRead(@AuthenticationPrincipal User user,
                                                          @PathVariable("notificationId") Long notificationId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         notificationService.createNotificationAsRead(user, notificationId);
@@ -69,7 +70,7 @@ public class NotificationController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createNoticeNotification(Principal principal,
+    public ResponseEntity<Void> createNoticeNotification(@AuthenticationPrincipal User user,
                                                          @Valid @RequestBody NotificationCreateRequest notificationCreateRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         notificationService.createNoticeNotification(user, notificationCreateRequest);
