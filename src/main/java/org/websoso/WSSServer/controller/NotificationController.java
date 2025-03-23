@@ -6,6 +6,7 @@ import static org.springframework.http.HttpStatus.OK;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +30,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> createNoticeNotification(@AuthenticationPrincipal User user,
                                                          @Valid @RequestBody NotificationCreateRequest notificationCreateRequest) {
         notificationService.createNoticeNotification(user, notificationCreateRequest);
@@ -38,6 +40,7 @@ public class NotificationController {
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NotificationsGetResponse> getNotifications(@AuthenticationPrincipal User user,
                                                                      @RequestParam("lastNotificationId") Long lastNotificationId,
                                                                      @RequestParam("size") int size) {
@@ -47,6 +50,7 @@ public class NotificationController {
     }
 
     @GetMapping("/{notificationId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NotificationGetResponse> getNotification(@AuthenticationPrincipal User user,
                                                                    @PathVariable("notificationId") Long notificationId) {
         return ResponseEntity
@@ -55,6 +59,7 @@ public class NotificationController {
     }
 
     @GetMapping("/unread")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NotificationsReadStatusGetResponse> checkNotificationsReadStatus(
             @AuthenticationPrincipal User user) {
         return ResponseEntity
@@ -63,6 +68,7 @@ public class NotificationController {
     }
 
     @PostMapping("/{notificationId}/read")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> createNotificationAsRead(@AuthenticationPrincipal User user,
                                                          @PathVariable("notificationId") Long notificationId) {
         notificationService.createNotificationAsRead(user, notificationId);
