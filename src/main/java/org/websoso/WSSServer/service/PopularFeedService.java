@@ -41,11 +41,11 @@ public class PopularFeedService {
     }
 
     private void sendPopularFeedPushMessage(Feed feed) {
-        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("지금뜨는수다글");
+        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("지금뜨는글");
 
         User feedOwner = feed.getUser();
         Long feedId = feed.getFeedId();
-        String notificationTitle = "지금 뜨는 수다글 등극\uD83D\uDE4C";
+        String notificationTitle = "지금 뜨는 글 등극\uD83D\uDE4C";
         String notificationBody = createNotificationBody(feed);
 
         Notification notification = Notification.create(
