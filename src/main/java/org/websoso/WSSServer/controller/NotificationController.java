@@ -34,7 +34,6 @@ public class NotificationController {
     public ResponseEntity<NotificationsGetResponse> getNotifications(@AuthenticationPrincipal User user,
                                                                      @RequestParam("lastNotificationId") Long lastNotificationId,
                                                                      @RequestParam("size") int size) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(notificationService.getNotifications(lastNotificationId, size, user));
@@ -43,7 +42,6 @@ public class NotificationController {
     @GetMapping("/unread")
     public ResponseEntity<NotificationsReadStatusGetResponse> checkNotificationsReadStatus(
             @AuthenticationPrincipal User user) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(notificationService.checkNotificationsReadStatus(user));
@@ -52,8 +50,6 @@ public class NotificationController {
     @GetMapping("/{notificationId}")
     public ResponseEntity<NotificationGetResponse> getNotification(@AuthenticationPrincipal User user,
                                                                    @PathVariable("notificationId") Long notificationId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-
         return ResponseEntity
                 .status(OK)
                 .body(notificationService.getNotification(user, notificationId));
@@ -62,7 +58,6 @@ public class NotificationController {
     @PostMapping("/{notificationId}/read")
     public ResponseEntity<Void> createNotificationAsRead(@AuthenticationPrincipal User user,
                                                          @PathVariable("notificationId") Long notificationId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         notificationService.createNotificationAsRead(user, notificationId);
         return ResponseEntity
                 .status(CREATED)
@@ -72,7 +67,6 @@ public class NotificationController {
     @PostMapping
     public ResponseEntity<Void> createNoticeNotification(@AuthenticationPrincipal User user,
                                                          @Valid @RequestBody NotificationCreateRequest notificationCreateRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         notificationService.createNoticeNotification(user, notificationCreateRequest);
         return ResponseEntity
                 .status(CREATED)
