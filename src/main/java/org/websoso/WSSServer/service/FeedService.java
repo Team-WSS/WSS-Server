@@ -137,7 +137,7 @@ public class FeedService {
         NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("좋아요");
 
         String notificationTitle = createNotificationTitle(feed);
-        String notificationBody = String.format("%s님이 내 수다글을 좋아해요.", liker.getNickname());
+        String notificationBody = String.format("%s님이 내 글을 좋아해요.", liker.getNickname());
         Long feedId = feed.getFeedId();
 
         Notification notification = Notification.create(
