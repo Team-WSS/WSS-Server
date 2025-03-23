@@ -7,7 +7,7 @@ import lombok.Getter;
 public enum NotificationTypeGroup {
 
     NOTICE("공지사항", "이벤트"),
-    FEED("지금뜨는수다글", "댓글", "좋아요");
+    FEED("지금뜨는글", "댓글", "좋아요");
 
     private final Set<String> types;
 
