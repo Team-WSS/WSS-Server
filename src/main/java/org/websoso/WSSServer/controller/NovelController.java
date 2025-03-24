@@ -99,7 +99,7 @@ public class NovelController {
     }
 
     @PostMapping("/{novelId}/is-interest")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.domain.Novel))")
     public ResponseEntity<Void> registerAsInterest(@AuthenticationPrincipal User user,
                                                    @PathVariable("novelId") Long novelId) {
         novelService.registerAsInterest(user, novelId);
@@ -109,7 +109,7 @@ public class NovelController {
     }
 
     @DeleteMapping("/{novelId}/is-interest")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.domain.UserNovel))")
     public ResponseEntity<Void> unregisterAsInterest(@AuthenticationPrincipal User user,
                                                      @PathVariable("novelId") Long novelId) {
         novelService.unregisterAsInterest(user, novelId);
