@@ -24,7 +24,6 @@ import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
 import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.NovelService;
-import org.websoso.WSSServer.service.UserService;
 
 @RestController
 @RequestMapping("/novels")
@@ -32,7 +31,6 @@ import org.websoso.WSSServer.service.UserService;
 public class NovelController {
 
     private final NovelService novelService;
-    private final UserService userService;
     private final FeedService feedService;
 
     @GetMapping("/{novelId}")
