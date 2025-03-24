@@ -3,10 +3,10 @@ package org.websoso.WSSServer.controller;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
-import java.security.Principal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,7 +36,7 @@ public class NovelController {
     private final FeedService feedService;
 
     @GetMapping("/{novelId}")
-    public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(Principal principal,
+    public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(@AuthenticationPrincipal User user,
                                                                    @PathVariable Long novelId) {
         User user = principal == null
                 ? null
@@ -55,7 +55,7 @@ public class NovelController {
     }
 
     @GetMapping("/{novelId}/feeds")
-    public ResponseEntity<NovelGetResponseFeedTab> getFeedsByNovel(Principal principal,
+    public ResponseEntity<NovelGetResponseFeedTab> getFeedsByNovel(@AuthenticationPrincipal User user,
                                                                    @PathVariable Long novelId,
                                                                    @RequestParam("lastFeedId") Long lastFeedId,
                                                                    @RequestParam("size") int size) {
@@ -91,7 +91,7 @@ public class NovelController {
     }
 
     @PostMapping("/{novelId}/is-interest")
-    public ResponseEntity<Void> registerAsInterest(Principal principal,
+    public ResponseEntity<Void> registerAsInterest(@AuthenticationPrincipal User user,
                                                    @PathVariable("novelId") Long novelId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         novelService.registerAsInterest(user, novelId);
@@ -102,7 +102,7 @@ public class NovelController {
     }
 
     @DeleteMapping("/{novelId}/is-interest")
-    public ResponseEntity<Void> unregisterAsInterest(Principal principal,
+    public ResponseEntity<Void> unregisterAsInterest(@AuthenticationPrincipal User user,
                                                      @PathVariable("novelId") Long novelId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         novelService.unregisterAsInterest(user, novelId);
@@ -113,7 +113,7 @@ public class NovelController {
     }
 
     @GetMapping("/popular")
-    public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(Principal principal) {
+    public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(@AuthenticationPrincipal User user) {
         //TODO 차단 관계에 있는 유저의 피드글 처리
         return ResponseEntity
                 .status(OK)
@@ -121,7 +121,7 @@ public class NovelController {
     }
 
     @GetMapping("/taste")
-    public ResponseEntity<TasteNovelsGetResponse> getTasteNovels(Principal principal) {
+    public ResponseEntity<TasteNovelsGetResponse> getTasteNovels(@AuthenticationPrincipal User user) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
