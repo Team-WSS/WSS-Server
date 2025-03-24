@@ -59,7 +59,6 @@ public class UserController {
     public ResponseEntity<NicknameValidation> checkNicknameAvailability(@AuthenticationPrincipal User user,
                                                                         @RequestParam("nickname")
                                                                         @NicknameConstraint String nickname) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userService.isNicknameAvailable(user, nickname));
@@ -67,7 +66,6 @@ public class UserController {
 
     @GetMapping("/info")
     public ResponseEntity<UserInfoGetResponse> getUserInfo(@AuthenticationPrincipal User user) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userService.getUserInfo(user));
@@ -75,7 +73,6 @@ public class UserController {
 
     @GetMapping("/profile-status")
     public ResponseEntity<ProfileStatusResponse> getProfileStatus(@AuthenticationPrincipal User user) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userService.getProfileStatus(user));
@@ -84,7 +81,6 @@ public class UserController {
     @PatchMapping("/profile-status")
     public ResponseEntity<Void> editProfileStatus(@AuthenticationPrincipal User user,
                                                   @Valid @RequestBody EditProfileStatusRequest editProfileStatusRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.editProfileStatus(user, editProfileStatusRequest);
         return ResponseEntity
                 .status(NO_CONTENT)
@@ -101,7 +97,6 @@ public class UserController {
 
     @GetMapping("/my-profile")
     public ResponseEntity<MyProfileResponse> getMyProfileInfo(@AuthenticationPrincipal User user) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userService.getMyProfileInfo(user));
@@ -110,7 +105,6 @@ public class UserController {
     @PatchMapping("/my-profile")
     public ResponseEntity<Void> updateMyProfileInfo(@AuthenticationPrincipal User user,
                                                     @RequestBody @Valid UpdateMyProfileRequest updateMyProfileRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.updateMyProfileInfo(user, updateMyProfileRequest);
         return ResponseEntity
                 .status(NO_CONTENT)
@@ -120,9 +114,6 @@ public class UserController {
     @GetMapping("/profile/{userId}")
     public ResponseEntity<ProfileGetResponse> getProfileInfo(@AuthenticationPrincipal User user,
                                                              @PathVariable("userId") Long userId) {
-        User user = principal == null
-                ? null
-                : userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userService.getProfileInfo(user, userId));
@@ -131,7 +122,6 @@ public class UserController {
     @PostMapping("/profile")
     public ResponseEntity<Void> registerUserInfo(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody RegisterUserInfoRequest registerUserInfoRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.registerUserInfo(user, registerUserInfoRequest);
         return ResponseEntity
                 .status(CREATED)
@@ -152,9 +142,6 @@ public class UserController {
                                                                                 @RequestParam("lastUserNovelId") Long lastUserNovelId,
                                                                                 @RequestParam("size") int size,
                                                                                 @RequestParam("sortType") String sortType) {
-        User visitor = principal == null
-                ? null
-                : userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserNovelsAndNovels(
@@ -166,9 +153,6 @@ public class UserController {
                                                              @PathVariable("userId") Long userId,
                                                              @RequestParam("lastFeedId") Long lastFeedId,
                                                              @RequestParam("size") int size) {
-        User visitor = principal == null
-                ? null
-                : userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getUserFeeds(visitor, userId, lastFeedId, size));
@@ -177,9 +161,6 @@ public class UserController {
     @GetMapping("/{userId}/preferences/genres")
     public ResponseEntity<UserGenrePreferencesGetResponse> getUserGenrePreferences(@AuthenticationPrincipal User user,
                                                                                    @PathVariable("userId") Long ownerId) {
-        User visitor = principal == null
-                ? null
-                : userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserGenrePreferences(visitor, ownerId));
@@ -189,9 +170,6 @@ public class UserController {
     public ResponseEntity<UserTasteAttractivePointPreferencesAndKeywordsGetResponse>
     getUserAttractivePointsAndKeywords(@AuthenticationPrincipal User user,
                                        @PathVariable("userId") Long ownerId) {
-        User visitor = principal == null
-                ? null
-                : userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserAttractivePointsAndKeywords(visitor, ownerId));
@@ -200,7 +178,6 @@ public class UserController {
     @PutMapping("/info")
     public ResponseEntity<Void> editMyInfo(@AuthenticationPrincipal User user,
                                            @Valid @RequestBody EditMyInfoRequest editMyInfoRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.editMyInfo(user, editMyInfoRequest);
         return ResponseEntity
                 .status(NO_CONTENT)
@@ -209,7 +186,6 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<UserIdAndNicknameResponse> getUserIdAndNicknameAndGender(@AuthenticationPrincipal User user) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userService.getUserIdAndNicknameAndGender(user));
@@ -218,7 +194,6 @@ public class UserController {
     @PostMapping("/fcm-token")
     public ResponseEntity<Void> registerFCMToken(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody FCMTokenRequest fcmTokenRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return userService.registerFCMToken(user, fcmTokenRequest)
                 ? ResponseEntity.status(CREATED).build()
                 : ResponseEntity.status(NO_CONTENT).build();
@@ -226,7 +201,6 @@ public class UserController {
 
     @GetMapping("/push-settings")
     public ResponseEntity<PushSettingGetResponse> getPushSettingValue(@AuthenticationPrincipal User user) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userService.getPushSettingValue(user));
@@ -235,7 +209,6 @@ public class UserController {
     @PostMapping("/push-settings")
     public ResponseEntity<Void> registerPushSetting(@AuthenticationPrincipal User user,
                                                     @Valid @RequestBody PushSettingRequest pushSettingRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.registerPushSetting(user, pushSettingRequest.isPushEnabled());
         return ResponseEntity
                 .status(NO_CONTENT)
@@ -244,7 +217,6 @@ public class UserController {
 
     @GetMapping("/terms-settings")
     public ResponseEntity<TermsSettingGetResponse> getTermsSettingValue(@AuthenticationPrincipal User user) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userService.getTermsSettingValue(user));
@@ -253,7 +225,6 @@ public class UserController {
     @PatchMapping("/terms-settings")
     public ResponseEntity<Void> updateTermsSetting(@AuthenticationPrincipal User user,
                                                    @Valid @RequestBody TermsSettingRequest termsSettingRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.updateTermsSetting(user, termsSettingRequest.serviceAgreed(), termsSettingRequest.privacyAgreed(),
                 termsSettingRequest.marketingAgreed());
         return ResponseEntity
