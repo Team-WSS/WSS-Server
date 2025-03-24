@@ -6,6 +6,7 @@ import static org.springframework.http.HttpStatus.OK;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +44,7 @@ public class NovelController {
     }
 
     @GetMapping("/filtered")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<FilteredNovelsGetResponse> getFilteredNovels(
             @RequestParam(required = false) List<String> genres,
             @RequestParam(required = false) Boolean isCompleted,
@@ -64,6 +66,7 @@ public class NovelController {
     }
 
     @GetMapping("/taste")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TasteNovelsGetResponse> getTasteNovels(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
@@ -96,6 +99,7 @@ public class NovelController {
     }
 
     @PostMapping("/{novelId}/is-interest")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> registerAsInterest(@AuthenticationPrincipal User user,
                                                    @PathVariable("novelId") Long novelId) {
         novelService.registerAsInterest(user, novelId);
@@ -105,6 +109,7 @@ public class NovelController {
     }
 
     @DeleteMapping("/{novelId}/is-interest")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unregisterAsInterest(@AuthenticationPrincipal User user,
                                                      @PathVariable("novelId") Long novelId) {
         novelService.unregisterAsInterest(user, novelId);
