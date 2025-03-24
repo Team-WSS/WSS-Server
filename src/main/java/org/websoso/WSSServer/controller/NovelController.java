@@ -33,6 +33,43 @@ public class NovelController {
     private final NovelService novelService;
     private final FeedService feedService;
 
+    @GetMapping
+    public ResponseEntity<SearchedNovelsGetResponse> searchNovels(@RequestParam(required = false) String query,
+                                                                  @RequestParam int page,
+                                                                  @RequestParam int size) {
+        return ResponseEntity
+                .status(OK)
+                .body(novelService.searchNovels(query, page, size));
+    }
+
+    @GetMapping("/filtered")
+    public ResponseEntity<FilteredNovelsGetResponse> getFilteredNovels(
+            @RequestParam(required = false) List<String> genres,
+            @RequestParam(required = false) Boolean isCompleted,
+            @RequestParam(required = false) Float novelRating,
+            @RequestParam(required = false) List<Integer> keywordIds,
+            @RequestParam int page,
+            @RequestParam int size) {
+        return ResponseEntity
+                .status(OK)
+                .body(novelService.getFilteredNovels(genres, isCompleted, novelRating, keywordIds, page, size));
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(@AuthenticationPrincipal User user) {
+        //TODO 차단 관계에 있는 유저의 피드글 처리
+        return ResponseEntity
+                .status(OK)
+                .body(novelService.getTodayPopularNovels());
+    }
+
+    @GetMapping("/taste")
+    public ResponseEntity<TasteNovelsGetResponse> getTasteNovels(@AuthenticationPrincipal User user) {
+        return ResponseEntity
+                .status(OK)
+                .body(novelService.getTasteNovels(user));
+    }
+
     @GetMapping("/{novelId}")
     public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(@AuthenticationPrincipal User user,
                                                                    @PathVariable Long novelId) {
@@ -58,28 +95,6 @@ public class NovelController {
                 .body(feedService.getFeedsByNovel(user, novelId, lastFeedId, size));
     }
 
-    @GetMapping
-    public ResponseEntity<SearchedNovelsGetResponse> searchNovels(@RequestParam(required = false) String query,
-                                                                  @RequestParam int page,
-                                                                  @RequestParam int size) {
-        return ResponseEntity
-                .status(OK)
-                .body(novelService.searchNovels(query, page, size));
-    }
-
-    @GetMapping("/filtered")
-    public ResponseEntity<FilteredNovelsGetResponse> getFilteredNovels(
-            @RequestParam(required = false) List<String> genres,
-            @RequestParam(required = false) Boolean isCompleted,
-            @RequestParam(required = false) Float novelRating,
-            @RequestParam(required = false) List<Integer> keywordIds,
-            @RequestParam int page,
-            @RequestParam int size) {
-        return ResponseEntity
-                .status(OK)
-                .body(novelService.getFilteredNovels(genres, isCompleted, novelRating, keywordIds, page, size));
-    }
-
     @PostMapping("/{novelId}/is-interest")
     public ResponseEntity<Void> registerAsInterest(@AuthenticationPrincipal User user,
                                                    @PathVariable("novelId") Long novelId) {
@@ -96,20 +111,5 @@ public class NovelController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
-    }
-
-    @GetMapping("/popular")
-    public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(@AuthenticationPrincipal User user) {
-        //TODO 차단 관계에 있는 유저의 피드글 처리
-        return ResponseEntity
-                .status(OK)
-                .body(novelService.getTodayPopularNovels());
-    }
-
-    @GetMapping("/taste")
-    public ResponseEntity<TasteNovelsGetResponse> getTasteNovels(@AuthenticationPrincipal User user) {
-        return ResponseEntity
-                .status(OK)
-                .body(novelService.getTasteNovels(user));
     }
 }
