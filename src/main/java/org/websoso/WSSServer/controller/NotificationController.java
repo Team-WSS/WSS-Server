@@ -30,7 +30,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(null, #user, T(org.websoso.WSSServer.domain.Notification))")
     public ResponseEntity<Void> createNoticeNotification(@AuthenticationPrincipal User user,
                                                          @Valid @RequestBody NotificationCreateRequest notificationCreateRequest) {
         notificationService.createNoticeNotification(user, notificationCreateRequest);
