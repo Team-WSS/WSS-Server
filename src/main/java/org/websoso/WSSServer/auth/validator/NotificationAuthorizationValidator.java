@@ -23,6 +23,7 @@ public class NotificationAuthorizationValidator implements ResourceAuthorization
             return isAdmin(user);
         }
 
+        // 수정이나 삭제에서 리소스 존재 여부 검증을 위함
         Notification notification = getNotificationOrException(resourceId);
         return isAdmin(user);
     }
