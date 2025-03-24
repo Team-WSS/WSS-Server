@@ -5,9 +5,9 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -56,7 +56,7 @@ public class UserController {
     private final FeedService feedService;
 
     @GetMapping("/nickname/check")
-    public ResponseEntity<NicknameValidation> checkNicknameAvailability(Principal principal,
+    public ResponseEntity<NicknameValidation> checkNicknameAvailability(@AuthenticationPrincipal User user,
                                                                         @RequestParam("nickname")
                                                                         @NicknameConstraint String nickname) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
@@ -66,7 +66,7 @@ public class UserController {
     }
 
     @GetMapping("/info")
-    public ResponseEntity<UserInfoGetResponse> getUserInfo(Principal principal) {
+    public ResponseEntity<UserInfoGetResponse> getUserInfo(@AuthenticationPrincipal User user) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
@@ -74,7 +74,7 @@ public class UserController {
     }
 
     @GetMapping("/profile-status")
-    public ResponseEntity<ProfileStatusResponse> getProfileStatus(Principal principal) {
+    public ResponseEntity<ProfileStatusResponse> getProfileStatus(@AuthenticationPrincipal User user) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
@@ -82,7 +82,7 @@ public class UserController {
     }
 
     @PatchMapping("/profile-status")
-    public ResponseEntity<Void> editProfileStatus(Principal principal,
+    public ResponseEntity<Void> editProfileStatus(@AuthenticationPrincipal User user,
                                                   @Valid @RequestBody EditProfileStatusRequest editProfileStatusRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.editProfileStatus(user, editProfileStatusRequest);
@@ -100,7 +100,7 @@ public class UserController {
     }
 
     @GetMapping("/my-profile")
-    public ResponseEntity<MyProfileResponse> getMyProfileInfo(Principal principal) {
+    public ResponseEntity<MyProfileResponse> getMyProfileInfo(@AuthenticationPrincipal User user) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
@@ -108,7 +108,7 @@ public class UserController {
     }
 
     @PatchMapping("/my-profile")
-    public ResponseEntity<Void> updateMyProfileInfo(Principal principal,
+    public ResponseEntity<Void> updateMyProfileInfo(@AuthenticationPrincipal User user,
                                                     @RequestBody @Valid UpdateMyProfileRequest updateMyProfileRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.updateMyProfileInfo(user, updateMyProfileRequest);
@@ -118,7 +118,7 @@ public class UserController {
     }
 
     @GetMapping("/profile/{userId}")
-    public ResponseEntity<ProfileGetResponse> getProfileInfo(Principal principal,
+    public ResponseEntity<ProfileGetResponse> getProfileInfo(@AuthenticationPrincipal User user,
                                                              @PathVariable("userId") Long userId) {
         User user = principal == null
                 ? null
@@ -129,7 +129,7 @@ public class UserController {
     }
 
     @PostMapping("/profile")
-    public ResponseEntity<Void> registerUserInfo(Principal principal,
+    public ResponseEntity<Void> registerUserInfo(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody RegisterUserInfoRequest registerUserInfoRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.registerUserInfo(user, registerUserInfoRequest);
@@ -146,7 +146,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/novels")
-    public ResponseEntity<UserNovelAndNovelsGetResponse> getUserNovelsAndNovels(Principal principal,
+    public ResponseEntity<UserNovelAndNovelsGetResponse> getUserNovelsAndNovels(@AuthenticationPrincipal User user,
                                                                                 @PathVariable("userId") Long userId,
                                                                                 @RequestParam("readStatus") String readStatus,
                                                                                 @RequestParam("lastUserNovelId") Long lastUserNovelId,
@@ -162,7 +162,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/feeds")
-    public ResponseEntity<UserFeedsGetResponse> getUserFeeds(Principal principal,
+    public ResponseEntity<UserFeedsGetResponse> getUserFeeds(@AuthenticationPrincipal User user,
                                                              @PathVariable("userId") Long userId,
                                                              @RequestParam("lastFeedId") Long lastFeedId,
                                                              @RequestParam("size") int size) {
@@ -175,7 +175,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/preferences/genres")
-    public ResponseEntity<UserGenrePreferencesGetResponse> getUserGenrePreferences(Principal principal,
+    public ResponseEntity<UserGenrePreferencesGetResponse> getUserGenrePreferences(@AuthenticationPrincipal User user,
                                                                                    @PathVariable("userId") Long ownerId) {
         User visitor = principal == null
                 ? null
@@ -187,7 +187,7 @@ public class UserController {
 
     @GetMapping("/{userId}/preferences/attractive-points")
     public ResponseEntity<UserTasteAttractivePointPreferencesAndKeywordsGetResponse>
-    getUserAttractivePointsAndKeywords(Principal principal,
+    getUserAttractivePointsAndKeywords(@AuthenticationPrincipal User user,
                                        @PathVariable("userId") Long ownerId) {
         User visitor = principal == null
                 ? null
@@ -198,7 +198,7 @@ public class UserController {
     }
 
     @PutMapping("/info")
-    public ResponseEntity<Void> editMyInfo(Principal principal,
+    public ResponseEntity<Void> editMyInfo(@AuthenticationPrincipal User user,
                                            @Valid @RequestBody EditMyInfoRequest editMyInfoRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.editMyInfo(user, editMyInfoRequest);
@@ -208,7 +208,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserIdAndNicknameResponse> getUserIdAndNicknameAndGender(Principal principal) {
+    public ResponseEntity<UserIdAndNicknameResponse> getUserIdAndNicknameAndGender(@AuthenticationPrincipal User user) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
@@ -216,7 +216,7 @@ public class UserController {
     }
 
     @PostMapping("/fcm-token")
-    public ResponseEntity<Void> registerFCMToken(Principal principal,
+    public ResponseEntity<Void> registerFCMToken(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody FCMTokenRequest fcmTokenRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return userService.registerFCMToken(user, fcmTokenRequest)
@@ -225,7 +225,7 @@ public class UserController {
     }
 
     @GetMapping("/push-settings")
-    public ResponseEntity<PushSettingGetResponse> getPushSettingValue(Principal principal) {
+    public ResponseEntity<PushSettingGetResponse> getPushSettingValue(@AuthenticationPrincipal User user) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
@@ -233,7 +233,7 @@ public class UserController {
     }
 
     @PostMapping("/push-settings")
-    public ResponseEntity<Void> registerPushSetting(Principal principal,
+    public ResponseEntity<Void> registerPushSetting(@AuthenticationPrincipal User user,
                                                     @Valid @RequestBody PushSettingRequest pushSettingRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.registerPushSetting(user, pushSettingRequest.isPushEnabled());
@@ -243,7 +243,7 @@ public class UserController {
     }
 
     @GetMapping("/terms-settings")
-    public ResponseEntity<TermsSettingGetResponse> getTermsSettingValue(Principal principal) {
+    public ResponseEntity<TermsSettingGetResponse> getTermsSettingValue(@AuthenticationPrincipal User user) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
@@ -251,7 +251,7 @@ public class UserController {
     }
 
     @PatchMapping("/terms-settings")
-    public ResponseEntity<Void> updateTermsSetting(Principal principal,
+    public ResponseEntity<Void> updateTermsSetting(@AuthenticationPrincipal User user,
                                                    @Valid @RequestBody TermsSettingRequest termsSettingRequest) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.updateTermsSetting(user, termsSettingRequest.serviceAgreed(), termsSettingRequest.privacyAgreed(),
