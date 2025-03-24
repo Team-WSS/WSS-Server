@@ -57,8 +57,7 @@ public class UserController {
 
     @GetMapping("/nickname/check")
     public ResponseEntity<NicknameValidation> checkNicknameAvailability(@AuthenticationPrincipal User user,
-                                                                        @RequestParam("nickname")
-                                                                        @NicknameConstraint String nickname) {
+                                                                        @RequestParam("nickname") @NicknameConstraint String nickname) {
         return ResponseEntity
                 .status(OK)
                 .body(userService.isNicknameAvailable(user, nickname));
