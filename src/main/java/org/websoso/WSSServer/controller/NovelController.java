@@ -38,10 +38,6 @@ public class NovelController {
     @GetMapping("/{novelId}")
     public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(@AuthenticationPrincipal User user,
                                                                    @PathVariable Long novelId) {
-        User user = principal == null
-                ? null
-                : userService.getUserOrException(Long.valueOf(principal.getName()));
-
         return ResponseEntity
                 .status(OK)
                 .body(novelService.getNovelInfoBasic(user, novelId));
@@ -59,10 +55,6 @@ public class NovelController {
                                                                    @PathVariable Long novelId,
                                                                    @RequestParam("lastFeedId") Long lastFeedId,
                                                                    @RequestParam("size") int size) {
-        User user = principal == null
-                ? null
-                : userService.getUserOrException(Long.valueOf(principal.getName()));
-
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getFeedsByNovel(user, novelId, lastFeedId, size));
@@ -93,9 +85,7 @@ public class NovelController {
     @PostMapping("/{novelId}/is-interest")
     public ResponseEntity<Void> registerAsInterest(@AuthenticationPrincipal User user,
                                                    @PathVariable("novelId") Long novelId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         novelService.registerAsInterest(user, novelId);
-
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -104,9 +94,7 @@ public class NovelController {
     @DeleteMapping("/{novelId}/is-interest")
     public ResponseEntity<Void> unregisterAsInterest(@AuthenticationPrincipal User user,
                                                      @PathVariable("novelId") Long novelId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         novelService.unregisterAsInterest(user, novelId);
-
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -122,7 +110,6 @@ public class NovelController {
 
     @GetMapping("/taste")
     public ResponseEntity<TasteNovelsGetResponse> getTasteNovels(@AuthenticationPrincipal User user) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(novelService.getTasteNovels(user));
