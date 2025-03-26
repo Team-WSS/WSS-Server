@@ -32,15 +32,6 @@ public class UserNovelController {
     private final NovelService novelService;
     private final UserNovelService userNovelService;
 
-    @GetMapping("/{novelId}")
-    public ResponseEntity<UserNovelGetResponse> getEvaluation(@AuthenticationPrincipal User user,
-                                                              @PathVariable Long novelId) {
-        Novel novel = novelService.getNovelOrException(novelId);
-        return ResponseEntity
-                .status(OK)
-                .body(userNovelService.getEvaluation(user, novel));
-    }
-
     @PostMapping
     public ResponseEntity<Void> createEvaluation(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody UserNovelCreateRequest request) {
@@ -48,6 +39,15 @@ public class UserNovelController {
         return ResponseEntity
                 .status(CREATED)
                 .build();
+    }
+
+    @GetMapping("/{novelId}")
+    public ResponseEntity<UserNovelGetResponse> getEvaluation(@AuthenticationPrincipal User user,
+                                                              @PathVariable Long novelId) {
+        Novel novel = novelService.getNovelOrException(novelId);
+        return ResponseEntity
+                .status(OK)
+                .body(userNovelService.getEvaluation(user, novel));
     }
 
     @PutMapping("/{novelId}")
