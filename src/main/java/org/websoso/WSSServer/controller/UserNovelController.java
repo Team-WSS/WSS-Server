@@ -55,7 +55,8 @@ public class UserNovelController {
 
     @PutMapping("/{novelId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> updateEvaluation(@AuthenticationPrincipal User user, @PathVariable Long novelId,
+    public ResponseEntity<Void> updateEvaluation(@AuthenticationPrincipal User user,
+                                                 @PathVariable Long novelId,
                                                  @Valid @RequestBody UserNovelUpdateRequest request) {
         Novel novel = novelService.getNovelOrException(novelId);
         userNovelService.updateEvaluation(user, novel, request);
@@ -66,7 +67,8 @@ public class UserNovelController {
 
     @DeleteMapping("/{novelId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> deleteEvaluation(@AuthenticationPrincipal User user, @PathVariable Long novelId) {
+    public ResponseEntity<Void> deleteEvaluation(@AuthenticationPrincipal User user,
+                                                 @PathVariable Long novelId) {
         Novel novel = novelService.getNovelOrException(novelId);
         userNovelService.deleteEvaluation(user, novel);
         return ResponseEntity
