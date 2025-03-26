@@ -37,9 +37,7 @@ public class UserNovelController {
     @GetMapping("/{novelId}")
     public ResponseEntity<UserNovelGetResponse> getEvaluation(@AuthenticationPrincipal User user,
                                                               @PathVariable Long novelId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
-
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getEvaluation(user, novel));
@@ -48,9 +46,7 @@ public class UserNovelController {
     @PostMapping
     public ResponseEntity<Void> createEvaluation(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody UserNovelCreateRequest request) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userNovelService.createEvaluation(user, request);
-
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -59,10 +55,8 @@ public class UserNovelController {
     @PutMapping("/{novelId}")
     public ResponseEntity<Void> updateEvaluation(@AuthenticationPrincipal User user, @PathVariable Long novelId,
                                                  @Valid @RequestBody UserNovelUpdateRequest request) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
         userNovelService.updateEvaluation(user, novel, request);
-
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -70,13 +64,10 @@ public class UserNovelController {
 
     @DeleteMapping("/{novelId}")
     public ResponseEntity<Void> deleteEvaluation(@AuthenticationPrincipal User user, @PathVariable Long novelId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
         userNovelService.deleteEvaluation(user, novel);
-
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
     }
-
 }
