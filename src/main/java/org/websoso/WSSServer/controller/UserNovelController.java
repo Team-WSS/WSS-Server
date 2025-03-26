@@ -7,6 +7,7 @@ import static org.springframework.http.HttpStatus.OK;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +34,7 @@ public class UserNovelController {
     private final UserNovelService userNovelService;
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> createEvaluation(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody UserNovelCreateRequest request) {
         userNovelService.createEvaluation(user, request);
@@ -42,6 +44,7 @@ public class UserNovelController {
     }
 
     @GetMapping("/{novelId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserNovelGetResponse> getEvaluation(@AuthenticationPrincipal User user,
                                                               @PathVariable Long novelId) {
         Novel novel = novelService.getNovelOrException(novelId);
@@ -51,6 +54,7 @@ public class UserNovelController {
     }
 
     @PutMapping("/{novelId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> updateEvaluation(@AuthenticationPrincipal User user, @PathVariable Long novelId,
                                                  @Valid @RequestBody UserNovelUpdateRequest request) {
         Novel novel = novelService.getNovelOrException(novelId);
@@ -61,6 +65,7 @@ public class UserNovelController {
     }
 
     @DeleteMapping("/{novelId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteEvaluation(@AuthenticationPrincipal User user, @PathVariable Long novelId) {
         Novel novel = novelService.getNovelOrException(novelId);
         userNovelService.deleteEvaluation(user, novel);
