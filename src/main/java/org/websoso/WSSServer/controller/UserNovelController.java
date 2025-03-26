@@ -23,14 +23,12 @@ import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserNovelService;
-import org.websoso.WSSServer.service.UserService;
 
 @RequestMapping("/user-novels")
 @RestController
 @RequiredArgsConstructor
 public class UserNovelController {
 
-    private final UserService userService;
     private final NovelService novelService;
     private final UserNovelService userNovelService;
 
