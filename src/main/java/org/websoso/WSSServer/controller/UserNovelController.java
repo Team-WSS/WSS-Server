@@ -5,9 +5,9 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,7 +35,8 @@ public class UserNovelController {
     private final UserNovelService userNovelService;
 
     @GetMapping("/{novelId}")
-    public ResponseEntity<UserNovelGetResponse> getEvaluation(Principal principal, @PathVariable Long novelId) {
+    public ResponseEntity<UserNovelGetResponse> getEvaluation(@AuthenticationPrincipal User user,
+                                                              @PathVariable Long novelId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
 
@@ -45,7 +46,7 @@ public class UserNovelController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createEvaluation(Principal principal,
+    public ResponseEntity<Void> createEvaluation(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody UserNovelCreateRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userNovelService.createEvaluation(user, request);
@@ -56,7 +57,7 @@ public class UserNovelController {
     }
 
     @PutMapping("/{novelId}")
-    public ResponseEntity<Void> updateEvaluation(Principal principal, @PathVariable Long novelId,
+    public ResponseEntity<Void> updateEvaluation(@AuthenticationPrincipal User user, @PathVariable Long novelId,
                                                  @Valid @RequestBody UserNovelUpdateRequest request) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
@@ -68,7 +69,7 @@ public class UserNovelController {
     }
 
     @DeleteMapping("/{novelId}")
-    public ResponseEntity<Void> deleteEvaluation(Principal principal, @PathVariable Long novelId) {
+    public ResponseEntity<Void> deleteEvaluation(@AuthenticationPrincipal User user, @PathVariable Long novelId) {
         User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         Novel novel = novelService.getNovelOrException(novelId);
         userNovelService.deleteEvaluation(user, novel);
