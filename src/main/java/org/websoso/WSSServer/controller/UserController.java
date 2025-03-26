@@ -7,6 +7,7 @@ import static org.springframework.http.HttpStatus.OK;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,6 +65,7 @@ public class UserController {
     }
 
     @PostMapping("/fcm-token")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> registerFCMToken(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody FCMTokenRequest fcmTokenRequest) {
         return userService.registerFCMToken(user, fcmTokenRequest)
@@ -72,6 +74,7 @@ public class UserController {
     }
 
     @GetMapping("/nickname/check")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NicknameValidation> checkNicknameAvailability(@AuthenticationPrincipal User user,
                                                                         @RequestParam("nickname") @NicknameConstraint String nickname) {
         return ResponseEntity
@@ -80,6 +83,7 @@ public class UserController {
     }
 
     @PostMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> registerUserInfo(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody RegisterUserInfoRequest registerUserInfoRequest) {
         userService.registerUserInfo(user, registerUserInfoRequest);
@@ -97,6 +101,7 @@ public class UserController {
     }
 
     @GetMapping("/my-profile")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MyProfileResponse> getMyProfileInfo(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
@@ -104,6 +109,7 @@ public class UserController {
     }
 
     @PatchMapping("/my-profile")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> updateMyProfileInfo(@AuthenticationPrincipal User user,
                                                     @RequestBody @Valid UpdateMyProfileRequest updateMyProfileRequest) {
         userService.updateMyProfileInfo(user, updateMyProfileRequest);
@@ -113,6 +119,7 @@ public class UserController {
     }
 
     @GetMapping("/profile-status")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProfileStatusResponse> getProfileStatus(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
@@ -120,6 +127,7 @@ public class UserController {
     }
 
     @PatchMapping("/profile-status")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> editProfileStatus(@AuthenticationPrincipal User user,
                                                   @Valid @RequestBody EditProfileStatusRequest editProfileStatusRequest) {
         userService.editProfileStatus(user, editProfileStatusRequest);
@@ -129,6 +137,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserIdAndNicknameResponse> getUserIdAndNicknameAndGender(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
@@ -176,6 +185,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/user-novel-stats")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserNovelCountGetResponse> getUserNovelStatistics(@PathVariable("userId") Long userId) {
         return ResponseEntity
                 .status(OK)
@@ -183,6 +193,7 @@ public class UserController {
     }
 
     @GetMapping("/info")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserInfoGetResponse> getUserInfo(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
@@ -190,6 +201,7 @@ public class UserController {
     }
 
     @PutMapping("/info")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> editMyInfo(@AuthenticationPrincipal User user,
                                            @Valid @RequestBody EditMyInfoRequest editMyInfoRequest) {
         userService.editMyInfo(user, editMyInfoRequest);
@@ -199,6 +211,7 @@ public class UserController {
     }
 
     @PostMapping("/push-settings")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> registerPushSetting(@AuthenticationPrincipal User user,
                                                     @Valid @RequestBody PushSettingRequest pushSettingRequest) {
         userService.registerPushSetting(user, pushSettingRequest.isPushEnabled());
@@ -208,6 +221,7 @@ public class UserController {
     }
 
     @GetMapping("/push-settings")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PushSettingGetResponse> getPushSettingValue(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
@@ -215,6 +229,7 @@ public class UserController {
     }
 
     @GetMapping("/terms-settings")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TermsSettingGetResponse> getTermsSettingValue(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
@@ -222,6 +237,7 @@ public class UserController {
     }
 
     @PatchMapping("/terms-settings")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> updateTermsSetting(@AuthenticationPrincipal User user,
                                                    @Valid @RequestBody TermsSettingRequest termsSettingRequest) {
         userService.updateTermsSetting(user, termsSettingRequest.serviceAgreed(), termsSettingRequest.privacyAgreed(),
