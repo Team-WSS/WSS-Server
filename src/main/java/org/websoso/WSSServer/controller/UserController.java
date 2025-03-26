@@ -145,7 +145,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/novels")
-    public ResponseEntity<UserNovelAndNovelsGetResponse> getUserNovelsAndNovels(@AuthenticationPrincipal User user,
+    public ResponseEntity<UserNovelAndNovelsGetResponse> getUserNovelsAndNovels(@AuthenticationPrincipal User visitor,
                                                                                 @PathVariable("userId") Long userId,
                                                                                 @RequestParam("readStatus") String readStatus,
                                                                                 @RequestParam("lastUserNovelId") Long lastUserNovelId,
@@ -158,7 +158,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/feeds")
-    public ResponseEntity<UserFeedsGetResponse> getUserFeeds(@AuthenticationPrincipal User user,
+    public ResponseEntity<UserFeedsGetResponse> getUserFeeds(@AuthenticationPrincipal User visitor,
                                                              @PathVariable("userId") Long userId,
                                                              @RequestParam("lastFeedId") Long lastFeedId,
                                                              @RequestParam("size") int size) {
@@ -168,8 +168,9 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/preferences/genres")
-    public ResponseEntity<UserGenrePreferencesGetResponse> getUserGenrePreferences(@AuthenticationPrincipal User user,
-                                                                                   @PathVariable("userId") Long ownerId) {
+    public ResponseEntity<UserGenrePreferencesGetResponse> getUserGenrePreferences(
+            @AuthenticationPrincipal User visitor,
+            @PathVariable("userId") Long ownerId) {
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserGenrePreferences(visitor, ownerId));
@@ -177,7 +178,7 @@ public class UserController {
 
     @GetMapping("/{userId}/preferences/attractive-points")
     public ResponseEntity<UserTasteAttractivePointPreferencesAndKeywordsGetResponse>
-    getUserAttractivePointsAndKeywords(@AuthenticationPrincipal User user,
+    getUserAttractivePointsAndKeywords(@AuthenticationPrincipal User visitor,
                                        @PathVariable("userId") Long ownerId) {
         return ResponseEntity
                 .status(OK)
