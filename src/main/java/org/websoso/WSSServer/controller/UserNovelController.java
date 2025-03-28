@@ -58,7 +58,6 @@ public class UserNovelController {
     public ResponseEntity<Void> updateEvaluation(@AuthenticationPrincipal User user,
                                                  @PathVariable Long novelId,
                                                  @Valid @RequestBody UserNovelUpdateRequest request) {
-        Novel novel = novelService.getNovelOrException(novelId);
         userNovelService.updateEvaluation(user, novelId, request);
         return ResponseEntity
                 .status(NO_CONTENT)
@@ -69,7 +68,6 @@ public class UserNovelController {
     @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.domain.UserNovel))")
     public ResponseEntity<Void> deleteEvaluation(@AuthenticationPrincipal User user,
                                                  @PathVariable Long novelId) {
-        Novel novel = novelService.getNovelOrException(novelId);
         userNovelService.deleteEvaluation(user, novelId);
         return ResponseEntity
                 .status(NO_CONTENT)
