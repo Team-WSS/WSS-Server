@@ -71,10 +71,9 @@ public class UserNovelService {
     );
 
     @Transactional(readOnly = true)
-    public UserNovel getUserNovelOrException(User user, Novel novel) {
-        return userNovelRepository.findByNovelAndUser(novel, user).orElseThrow(
     public UserNovel getUserNovelOrException(User user, Long novelId) {
-                () -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
+        return userNovelRepository.findByNovel_NovelIdAndUser(novelId, user)
+                .orElseThrow(() -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
                         "user novel with the given user and novel is not found"));
     }
 
