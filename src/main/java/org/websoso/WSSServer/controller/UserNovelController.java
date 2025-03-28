@@ -54,7 +54,7 @@ public class UserNovelController {
     }
 
     @PutMapping("/{novelId}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.domain.UserNovel))")
     public ResponseEntity<Void> updateEvaluation(@AuthenticationPrincipal User user,
                                                  @PathVariable Long novelId,
                                                  @Valid @RequestBody UserNovelUpdateRequest request) {
@@ -66,7 +66,7 @@ public class UserNovelController {
     }
 
     @DeleteMapping("/{novelId}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.domain.UserNovel))")
     public ResponseEntity<Void> deleteEvaluation(@AuthenticationPrincipal User user,
                                                  @PathVariable Long novelId) {
         Novel novel = novelService.getNovelOrException(novelId);
