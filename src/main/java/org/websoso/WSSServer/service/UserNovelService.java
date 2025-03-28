@@ -73,6 +73,7 @@ public class UserNovelService {
     @Transactional(readOnly = true)
     public UserNovel getUserNovelOrException(User user, Novel novel) {
         return userNovelRepository.findByNovelAndUser(novel, user).orElseThrow(
+    public UserNovel getUserNovelOrException(User user, Long novelId) {
                 () -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
                         "user novel with the given user and novel is not found"));
     }
@@ -105,9 +106,8 @@ public class UserNovelService {
         createNovelKeywords(userNovel, request.keywordIds());
     }
 
-    public void updateEvaluation(User user, Novel novel, UserNovelUpdateRequest request) {
-        UserNovel userNovel = getUserNovelOrException(user, novel);
-
+    public void updateEvaluation(User user, Long novelId, UserNovelUpdateRequest request) {
+        UserNovel userNovel = getUserNovelOrException(user, novelId);
         updateUserNovel(userNovel, request);
         updateAssociations(userNovel, request);
     }
@@ -178,8 +178,8 @@ public class UserNovelService {
         }
     }
 
-    public void deleteEvaluation(User user, Novel novel) {
-        UserNovel userNovel = getUserNovelOrException(user, novel);
+    public void deleteEvaluation(User user, Long novelId) {
+        UserNovel userNovel = getUserNovelOrException(user, novelId);
 
         if (userNovel.getStatus() == null) {
             throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");

@@ -59,7 +59,7 @@ public class UserNovelController {
                                                  @PathVariable Long novelId,
                                                  @Valid @RequestBody UserNovelUpdateRequest request) {
         Novel novel = novelService.getNovelOrException(novelId);
-        userNovelService.updateEvaluation(user, novel, request);
+        userNovelService.updateEvaluation(user, novelId, request);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -70,7 +70,7 @@ public class UserNovelController {
     public ResponseEntity<Void> deleteEvaluation(@AuthenticationPrincipal User user,
                                                  @PathVariable Long novelId) {
         Novel novel = novelService.getNovelOrException(novelId);
-        userNovelService.deleteEvaluation(user, novel);
+        userNovelService.deleteEvaluation(user, novelId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
