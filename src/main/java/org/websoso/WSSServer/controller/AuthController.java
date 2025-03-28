@@ -35,10 +35,9 @@ public class AuthController {
 
     @PostMapping("/reissue")
     public ResponseEntity<ReissueResponse> reissue(@RequestBody ReissueRequest reissueRequest) {
-        String refreshToken = reissueRequest.refreshToken();
         return ResponseEntity
                 .status(OK)
-                .body(authService.reissue(refreshToken));
+                .body(authService.reissue(reissueRequest.refreshToken()));
     }
 
     @PostMapping("/auth/login/kakao")
