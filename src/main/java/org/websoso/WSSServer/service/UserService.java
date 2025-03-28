@@ -28,6 +28,7 @@ import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.WithdrawalReason;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
+import org.websoso.WSSServer.dto.auth.LogoutRequest;
 import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
@@ -182,9 +183,12 @@ public class UserService {
                 MessageFormatter.formatUserJoinMessage(user, SocialLoginType.fromSocialId(user.getSocialId())), JOIN));
     }
 
-    public void logout(User user, String refreshToken, String deviceIdentifier) {
-        refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
-        userDeviceRepository.deleteByUserAndDeviceIdentifier(user, deviceIdentifier);
+    public void logout(User user, LogoutRequest request) {
+        refreshTokenRepository.findByRefreshToken(request.refreshToken())
+                .ifPresent(refreshTokenRepository::delete);
+
+        userDeviceRepository.deleteByUserAndDeviceIdentifier(user, request.deviceIdentifier());
+
         if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
             kakaoService.kakaoLogout(user);
         }

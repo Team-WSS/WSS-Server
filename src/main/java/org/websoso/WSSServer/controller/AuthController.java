@@ -58,9 +58,7 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> logout(@AuthenticationPrincipal User user,
                                        @Valid @RequestBody LogoutRequest request) {
-        String refreshToken = request.refreshToken();
-        String deviceIdentifier = request.deviceIdentifier();
-        userService.logout(user, refreshToken, deviceIdentifier);
+        userService.logout(user, request);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
