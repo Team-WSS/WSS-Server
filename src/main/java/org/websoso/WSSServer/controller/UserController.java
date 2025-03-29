@@ -5,9 +5,10 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -55,42 +56,6 @@ public class UserController {
     private final UserNovelService userNovelService;
     private final FeedService feedService;
 
-    @GetMapping("/nickname/check")
-    public ResponseEntity<NicknameValidation> checkNicknameAvailability(Principal principal,
-                                                                        @RequestParam("nickname")
-                                                                        @NicknameConstraint String nickname) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        return ResponseEntity
-                .status(OK)
-                .body(userService.isNicknameAvailable(user, nickname));
-    }
-
-    @GetMapping("/info")
-    public ResponseEntity<UserInfoGetResponse> getUserInfo(Principal principal) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        return ResponseEntity
-                .status(OK)
-                .body(userService.getUserInfo(user));
-    }
-
-    @GetMapping("/profile-status")
-    public ResponseEntity<ProfileStatusResponse> getProfileStatus(Principal principal) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        return ResponseEntity
-                .status(OK)
-                .body(userService.getProfileStatus(user));
-    }
-
-    @PatchMapping("/profile-status")
-    public ResponseEntity<Void> editProfileStatus(Principal principal,
-                                                  @Valid @RequestBody EditProfileStatusRequest editProfileStatusRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        userService.editProfileStatus(user, editProfileStatusRequest);
-        return ResponseEntity
-                .status(NO_CONTENT)
-                .build();
-    }
-
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody String userId) {
         LoginResponse response = userService.login(Long.valueOf(userId));
@@ -99,62 +64,93 @@ public class UserController {
                 .body(response);
     }
 
-    @GetMapping("/my-profile")
-    public ResponseEntity<MyProfileResponse> getMyProfileInfo(Principal principal) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        return ResponseEntity
-                .status(OK)
-                .body(userService.getMyProfileInfo(user));
+    @PostMapping("/fcm-token")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> registerFCMToken(@AuthenticationPrincipal User user,
+                                                 @Valid @RequestBody FCMTokenRequest fcmTokenRequest) {
+        return userService.registerFCMToken(user, fcmTokenRequest)
+                ? ResponseEntity.status(CREATED).build()
+                : ResponseEntity.status(NO_CONTENT).build();
     }
 
-    @PatchMapping("/my-profile")
-    public ResponseEntity<Void> updateMyProfileInfo(Principal principal,
-                                                    @RequestBody @Valid UpdateMyProfileRequest updateMyProfileRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        userService.updateMyProfileInfo(user, updateMyProfileRequest);
-        return ResponseEntity
-                .status(NO_CONTENT)
-                .build();
-    }
-
-    @GetMapping("/profile/{userId}")
-    public ResponseEntity<ProfileGetResponse> getProfileInfo(Principal principal,
-                                                             @PathVariable("userId") Long userId) {
-        User user = principal == null
-                ? null
-                : userService.getUserOrException(Long.valueOf(principal.getName()));
+    @GetMapping("/nickname/check")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<NicknameValidation> checkNicknameAvailability(@AuthenticationPrincipal User user,
+                                                                        @RequestParam("nickname") @NicknameConstraint String nickname) {
         return ResponseEntity
                 .status(OK)
-                .body(userService.getProfileInfo(user, userId));
+                .body(userService.isNicknameAvailable(user, nickname));
     }
 
     @PostMapping("/profile")
-    public ResponseEntity<Void> registerUserInfo(Principal principal,
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> registerUserInfo(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody RegisterUserInfoRequest registerUserInfoRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.registerUserInfo(user, registerUserInfoRequest);
         return ResponseEntity
                 .status(CREATED)
                 .build();
     }
 
-    @GetMapping("/{userId}/user-novel-stats")
-    public ResponseEntity<UserNovelCountGetResponse> getUserNovelStatistics(@PathVariable("userId") Long userId) {
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<ProfileGetResponse> getProfileInfo(@AuthenticationPrincipal User user,
+                                                             @PathVariable("userId") Long userId) {
         return ResponseEntity
                 .status(OK)
-                .body(userNovelService.getUserNovelStatistics(userId));
+                .body(userService.getProfileInfo(user, userId));
+    }
+
+    @GetMapping("/my-profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<MyProfileResponse> getMyProfileInfo(@AuthenticationPrincipal User user) {
+        return ResponseEntity
+                .status(OK)
+                .body(userService.getMyProfileInfo(user));
+    }
+
+    @PatchMapping("/my-profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> updateMyProfileInfo(@AuthenticationPrincipal User user,
+                                                    @RequestBody @Valid UpdateMyProfileRequest updateMyProfileRequest) {
+        userService.updateMyProfileInfo(user, updateMyProfileRequest);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @GetMapping("/profile-status")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ProfileStatusResponse> getProfileStatus(@AuthenticationPrincipal User user) {
+        return ResponseEntity
+                .status(OK)
+                .body(userService.getProfileStatus(user));
+    }
+
+    @PatchMapping("/profile-status")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> editProfileStatus(@AuthenticationPrincipal User user,
+                                                  @Valid @RequestBody EditProfileStatusRequest editProfileStatusRequest) {
+        userService.editProfileStatus(user, editProfileStatusRequest);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserIdAndNicknameResponse> getUserIdAndNicknameAndGender(@AuthenticationPrincipal User user) {
+        return ResponseEntity
+                .status(OK)
+                .body(userService.getUserIdAndNicknameAndGender(user));
     }
 
     @GetMapping("/{userId}/novels")
-    public ResponseEntity<UserNovelAndNovelsGetResponse> getUserNovelsAndNovels(Principal principal,
+    public ResponseEntity<UserNovelAndNovelsGetResponse> getUserNovelsAndNovels(@AuthenticationPrincipal User visitor,
                                                                                 @PathVariable("userId") Long userId,
                                                                                 @RequestParam("readStatus") String readStatus,
                                                                                 @RequestParam("lastUserNovelId") Long lastUserNovelId,
                                                                                 @RequestParam("size") int size,
                                                                                 @RequestParam("sortType") String sortType) {
-        User visitor = principal == null
-                ? null
-                : userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserNovelsAndNovels(
@@ -162,24 +158,19 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/feeds")
-    public ResponseEntity<UserFeedsGetResponse> getUserFeeds(Principal principal,
+    public ResponseEntity<UserFeedsGetResponse> getUserFeeds(@AuthenticationPrincipal User visitor,
                                                              @PathVariable("userId") Long userId,
                                                              @RequestParam("lastFeedId") Long lastFeedId,
                                                              @RequestParam("size") int size) {
-        User visitor = principal == null
-                ? null
-                : userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getUserFeeds(visitor, userId, lastFeedId, size));
     }
 
     @GetMapping("/{userId}/preferences/genres")
-    public ResponseEntity<UserGenrePreferencesGetResponse> getUserGenrePreferences(Principal principal,
-                                                                                   @PathVariable("userId") Long ownerId) {
-        User visitor = principal == null
-                ? null
-                : userService.getUserOrException(Long.valueOf(principal.getName()));
+    public ResponseEntity<UserGenrePreferencesGetResponse> getUserGenrePreferences(
+            @AuthenticationPrincipal User visitor,
+            @PathVariable("userId") Long ownerId) {
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserGenrePreferences(visitor, ownerId));
@@ -187,73 +178,69 @@ public class UserController {
 
     @GetMapping("/{userId}/preferences/attractive-points")
     public ResponseEntity<UserTasteAttractivePointPreferencesAndKeywordsGetResponse>
-    getUserAttractivePointsAndKeywords(Principal principal,
+    getUserAttractivePointsAndKeywords(@AuthenticationPrincipal User visitor,
                                        @PathVariable("userId") Long ownerId) {
-        User visitor = principal == null
-                ? null
-                : userService.getUserOrException(Long.valueOf(principal.getName()));
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserAttractivePointsAndKeywords(visitor, ownerId));
     }
 
+    @GetMapping("/{userId}/user-novel-stats")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserNovelCountGetResponse> getUserNovelStatistics(@PathVariable("userId") Long userId) {
+        return ResponseEntity
+                .status(OK)
+                .body(userNovelService.getUserNovelStatistics(userId));
+    }
+
+    @GetMapping("/info")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserInfoGetResponse> getUserInfo(@AuthenticationPrincipal User user) {
+        return ResponseEntity
+                .status(OK)
+                .body(userService.getUserInfo(user));
+    }
+
     @PutMapping("/info")
-    public ResponseEntity<Void> editMyInfo(Principal principal,
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> editMyInfo(@AuthenticationPrincipal User user,
                                            @Valid @RequestBody EditMyInfoRequest editMyInfoRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.editMyInfo(user, editMyInfoRequest);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<UserIdAndNicknameResponse> getUserIdAndNicknameAndGender(Principal principal) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        return ResponseEntity
-                .status(OK)
-                .body(userService.getUserIdAndNicknameAndGender(user));
-    }
-
-    @PostMapping("/fcm-token")
-    public ResponseEntity<Void> registerFCMToken(Principal principal,
-                                                 @Valid @RequestBody FCMTokenRequest fcmTokenRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        return userService.registerFCMToken(user, fcmTokenRequest)
-                ? ResponseEntity.status(CREATED).build()
-                : ResponseEntity.status(NO_CONTENT).build();
-    }
-
-    @GetMapping("/push-settings")
-    public ResponseEntity<PushSettingGetResponse> getPushSettingValue(Principal principal) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        return ResponseEntity
-                .status(OK)
-                .body(userService.getPushSettingValue(user));
-    }
-
     @PostMapping("/push-settings")
-    public ResponseEntity<Void> registerPushSetting(Principal principal,
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> registerPushSetting(@AuthenticationPrincipal User user,
                                                     @Valid @RequestBody PushSettingRequest pushSettingRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.registerPushSetting(user, pushSettingRequest.isPushEnabled());
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
     }
 
+    @GetMapping("/push-settings")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<PushSettingGetResponse> getPushSettingValue(@AuthenticationPrincipal User user) {
+        return ResponseEntity
+                .status(OK)
+                .body(userService.getPushSettingValue(user));
+    }
+
     @GetMapping("/terms-settings")
-    public ResponseEntity<TermsSettingGetResponse> getTermsSettingValue(Principal principal) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<TermsSettingGetResponse> getTermsSettingValue(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
                 .body(userService.getTermsSettingValue(user));
     }
 
     @PatchMapping("/terms-settings")
-    public ResponseEntity<Void> updateTermsSetting(Principal principal,
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> updateTermsSetting(@AuthenticationPrincipal User user,
                                                    @Valid @RequestBody TermsSettingRequest termsSettingRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.updateTermsSetting(user, termsSettingRequest.serviceAgreed(), termsSettingRequest.privacyAgreed(),
                 termsSettingRequest.marketingAgreed());
         return ResponseEntity

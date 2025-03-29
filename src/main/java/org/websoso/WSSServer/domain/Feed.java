@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
@@ -73,14 +72,15 @@ public class Feed {
     @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private PopularFeed popularFeed;
 
-    @Builder
-    public Feed(String feedContent, Boolean isSpoiler, Long novelId, User user) {
+    private Feed(String feedContent, Long novelId, Boolean isSpoiler, User user) {
         this.feedContent = feedContent;
-        this.isSpoiler = isSpoiler;
         this.novelId = novelId;
+        this.isSpoiler = isSpoiler;
         this.user = user;
-        this.createdDate = LocalDateTime.now();
-        this.modifiedDate = this.createdDate;
+    }
+
+    public static Feed create(String feedContent, Long novelId, Boolean isSpoiler, User user) {
+        return new Feed(feedContent, novelId, isSpoiler, user);
     }
 
     public void updateFeed(String feedContent, Boolean isSpoiler, Long novelId) {

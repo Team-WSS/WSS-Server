@@ -1,7 +1,6 @@
 package org.websoso.WSSServer.service;
 
 import static java.lang.Boolean.TRUE;
-import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER_ACCESS;
@@ -15,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -84,15 +84,9 @@ public class FeedService {
     private final NotificationRepository notificationRepository;
 
     public void createFeed(User user, FeedCreateRequest request) {
-        if (request.novelId() != null) {
-            novelService.getNovelOrException(request.novelId());
-        }
-        Feed feed = Feed.builder()
-                .feedContent(request.feedContent())
-                .isSpoiler(request.isSpoiler())
-                .novelId(request.novelId())
-                .user(user)
-                .build();
+        Optional.ofNullable(request.novelId())
+                .ifPresent(novelService::getNovelOrException);
+        Feed feed = Feed.create(request.feedContent(), request.novelId(), request.isSpoiler(), user);
         feedRepository.save(feed);
         feedCategoryService.createFeedCategory(feed, request.relevantCategories());
     }
@@ -108,10 +102,8 @@ public class FeedService {
         feedCategoryService.updateFeedCategory(feed, request.relevantCategories());
     }
 
-    public void deleteFeed(User user, Long feedId) {
-        Feed feed = getFeedOrException(feedId);
-        feed.validateUserAuthorization(user, DELETE);
-        feedRepository.delete(feed);
+    public void deleteFeed(Long feedId) {
+        feedRepository.deleteById(feedId);
     }
 
     public void likeFeed(User user, Long feedId) {

@@ -4,9 +4,10 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -34,10 +35,9 @@ public class AuthController {
 
     @PostMapping("/reissue")
     public ResponseEntity<ReissueResponse> reissue(@RequestBody ReissueRequest reissueRequest) {
-        String refreshToken = reissueRequest.refreshToken();
         return ResponseEntity
                 .status(OK)
-                .body(authService.reissue(refreshToken));
+                .body(authService.reissue(reissueRequest.refreshToken()));
     }
 
     @PostMapping("/auth/login/kakao")
@@ -55,21 +55,19 @@ public class AuthController {
     }
 
     @PostMapping("/auth/logout")
-    public ResponseEntity<Void> logout(Principal principal,
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> logout(@AuthenticationPrincipal User user,
                                        @Valid @RequestBody LogoutRequest request) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        String refreshToken = request.refreshToken();
-        String deviceIdentifier = request.deviceIdentifier();
-        userService.logout(user, refreshToken, deviceIdentifier);
+        userService.logout(user, request);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
     }
 
     @PostMapping("/auth/withdraw")
-    public ResponseEntity<Void> withdrawUser(Principal principal,
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> withdrawUser(@AuthenticationPrincipal User user,
                                              @Valid @RequestBody WithdrawalRequest withdrawalRequest) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userService.withdrawUser(user, withdrawalRequest);
         return ResponseEntity
                 .status(NO_CONTENT)

@@ -5,9 +5,10 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,59 +24,53 @@ import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
 import org.websoso.WSSServer.service.NovelService;
 import org.websoso.WSSServer.service.UserNovelService;
-import org.websoso.WSSServer.service.UserService;
 
 @RequestMapping("/user-novels")
 @RestController
 @RequiredArgsConstructor
 public class UserNovelController {
 
-    private final UserService userService;
     private final NovelService novelService;
     private final UserNovelService userNovelService;
 
-    @GetMapping("/{novelId}")
-    public ResponseEntity<UserNovelGetResponse> getEvaluation(Principal principal, @PathVariable Long novelId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        Novel novel = novelService.getNovelOrException(novelId);
-
-        return ResponseEntity
-                .status(OK)
-                .body(userNovelService.getEvaluation(user, novel));
-    }
-
     @PostMapping
-    public ResponseEntity<Void> createEvaluation(Principal principal,
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> createEvaluation(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody UserNovelCreateRequest request) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
         userNovelService.createEvaluation(user, request);
-
         return ResponseEntity
                 .status(CREATED)
                 .build();
     }
 
-    @PutMapping("/{novelId}")
-    public ResponseEntity<Void> updateEvaluation(Principal principal, @PathVariable Long novelId,
-                                                 @Valid @RequestBody UserNovelUpdateRequest request) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+    @GetMapping("/{novelId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserNovelGetResponse> getEvaluation(@AuthenticationPrincipal User user,
+                                                              @PathVariable Long novelId) {
         Novel novel = novelService.getNovelOrException(novelId);
-        userNovelService.updateEvaluation(user, novel, request);
+        return ResponseEntity
+                .status(OK)
+                .body(userNovelService.getEvaluation(user, novel));
+    }
 
+    @PutMapping("/{novelId}")
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.domain.UserNovel))")
+    public ResponseEntity<Void> updateEvaluation(@AuthenticationPrincipal User user,
+                                                 @PathVariable Long novelId,
+                                                 @Valid @RequestBody UserNovelUpdateRequest request) {
+        userNovelService.updateEvaluation(user, novelId, request);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
     }
 
     @DeleteMapping("/{novelId}")
-    public ResponseEntity<Void> deleteEvaluation(Principal principal, @PathVariable Long novelId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        Novel novel = novelService.getNovelOrException(novelId);
-        userNovelService.deleteEvaluation(user, novel);
-
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.domain.UserNovel))")
+    public ResponseEntity<Void> deleteEvaluation(@AuthenticationPrincipal User user,
+                                                 @PathVariable Long novelId) {
+        userNovelService.deleteEvaluation(user, novelId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
     }
-
 }

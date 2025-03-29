@@ -12,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.websoso.WSSServer.config.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
-import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.RefreshToken;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
@@ -70,9 +70,9 @@ public class KakaoService {
             user = userRepository.save(User.createBySocial(socialId, defaultNickname, kakaoUserInfo.email()));
         }
 
-        UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
-        String accessToken = jwtProvider.generateAccessToken(userAuthentication);
-        String refreshToken = jwtProvider.generateRefreshToken(userAuthentication);
+        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null, null);
+        String accessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
+        String refreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
 
         RefreshToken redisRefreshToken = new RefreshToken(refreshToken, user.getUserId());
         refreshTokenRepository.save(redisRefreshToken);

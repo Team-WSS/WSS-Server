@@ -7,6 +7,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +30,8 @@ public class JWTUtil {
                 return JwtValidationType.VALID_ACCESS;
             }
             return JwtValidationType.VALID_REFRESH;
+        } catch (SignatureException ex) {
+            return JwtValidationType.INVALID_SIGNATURE;
         } catch (MalformedJwtException ex) {
             return JwtValidationType.INVALID_TOKEN;
         } catch (ExpiredJwtException ex) {

@@ -1,6 +1,8 @@
 package org.websoso.WSSServer.config.jwt;
 
 import static org.websoso.WSSServer.config.jwt.JwtValidationType.EXPIRED_ACCESS;
+import static org.websoso.WSSServer.config.jwt.JwtValidationType.INVALID_SIGNATURE;
+import static org.websoso.WSSServer.config.jwt.JwtValidationType.INVALID_TOKEN;
 import static org.websoso.WSSServer.config.jwt.JwtValidationType.VALID_ACCESS;
 
 import jakarta.servlet.FilterChain;
@@ -12,6 +14,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -30,24 +34,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-        try {
-            final String token = getJwtFromRequest(request);
+        final String token = getJwtFromRequest(request);
+
+        if (StringUtils.hasText(token)) {
             final JwtValidationType validationResult = jwtUtil.validateJWT(token);
             if (validationResult == VALID_ACCESS) {
                 Long userId = jwtUtil.getUserIdFromJwt(token);
-                UserAuthentication authentication = new UserAuthentication(userId.toString(), null, null);
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(userId, null, null);
+                customAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(customAuthenticationToken);
             } else if (validationResult == EXPIRED_ACCESS) {
                 handleExpiredAccessToken(request, response);
                 return;
+            } else if (validationResult == INVALID_TOKEN || validationResult == INVALID_SIGNATURE) {
+                handleInvalidToken(response);
+                return;
             }
-        } catch (Exception exception) {
-            try {
-                throw new Exception();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        } else {
+            SecurityContextHolder.getContext().setAuthentication(
+                    new AnonymousAuthenticationToken(
+                            "anonymous",
+                            "anonymousUser",
+                            AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"))
+            );
         }
         filterChain.doFilter(request, response);
     }
@@ -66,5 +75,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter()
                 .write("{\"code\": \"AUTH-000\", \"message\": \"Access Token Expired. Use Refresh Token to reissue.\"}");
+    }
+
+    private void handleInvalidToken(HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter()
+                .write("{\"code\": \"AUTH-001\", \"message\": \"Invalid token.\"}");
     }
 }
