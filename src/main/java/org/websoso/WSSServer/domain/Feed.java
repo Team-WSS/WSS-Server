@@ -2,7 +2,6 @@ package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
-import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,8 +20,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
-import org.websoso.WSSServer.domain.common.Action;
-import org.websoso.WSSServer.exception.exception.CustomUserException;
 
 @Getter
 @DynamicInsert
@@ -88,13 +85,6 @@ public class Feed {
         this.isSpoiler = isSpoiler;
         this.novelId = novelId;
         this.modifiedDate = LocalDateTime.now();
-    }
-
-    public void validateUserAuthorization(User user, Action action) {
-        if (!this.user.equals(user)) {
-            throw new CustomUserException(INVALID_AUTHORIZED,
-                    "only the author can " + action.getLabel() + " the feed");
-        }
     }
 
     public boolean isNovelChanged(Long novelId) {
