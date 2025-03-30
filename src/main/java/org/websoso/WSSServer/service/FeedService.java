@@ -93,7 +93,6 @@ public class FeedService {
 
     public void updateFeed(User user, Long feedId, FeedUpdateRequest request) {
         Feed feed = getFeedOrException(feedId);
-        feed.validateUserAuthorization(user, UPDATE);
 
         if (request.novelId() != null && feed.isNovelChanged(request.novelId())) {
             novelService.getNovelOrException(request.novelId());
