@@ -29,8 +29,8 @@ public class BlockAuthorizationValidator implements ResourceAuthorizationValidat
 
     private Block getBlockOrException(Long blockId) {
         return blockRepository.findById(blockId)
-                .orElseThrow(
-                        () -> new CustomBlockException(BLOCK_NOT_FOUND, "block with the given blockId was not found"));
+                .orElseThrow(() -> new CustomBlockException(BLOCK_NOT_FOUND,
+                        "block with the given blockId was not found"));
     }
 
     private boolean isBlockOwner(Block block, User user) {
