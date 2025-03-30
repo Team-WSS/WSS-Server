@@ -102,7 +102,7 @@ public class FeedController {
     }
 
     @DeleteMapping("/{feedId}/likes")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.domain.Feed))")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unLikeFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId) {
         feedService.unLikeFeed(user, feedId);
