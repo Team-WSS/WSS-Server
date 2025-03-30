@@ -75,7 +75,7 @@ public class FeedController {
     public ResponseEntity<Void> updateFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId,
                                            @Valid @RequestBody FeedUpdateRequest request) {
-        feedService.updateFeed(user, feedId, request);
+        feedService.updateFeed(feedId, request);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

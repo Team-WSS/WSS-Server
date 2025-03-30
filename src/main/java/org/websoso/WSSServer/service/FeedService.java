@@ -91,7 +91,7 @@ public class FeedService {
         feedCategoryService.createFeedCategory(feed, request.relevantCategories());
     }
 
-    public void updateFeed(User user, Long feedId, FeedUpdateRequest request) {
+    public void updateFeed(Long feedId, FeedUpdateRequest request) {
         Feed feed = getFeedOrException(feedId);
 
         if (request.novelId() != null && feed.isNovelChanged(request.novelId())) {
