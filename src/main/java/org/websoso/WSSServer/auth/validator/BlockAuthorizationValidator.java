@@ -34,7 +34,7 @@ public class BlockAuthorizationValidator implements ResourceAuthorizationValidat
     }
 
     private boolean isBlockOwner(Block block, User user) {
-        return block.getBlockedId().equals(user.getUserId());
+        return block.getBlockingId().equals(user.getUserId());
     }
 
     @Override
