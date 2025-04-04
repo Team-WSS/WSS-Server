@@ -18,6 +18,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -137,7 +138,11 @@ public class NovelService {
         }
 
         if (userNovel == null) {
-            userNovel = userNovelService.createUserNovelByInterest(user, novel);
+            try {
+                userNovel = userNovelService.createUserNovelByInterest(user, novel);
+            } catch (DataIntegrityViolationException e) {
+                userNovel = userNovelService.getUserNovelOrException(user, novel);
+            }
         }
 
         userNovel.setIsInterest(true);

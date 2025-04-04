@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
@@ -89,20 +90,20 @@ public class UserNovelService {
         Novel novel = novelRepository.findById(request.novelId())
                 .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
 
-        if (getUserNovelOrNull(user, novel) != null) {
+        try {
+            UserNovel userNovel = userNovelRepository.save(UserNovel.create(
+                    request.status(),
+                    request.userNovelRating(),
+                    request.startDate(),
+                    request.endDate(),
+                    user,
+                    novel));
+
+            createUserNovelAttractivePoints(userNovel, request.attractivePoints());
+            createNovelKeywords(userNovel, request.keywordIds());
+        } catch (DataIntegrityViolationException e) {
             throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
         }
-
-        UserNovel userNovel = userNovelRepository.save(UserNovel.create(
-                request.status(),
-                request.userNovelRating(),
-                request.startDate(),
-                request.endDate(),
-                user,
-                novel));
-
-        createUserNovelAttractivePoints(userNovel, request.attractivePoints());
-        createNovelKeywords(userNovel, request.keywordIds());
     }
 
     public void updateEvaluation(User user, Novel novel, UserNovelUpdateRequest request) {
