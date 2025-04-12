@@ -98,4 +98,8 @@ public class Feed {
     public Long getWriterId() {
         return user.getUserId();
     }
+
+    public boolean isMine(Long userId) {
+        return this.user.getUserId().equals(userId);
+    }
 }
