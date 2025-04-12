@@ -21,7 +21,7 @@ public class FeedAuthorizationValidator implements ResourceAuthorizationValidato
     public boolean hasPermission(Long feedId, User user) {
         Feed feed = getFeedOrException(feedId);
 
-        if (!isFeedOwner(feed, user)) {
+        if (!feed.isMine(user.getUserId())) {
             throw new CustomUserException(INVALID_AUTHORIZED,
                     "User with ID " + user.getUserId() + " is not the owner of feed " + feed.getFeedId());
         }
