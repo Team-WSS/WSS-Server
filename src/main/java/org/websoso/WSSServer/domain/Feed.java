@@ -95,4 +95,7 @@ public class Feed {
         this.isHidden = true;
     }
 
+    public Long getWriterId() {
+        return user.getUserId();
+    }
 }
