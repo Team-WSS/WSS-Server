@@ -33,10 +33,6 @@ public class FeedAuthorizationValidator implements ResourceAuthorizationValidato
                 .orElseThrow(() -> new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
     }
 
-    private boolean isFeedOwner(Feed feed, User user) {
-        return feed.getUser().getUserId().equals(user.getUserId());
-    }
-
     @Override
     public Class<?> getResourceType() {
         return Feed.class;
