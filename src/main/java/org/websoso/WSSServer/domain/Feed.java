@@ -44,6 +44,9 @@ public class Feed {
     @Column(nullable = false)
     private Boolean isSpoiler;
 
+    @Column(columnDefinition = "Boolean default true", nullable = false)
+    private Boolean isPublic;
+
     @Column(nullable = false)
     private LocalDateTime createdDate;
 
