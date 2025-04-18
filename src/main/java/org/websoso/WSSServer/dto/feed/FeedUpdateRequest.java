@@ -20,6 +20,7 @@ public record FeedUpdateRequest(
         @NotNull(message = "스포일러 여부는 null일 수 없습니다.")
         Boolean isSpoiler,
 
+        @NotNull(message = "공개 여부는 null일 수 없습니다.")
         Boolean isPublic
 ) {
 }
