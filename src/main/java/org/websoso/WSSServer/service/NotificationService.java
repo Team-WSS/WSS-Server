@@ -4,7 +4,6 @@ import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.FEED;
 import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.NOTICE;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_ALREADY_READ;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_NOT_NOTICE_TYPE;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_READ_FORBIDDEN;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_TYPE_INVALID;
 import static org.websoso.WSSServer.exception.error.CustomNotificationTypeError.NOTIFICATION_TYPE_NOT_FOUND;
@@ -124,8 +123,6 @@ public class NotificationService {
     }
 
     public void createNoticeNotification(User user, NotificationCreateRequest request) {
-        validateNoticeType(request.notificationTypeName());
-
         Notification notification = notificationRepository.save(Notification.create(
                 request.notificationTitle(),
                 request.notificationBody(),
@@ -136,13 +133,6 @@ public class NotificationService {
         );
 
         sendNoticePushMessage(request.userId(), notification);
-    }
-
-    private void validateNoticeType(String notificationTypeName) {
-        if (!NotificationTypeGroup.isTypeInGroup(notificationTypeName, NOTICE)) {
-            throw new CustomNotificationException(NOTIFICATION_NOT_NOTICE_TYPE,
-                    "given notification type does not belong to the NOTICE category");
-        }
     }
 
     private NotificationType getNotificationTypeOrException(String notificationTypeName) {
