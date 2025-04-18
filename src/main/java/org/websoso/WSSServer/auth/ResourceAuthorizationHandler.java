@@ -1,5 +1,7 @@
 package org.websoso.WSSServer.auth;
 
+import static org.websoso.WSSServer.exception.error.CustomAuthorizationError.UNSUPPORTED_RESOURCE_TYPE;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.auth.validator.ResourceAuthorizationValidator;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.exception.exception.CustomAuthorizationException;
 
 @Component
 public class ResourceAuthorizationHandler {
@@ -23,7 +26,8 @@ public class ResourceAuthorizationHandler {
 
     public boolean authorizeResourceAccess(Long resourceId, User user, Class<?> resourceType) {
         return Optional.ofNullable(validatorMap.get(resourceType))
-                .orElseThrow(RuntimeException::new)
+                .orElseThrow(() -> new CustomAuthorizationException(
+                        UNSUPPORTED_RESOURCE_TYPE, "Unsupported resource type for authorization"))
                 .hasPermission(resourceId, user);
     }
 }
