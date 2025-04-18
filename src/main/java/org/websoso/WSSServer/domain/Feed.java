@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
+import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 
 @Getter
 @DynamicInsert
@@ -85,11 +86,11 @@ public class Feed {
         return new Feed(request, user);
     }
 
-    public void updateFeed(String feedContent, Boolean isSpoiler, Boolean isPublic, Long novelId) {
-        this.feedContent = feedContent;
-        this.isSpoiler = isSpoiler;
-        this.isPublic = isPublic;
-        this.novelId = novelId;
+    public void updateFeed(FeedUpdateRequest request) {
+        this.feedContent = request.feedContent();
+        this.isSpoiler = request.isSpoiler();
+        this.isPublic = request.isPublic();
+        this.novelId = request.novelId();
         this.modifiedDate = LocalDateTime.now();
     }
 
