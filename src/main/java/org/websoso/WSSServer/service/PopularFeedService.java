@@ -128,4 +128,8 @@ public class PopularFeedService {
                 .map(PopularFeedGetResponse::of)
                 .toList();
     }
+
+    private static boolean isVisibleToUser(Feed feed, Long currentUserId) {
+        return feed.getIsPublic() || feed.getWriterId().equals(currentUserId);
+    }
 }
