@@ -83,7 +83,7 @@ public class FeedService {
     public void createFeed(User user, FeedCreateRequest request) {
         Optional.ofNullable(request.novelId())
                 .ifPresent(novelService::getNovelOrException);
-        Feed feed = Feed.create(request.feedContent(), request.novelId(), request.isSpoiler(), user);
+        Feed feed = Feed.create(request.feedContent(), request.novelId(), request.isSpoiler(), request.isPublic(), user);
         feedRepository.save(feed);
         feedCategoryService.createFeedCategory(feed, request.relevantCategories());
     }

@@ -72,15 +72,16 @@ public class Feed {
     @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private PopularFeed popularFeed;
 
-    private Feed(String feedContent, Long novelId, Boolean isSpoiler, User user) {
+    private Feed(String feedContent, Long novelId, Boolean isSpoiler, Boolean isPublic, User user) {
         this.feedContent = feedContent;
         this.novelId = novelId;
         this.isSpoiler = isSpoiler;
+        this.isPublic = isPublic;
         this.user = user;
     }
 
-    public static Feed create(String feedContent, Long novelId, Boolean isSpoiler, User user) {
-        return new Feed(feedContent, novelId, isSpoiler, user);
+    public static Feed create(String feedContent, Long novelId, Boolean isSpoiler, Boolean isPublic, User user) {
+        return new Feed(feedContent, novelId, isSpoiler, isPublic, user);
     }
 
     public void updateFeed(String feedContent, Boolean isSpoiler, Long novelId) {
