@@ -1,13 +1,33 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.FEED;
+import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.NOTICE;
+import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_ALREADY_READ;
+import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_NOT_NOTICE_TYPE;
+import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_READ_FORBIDDEN;
+import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_TYPE_INVALID;
+import static org.websoso.WSSServer.exception.error.CustomNotificationTypeError.NOTIFICATION_TYPE_NOT_FOUND;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.*;
+import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.domain.NotificationType;
+import org.websoso.WSSServer.domain.ReadNotification;
+import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.NotificationTypeGroup;
-import org.websoso.WSSServer.dto.notification.*;
+import org.websoso.WSSServer.dto.notification.NotificationCreateRequest;
+import org.websoso.WSSServer.dto.notification.NotificationGetResponse;
+import org.websoso.WSSServer.dto.notification.NotificationInfo;
+import org.websoso.WSSServer.dto.notification.NotificationsGetResponse;
+import org.websoso.WSSServer.dto.notification.NotificationsReadStatusGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
 import org.websoso.WSSServer.exception.exception.CustomNotificationTypeException;
 import org.websoso.WSSServer.notification.FCMService;
@@ -16,16 +36,6 @@ import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.ReadNotificationRepository;
 import org.websoso.WSSServer.repository.UserRepository;
-
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.FEED;
-import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.NOTICE;
-import static org.websoso.WSSServer.domain.common.Role.ADMIN;
-import static org.websoso.WSSServer.exception.error.CustomNotificationError.*;
-import static org.websoso.WSSServer.exception.error.CustomNotificationTypeError.NOTIFICATION_TYPE_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -114,7 +124,6 @@ public class NotificationService {
     }
 
     public void createNoticeNotification(User user, NotificationCreateRequest request) {
-        validateAdminPrivilege(user);
         validateNoticeType(request.notificationTypeName());
 
         Notification notification = notificationRepository.save(Notification.create(
@@ -127,13 +136,6 @@ public class NotificationService {
         );
 
         sendNoticePushMessage(request.userId(), notification);
-    }
-
-    private void validateAdminPrivilege(User user) {
-        if (user.getRole() != ADMIN) {
-            throw new CustomNotificationException(NOTIFICATION_ADMIN_ONLY,
-                    "User who tried to create, modify, or delete the notice is not an ADMIN.");
-        }
     }
 
     private void validateNoticeType(String notificationTypeName) {
