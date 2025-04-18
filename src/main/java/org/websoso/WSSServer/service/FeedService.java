@@ -94,7 +94,7 @@ public class FeedService {
         if (request.novelId() != null && feed.isNovelChanged(request.novelId())) {
             novelService.getNovelOrException(request.novelId());
         }
-        feed.updateFeed(request.feedContent(), request.isSpoiler(), request.novelId());
+        feed.updateFeed(request.feedContent(), request.isSpoiler(), request.isPublic(), request.novelId());
         feedCategoryService.updateFeedCategory(feed, request.relevantCategories());
     }
 

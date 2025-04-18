@@ -85,9 +85,10 @@ public class Feed {
         return new Feed(request, user);
     }
 
-    public void updateFeed(String feedContent, Boolean isSpoiler, Long novelId) {
+    public void updateFeed(String feedContent, Boolean isSpoiler, Boolean isPublic, Long novelId) {
         this.feedContent = feedContent;
         this.isSpoiler = isSpoiler;
+        this.isPublic = isPublic;
         this.novelId = novelId;
         this.modifiedDate = LocalDateTime.now();
     }
