@@ -2,7 +2,6 @@ package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
-import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,12 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
-import org.websoso.WSSServer.domain.common.Action;
-import org.websoso.WSSServer.exception.exception.CustomUserException;
 
 @Getter
 @DynamicInsert
@@ -73,14 +69,15 @@ public class Feed {
     @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private PopularFeed popularFeed;
 
-    @Builder
-    public Feed(String feedContent, Boolean isSpoiler, Long novelId, User user) {
+    private Feed(String feedContent, Long novelId, Boolean isSpoiler, User user) {
         this.feedContent = feedContent;
-        this.isSpoiler = isSpoiler;
         this.novelId = novelId;
+        this.isSpoiler = isSpoiler;
         this.user = user;
-        this.createdDate = LocalDateTime.now();
-        this.modifiedDate = this.createdDate;
+    }
+
+    public static Feed create(String feedContent, Long novelId, Boolean isSpoiler, User user) {
+        return new Feed(feedContent, novelId, isSpoiler, user);
     }
 
     public void updateFeed(String feedContent, Boolean isSpoiler, Long novelId) {
@@ -88,13 +85,6 @@ public class Feed {
         this.isSpoiler = isSpoiler;
         this.novelId = novelId;
         this.modifiedDate = LocalDateTime.now();
-    }
-
-    public void validateUserAuthorization(User user, Action action) {
-        if (!this.user.equals(user)) {
-            throw new CustomUserException(INVALID_AUTHORIZED,
-                    "only the author can " + action.getLabel() + " the feed");
-        }
     }
 
     public boolean isNovelChanged(Long novelId) {
@@ -105,4 +95,11 @@ public class Feed {
         this.isHidden = true;
     }
 
+    public Long getWriterId() {
+        return user.getUserId();
+    }
+
+    public boolean isMine(Long userId) {
+        return this.user.getUserId().equals(userId);
+    }
 }
