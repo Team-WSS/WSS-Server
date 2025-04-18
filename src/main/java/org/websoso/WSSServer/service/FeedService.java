@@ -322,6 +322,7 @@ public class FeedService {
                 .collect(Collectors.toMap(Avatar::getAvatarId, avatar -> avatar));
 
         List<InterestFeedGetResponse> interestFeedGetResponses = interestFeeds.stream()
+                .filter(feed -> feed.isVisibleTo(user.getUserId()))
                 .map(feed -> {
                     Novel novel = novelMap.get(feed.getNovelId());
                     Avatar avatar = avatarMap.get(feed.getUser().getAvatarId());
