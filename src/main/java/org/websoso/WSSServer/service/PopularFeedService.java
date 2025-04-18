@@ -111,7 +111,10 @@ public class PopularFeedService {
         List<PopularFeed> popularFeeds = Optional.ofNullable(user)
                 .map(u -> findPopularFeedsWithUser(u.getUserId()))
                 .orElseGet(this::findPopularFeedsWithoutUser);
-        List<PopularFeedGetResponse> popularFeedGetResponses = mapToPopularFeedGetResponseList(popularFeeds);
+
+        List<PopularFeedGetResponse> popularFeedGetResponses =
+                mapToPopularFeedGetResponseList(popularFeeds, currentUserId);
+
         return new PopularFeedsGetResponse(popularFeedGetResponses);
     }
 
@@ -123,7 +126,8 @@ public class PopularFeedService {
         return popularFeedRepository.findTop9ByOrderByPopularFeedIdDesc();
     }
 
-    private static List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(List<PopularFeed> popularFeeds) {
+    private static List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(List<PopularFeed> popularFeeds,
+                                                                                Long currentUserId) {
         return popularFeeds.stream()
                 .map(PopularFeedGetResponse::of)
                 .toList();
