@@ -104,6 +104,10 @@ public class PopularFeedService {
 
     @Transactional(readOnly = true)
     public PopularFeedsGetResponse getPopularFeeds(User user) {
+        Long currentUserId = Optional.ofNullable(user)
+                .map(User::getUserId)
+                .orElse(null);
+
         List<PopularFeed> popularFeeds = Optional.ofNullable(user)
                 .map(u -> findPopularFeedsWithUser(u.getUserId()))
                 .orElseGet(this::findPopularFeedsWithoutUser);
