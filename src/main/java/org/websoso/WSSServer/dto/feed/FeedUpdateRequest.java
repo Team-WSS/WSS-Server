@@ -18,6 +18,8 @@ public record FeedUpdateRequest(
         Long novelId,
 
         @NotNull(message = "스포일러 여부는 null일 수 없습니다.")
-        Boolean isSpoiler
+        Boolean isSpoiler,
+
+        Boolean isPublic
 ) {
 }
