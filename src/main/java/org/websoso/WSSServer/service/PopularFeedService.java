@@ -129,7 +129,7 @@ public class PopularFeedService {
     private static List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(List<PopularFeed> popularFeeds,
                                                                                 Long currentUserId) {
         return popularFeeds.stream()
-                .filter(pf -> isVisibleToUser(pf.getFeed(), currentUserId))
+                .filter(pf -> pf.getFeed().isVisibleTo(currentUserId))
                 .map(PopularFeedGetResponse::of)
                 .toList();
     }
