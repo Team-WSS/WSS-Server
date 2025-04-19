@@ -9,4 +9,4 @@ jobs:
       - uses: hkusu/review-assign-action@v1
         with:
           assignees: ${{ github.actor }}
-          reviewers: Kim-TaeUk, ChaeAg, rinarina0429
+          reviewers: Kim-TaeUk, rinarina0429, sansan20535, GiJungPark, EunjeongHeo
