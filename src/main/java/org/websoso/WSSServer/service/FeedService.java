@@ -350,9 +350,9 @@ public class FeedService {
     @Transactional(readOnly = true)
     public UserFeedsGetResponse getUserFeeds(User visitor, Long ownerId, Long lastFeedId, int size) {
         User owner = userService.getUserOrException(ownerId);
-        Long visitorId = visitor == null
-                ? null
-                : visitor.getUserId();
+        Long visitorId = Optional.ofNullable(visitor)
+                .map(User::getUserId)
+                .orElse(null);
 
         if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
             List<Feed> feedsByNoOffsetPagination =
