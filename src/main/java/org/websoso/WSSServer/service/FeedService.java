@@ -355,10 +355,9 @@ public class FeedService {
                 .orElse(null);
 
         if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
-            List<Feed> feedsByNoOffsetPagination =
-                    feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size);
+            List<Feed> feeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size);
 
-            List<Long> novelIds = feedsByNoOffsetPagination.stream()
+            List<Long> novelIds = feeds.stream()
                     .map(Feed::getNovelId)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
@@ -366,12 +365,12 @@ public class FeedService {
                     .stream()
                     .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
 
-            List<UserFeedGetResponse> userFeedGetResponseList = feedsByNoOffsetPagination.stream()
+            List<UserFeedGetResponse> userFeedGetResponseList = feeds.stream()
                     .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId))
                     .toList();
 
             // TODO Slice의 hasNext()로 판단하도록 수정
-            Boolean isLoadable = feedsByNoOffsetPagination.size() == size;
+            Boolean isLoadable = feeds.size() == size;
 
             return UserFeedsGetResponse.of(isLoadable, userFeedGetResponseList);
         }
