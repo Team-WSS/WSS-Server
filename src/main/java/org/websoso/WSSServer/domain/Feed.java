@@ -74,6 +74,8 @@ public class Feed {
         this.novelId = novelId;
         this.isSpoiler = isSpoiler;
         this.user = user;
+        this.createdDate = LocalDateTime.now();
+        this.modifiedDate = LocalDateTime.now();
     }
 
     public static Feed create(String feedContent, Long novelId, Boolean isSpoiler, User user) {
