@@ -23,7 +23,8 @@ public record UserFeedGetResponse(
         String title,
         Float novelRating,
         Long novelRatingCount,
-        List<String> relevantCategories
+        List<String> relevantCategories,
+        Boolean isPublic
 ) {
 
     public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId) {
@@ -50,7 +51,8 @@ public record UserFeedGetResponse(
                         null : novel.getTitle(),
                 novelRating,
                 novelRatingCount,
-                relevantCategories
+                relevantCategories,
+                feed.getIsPublic()
         );
     }
 
