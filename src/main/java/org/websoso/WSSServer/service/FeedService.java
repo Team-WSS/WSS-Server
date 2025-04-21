@@ -333,10 +333,9 @@ public class FeedService {
     }
 
     public NovelGetResponseFeedTab getFeedsByNovel(User user, Long novelId, Long lastFeedId, int size) {
-        Long userIdOrNull = user == null
-                ? null
-                : user.getUserId();
-
+        Long userIdOrNull = Optional.ofNullable(user)
+                .map(User::getUserId)
+                .orElse(null);
         Slice<Feed> feeds = feedRepository.findFeedsByNovelId(novelId, lastFeedId, userIdOrNull,
                 PageRequest.of(DEFAULT_PAGE_NUMBER, size));
 
