@@ -200,8 +200,7 @@ public class FeedService {
                 .stream()
                 .map(feed -> createFeedInfo(feed, user)).toList();
 
-        return FeedsGetResponse.of(category == null ? DEFAULT_CATEGORY : category, feeds.hasNext(),
-                feedGetResponses);
+        return FeedsGetResponse.of(category == null ? DEFAULT_CATEGORY : category, feeds.hasNext(), feedGetResponses);
     }
 
     public void createComment(User user, Long feedId, CommentCreateRequest request) {
