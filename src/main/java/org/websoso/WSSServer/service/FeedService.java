@@ -196,7 +196,8 @@ public class FeedService {
         Slice<Feed> feeds = findFeedsByCategoryLabel(category == null ? DEFAULT_CATEGORY : category,
                 lastFeedId, user == null ? null : user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
 
-        List<FeedInfo> feedGetResponses = feeds.getContent().stream()
+        List<FeedInfo> feedGetResponses = feeds.getContent()
+                .stream()
                 .map(feed -> createFeedInfo(feed, user)).toList();
 
         return FeedsGetResponse.of(category == null ? DEFAULT_CATEGORY : category, feeds.hasNext(),
