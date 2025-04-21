@@ -193,8 +193,12 @@ public class FeedService {
 
     @Transactional(readOnly = true)
     public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size) {
+        Long userIdOrNull = Optional.ofNullable(user)
+                .map(User::getUserId)
+                .orElse(null);
+
         Slice<Feed> feeds = findFeedsByCategoryLabel(getChosenCategoryOrDefault(category),
-                lastFeedId, user == null ? null : user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
+                lastFeedId, userIdOrNull, PageRequest.of(DEFAULT_PAGE_NUMBER, size));
 
         List<FeedInfo> feedGetResponses = feeds.getContent()
                 .stream()
