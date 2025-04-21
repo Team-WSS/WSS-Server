@@ -193,14 +193,19 @@ public class FeedService {
 
     @Transactional(readOnly = true)
     public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size) {
-        Slice<Feed> feeds = findFeedsByCategoryLabel(category == null ? DEFAULT_CATEGORY : category,
+        Slice<Feed> feeds = findFeedsByCategoryLabel(getChosenCategoryOrDefault(category),
                 lastFeedId, user == null ? null : user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
 
         List<FeedInfo> feedGetResponses = feeds.getContent()
                 .stream()
                 .map(feed -> createFeedInfo(feed, user)).toList();
 
-        return FeedsGetResponse.of(category == null ? DEFAULT_CATEGORY : category, feeds.hasNext(), feedGetResponses);
+        return FeedsGetResponse.of(getChosenCategoryOrDefault(category), feeds.hasNext(), feedGetResponses);
+    }
+
+    private static String getChosenCategoryOrDefault(String category) {
+        return Optional.ofNullable(category)
+                .orElse(DEFAULT_CATEGORY);
     }
 
     public void createComment(User user, Long feedId, CommentCreateRequest request) {
