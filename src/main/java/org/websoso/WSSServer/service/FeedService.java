@@ -202,6 +202,7 @@ public class FeedService {
 
         List<FeedInfo> feedGetResponses = feeds.getContent()
                 .stream()
+                .filter(feed -> feed.isVisibleTo(userIdOrNull))
                 .map(feed -> createFeedInfo(feed, user))
                 .toList();
 
