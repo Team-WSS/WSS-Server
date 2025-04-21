@@ -24,8 +24,8 @@ public record FeedInfo(
         List<String> relevantCategories,
         Boolean isSpoiler,
         Boolean isModified,
-        Boolean isMyFeed
-
+        Boolean isMyFeed,
+        Boolean isPublic
 ) {
     public static FeedInfo of(Feed feed, UserBasicInfo userBasicInfo, Novel novel, Boolean isLiked,
                               List<String> relevantCategories, Boolean isMyFeed) {
@@ -60,7 +60,8 @@ public record FeedInfo(
                 relevantCategories,
                 feed.getIsSpoiler(),
                 !feed.getCreatedDate().equals(feed.getModifiedDate()),
-                isMyFeed
+                isMyFeed,
+                feed.getIsPublic()
         );
     }
 
