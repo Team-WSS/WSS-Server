@@ -107,7 +107,7 @@ public class Feed {
     }
 
     public boolean isMine(Long userId) {
-        return this.user.getUserId().equals(userId);
+        return this.getWriterId().equals(userId);
     }
 
     public boolean isVisibleTo(Long userId) {
