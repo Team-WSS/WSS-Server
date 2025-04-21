@@ -111,6 +111,6 @@ public class Feed {
     }
 
     public boolean isVisibleTo(Long userId) {
-        return this.isPublic || this.user.getUserId().equals(userId);
+        return this.isPublic || this.isMine(userId);
     }
 }
