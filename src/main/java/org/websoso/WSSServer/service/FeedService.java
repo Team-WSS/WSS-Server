@@ -339,7 +339,9 @@ public class FeedService {
         Slice<Feed> feeds = feedRepository.findFeedsByNovelId(novelId, lastFeedId, userIdOrNull,
                 PageRequest.of(DEFAULT_PAGE_NUMBER, size));
 
-        List<FeedInfo> feedGetResponses = feeds.getContent().stream()
+        List<FeedInfo> feedGetResponses = feeds.getContent()
+                .stream()
+                .filter(feed -> feed.isVisibleTo(userIdOrNull))
                 .map(feed -> createFeedInfo(feed, user))
                 .toList();
 
