@@ -357,7 +357,11 @@ public class FeedService {
         if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
             List<Feed> feeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size);
 
-            List<Long> novelIds = feeds.stream()
+            List<Feed> visibleFeeds = feeds.stream()
+                    .filter(feed -> feed.isVisibleTo(visitorId))
+                    .toList();
+
+            List<Long> novelIds = visibleFeeds.stream()
                     .map(Feed::getNovelId)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
@@ -365,7 +369,7 @@ public class FeedService {
                     .stream()
                     .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
 
-            List<UserFeedGetResponse> userFeedGetResponseList = feeds.stream()
+            List<UserFeedGetResponse> userFeedGetResponseList = visibleFeeds.stream()
                     .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId))
                     .toList();
 
