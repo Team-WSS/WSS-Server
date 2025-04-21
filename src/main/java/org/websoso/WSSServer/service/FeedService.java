@@ -202,7 +202,8 @@ public class FeedService {
 
         List<FeedInfo> feedGetResponses = feeds.getContent()
                 .stream()
-                .map(feed -> createFeedInfo(feed, user)).toList();
+                .map(feed -> createFeedInfo(feed, user))
+                .toList();
 
         return FeedsGetResponse.of(getChosenCategoryOrDefault(category), feeds.hasNext(), feedGetResponses);
     }
