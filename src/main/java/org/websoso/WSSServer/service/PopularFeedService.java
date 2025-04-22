@@ -5,7 +5,6 @@ import static java.lang.Boolean.TRUE;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Feed;
@@ -105,10 +104,17 @@ public class PopularFeedService {
 
     @Transactional(readOnly = true)
     public PopularFeedsGetResponse getPopularFeeds(User user) {
+        Long currentUserId = Optional.ofNullable(user)
+                .map(User::getUserId)
+                .orElse(null);
+
         List<PopularFeed> popularFeeds = Optional.ofNullable(user)
                 .map(u -> findPopularFeedsWithUser(u.getUserId()))
                 .orElseGet(this::findPopularFeedsWithoutUser);
-        List<PopularFeedGetResponse> popularFeedGetResponses = mapToPopularFeedGetResponseList(popularFeeds);
+
+        List<PopularFeedGetResponse> popularFeedGetResponses =
+                mapToPopularFeedGetResponseList(popularFeeds, currentUserId);
+
         return new PopularFeedsGetResponse(popularFeedGetResponses);
     }
 
@@ -120,8 +126,10 @@ public class PopularFeedService {
         return popularFeedRepository.findTop9ByOrderByPopularFeedIdDesc();
     }
 
-    private static List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(List<PopularFeed> popularFeeds) {
+    private static List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(List<PopularFeed> popularFeeds,
+                                                                                Long currentUserId) {
         return popularFeeds.stream()
+                .filter(pf -> pf.getFeed().isVisibleTo(currentUserId))
                 .map(PopularFeedGetResponse::of)
                 .toList();
     }

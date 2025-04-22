@@ -83,7 +83,7 @@ public class FeedService {
     public void createFeed(User user, FeedCreateRequest request) {
         Optional.ofNullable(request.novelId())
                 .ifPresent(novelService::getNovelOrException);
-        Feed feed = Feed.create(request.feedContent(), request.novelId(), request.isSpoiler(), user);
+        Feed feed = Feed.create(request, user);
         feedRepository.save(feed);
         feedCategoryService.createFeedCategory(feed, request.relevantCategories());
     }
@@ -94,7 +94,7 @@ public class FeedService {
         if (request.novelId() != null && feed.isNovelChanged(request.novelId())) {
             novelService.getNovelOrException(request.novelId());
         }
-        feed.updateFeed(request.feedContent(), request.isSpoiler(), request.novelId());
+        feed.updateFeed(request);
         feedCategoryService.updateFeedCategory(feed, request.relevantCategories());
     }
 
@@ -193,14 +193,25 @@ public class FeedService {
 
     @Transactional(readOnly = true)
     public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size) {
-        Slice<Feed> feeds = findFeedsByCategoryLabel(category == null ? DEFAULT_CATEGORY : category,
-                lastFeedId, user == null ? null : user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
+        Long userIdOrNull = Optional.ofNullable(user)
+                .map(User::getUserId)
+                .orElse(null);
 
-        List<FeedInfo> feedGetResponses = feeds.getContent().stream()
-                .map(feed -> createFeedInfo(feed, user)).toList();
+        Slice<Feed> feeds = findFeedsByCategoryLabel(getChosenCategoryOrDefault(category),
+                lastFeedId, userIdOrNull, PageRequest.of(DEFAULT_PAGE_NUMBER, size));
 
-        return FeedsGetResponse.of(category == null ? DEFAULT_CATEGORY : category, feeds.hasNext(),
-                feedGetResponses);
+        List<FeedInfo> feedGetResponses = feeds.getContent()
+                .stream()
+                .filter(feed -> feed.isVisibleTo(userIdOrNull))
+                .map(feed -> createFeedInfo(feed, user))
+                .toList();
+
+        return FeedsGetResponse.of(getChosenCategoryOrDefault(category), feeds.hasNext(), feedGetResponses);
+    }
+
+    private static String getChosenCategoryOrDefault(String category) {
+        return Optional.ofNullable(category)
+                .orElse(DEFAULT_CATEGORY);
     }
 
     public void createComment(User user, Long feedId, CommentCreateRequest request) {
@@ -322,6 +333,7 @@ public class FeedService {
                 .collect(Collectors.toMap(Avatar::getAvatarId, avatar -> avatar));
 
         List<InterestFeedGetResponse> interestFeedGetResponses = interestFeeds.stream()
+                .filter(feed -> feed.isVisibleTo(user.getUserId()))
                 .map(feed -> {
                     Novel novel = novelMap.get(feed.getNovelId());
                     Avatar avatar = avatarMap.get(feed.getUser().getAvatarId());
@@ -332,14 +344,15 @@ public class FeedService {
     }
 
     public NovelGetResponseFeedTab getFeedsByNovel(User user, Long novelId, Long lastFeedId, int size) {
-        Long userIdOrNull = user == null
-                ? null
-                : user.getUserId();
-
+        Long userIdOrNull = Optional.ofNullable(user)
+                .map(User::getUserId)
+                .orElse(null);
         Slice<Feed> feeds = feedRepository.findFeedsByNovelId(novelId, lastFeedId, userIdOrNull,
                 PageRequest.of(DEFAULT_PAGE_NUMBER, size));
 
-        List<FeedInfo> feedGetResponses = feeds.getContent().stream()
+        List<FeedInfo> feedGetResponses = feeds.getContent()
+                .stream()
+                .filter(feed -> feed.isVisibleTo(userIdOrNull))
                 .map(feed -> createFeedInfo(feed, user))
                 .toList();
 
@@ -349,15 +362,18 @@ public class FeedService {
     @Transactional(readOnly = true)
     public UserFeedsGetResponse getUserFeeds(User visitor, Long ownerId, Long lastFeedId, int size) {
         User owner = userService.getUserOrException(ownerId);
-        Long visitorId = visitor == null
-                ? null
-                : visitor.getUserId();
+        Long visitorId = Optional.ofNullable(visitor)
+                .map(User::getUserId)
+                .orElse(null);
 
         if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
-            List<Feed> feedsByNoOffsetPagination =
-                    feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size);
+            List<Feed> feeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size);
 
-            List<Long> novelIds = feedsByNoOffsetPagination.stream()
+            List<Feed> visibleFeeds = feeds.stream()
+                    .filter(feed -> feed.isVisibleTo(visitorId))
+                    .toList();
+
+            List<Long> novelIds = visibleFeeds.stream()
                     .map(Feed::getNovelId)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
@@ -365,12 +381,12 @@ public class FeedService {
                     .stream()
                     .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
 
-            List<UserFeedGetResponse> userFeedGetResponseList = feedsByNoOffsetPagination.stream()
+            List<UserFeedGetResponse> userFeedGetResponseList = visibleFeeds.stream()
                     .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId))
                     .toList();
 
             // TODO Slice의 hasNext()로 판단하도록 수정
-            Boolean isLoadable = feedsByNoOffsetPagination.size() == size;
+            Boolean isLoadable = feeds.size() == size;
 
             return UserFeedsGetResponse.of(isLoadable, userFeedGetResponseList);
         }

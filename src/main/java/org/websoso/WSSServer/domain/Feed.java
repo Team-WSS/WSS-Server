@@ -20,6 +20,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
+import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
+import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 
 @Getter
 @DynamicInsert
@@ -43,6 +45,9 @@ public class Feed {
 
     @Column(nullable = false)
     private Boolean isSpoiler;
+
+    @Column(columnDefinition = "Boolean default true", nullable = false)
+    private Boolean isPublic;
 
     @Column(nullable = false)
     private LocalDateTime createdDate;
@@ -69,23 +74,25 @@ public class Feed {
     @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private PopularFeed popularFeed;
 
-    private Feed(String feedContent, Long novelId, Boolean isSpoiler, User user) {
-        this.feedContent = feedContent;
-        this.novelId = novelId;
-        this.isSpoiler = isSpoiler;
+    private Feed(FeedCreateRequest request, User user) {
+        this.feedContent = request.feedContent();
+        this.novelId = request.novelId();
+        this.isSpoiler = request.isSpoiler();
+        this.isPublic = request.isPublic();
         this.user = user;
         this.createdDate = LocalDateTime.now();
         this.modifiedDate = this.createdDate;
     }
 
-    public static Feed create(String feedContent, Long novelId, Boolean isSpoiler, User user) {
-        return new Feed(feedContent, novelId, isSpoiler, user);
+    public static Feed create(FeedCreateRequest request, User user) {
+        return new Feed(request, user);
     }
 
-    public void updateFeed(String feedContent, Boolean isSpoiler, Long novelId) {
-        this.feedContent = feedContent;
-        this.isSpoiler = isSpoiler;
-        this.novelId = novelId;
+    public void updateFeed(FeedUpdateRequest request) {
+        this.feedContent = request.feedContent();
+        this.isSpoiler = request.isSpoiler();
+        this.isPublic = request.isPublic();
+        this.novelId = request.novelId();
         this.modifiedDate = LocalDateTime.now();
     }
 
@@ -102,6 +109,10 @@ public class Feed {
     }
 
     public boolean isMine(Long userId) {
-        return this.user.getUserId().equals(userId);
+        return this.getWriterId().equals(userId);
+    }
+
+    public boolean isVisibleTo(Long userId) {
+        return this.isPublic || this.isMine(userId);
     }
 }
