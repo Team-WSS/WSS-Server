@@ -20,7 +20,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
-import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 
 @Getter
@@ -74,18 +73,18 @@ public class Feed {
     @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private PopularFeed popularFeed;
 
-    private Feed(FeedCreateRequest request, User user) {
-        this.feedContent = request.feedContent();
-        this.novelId = request.novelId();
-        this.isSpoiler = request.isSpoiler();
-        this.isPublic = request.isPublic();
+    private Feed(String feedContent, Long novelId, Boolean isSpoiler, Boolean isPublic, User user) {
+        this.feedContent = feedContent;
+        this.novelId = novelId;
+        this.isSpoiler = isSpoiler;
+        this.isPublic = isPublic;
         this.user = user;
         this.createdDate = LocalDateTime.now();
         this.modifiedDate = this.createdDate;
     }
 
-    public static Feed create(FeedCreateRequest request, User user) {
-        return new Feed(request, user);
+    public static Feed create(String feedContent, Long novelId, Boolean isSpoiler, Boolean isPublic, User user) {
+        return new Feed(feedContent, novelId, isSpoiler, isPublic, user);
     }
 
     public void updateFeed(FeedUpdateRequest request) {
