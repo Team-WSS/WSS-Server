@@ -24,8 +24,8 @@ public record FeedGetResponse(
         List<String> relevantCategories,
         Boolean isSpoiler,
         Boolean isModified,
-        Boolean isMyFeed
-
+        Boolean isMyFeed,
+        Boolean isPublic
 ) {
     public static FeedGetResponse of(Feed feed, UserBasicInfo userBasicInfo, Novel novel, Boolean isLiked,
                                      List<String> relevantCategories, Boolean isMyFeed) {
@@ -60,7 +60,8 @@ public record FeedGetResponse(
                 relevantCategories,
                 feed.getIsSpoiler(),
                 !feed.getCreatedDate().equals(feed.getModifiedDate()),
-                isMyFeed
+                isMyFeed,
+                feed.getIsPublic()
         );
     }
 
@@ -70,5 +71,4 @@ public record FeedGetResponse(
         }
         return Math.round((novelRatingSum / (float) novelRatingCount) * 10) / 10.0f;
     }
-
 }
