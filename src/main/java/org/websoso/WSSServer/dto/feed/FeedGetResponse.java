@@ -71,5 +71,4 @@ public record FeedGetResponse(
         }
         return Math.round((novelRatingSum / (float) novelRatingCount) * 10) / 10.0f;
     }
-
 }
