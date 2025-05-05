@@ -26,7 +26,7 @@ public class FeedAccessValidator {
             return true;
         }
 
-        if (feed.getIsHidden()) {
+        if (feed.getIsHidden() || !feed.isVisibleTo(user.getUserId())) {
             throw new CustomFeedException(HIDDEN_FEED_ACCESS, "Cannot access hidden feed.");
         }
 
