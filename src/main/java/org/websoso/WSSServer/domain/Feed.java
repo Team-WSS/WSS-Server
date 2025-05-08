@@ -66,24 +66,29 @@ public class Feed {
     @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
+    @OneToMany(cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JoinColumn(name = "feed_id")
+    private List<FeedImage> images = new ArrayList<>();
+
     @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ReportedFeed> reportedFeeds = new ArrayList<>();
 
     @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private PopularFeed popularFeed;
 
-    private Feed(String feedContent, Long novelId, Boolean isSpoiler, Boolean isPublic, User user) {
+    private Feed(String feedContent, Long novelId, Boolean isSpoiler, Boolean isPublic, User user, List<FeedImage> images) {
         this.feedContent = feedContent;
         this.novelId = novelId;
         this.isSpoiler = isSpoiler;
         this.isPublic = isPublic;
         this.user = user;
+        this.images = images;
         this.createdDate = LocalDateTime.now();
         this.modifiedDate = this.createdDate;
     }
 
-    public static Feed create(String feedContent, Long novelId, Boolean isSpoiler, Boolean isPublic, User user) {
-        return new Feed(feedContent, novelId, isSpoiler, isPublic, user);
+    public static Feed create(String feedContent, Long novelId, Boolean isSpoiler, Boolean isPublic, User user, List<FeedImage> images) {
+        return new Feed(feedContent, novelId, isSpoiler, isPublic, user, images);
     }
 
     public void updateFeed(String feedContent, Boolean isSpoiler, Boolean isPublic, Long novelId) {

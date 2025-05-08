@@ -19,8 +19,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.FeedImage;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.Novel;
@@ -69,6 +71,7 @@ public class FeedService {
     private final BlockService blockService;
     private final LikeService likeService;
     private final PopularFeedService popularFeedService;
+    private final ImageUploadService imageUploadService;
     private final UserNovelRepository userNovelRepository;
     private final AvatarRepository avatarRepository;
     private final CommentService commentService;
@@ -80,7 +83,21 @@ public class FeedService {
     private final NotificationTypeRepository notificationTypeRepository;
     private final NotificationRepository notificationRepository;
 
-    public void createFeed(User user, FeedCreateRequest request) {
+    public void createFeed(User user, FeedCreateRequest request, List<MultipartFile> imageFiles) {
+        List<FeedImage> feedImages = new ArrayList<>();
+
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<String> imageUrls = imageFiles.stream()
+                    .map(imageUploadService::uploadFeedImage)
+                    .toList();
+
+            feedImages.add(FeedImage.createThumbnail(imageUrls.getFirst()));
+
+            for (int i = 1; i < imageUrls.size(); i++) {
+                feedImages.add(FeedImage.createCommon(imageUrls.get(i), i));
+            }
+        }
+
         Optional.ofNullable(request.novelId())
                 .ifPresent(novelService::getNovelOrException);
         Feed feed = Feed.create(
@@ -88,7 +105,8 @@ public class FeedService {
                 request.novelId(),
                 request.isSpoiler(),
                 request.isPublic(),
-                user);
+                user,
+                feedImages);
         feedRepository.save(feed);
         feedCategoryService.createFeedCategory(feed, request.relevantCategories());
     }

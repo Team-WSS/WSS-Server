@@ -11,15 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
@@ -33,6 +26,8 @@ import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.PopularFeedService;
 
+import java.util.List;
+
 @RequestMapping("/feeds")
 @RestController
 @RequiredArgsConstructor
@@ -44,8 +39,10 @@ public class FeedController {
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> createFeed(@AuthenticationPrincipal User user,
-                                           @Valid @RequestBody FeedCreateRequest request) {
-        feedService.createFeed(user, request);
+                                           @Valid @RequestPart("feed") FeedCreateRequest request,
+                                           @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+        validateImages(images);
+        feedService.createFeed(user, request, images);
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -209,5 +206,12 @@ public class FeedController {
         return ResponseEntity
                 .status(CREATED)
                 .build();
+    }
+
+    // TODO: DTO에서 검증할 예정입니다.
+    private void validateImages(List<MultipartFile> images) {
+        if (images != null && images.size() > 20) {
+            throw new IllegalArgumentException("이미지는 최대 20개 까지 업로드 가능합니다.");
+        }
     }
 }
