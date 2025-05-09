@@ -19,7 +19,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ImageUploadService {
+public class ImageService {
 
     private static final String FEED_UPLOAD_DIRECTORY = "feed/";
 

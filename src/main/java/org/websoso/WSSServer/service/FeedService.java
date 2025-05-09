@@ -64,7 +64,7 @@ public class FeedService {
     private final BlockService blockService;
     private final LikeService likeService;
     private final PopularFeedService popularFeedService;
-    private final ImageUploadService imageUploadService;
+    private final ImageService imageService;
     private final UserNovelRepository userNovelRepository;
     private final AvatarRepository avatarRepository;
     private final CommentService commentService;
@@ -82,7 +82,7 @@ public class FeedService {
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
             List<String> imageUrls = imageFiles.stream()
-                    .map(imageUploadService::uploadFeedImage)
+                    .map(imageService::uploadFeedImage)
                     .toList();
 
             feedImages.add(FeedImage.createThumbnail(imageUrls.getFirst()));
@@ -118,7 +118,7 @@ public class FeedService {
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
             List<String> imageUrls = imageFiles.stream()
-                    .map(imageUploadService::uploadFeedImage)
+                    .map(imageService::uploadFeedImage)
                     .toList();
 
             feedImages.add(FeedImage.createThumbnail(imageUrls.getFirst()));
