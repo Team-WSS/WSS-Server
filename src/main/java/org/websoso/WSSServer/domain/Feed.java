@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +69,7 @@ public class Feed {
 
     @OneToMany(cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "feed_id")
+    @OrderBy("sequence ASC")
     private List<FeedImage> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)

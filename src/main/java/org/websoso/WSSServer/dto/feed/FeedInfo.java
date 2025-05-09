@@ -3,6 +3,7 @@ package org.websoso.WSSServer.dto.feed;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.FeedImage;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
@@ -25,7 +26,9 @@ public record FeedInfo(
         Boolean isSpoiler,
         Boolean isModified,
         Boolean isMyFeed,
-        Boolean isPublic
+        Boolean isPublic,
+        String thumbnailUrl,
+        Integer imageCount
 ) {
     public static FeedInfo of(Feed feed, UserBasicInfo userBasicInfo, Novel novel, Boolean isLiked,
                               List<String> relevantCategories, Boolean isMyFeed) {
@@ -41,6 +44,17 @@ public record FeedInfo(
             novelRating = calculateNovelRating(
                     (float) userNovels.stream().map(UserNovel::getUserNovelRating).mapToDouble(d -> d).sum(),
                     novelRatingCount);
+        }
+
+        // TODO: 비효율적이기 때문에, Thumbnail과 이미지 개수를 불러오는 쿼리를 작성할 예정입니다.
+        List<FeedImage> images = feed.getImages();
+
+        String thumbnailUrl = "";
+        Integer imageCount = 0;
+
+        if (images != null && !images.isEmpty()) {
+            thumbnailUrl = images.get(0).getUrl();
+            imageCount = images.size();
         }
 
         return new FeedInfo(
@@ -61,7 +75,9 @@ public record FeedInfo(
                 feed.getIsSpoiler(),
                 !feed.getCreatedDate().equals(feed.getModifiedDate()),
                 isMyFeed,
-                feed.getIsPublic()
+                feed.getIsPublic(),
+                thumbnailUrl,
+                imageCount
         );
     }
 
