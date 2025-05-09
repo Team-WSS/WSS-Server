@@ -71,8 +71,10 @@ public class FeedController {
     @PreAuthorize("isAuthenticated() and @authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.domain.Feed))")
     public ResponseEntity<Void> updateFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId,
-                                           @Valid @RequestBody FeedUpdateRequest request) {
-        feedService.updateFeed(feedId, request);
+                                           @Valid @RequestPart("feed") FeedUpdateRequest request,
+                                           @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+        validateImages(images);
+        feedService.updateFeed(feedId, request, images);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

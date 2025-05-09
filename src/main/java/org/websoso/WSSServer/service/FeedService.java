@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -34,15 +35,7 @@ import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
-import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
-import org.websoso.WSSServer.dto.feed.FeedGetResponse;
-import org.websoso.WSSServer.dto.feed.FeedInfo;
-import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
-import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
-import org.websoso.WSSServer.dto.feed.InterestFeedGetResponse;
-import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
-import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
-import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.*;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
@@ -82,6 +75,7 @@ public class FeedService {
     private final FCMService fcmService;
     private final NotificationTypeRepository notificationTypeRepository;
     private final NotificationRepository notificationRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public void createFeed(User user, FeedCreateRequest request, List<MultipartFile> imageFiles) {
         List<FeedImage> feedImages = new ArrayList<>();
@@ -111,18 +105,41 @@ public class FeedService {
         feedCategoryService.createFeedCategory(feed, request.relevantCategories());
     }
 
-    public void updateFeed(Long feedId, FeedUpdateRequest request) {
+    public void updateFeed(Long feedId, FeedUpdateRequest request, List<MultipartFile> imageFiles) {
         Feed feed = getFeedOrException(feedId);
+
+        List<FeedImage> oldImages = new ArrayList<>(feed.getImages());
 
         if (request.novelId() != null && feed.isNovelChanged(request.novelId())) {
             novelService.getNovelOrException(request.novelId());
         }
+
+        List<FeedImage> feedImages = new ArrayList<>();
+
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<String> imageUrls = imageFiles.stream()
+                    .map(imageUploadService::uploadFeedImage)
+                    .toList();
+
+            feedImages.add(FeedImage.createThumbnail(imageUrls.getFirst()));
+
+            for (int i = 1; i < imageUrls.size(); i++) {
+                feedImages.add(FeedImage.createCommon(imageUrls.get(i), i));
+            }
+        }
+
         feed.updateFeed(
                 request.feedContent(),
                 request.isSpoiler(),
                 request.isPublic(),
-                request.novelId());
+                request.novelId(),
+                feedImages);
         feedCategoryService.updateFeedCategory(feed, request.relevantCategories());
+
+        List<String> oldImageUrls = oldImages.stream()
+                .map(FeedImage::getUrl)
+                .toList();
+        eventPublisher.publishEvent(new FeedImageDeleteEvent(oldImageUrls));
     }
 
     public void deleteFeed(Long feedId) {

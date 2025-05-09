@@ -91,11 +91,13 @@ public class Feed {
         return new Feed(feedContent, novelId, isSpoiler, isPublic, user, images);
     }
 
-    public void updateFeed(String feedContent, Boolean isSpoiler, Boolean isPublic, Long novelId) {
+    public void updateFeed(String feedContent, Boolean isSpoiler, Boolean isPublic, Long novelId, List<FeedImage> images) {
         this.feedContent = feedContent;
         this.isSpoiler = isSpoiler;
         this.isPublic = isPublic;
         this.novelId = novelId;
+        this.images.clear();
+        this.images.addAll(images);
         this.modifiedDate = LocalDateTime.now();
     }
 

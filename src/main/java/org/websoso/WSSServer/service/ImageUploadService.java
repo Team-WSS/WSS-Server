@@ -1,16 +1,22 @@
 package org.websoso.WSSServer.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.multipart.MultipartFile;
+import org.websoso.WSSServer.dto.feed.FeedImageDeleteEvent;
 import org.websoso.s3.core.S3FileService;
 import org.websoso.s3.modle.S3UploadResult;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.UUID;
 
 //TODO: Exception 수정해야함
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImageUploadService {
@@ -48,5 +54,22 @@ public class ImageUploadService {
         } catch (IOException e) {
             throw new IllegalArgumentException("이미지 업로드 중 오류가 발생했습니다.", e);
         }
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void deleteImages(FeedImageDeleteEvent event) {
+        for (String url : event.imageUrls()) {
+            try {
+                String key = extractS3Key(url);
+                s3FileService.delete(key);
+            } catch (Exception e) {
+                log.error("S3 이미지 삭제 실패. url = {}", url, e);
+            }
+        }
+    }
+
+    private String extractS3Key(String url) {
+        URI uri = URI.create(url);
+        return uri.getPath().substring(1);
     }
 }
