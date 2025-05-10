@@ -77,8 +77,9 @@ public class FeedService {
     private final NotificationRepository notificationRepository;
     private final ApplicationEventPublisher eventPublisher;
 
-    public void createFeed(User user, FeedCreateRequest request, List<MultipartFile> imageFiles) {
+    public void createFeed(User user, FeedCreateRequest request, FeedImageCreateRequest imagesRequest) {
         List<FeedImage> feedImages = new ArrayList<>();
+        List<MultipartFile> imageFiles = imagesRequest.images();
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
             List<String> imageUrls = imageFiles.stream()
@@ -105,7 +106,7 @@ public class FeedService {
         feedCategoryService.createFeedCategory(feed, request.relevantCategories());
     }
 
-    public void updateFeed(Long feedId, FeedUpdateRequest request, List<MultipartFile> imageFiles) {
+    public void updateFeed(Long feedId, FeedUpdateRequest request, FeedImageUpdateRequest imagesRequest) {
         Feed feed = getFeedOrException(feedId);
 
         List<FeedImage> oldImages = new ArrayList<>(feed.getImages());
@@ -115,6 +116,7 @@ public class FeedService {
         }
 
         List<FeedImage> feedImages = new ArrayList<>();
+        List<MultipartFile> imageFiles = imagesRequest.images();
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
             List<String> imageUrls = imageFiles.stream()

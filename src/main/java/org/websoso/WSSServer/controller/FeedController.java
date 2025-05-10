@@ -12,21 +12,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
-import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
-import org.websoso.WSSServer.dto.feed.FeedGetResponse;
-import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
-import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
-import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.*;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.PopularFeedService;
-
-import java.util.List;
 
 @RequestMapping("/feeds")
 @RestController
@@ -40,9 +33,8 @@ public class FeedController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> createFeed(@AuthenticationPrincipal User user,
                                            @Valid @RequestPart("feed") FeedCreateRequest request,
-                                           @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-        validateImages(images);
-        feedService.createFeed(user, request, images);
+                                           @Valid @ModelAttribute FeedImageCreateRequest requestImage) {
+        feedService.createFeed(user, request, requestImage);
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -72,9 +64,8 @@ public class FeedController {
     public ResponseEntity<Void> updateFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId,
                                            @Valid @RequestPart("feed") FeedUpdateRequest request,
-                                           @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-        validateImages(images);
-        feedService.updateFeed(feedId, request, images);
+                                           @Valid @ModelAttribute FeedImageUpdateRequest requestImage) {
+        feedService.updateFeed(feedId, request, requestImage);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -210,10 +201,4 @@ public class FeedController {
                 .build();
     }
 
-    // TODO: DTO에서 검증할 예정입니다.
-    private void validateImages(List<MultipartFile> images) {
-        if (images != null && images.size() > 20) {
-            throw new IllegalArgumentException("이미지는 최대 20개 까지 업로드 가능합니다.");
-        }
-    }
 }
