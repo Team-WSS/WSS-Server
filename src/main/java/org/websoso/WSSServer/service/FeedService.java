@@ -82,7 +82,7 @@ public class FeedService {
                     .map(imageService::uploadFeedImage)
                     .toList();
 
-            feedImages.add(FeedImage.createThumbnail(imageUrls.getFirst()));
+            feedImages.add(FeedImage.createThumbnail(imageUrls.get(0)));
 
             for (int i = 1; i < imageUrls.size(); i++) {
                 feedImages.add(FeedImage.createCommon(imageUrls.get(i), i));
@@ -119,7 +119,7 @@ public class FeedService {
                     .map(imageService::uploadFeedImage)
                     .toList();
 
-            feedImages.add(FeedImage.createThumbnail(imageUrls.getFirst()));
+            feedImages.add(FeedImage.createThumbnail(imageUrls.get(0)));
 
             for (int i = 1; i < imageUrls.size(); i++) {
                 feedImages.add(FeedImage.createCommon(imageUrls.get(i), i));
