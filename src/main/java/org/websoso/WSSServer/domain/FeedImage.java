@@ -24,6 +24,9 @@ public class FeedImage {
     @Column(columnDefinition = "tinyint", nullable = false)
     Integer sequence;
 
+    @Column(name = "feed_id", nullable = false)
+    Long feedId;
+
     private FeedImage(String url, FeedImageType feedImageType, int sequence) {
         this.url = url;
         this.feedImageType = feedImageType;

@@ -31,7 +31,7 @@ public record FeedInfo(
         Integer imageCount
 ) {
     public static FeedInfo of(Feed feed, UserBasicInfo userBasicInfo, Novel novel, Boolean isLiked,
-                              List<String> relevantCategories, Boolean isMyFeed) {
+                              List<String> relevantCategories, Boolean isMyFeed, String thumbnailUrl, Integer imageCount) {
         String title = null;
         Integer novelRatingCount = null;
         Float novelRating = null;
@@ -44,17 +44,6 @@ public record FeedInfo(
             novelRating = calculateNovelRating(
                     (float) userNovels.stream().map(UserNovel::getUserNovelRating).mapToDouble(d -> d).sum(),
                     novelRatingCount);
-        }
-
-        // TODO: 비효율적이기 때문에, Thumbnail과 이미지 개수를 불러오는 쿼리를 작성할 예정입니다.
-        List<FeedImage> images = feed.getImages();
-
-        String thumbnailUrl = "";
-        Integer imageCount = 0;
-
-        if (images != null && !images.isEmpty()) {
-            thumbnailUrl = images.get(0).getUrl();
-            imageCount = images.size();
         }
 
         return new FeedInfo(

@@ -42,12 +42,7 @@ import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
-import org.websoso.WSSServer.repository.AvatarRepository;
-import org.websoso.WSSServer.repository.FeedRepository;
-import org.websoso.WSSServer.repository.NotificationRepository;
-import org.websoso.WSSServer.repository.NotificationTypeRepository;
-import org.websoso.WSSServer.repository.NovelRepository;
-import org.websoso.WSSServer.repository.UserNovelRepository;
+import org.websoso.WSSServer.repository.*;
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +60,7 @@ public class FeedService {
     private final LikeService likeService;
     private final PopularFeedService popularFeedService;
     private final ImageService imageService;
+    private final FeedImageCustomRepository feedImageCustomRepository;
     private final UserNovelRepository userNovelRepository;
     private final AvatarRepository avatarRepository;
     private final CommentService commentService;
@@ -338,8 +334,11 @@ public class FeedService {
         Boolean isLiked = user != null && isUserLikedFeed(user, feed);
         List<String> relevantCategories = feedCategoryService.getRelevantCategoryNames(feed.getFeedCategories());
         Boolean isMyFeed = user != null && isUserFeedOwner(feed.getUser(), user);
+        FeedImageSummary feedImageSummary = feedImageCustomRepository.findFeedThumbnailAndImageCountByFeedId(feed.getFeedId());
+        String thumbnailUrl = feedImageSummary.thumbnailUrl();
+        Integer imageCount = feedImageSummary.imageCount();
 
-        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed);
+        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed, thumbnailUrl, imageCount);
     }
 
     private Slice<Feed> findFeedsByCategoryLabel(String category, Long lastFeedId, Long userId,
