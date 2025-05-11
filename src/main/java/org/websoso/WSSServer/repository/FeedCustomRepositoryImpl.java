@@ -69,7 +69,6 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .where(feedImage.feedId.eq(feedId))
                 .fetchOne();
 
-        // 결과 반환
         return new FeedImageSummary(thumbnailUrl, imageCount != null ? imageCount.intValue() : 0);
     }
 
