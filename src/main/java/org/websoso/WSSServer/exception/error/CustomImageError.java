@@ -1,11 +1,12 @@
 package org.websoso.WSSServer.exception.error;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.websoso.WSSServer.exception.common.ICustomError;
-
-import static org.springframework.http.HttpStatus.*;
 
 @Getter
 @AllArgsConstructor

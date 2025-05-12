@@ -1,5 +1,10 @@
 package org.websoso.WSSServer.service;
 
+import static org.websoso.WSSServer.exception.error.CustomImageError.EMPTY_IMAGE_FILE;
+import static org.websoso.WSSServer.exception.error.CustomImageError.IMAGE_FILE_IO;
+import static org.websoso.WSSServer.exception.error.CustomImageError.INVALID_IMAGE_FILE_NAME;
+import static org.websoso.WSSServer.exception.error.CustomImageError.UPLOAD_FAIL_FILE;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,8 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.UUID;
-
-import static org.websoso.WSSServer.exception.error.CustomImageError.*;
 
 @Slf4j
 @Service

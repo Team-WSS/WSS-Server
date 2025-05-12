@@ -2,7 +2,6 @@ package org.websoso.WSSServer.dto.feed;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedImage;
