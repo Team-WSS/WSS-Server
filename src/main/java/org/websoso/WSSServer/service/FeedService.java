@@ -35,14 +35,32 @@ import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
-import org.websoso.WSSServer.dto.feed.*;
+import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
+import org.websoso.WSSServer.dto.feed.FeedGetResponse;
+import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
+import org.websoso.WSSServer.dto.feed.FeedImageDeleteEvent;
+import org.websoso.WSSServer.dto.feed.FeedImageUpdateRequest;
+import org.websoso.WSSServer.dto.feed.FeedInfo;
+import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
+import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.InterestFeedGetResponse;
+import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
+import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
-import org.websoso.WSSServer.repository.*;
+import org.websoso.WSSServer.repository.AvatarRepository;
+import org.websoso.WSSServer.repository.FeedImageCustomRepository;
+import org.websoso.WSSServer.repository.FeedImageSummary;
+import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.repository.NotificationRepository;
+import org.websoso.WSSServer.repository.NotificationTypeRepository;
+import org.websoso.WSSServer.repository.NovelRepository;
+import org.websoso.WSSServer.repository.UserNovelRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -74,20 +92,7 @@ public class FeedService {
     private final ApplicationEventPublisher eventPublisher;
 
     public void createFeed(User user, FeedCreateRequest request, FeedImageCreateRequest imagesRequest) {
-        List<FeedImage> feedImages = new ArrayList<>();
-        List<MultipartFile> imageFiles = imagesRequest.images();
-
-        if (imageFiles != null && !imageFiles.isEmpty()) {
-            List<String> imageUrls = imageFiles.stream()
-                    .map(imageService::uploadFeedImage)
-                    .toList();
-
-            feedImages.add(FeedImage.createThumbnail(imageUrls.get(0)));
-
-            for (int i = 1; i < imageUrls.size(); i++) {
-                feedImages.add(FeedImage.createCommon(imageUrls.get(i), i));
-            }
-        }
+        List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
 
         Optional.ofNullable(request.novelId())
                 .ifPresent(novelService::getNovelOrException);
@@ -105,26 +110,13 @@ public class FeedService {
     public void updateFeed(Long feedId, FeedUpdateRequest request, FeedImageUpdateRequest imagesRequest) {
         Feed feed = getFeedOrException(feedId);
 
-        List<FeedImage> oldImages = new ArrayList<>(feed.getImages());
+        List<FeedImage> oldImages = feed.getImages();
 
         if (request.novelId() != null && feed.isNovelChanged(request.novelId())) {
             novelService.getNovelOrException(request.novelId());
         }
 
-        List<FeedImage> feedImages = new ArrayList<>();
-        List<MultipartFile> imageFiles = imagesRequest.images();
-
-        if (imageFiles != null && !imageFiles.isEmpty()) {
-            List<String> imageUrls = imageFiles.stream()
-                    .map(imageService::uploadFeedImage)
-                    .toList();
-
-            feedImages.add(FeedImage.createThumbnail(imageUrls.get(0)));
-
-            for (int i = 1; i < imageUrls.size(); i++) {
-                feedImages.add(FeedImage.createCommon(imageUrls.get(i), i));
-            }
-        }
+        List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
 
         feed.updateFeed(
                 request.feedContent(),
@@ -138,6 +130,24 @@ public class FeedService {
                 .map(FeedImage::getUrl)
                 .toList();
         eventPublisher.publishEvent(new FeedImageDeleteEvent(oldImageUrls));
+    }
+
+    private List<FeedImage> processFeedImages(List<MultipartFile> images) {
+        List<FeedImage> feedImages = new ArrayList<>();
+
+        if (images != null && !images.isEmpty()) {
+            List<String> imageUrls = images.stream()
+                    .map(imageService::uploadFeedImage)
+                    .toList();
+
+            feedImages.add(FeedImage.createThumbnail(imageUrls.get(0)));
+
+            for (int i = 1; i < imageUrls.size(); i++) {
+                feedImages.add(FeedImage.createCommon(imageUrls.get(i), i));
+            }
+        }
+
+        return feedImages;
     }
 
     public void deleteFeed(Long feedId) {
@@ -334,7 +344,8 @@ public class FeedService {
         Boolean isLiked = user != null && isUserLikedFeed(user, feed);
         List<String> relevantCategories = feedCategoryService.getRelevantCategoryNames(feed.getFeedCategories());
         Boolean isMyFeed = user != null && isUserFeedOwner(feed.getUser(), user);
-        FeedImageSummary feedImageSummary = feedImageCustomRepository.findFeedThumbnailAndImageCountByFeedId(feed.getFeedId());
+        FeedImageSummary feedImageSummary = feedImageCustomRepository.findFeedThumbnailAndImageCountByFeedId(
+                feed.getFeedId());
         String thumbnailUrl = feedImageSummary.thumbnailUrl();
         Integer imageCount = feedImageSummary.imageCount();
 
