@@ -37,16 +37,21 @@ public record FeedGetResponse(
         Float novelRating = null;
 
         if (novel != null) {
-            List<UserNovel> userNovels = novel.getUserNovels().stream().filter(un -> un.getUserNovelRating() > 0.0)
+            List<UserNovel> userNovels = novel.getUserNovels().stream()
+                    .filter(un -> un.getUserNovelRating() > 0.0)
                     .toList();
             title = novel.getTitle();
             novelRatingCount = userNovels.size();
             novelRating = calculateNovelRating(
-                    (float) userNovels.stream().map(UserNovel::getUserNovelRating).mapToDouble(d -> d).sum(),
+                    (float) userNovels.stream()
+                            .map(UserNovel::getUserNovelRating)
+                            .mapToDouble(d -> d).sum(),
                     novelRatingCount);
         }
 
-        List<String> imageUrls = feed.getImages().stream().map(FeedImage::getUrl).toList();
+        List<String> imageUrls = feed.getImages().stream()
+                .map(FeedImage::getUrl)
+                .toList();
 
         return new FeedGetResponse(
                 userBasicInfo.userId(),
