@@ -1,13 +1,10 @@
 package org.websoso.WSSServer.repository;
 
-
 import static org.websoso.WSSServer.domain.QFeed.feed;
 import static org.websoso.WSSServer.domain.QFeedImage.feedImage;
 import static org.websoso.WSSServer.domain.QLike.like;
 
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Objects;
@@ -15,7 +12,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Feed;
-import org.websoso.WSSServer.domain.QFeedImage;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.FeedImageType;
 
@@ -23,6 +19,7 @@ import org.websoso.WSSServer.domain.common.FeedImageType;
 @RequiredArgsConstructor
 public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImageCustomRepository {
 
+    private static final long NO_CURSOR = 0L;
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
@@ -73,7 +70,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     }
 
     private BooleanExpression ltFeedId(Long lastFeedId) {
-        if (lastFeedId == 0) {
+        if (lastFeedId == NO_CURSOR) {
             return null;
         }
         return feed.feedId.lt(lastFeedId);
