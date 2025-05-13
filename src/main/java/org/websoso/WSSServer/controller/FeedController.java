@@ -147,7 +147,8 @@ public class FeedController {
     }
 
     @PutMapping("/{feedId}/comments/{commentId}")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.domain.Feed))")
+    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user) "
+            + "and @authorizationService.validate(#commentId, #user, T(org.websoso.WSSServer.domain.Comment))")
     public ResponseEntity<Void> updateComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId,
@@ -159,7 +160,8 @@ public class FeedController {
     }
 
     @DeleteMapping("/{feedId}/comments/{commentId}")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.domain.Feed))")
+    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user) "
+            + "and @authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.domain.Comment))")
     public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId) {
