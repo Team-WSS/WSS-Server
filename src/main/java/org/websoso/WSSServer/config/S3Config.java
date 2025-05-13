@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.config;
 
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -38,13 +37,6 @@ public class S3Config {
     @Bean
     public S3FileService s3FileService() {
         return new S3FileService(s3Client(), bucket);
-    }
-
-    @PostConstruct
-    public void printKeys() {
-        log.info("AccessKey = " + accessKey);
-        log.info("SecretKey = " + secretKey);
-        log.info("Bucket = " + bucket);
     }
 
 }
