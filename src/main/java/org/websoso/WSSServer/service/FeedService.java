@@ -55,7 +55,7 @@ import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedImageCustomRepository;
-import org.websoso.WSSServer.repository.FeedImageSummary;
+import org.websoso.WSSServer.repository.FeedImageRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
@@ -90,6 +90,7 @@ public class FeedService {
     private final NotificationTypeRepository notificationTypeRepository;
     private final NotificationRepository notificationRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final FeedImageRepository feedImageRepository;
 
     public void createFeed(User user, FeedCreateRequest request, FeedImageCreateRequest imagesRequest) {
         List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
@@ -344,10 +345,9 @@ public class FeedService {
         Boolean isLiked = user != null && isUserLikedFeed(user, feed);
         List<String> relevantCategories = feedCategoryService.getRelevantCategoryNames(feed.getFeedCategories());
         Boolean isMyFeed = user != null && isUserFeedOwner(feed.getUser(), user);
-        FeedImageSummary feedImageSummary = feedImageCustomRepository.findFeedThumbnailAndImageCountByFeedId(
-                feed.getFeedId());
-        String thumbnailUrl = feedImageSummary.thumbnailUrl();
-        Integer imageCount = feedImageSummary.imageCount();
+        Integer imageCount = feedImageRepository.countByFeedId(feed.getFeedId());
+        FeedImage thumbnailImage = feedImageCustomRepository.findThumbnailFeedImagwByFeedId(feed.getFeedId());
+        String thumbnailUrl = thumbnailImage.getUrl();
 
         return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed, thumbnailUrl, imageCount);
     }
