@@ -8,6 +8,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -21,7 +22,7 @@ import org.websoso.WSSServer.domain.common.FeedImageType;
 public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImageCustomRepository {
 
     private static final long NO_CURSOR = 0L;
-    private static final int THUMBNAIL_IMAGE_COUNT = 0;
+    private static final int THUMBNAIL_IMAGE_COUNT = 1;
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
@@ -52,15 +53,16 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     }
 
     @Override
-    public FeedImage findThumbnailFeedImagwByFeedId(long feedId) {
-        return jpaQueryFactory
-                .select(feedImage)
-                .from(feedImage)
-                .where(feedImage.feedId.eq(feedId)
-                        .and(feedImage.feedImageType.eq(FeedImageType.FEED_THUMBNAIL)))
+    public Optional<FeedImage> findThumbnailFeedImageByFeedId(long feedId) {
+        return Optional.ofNullable(jpaQueryFactory
+                .selectFrom(feedImage)
+                .where(
+                        feedImage.feedId.eq(feedId),
+                        feedImage.feedImageType.eq(FeedImageType.FEED_THUMBNAIL)
+                )
                 .orderBy(feedImage.sequence.asc())
                 .limit(THUMBNAIL_IMAGE_COUNT)
-                .fetchOne();
+                .fetchOne());
     }
 
     private BooleanExpression ltFeedId(Long lastFeedId) {

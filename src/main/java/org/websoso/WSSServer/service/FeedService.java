@@ -346,8 +346,8 @@ public class FeedService {
         List<String> relevantCategories = feedCategoryService.getRelevantCategoryNames(feed.getFeedCategories());
         Boolean isMyFeed = user != null && isUserFeedOwner(feed.getUser(), user);
         Integer imageCount = feedImageRepository.countByFeedId(feed.getFeedId());
-        FeedImage thumbnailImage = feedImageCustomRepository.findThumbnailFeedImagwByFeedId(feed.getFeedId());
-        String thumbnailUrl = thumbnailImage.getUrl();
+        Optional<FeedImage> thumbnailImage = feedImageCustomRepository.findThumbnailFeedImageByFeedId(feed.getFeedId());
+        String thumbnailUrl = thumbnailImage.map(FeedImage::getUrl).orElse(null);
 
         return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed, thumbnailUrl, imageCount);
     }
