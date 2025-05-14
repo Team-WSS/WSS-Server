@@ -53,9 +53,7 @@ public class ImageService {
                     file.getContentType(),
                     file.getSize()
             );
-
-            // TODO: 라이브러리에서 메서드명이 잘못 매칭되었습니다. 라이브러리 수정시 리팩토링 예정입니다.
-            return result.message();
+            return result.url();
         } catch (IOException e) {
             throw new CustomImageException(IMAGE_FILE_IO, "이미지 파일을 읽는 중 오류가 발생했습니다. 파일이 손상되었거나 존재하지 않습니다.");
         } catch (Exception e) {
