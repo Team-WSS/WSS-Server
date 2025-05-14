@@ -15,12 +15,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.FeedImage;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.Novel;
@@ -34,6 +37,9 @@ import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
+import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
+import org.websoso.WSSServer.dto.feed.FeedImageDeleteEvent;
+import org.websoso.WSSServer.dto.feed.FeedImageUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedInfo;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
@@ -48,6 +54,8 @@ import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.AvatarRepository;
+import org.websoso.WSSServer.repository.FeedImageCustomRepository;
+import org.websoso.WSSServer.repository.FeedImageRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
@@ -69,6 +77,8 @@ public class FeedService {
     private final BlockService blockService;
     private final LikeService likeService;
     private final PopularFeedService popularFeedService;
+    private final ImageService imageService;
+    private final FeedImageCustomRepository feedImageCustomRepository;
     private final UserNovelRepository userNovelRepository;
     private final AvatarRepository avatarRepository;
     private final CommentService commentService;
@@ -79,8 +89,12 @@ public class FeedService {
     private final FCMService fcmService;
     private final NotificationTypeRepository notificationTypeRepository;
     private final NotificationRepository notificationRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final FeedImageRepository feedImageRepository;
 
-    public void createFeed(User user, FeedCreateRequest request) {
+    public void createFeed(User user, FeedCreateRequest request, FeedImageCreateRequest imagesRequest) {
+        List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
+
         Optional.ofNullable(request.novelId())
                 .ifPresent(novelService::getNovelOrException);
         Feed feed = Feed.create(
@@ -88,23 +102,53 @@ public class FeedService {
                 request.novelId(),
                 request.isSpoiler(),
                 request.isPublic(),
-                user);
+                user,
+                feedImages);
         feedRepository.save(feed);
         feedCategoryService.createFeedCategory(feed, request.relevantCategories());
     }
 
-    public void updateFeed(Long feedId, FeedUpdateRequest request) {
+    public void updateFeed(Long feedId, FeedUpdateRequest request, FeedImageUpdateRequest imagesRequest) {
         Feed feed = getFeedOrException(feedId);
+
+        List<FeedImage> oldImages = feed.getImages();
 
         if (request.novelId() != null && feed.isNovelChanged(request.novelId())) {
             novelService.getNovelOrException(request.novelId());
         }
+
+        List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
+
         feed.updateFeed(
                 request.feedContent(),
                 request.isSpoiler(),
                 request.isPublic(),
-                request.novelId());
+                request.novelId(),
+                feedImages);
         feedCategoryService.updateFeedCategory(feed, request.relevantCategories());
+
+        List<String> oldImageUrls = oldImages.stream()
+                .map(FeedImage::getUrl)
+                .toList();
+        eventPublisher.publishEvent(new FeedImageDeleteEvent(oldImageUrls));
+    }
+
+    private List<FeedImage> processFeedImages(List<MultipartFile> images) {
+        List<FeedImage> feedImages = new ArrayList<>();
+
+        if (images != null && !images.isEmpty()) {
+            List<String> imageUrls = images.stream()
+                    .map(imageService::uploadFeedImage)
+                    .toList();
+
+            feedImages.add(FeedImage.createThumbnail(imageUrls.get(0)));
+
+            for (int i = 1; i < imageUrls.size(); i++) {
+                feedImages.add(FeedImage.createCommon(imageUrls.get(i), i));
+            }
+        }
+
+        return feedImages;
     }
 
     public void deleteFeed(Long feedId) {
@@ -301,8 +345,11 @@ public class FeedService {
         Boolean isLiked = user != null && isUserLikedFeed(user, feed);
         List<String> relevantCategories = feedCategoryService.getRelevantCategoryNames(feed.getFeedCategories());
         Boolean isMyFeed = user != null && isUserFeedOwner(feed.getUser(), user);
+        Integer imageCount = feedImageRepository.countByFeedId(feed.getFeedId());
+        Optional<FeedImage> thumbnailImage = feedImageCustomRepository.findThumbnailFeedImageByFeedId(feed.getFeedId());
+        String thumbnailUrl = thumbnailImage.map(FeedImage::getUrl).orElse(null);
 
-        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed);
+        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed, thumbnailUrl, imageCount);
     }
 
     private Slice<Feed> findFeedsByCategoryLabel(String category, Long lastFeedId, Long userId,

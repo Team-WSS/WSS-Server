@@ -2,7 +2,9 @@ package org.websoso.WSSServer.dto.feed;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.FeedImage;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
@@ -25,7 +27,8 @@ public record FeedGetResponse(
         Boolean isSpoiler,
         Boolean isModified,
         Boolean isMyFeed,
-        Boolean isPublic
+        Boolean isPublic,
+        List<String> images
 ) {
     public static FeedGetResponse of(Feed feed, UserBasicInfo userBasicInfo, Novel novel, Boolean isLiked,
                                      List<String> relevantCategories, Boolean isMyFeed) {
@@ -34,14 +37,21 @@ public record FeedGetResponse(
         Float novelRating = null;
 
         if (novel != null) {
-            List<UserNovel> userNovels = novel.getUserNovels().stream().filter(un -> un.getUserNovelRating() > 0.0)
+            List<UserNovel> userNovels = novel.getUserNovels().stream()
+                    .filter(un -> un.getUserNovelRating() > 0.0)
                     .toList();
             title = novel.getTitle();
             novelRatingCount = userNovels.size();
             novelRating = calculateNovelRating(
-                    (float) userNovels.stream().map(UserNovel::getUserNovelRating).mapToDouble(d -> d).sum(),
+                    (float) userNovels.stream()
+                            .map(UserNovel::getUserNovelRating)
+                            .mapToDouble(d -> d).sum(),
                     novelRatingCount);
         }
+
+        List<String> imageUrls = feed.getImages().stream()
+                .map(FeedImage::getUrl)
+                .toList();
 
         return new FeedGetResponse(
                 userBasicInfo.userId(),
@@ -61,7 +71,8 @@ public record FeedGetResponse(
                 feed.getIsSpoiler(),
                 !feed.getCreatedDate().equals(feed.getModifiedDate()),
                 isMyFeed,
-                feed.getIsPublic()
+                feed.getIsPublic(),
+                imageUrls
         );
     }
 

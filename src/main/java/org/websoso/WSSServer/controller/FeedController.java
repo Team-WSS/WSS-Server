@@ -13,12 +13,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
@@ -26,6 +28,8 @@ import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
+import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
+import org.websoso.WSSServer.dto.feed.FeedImageUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
@@ -44,8 +48,9 @@ public class FeedController {
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> createFeed(@AuthenticationPrincipal User user,
-                                           @Valid @RequestBody FeedCreateRequest request) {
-        feedService.createFeed(user, request);
+                                           @Valid @RequestPart("feed") FeedCreateRequest request,
+                                           @Valid @ModelAttribute FeedImageCreateRequest requestImage) {
+        feedService.createFeed(user, request, requestImage);
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -74,8 +79,9 @@ public class FeedController {
     @PreAuthorize("isAuthenticated() and @authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.domain.Feed))")
     public ResponseEntity<Void> updateFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId,
-                                           @Valid @RequestBody FeedUpdateRequest request) {
-        feedService.updateFeed(feedId, request);
+                                           @Valid @RequestPart("feed") FeedUpdateRequest request,
+                                           @Valid @ModelAttribute FeedImageUpdateRequest requestImage) {
+        feedService.updateFeed(feedId, request, requestImage);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -212,4 +218,5 @@ public class FeedController {
                 .status(CREATED)
                 .build();
     }
+
 }
