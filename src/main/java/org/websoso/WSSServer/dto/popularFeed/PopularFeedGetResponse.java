@@ -7,7 +7,8 @@ public record PopularFeedGetResponse(
         String feedContent,
         Integer likeCount,
         Integer commentCount,
-        Boolean isSpoiler
+        Boolean isSpoiler,
+        Boolean isPublic
 ) {
 
     public static PopularFeedGetResponse of(PopularFeed popularFeed) {
@@ -16,7 +17,8 @@ public record PopularFeedGetResponse(
                 popularFeed.getFeed().getFeedContent(),
                 popularFeed.getFeed().getLikes().size(),
                 popularFeed.getFeed().getComments().size(),
-                popularFeed.getFeed().getIsSpoiler()
+                popularFeed.getFeed().getIsSpoiler(),
+                popularFeed.getFeed().getIsPublic()
         );
     }
 }

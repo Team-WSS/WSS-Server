@@ -3,6 +3,7 @@ package org.websoso.WSSServer.dto.feed;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.domain.FeedImage;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
@@ -24,11 +25,13 @@ public record FeedInfo(
         List<String> relevantCategories,
         Boolean isSpoiler,
         Boolean isModified,
-        Boolean isMyFeed
-
+        Boolean isMyFeed,
+        Boolean isPublic,
+        String thumbnailUrl,
+        Integer imageCount
 ) {
     public static FeedInfo of(Feed feed, UserBasicInfo userBasicInfo, Novel novel, Boolean isLiked,
-                              List<String> relevantCategories, Boolean isMyFeed) {
+                              List<String> relevantCategories, Boolean isMyFeed, String thumbnailUrl, Integer imageCount) {
         String title = null;
         Integer novelRatingCount = null;
         Float novelRating = null;
@@ -60,7 +63,10 @@ public record FeedInfo(
                 relevantCategories,
                 feed.getIsSpoiler(),
                 !feed.getCreatedDate().equals(feed.getModifiedDate()),
-                isMyFeed
+                isMyFeed,
+                feed.getIsPublic(),
+                thumbnailUrl,
+                imageCount
         );
     }
 

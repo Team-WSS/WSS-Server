@@ -12,6 +12,7 @@ public record InterestFeedGetResponse(
         String novelImage,
         Float novelRating,
         Long novelRatingCount,
+        Boolean isPublic,
         String nickname,
         String avatarImage,
         String feedContent
@@ -27,6 +28,7 @@ public record InterestFeedGetResponse(
                 novel.getNovelImage(),
                 novelRating,
                 novelRatingCount,
+                feed.getIsPublic(),
                 user.getNickname(),
                 avatar.getAvatarImage(),
                 feed.getFeedContent()
