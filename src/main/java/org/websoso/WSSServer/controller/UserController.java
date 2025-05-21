@@ -5,6 +5,7 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -147,14 +148,19 @@ public class UserController {
     @GetMapping("/{userId}/novels")
     public ResponseEntity<UserNovelAndNovelsGetResponse> getUserNovelsAndNovels(@AuthenticationPrincipal User visitor,
                                                                                 @PathVariable("userId") Long userId,
-                                                                                @RequestParam("readStatus") String readStatus,
+                                                                                @RequestParam(value = "isInterest", required = false) Boolean isInterest,
+                                                                                @RequestParam(value = "readStatuses", required = false) List<String> readStatuses,
+                                                                                @RequestParam(value = "attractivePoints", required = false) List<String> attractivePoints,
+                                                                                @RequestParam(value = "novelRating", required = false) Float novelRating,
+                                                                                @RequestParam(value = "query", required = false) String query,
                                                                                 @RequestParam("lastUserNovelId") Long lastUserNovelId,
                                                                                 @RequestParam("size") int size,
                                                                                 @RequestParam("sortType") String sortType) {
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserNovelsAndNovels(
-                        visitor, userId, readStatus, lastUserNovelId, size, sortType));
+                        visitor, userId, isInterest, readStatuses, attractivePoints, novelRating, query,
+                        lastUserNovelId, size, sortType));
     }
 
     @GetMapping("/{userId}/feeds")
