@@ -141,7 +141,7 @@ public class NovelService {
             try {
                 userNovel = userNovelService.createUserNovelByInterest(user, novel);
             } catch (DataIntegrityViolationException e) {
-                userNovel = userNovelService.getUserNovelOrException(user, novel);
+                userNovel = userNovelService.getUserNovelOrException(user, novelId);
             }
         }
 
