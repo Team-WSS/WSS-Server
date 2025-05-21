@@ -1,24 +1,20 @@
 package org.websoso.WSSServer.dto.userNovel;
 
-import org.websoso.WSSServer.domain.UserNovel;
+import java.util.List;
 
 public record UserNovelAndNovelGetResponse(
         Long userNovelId,
         Long novelId,
-        String author,
-        String novelImage,
         String title,
-        Float novelRating
+        String novelImage,
+        Float novelRating,
+        String readStatus,
+        Boolean isInterest,
+        Float userNovelRating,
+        List<String> attractivePoints,
+        String startDate,
+        String endDate,
+        List<String> keywords,
+        List<String> myFeeds
 ) {
-
-    public static UserNovelAndNovelGetResponse of(UserNovel userNovel) {
-        return new UserNovelAndNovelGetResponse(
-                userNovel.getUserNovelId(),
-                userNovel.getNovel().getNovelId(),
-                userNovel.getNovel().getAuthor(),
-                userNovel.getNovel().getNovelImage(),
-                userNovel.getNovel().getTitle(),
-                userNovel.getUserNovelRating()
-        );
-    }
 }
