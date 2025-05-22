@@ -10,6 +10,7 @@ import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
 import java.util.List;
@@ -155,5 +156,74 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .distinct()
                 .limit(10)
                 .toList();
+    }
+
+    @Override
+    public List<UserNovel> findFilteredUserNovels(Long userId, Boolean isInterest, List<String> readStatuses,
+                                                  List<String> attractivePoints, Float novelRating, String query,
+                                                  Long lastUserNovelId, int size, boolean isAscending) {
+        JPAQuery<UserNovel> queryBuilder = jpaQueryFactory
+                .selectFrom(userNovel)
+                .join(userNovel.novel, novel).fetchJoin()
+                .where(userNovel.user.userId.eq(userId));
+
+        if (isInterest != null) {
+            queryBuilder.where(userNovel.isInterest.eq(isInterest));
+        }
+        if (readStatuses != null && !readStatuses.isEmpty()) {
+            List<ReadStatus> statusEnums = readStatuses.stream()
+                    .map(ReadStatus::valueOf)
+                    .toList();
+            queryBuilder.where(userNovel.status.in(statusEnums));
+        }
+        if (attractivePoints != null && !attractivePoints.isEmpty()) {
+            queryBuilder.where(
+                    userNovel.userNovelAttractivePoints.any().attractivePoint.attractivePointName.in(attractivePoints));
+        }
+        if (novelRating != null) {
+            queryBuilder.where(userNovel.userNovelRating.goe(novelRating));
+        }
+        if (query != null && !query.isBlank()) {
+            queryBuilder.where(novel.title.containsIgnoreCase(query).or(novel.author.containsIgnoreCase(query)));
+        }
+        if (isAscending) {
+            queryBuilder.where(userNovel.userNovelId.gt(lastUserNovelId));
+        } else {
+            queryBuilder.where(userNovel.userNovelId.lt(lastUserNovelId));
+        }
+        queryBuilder.orderBy(isAscending ? userNovel.userNovelId.asc() : userNovel.userNovelId.desc()).limit(size);
+
+        return queryBuilder.fetch();
+    }
+
+    @Override
+    public Long countByUserIdAndFilters(Long userId, Boolean isInterest, List<String> readStatuses,
+                                        List<String> attractivePoints, Float novelRating, String query) {
+        JPAQuery<Long> queryBuilder = jpaQueryFactory
+                .select(userNovel.count())
+                .from(userNovel)
+                .join(userNovel.novel, novel)
+                .where(userNovel.user.userId.eq(userId));
+
+        if (isInterest != null) {
+            queryBuilder.where(userNovel.isInterest.eq(isInterest));
+        }
+        if (readStatuses != null && !readStatuses.isEmpty()) {
+            List<ReadStatus> statusEnums = readStatuses.stream()
+                    .map(ReadStatus::valueOf)
+                    .toList();
+            queryBuilder.where(userNovel.status.in(statusEnums));
+        }
+        if (attractivePoints != null && !attractivePoints.isEmpty()) {
+            queryBuilder.where(
+                    userNovel.userNovelAttractivePoints.any().attractivePoint.attractivePointName.in(attractivePoints));
+        }
+        if (novelRating != null) {
+            queryBuilder.where(userNovel.userNovelRating.goe(novelRating));
+        }
+        if (query != null && !query.isBlank()) {
+            queryBuilder.where(novel.title.containsIgnoreCase(query).or(novel.author.containsIgnoreCase(query)));
+        }
+        return queryBuilder.fetchOne();
     }
 }

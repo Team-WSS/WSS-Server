@@ -20,4 +20,11 @@ public interface UserNovelCustomRepository {
     List<UserNovel> findByUserAndReadStatus(User owner, String readStatus);
 
     List<Novel> findTasteNovels(List<Genre> preferGenres);
+
+    List<UserNovel> findFilteredUserNovels(Long userId, Boolean isInterest, List<String> readStatuses,
+                                           List<String> attractivePoints, Float novelRating, String query,
+                                           Long lastNovelId, int size, boolean isAscending);
+
+    Long countByUserIdAndFilters(Long userId, Boolean isInterest, List<String> readStatuses,
+                                 List<String> attractivePoints, Float novelRating, String query);
 }
