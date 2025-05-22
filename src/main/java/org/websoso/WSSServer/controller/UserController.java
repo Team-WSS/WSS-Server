@@ -170,7 +170,9 @@ public class UserController {
                                                              @RequestParam("sortCriteria") SortCriteria sortCriteria) {
         return ResponseEntity
                 .status(OK)
-                .body(feedService.getUserFeeds(visitor, userId, lastFeedId, size));
+                // ToDo: isVisible -> isPublic으로 수정
+                .body(feedService.getUserFeeds(visitor, userId, lastFeedId, size, isVisible, isUnVisible, genreNames,
+                        sortCriteria));
     }
 
     @GetMapping("/{userId}/preferences/genres")

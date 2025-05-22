@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedImage;
+import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.Novel;
@@ -32,6 +33,7 @@ import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
+import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
@@ -91,6 +93,7 @@ public class FeedService {
     private final NotificationRepository notificationRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final FeedImageRepository feedImageRepository;
+    private final GenreService genreService;
 
     public void createFeed(User user, FeedCreateRequest request, FeedImageCreateRequest imagesRequest) {
         List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
@@ -416,14 +419,21 @@ public class FeedService {
     }
 
     @Transactional(readOnly = true)
-    public UserFeedsGetResponse getUserFeeds(User visitor, Long ownerId, Long lastFeedId, int size) {
+    public UserFeedsGetResponse getUserFeeds(User visitor, Long ownerId, Long lastFeedId, int size, boolean isVisible,
+                                             boolean isUnVisible, List<String> genreNames,
+                                             SortCriteria sortCriteria) {
         User owner = userService.getUserOrException(ownerId);
         Long visitorId = Optional.ofNullable(visitor)
                 .map(User::getUserId)
                 .orElse(null);
 
         if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
-            List<Feed> feeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size);
+            List<Genre> genres = genreNames.stream()
+                    .map(genreService::getGenreOrException)
+                    .toList();
+
+            List<Feed> feeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size, isVisible,
+                    isUnVisible, sortCriteria);
 
             List<Feed> visibleFeeds = feeds.stream()
                     .filter(feed -> feed.isVisibleTo(visitorId))

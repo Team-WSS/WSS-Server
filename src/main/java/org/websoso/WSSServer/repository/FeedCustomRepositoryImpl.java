@@ -4,6 +4,8 @@ import static org.websoso.WSSServer.domain.QFeed.feed;
 import static org.websoso.WSSServer.domain.QFeedImage.feedImage;
 import static org.websoso.WSSServer.domain.QLike.like;
 
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -16,6 +18,7 @@ import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedImage;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.FeedImageType;
+import org.websoso.WSSServer.domain.common.SortCriteria;
 
 @Repository
 @RequiredArgsConstructor
@@ -40,14 +43,19 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     }
 
     @Override
-    public List<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size) {
+    public List<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size, boolean isVisible,
+                                                    boolean isUnVisible, SortCriteria sortCriteria) {
         return jpaQueryFactory
                 .selectFrom(feed)
                 .where(
                         feed.user.eq(owner),
-                        ltFeedId(lastFeedId)
+                        ltFeedId(lastFeedId),
+                        eqVisible(isVisible),
+                        eqUnVisible(isUnVisible)
                 )
-                .orderBy(feed.feedId.desc())
+                .orderBy(
+                        checkSortCriteria(sortCriteria),
+                        feed.feedId.desc())
                 .limit(size)
                 .fetch();
     }
@@ -70,5 +78,20 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
             return null;
         }
         return feed.feedId.lt(lastFeedId);
+    }
+
+    private BooleanExpression eqVisible(boolean isVisible) {
+        return feed.isPublic.eq(isVisible);
+    }
+
+    private BooleanExpression eqUnVisible(boolean isUnVisible) {
+        return feed.isPublic.eq(isUnVisible);
+    }
+
+    private OrderSpecifier<?> checkSortCriteria(SortCriteria sortCriteria) {
+        if (sortCriteria.equals(SortCriteria.OLD)) {
+            return new OrderSpecifier<>(Order.ASC, feed.createdDate);
+        }
+        return new OrderSpecifier<>(Order.DESC, feed.createdDate);
     }
 }
