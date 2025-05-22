@@ -453,8 +453,9 @@ public class FeedService {
 
             // TODO Slice의 hasNext()로 판단하도록 수정
             Boolean isLoadable = feeds.size() == size;
+            int feedsCount = visibleFeeds.size();
 
-            return UserFeedsGetResponse.of(isLoadable, userFeedGetResponseList);
+            return UserFeedsGetResponse.of(isLoadable, feedsCount, userFeedGetResponseList);
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
