@@ -5,6 +5,7 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.notification.PushSettingRequest;
@@ -161,7 +163,11 @@ public class UserController {
     public ResponseEntity<UserFeedsGetResponse> getUserFeeds(@AuthenticationPrincipal User visitor,
                                                              @PathVariable("userId") Long userId,
                                                              @RequestParam("lastFeedId") Long lastFeedId,
-                                                             @RequestParam("size") int size) {
+                                                             @RequestParam("size") int size,
+                                                             @RequestParam("isVisible") boolean isVisible,
+                                                             @RequestParam("isUnVisible") boolean isUnVisible,
+                                                             @RequestParam("genreNames") List<String> genreNames,
+                                                             @RequestParam("sortCriteria") SortCriteria sortCriteria) {
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getUserFeeds(visitor, userId, lastFeedId, size));
