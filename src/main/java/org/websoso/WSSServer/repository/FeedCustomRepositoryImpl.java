@@ -2,7 +2,10 @@ package org.websoso.WSSServer.repository;
 
 import static org.websoso.WSSServer.domain.QFeed.feed;
 import static org.websoso.WSSServer.domain.QFeedImage.feedImage;
+import static org.websoso.WSSServer.domain.QGenre.genre;
 import static org.websoso.WSSServer.domain.QLike.like;
+import static org.websoso.WSSServer.domain.QNovel.novel;
+import static org.websoso.WSSServer.domain.QNovelGenre.novelGenre;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -16,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedImage;
+import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.FeedImageType;
 import org.websoso.WSSServer.domain.common.SortCriteria;
@@ -44,14 +48,19 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
 
     @Override
     public List<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size, boolean isVisible,
-                                                    boolean isUnVisible, SortCriteria sortCriteria) {
+                                                    boolean isUnVisible, SortCriteria sortCriteria,
+                                                    List<Genre> genres) {
         return jpaQueryFactory
                 .selectFrom(feed)
+                .join(novel).on(feed.novelId.eq(novel.novelId))
+                .join(novelGenre).on(novel.eq(novelGenre.novel))
+                .join(genre).on(novelGenre.genre.eq(genre))
                 .where(
                         feed.user.eq(owner),
                         ltFeedId(lastFeedId),
                         eqVisible(isVisible),
-                        eqUnVisible(isUnVisible)
+                        eqUnVisible(isUnVisible),
+                        genre.in(genres)
                 )
                 .orderBy(
                         checkSortCriteria(sortCriteria),

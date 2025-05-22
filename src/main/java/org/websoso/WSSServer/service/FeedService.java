@@ -433,7 +433,7 @@ public class FeedService {
                     .toList();
 
             List<Feed> feeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size, isVisible,
-                    isUnVisible, sortCriteria);
+                    isUnVisible, sortCriteria, genres);
 
             List<Feed> visibleFeeds = feeds.stream()
                     .filter(feed -> feed.isVisibleTo(visitorId))
