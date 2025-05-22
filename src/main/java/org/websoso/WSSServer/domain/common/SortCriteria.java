@@ -1,8 +1,8 @@
 package org.websoso.WSSServer.domain.common;
 
-import static org.websoso.WSSServer.exception.error.CustomSortCriteriaError.SORT_CRITERIA_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomFilteringError.SORT_CRITERIA_NOT_FOUND;
 
-import org.websoso.WSSServer.exception.exception.CustomSortCriteriaException;
+import org.websoso.WSSServer.exception.exception.CustomFilteringException;
 
 public enum SortCriteria {
     RECENT,
@@ -14,7 +14,7 @@ public enum SortCriteria {
                 return value;
             }
         }
-        throw new CustomSortCriteriaException(SORT_CRITERIA_NOT_FOUND,
+        throw new CustomFilteringException(SORT_CRITERIA_NOT_FOUND,
                 "given sort criteria does not exist");
     }
 }
