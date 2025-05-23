@@ -368,7 +368,8 @@ public class FeedService {
         Optional<FeedImage> thumbnailImage = feedImageCustomRepository.findThumbnailFeedImageByFeedId(feed.getFeedId());
         String thumbnailUrl = thumbnailImage.map(FeedImage::getUrl).orElse(null);
 
-        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed, thumbnailUrl, imageCount);
+        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed, thumbnailUrl, imageCount,
+                user);
     }
 
     private Slice<Feed> findFeedsByCategoryLabel(String category, Long lastFeedId, Long userId,
