@@ -74,7 +74,7 @@ public class FeedController {
                                                      @RequestParam("feedsOption") FeedGetOption feedGetOption) {
         return ResponseEntity
                 .status(OK)
-                .body(feedService.getFeeds(user, category, lastFeedId, size));
+                .body(feedService.getFeeds(user, category, lastFeedId, size, feedGetOption));
     }
 
     @PutMapping("/{feedId}")

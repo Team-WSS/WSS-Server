@@ -25,6 +25,7 @@ import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedImage;
 import org.websoso.WSSServer.domain.Genre;
+import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.Novel;
@@ -32,6 +33,7 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
+import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
@@ -59,6 +61,7 @@ import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedImageCustomRepository;
 import org.websoso.WSSServer.repository.FeedImageRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
@@ -94,6 +97,7 @@ public class FeedService {
     private final ApplicationEventPublisher eventPublisher;
     private final FeedImageRepository feedImageRepository;
     private final GenreService genreService;
+    private final GenrePreferenceRepository genrePreferenceRepository;
 
     public void createFeed(User user, FeedCreateRequest request, FeedImageCreateRequest imagesRequest) {
         List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
@@ -248,13 +252,16 @@ public class FeedService {
     }
 
     @Transactional(readOnly = true)
-    public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size) {
+    public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size,
+                                     FeedGetOption feedGetOption) {
         Long userIdOrNull = Optional.ofNullable(user)
                 .map(User::getUserId)
                 .orElse(null);
 
+        List<Genre> genres = getPreferenceGenres(user);
+
         Slice<Feed> feeds = findFeedsByCategoryLabel(getChosenCategoryOrDefault(category),
-                lastFeedId, userIdOrNull, PageRequest.of(DEFAULT_PAGE_NUMBER, size));
+                lastFeedId, userIdOrNull, PageRequest.of(DEFAULT_PAGE_NUMBER, size), feedGetOption, genres);
 
         List<FeedInfo> feedGetResponses = feeds.getContent()
                 .stream()
@@ -263,6 +270,15 @@ public class FeedService {
                 .toList();
 
         return FeedsGetResponse.of(getChosenCategoryOrDefault(category), feeds.hasNext(), feedGetResponses);
+    }
+
+    private List<Genre> getPreferenceGenres(User user) {
+        if (user == null) {
+            return null;
+        }
+        return genrePreferenceRepository.findByUser(user).stream()
+                .map(GenrePreference::getGenre)
+                .toList();
     }
 
     private static String getChosenCategoryOrDefault(String category) {
@@ -356,11 +372,22 @@ public class FeedService {
     }
 
     private Slice<Feed> findFeedsByCategoryLabel(String category, Long lastFeedId, Long userId,
-                                                 PageRequest pageRequest) {
+                                                 PageRequest pageRequest, FeedGetOption feedGetOption,
+                                                 List<Genre> genres) {
         if (category.equals(DEFAULT_CATEGORY)) {
-            return (feedRepository.findFeeds(lastFeedId, userId, pageRequest));
+            if (feedGetOption.equals(FeedGetOption.ALL)) {
+                return feedRepository.findFeeds(lastFeedId, userId, pageRequest);
+            } else {
+                return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, genres);
+            }
+        } else {
+            if (feedGetOption.equals(FeedGetOption.ALL)) {
+                return feedCategoryService.getFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest);
+            } else {
+                return feedCategoryService.getRecommendedFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest,
+                        genres);
+            }
         }
-        return feedCategoryService.getFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest);
     }
 
     public InterestFeedsGetResponse getInterestFeeds(User user) {

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Category;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedCategory;
+import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.exception.exception.CustomCategoryException;
 import org.websoso.WSSServer.repository.FeedCategoryRepository;
 
@@ -69,6 +70,13 @@ public class FeedCategoryService {
                                                PageRequest pageRequest) {
         return feedcategoryRepository.findFeedsByCategory(categoryservice.getCategory(category), lastFeedId,
                 userId, pageRequest);
+    }
+
+    @Transactional(readOnly = true)
+    public Slice<Feed> getRecommendedFeedsByCategoryLabel(String category, Long lastFeedId, Long userId,
+                                                          PageRequest pageRequest, List<Genre> genres) {
+        return feedcategoryRepository.findRecommendedFeedsByCategoryLabel(categoryservice.getCategory(category),
+                lastFeedId, userId, pageRequest, genres);
     }
 
 }
