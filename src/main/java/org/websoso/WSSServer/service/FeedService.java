@@ -242,13 +242,13 @@ public class FeedService {
     @Transactional(readOnly = true)
     public FeedGetResponse getFeedById(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
-        UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
+        UserBasicInfo feedUserBasicInfo = getUserBasicInfo(feed.getUser());
         Novel novel = getLinkedNovelOrNull(feed.getNovelId());
         Boolean isLiked = isUserLikedFeed(user, feed);
         List<String> relevantCategories = feedCategoryService.getRelevantCategoryNames(feed.getFeedCategories());
         Boolean isMyFeed = isUserFeedOwner(feed.getUser(), user);
 
-        return FeedGetResponse.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed);
+        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, relevantCategories, isMyFeed, user);
     }
 
     @Transactional(readOnly = true)

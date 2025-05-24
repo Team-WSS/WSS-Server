@@ -2,10 +2,10 @@ package org.websoso.WSSServer.dto.feed;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedImage;
 import org.websoso.WSSServer.domain.Novel;
+import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 
@@ -28,13 +28,23 @@ public record FeedGetResponse(
         Boolean isModified,
         Boolean isMyFeed,
         Boolean isPublic,
-        List<String> images
+        List<String> images,
+        String novelThumbnailImage,
+        String novelGenre,
+        String novelAuthor,
+        Float userNovelRating,
+        String novelDescription
 ) {
-    public static FeedGetResponse of(Feed feed, UserBasicInfo userBasicInfo, Novel novel, Boolean isLiked,
-                                     List<String> relevantCategories, Boolean isMyFeed) {
+    public static FeedGetResponse of(Feed feed, UserBasicInfo feedUserBasicInfo, Novel novel, Boolean isLiked,
+                                     List<String> relevantCategories, Boolean isMyFeed, User user) {
         String title = null;
         Integer novelRatingCount = null;
         Float novelRating = null;
+        String novelThumbnailImage = null;
+        String novelGenre = null;
+        String novelAuthor = null;
+        Float userNovelRating = null;
+        String novelDescription = null;
 
         if (novel != null) {
             List<UserNovel> userNovels = novel.getUserNovels().stream()
@@ -47,6 +57,11 @@ public record FeedGetResponse(
                             .map(UserNovel::getUserNovelRating)
                             .mapToDouble(d -> d).sum(),
                     novelRatingCount);
+            novelThumbnailImage = novel.getNovelImage();
+            novelGenre = novel.getNovelGenres().getFirst().getGenre().getGenreName();
+            novelAuthor = novel.getAuthor();
+            userNovelRating = getUserNovelRating(novel, user.getUserId());
+            novelDescription = novel.getNovelDescription();
         }
 
         List<String> imageUrls = feed.getImages().stream()
@@ -54,9 +69,9 @@ public record FeedGetResponse(
                 .toList();
 
         return new FeedGetResponse(
-                userBasicInfo.userId(),
-                userBasicInfo.nickname(),
-                userBasicInfo.avatarImage(),
+                feedUserBasicInfo.userId(),
+                feedUserBasicInfo.nickname(),
+                feedUserBasicInfo.avatarImage(),
                 feed.getFeedId(),
                 feed.getCreatedDate().format(DateTimeFormatter.ofPattern("M월 d일")),
                 feed.getFeedContent(),
@@ -72,7 +87,12 @@ public record FeedGetResponse(
                 !feed.getCreatedDate().equals(feed.getModifiedDate()),
                 isMyFeed,
                 feed.getIsPublic(),
-                imageUrls
+                imageUrls,
+                novelThumbnailImage,
+                novelGenre,
+                novelAuthor,
+                userNovelRating,
+                novelDescription
         );
     }
 
@@ -81,5 +101,18 @@ public record FeedGetResponse(
             return 0.0f;
         }
         return Math.round((novelRatingSum / (float) novelRatingCount) * 10) / 10.0f;
+    }
+
+    private static Float getUserNovelRating(Novel novel, Long visitorId) {
+        if (novel == null) {
+            return null;
+        }
+
+        return novel.getUserNovels()
+                .stream()
+                .filter(userNovel -> userNovel.getUser().getUserId().equals(visitorId))
+                .findFirst()
+                .map(UserNovel::getUserNovelRating)
+                .orElse(null);
     }
 }
