@@ -111,7 +111,7 @@ public class FeedService {
     public void updateFeed(Long feedId, FeedUpdateRequest request, FeedImageUpdateRequest imagesRequest) {
         Feed feed = getFeedOrException(feedId);
 
-        List<FeedImage> oldImages = feed.getImages();
+        List<FeedImage> oldImages = new ArrayList<>(feed.getImages());
 
         if (request.novelId() != null && feed.isNovelChanged(request.novelId())) {
             novelService.getNovelOrException(request.novelId());
