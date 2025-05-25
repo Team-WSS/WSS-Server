@@ -38,4 +38,8 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Feed f SET f.user.userId = -1 WHERE f.user.userId = :userId")
     void updateUserToUnknown(Long userId);
+
+    List<Feed> findByUserUserIdAndNovelIdAndIsHiddenFalse(Long userId, Long novelId);
+
+    List<Feed> findByUserUserIdAndNovelIdAndIsHiddenFalseAndIsPublicTrueAndIsSpoilerFalse(Long userId, Long novelId);
 }
