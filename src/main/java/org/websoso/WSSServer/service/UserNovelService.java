@@ -276,8 +276,8 @@ public class UserNovelService {
                             userNovel.getNovel(), 0.0f);
                     Float novelRatingAvg = novelRatingCount == 0
                             ? 0.0f
-                            : Math.round(userNovelRepository.sumUserNovelRatingByNovel(userNovel.getNovel())
-                                    / novelRatingCount * 10.0f) / 10.0f;
+                            : roundToFirstDecimal(userNovelRepository.sumUserNovelRatingByNovel(userNovel.getNovel())
+                                    / novelRatingCount);
                     List<String> feeds = feedMap.getOrDefault(novelId, List.of());
                     return UserNovelAndNovelGetResponse.from(userNovel, novelRatingAvg, feeds);
                 })
