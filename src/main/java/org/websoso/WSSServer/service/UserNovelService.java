@@ -267,21 +267,19 @@ public class UserNovelService {
 
     private List<UserNovelAndNovelGetResponse> buildUserNovelAndNovelGetResponses(List<UserNovel> userNovels,
                                                                                   Long ownerId, boolean isOwner) {
-        Map<Long, Float> novelRatingMap = userNovelRepository.findAverageRatingsForNovels(
-                userNovels.stream()
-                        .map(un -> un.getNovel().getNovelId())
-                        .toList()
-        );
-
         Map<Long, List<String>> feedMap = getFeedsGroupedByNovel(userNovels, ownerId, isOwner);
 
         return userNovels.stream()
                 .map(userNovel -> {
                     Long novelId = userNovel.getNovel().getNovelId();
-                    Float novelRatingRaw = novelRatingMap.getOrDefault(novelId, 0.0f);
-                    Float novelRating = roundToFirstDecimal(novelRatingRaw);
+                    Integer novelRatingCount = userNovelRepository.countByNovelAndUserNovelRatingNot(
+                            userNovel.getNovel(), 0.0f);
+                    Float novelRatingAvg = novelRatingCount == 0
+                            ? 0.0f
+                            : Math.round(userNovelRepository.sumUserNovelRatingByNovel(userNovel.getNovel())
+                                    / novelRatingCount * 10.0f) / 10.0f;
                     List<String> feeds = feedMap.getOrDefault(novelId, List.of());
-                    return UserNovelAndNovelGetResponse.from(userNovel, novelRating, feeds);
+                    return UserNovelAndNovelGetResponse.from(userNovel, novelRatingAvg, feeds);
                 })
                 .toList();
     }

@@ -1,11 +1,9 @@
 package org.websoso.WSSServer.repository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.User;
@@ -31,10 +29,4 @@ public interface UserNovelRepository extends JpaRepository<UserNovel, Long>, Use
     List<UserNovel> findUserNovelByUser(User user);
 
     Optional<UserNovel> findByNovel_NovelIdAndUser(Long novelId, User user);
-
-    @Query("SELECT new map(un.novel.novelId as novelId, AVG(un.userNovelRating) as avgRating) " +
-            "FROM UserNovel un " +
-            "WHERE un.userNovelRating > 0 AND un.novel.novelId IN :novelIds " +
-            "GROUP BY un.novel.novelId")
-    Map<Long, Float> findAverageRatingsForNovels(@Param("novelIds") List<Long> novelIds);
 }
