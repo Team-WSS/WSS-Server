@@ -259,36 +259,46 @@ public class UserNovelService {
 
         boolean isLoadable = userNovels.size() == size;
 
-        List<UserNovelAndNovelGetResponse> userNovelAndNovelGetResponses = builduserNovelAndNovelGetResponses(
+        List<UserNovelAndNovelGetResponse> userNovelAndNovelGetResponses = buildUserNovelAndNovelGetResponses(
                 userNovels, ownerId, isOwner);
 
         return new UserNovelAndNovelsGetResponse(totalCount, isLoadable, userNovelAndNovelGetResponses);
     }
 
-    private List<UserNovelAndNovelGetResponse> builduserNovelAndNovelGetResponses(List<UserNovel> userNovels,
+    private List<UserNovelAndNovelGetResponse> buildUserNovelAndNovelGetResponses(List<UserNovel> userNovels,
                                                                                   Long ownerId, boolean isOwner) {
+        Map<Long, Float> novelRatingMap = userNovelRepository.findAverageRatingsForNovels(
+                userNovels.stream()
+                        .map(un -> un.getNovel().getNovelId())
+                        .toList()
+        );
+
+        Map<Long, List<String>> feedMap = getFeedsGroupedByNovel(userNovels, ownerId, isOwner);
+
         return userNovels.stream()
                 .map(userNovel -> {
                     Long novelId = userNovel.getNovel().getNovelId();
-
-                    Integer novelRatingCount = userNovelRepository.countByNovelAndUserNovelRatingNot(
-                            userNovel.getNovel(), 0.0f);
-                    Float novelRatingAvg = novelRatingCount == 0
-                            ? 0.0f
-                            : Math.round(userNovelRepository.sumUserNovelRatingByNovel(userNovel.getNovel())
-                                    / novelRatingCount * 10.0f) / 10.0f;
-
-                    List<Feed> feeds = isOwner
-                            ? feedRepository.findByUserUserIdAndNovelIdAndIsHiddenFalse(ownerId, novelId)
-                            : feedRepository.findByUserUserIdAndNovelIdAndIsHiddenFalseAndIsPublicTrueAndIsSpoilerFalse(
-                                    ownerId, novelId);
-                    List<String> feedContents = feeds.stream()
-                            .map(Feed::getFeedContent)
-                            .toList();
-
-                    return UserNovelAndNovelGetResponse.from(userNovel, novelRatingAvg, feedContents);
+                    Float novelRating = novelRatingMap.getOrDefault(novelId, 0.0f);
+                    List<String> feeds = feedMap.getOrDefault(novelId, List.of());
+                    return UserNovelAndNovelGetResponse.from(userNovel, novelRating, feeds);
                 })
                 .toList();
+    }
+
+    private Map<Long, List<String>> getFeedsGroupedByNovel(List<UserNovel> userNovels, Long ownerId, boolean isOwner) {
+        List<Long> novelIds = userNovels.stream()
+                .map(un -> un.getNovel().getNovelId())
+                .distinct()
+                .toList();
+
+        List<Feed> feeds = isOwner
+                ? feedRepository.findByUserUserIdAndIsHiddenFalseAndNovelIdIn(ownerId, novelIds)
+                : feedRepository.findByUserUserIdAndIsHiddenFalseAndNovelIdInAndIsPublicTrueAndIsSpoilerFalse(ownerId,
+                        novelIds);
+
+        return feeds.stream()
+                .collect(Collectors.groupingBy(Feed::getNovelId,
+                        Collectors.mapping(Feed::getFeedContent, Collectors.toList())));
     }
 
     @Transactional(readOnly = true)
