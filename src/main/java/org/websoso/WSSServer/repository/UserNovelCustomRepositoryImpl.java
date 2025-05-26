@@ -12,6 +12,8 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -99,8 +101,13 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
     public List<UserNovel> findFilteredUserNovels(Long userId, Boolean isInterest, List<String> readStatuses,
                                                   List<String> attractivePoints, Float novelRating, String query,
                                                   Long lastUserNovelId, int size, boolean isAscending) {
-        JPAQuery<UserNovel> queryBuilder = buildFilterBaseQuery(userId, isInterest, readStatuses, attractivePoints,
-                novelRating, query);
+        JPAQuery<UserNovel> queryBuilder = jpaQueryFactory
+                .selectFrom(userNovel)
+                .join(userNovel.novel, novel).fetchJoin()
+                .where(userNovel.user.userId.eq(userId));
+
+        applyFilters(queryBuilder, isInterest, readStatuses, attractivePoints, novelRating, query);
+
         queryBuilder.where(isAscending
                 ? userNovel.userNovelId.gt(lastUserNovelId)
                 : userNovel.userNovelId.lt(lastUserNovelId));
@@ -113,35 +120,39 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
     @Override
     public Long countByUserIdAndFilters(Long userId, Boolean isInterest, List<String> readStatuses,
                                         List<String> attractivePoints, Float novelRating, String query) {
-        return buildFilterBaseQuery(userId, isInterest, readStatuses, attractivePoints, novelRating, query)
+        JPAQuery<Long> queryBuilder = jpaQueryFactory
                 .select(userNovel.count())
-                .fetchOne();
-    }
-
-    private JPAQuery<UserNovel> buildFilterBaseQuery(Long userId, Boolean isInterest, List<String> readStatuses,
-                                                     List<String> attractivePoints, Float novelRating, String query) {
-        JPAQuery<UserNovel> queryBuilder = jpaQueryFactory
-                .selectFrom(userNovel)
-                .join(userNovel.novel, novel).fetchJoin()
+                .from(userNovel)
+                .join(userNovel.novel, novel)
                 .where(userNovel.user.userId.eq(userId));
 
-        if (isInterest != null) {
-            queryBuilder.where(userNovel.isInterest.eq(isInterest));
-        }
-        if (readStatuses != null && !readStatuses.isEmpty()) {
-            queryBuilder.where(userNovel.status.in(readStatuses.stream().map(ReadStatus::valueOf).toList()));
-        }
-        if (attractivePoints != null && !attractivePoints.isEmpty()) {
-            queryBuilder.where(
-                    userNovel.userNovelAttractivePoints.any().attractivePoint.attractivePointName.in(attractivePoints));
-        }
-        if (novelRating != null) {
-            queryBuilder.where(userNovel.userNovelRating.goe(novelRating));
-        }
-        if (query != null && !query.isBlank()) {
-            queryBuilder.where(novel.title.containsIgnoreCase(query).or(novel.author.containsIgnoreCase(query)));
-        }
+        applyFilters(queryBuilder, isInterest, readStatuses, attractivePoints, novelRating, query);
 
-        return queryBuilder;
+        return queryBuilder.fetchOne();
+    }
+
+    private <T> void applyFilters(JPAQuery<T> queryBuilder, Boolean isInterest, List<String> readStatuses,
+                                  List<String> attractivePoints, Float novelRating, String query) {
+        Optional.ofNullable(isInterest)
+                .ifPresent(interest -> queryBuilder.where(userNovel.isInterest.eq(interest)));
+
+        Optional.ofNullable(readStatuses)
+                .filter(list -> !list.isEmpty())
+                .map(list -> list.stream().map(String::toUpperCase).map(ReadStatus::valueOf)
+                        .collect(Collectors.toList()))
+                .ifPresent(statusEnums -> queryBuilder.where(userNovel.status.in(statusEnums)));
+
+        Optional.ofNullable(attractivePoints)
+                .filter(list -> !list.isEmpty())
+                .ifPresent(points -> queryBuilder.where(
+                        userNovel.userNovelAttractivePoints.any().attractivePoint.attractivePointName.in(points)));
+
+        Optional.ofNullable(novelRating)
+                .ifPresent(rating -> queryBuilder.where(userNovel.userNovelRating.goe(rating)));
+
+        Optional.ofNullable(query)
+                .filter(q -> !q.isBlank())
+                .ifPresent(q -> queryBuilder.where(
+                        novel.title.containsIgnoreCase(q).or(novel.author.containsIgnoreCase(q))));
     }
 }
