@@ -278,7 +278,8 @@ public class UserNovelService {
         return userNovels.stream()
                 .map(userNovel -> {
                     Long novelId = userNovel.getNovel().getNovelId();
-                    Float novelRating = novelRatingMap.getOrDefault(novelId, 0.0f);
+                    Float novelRatingRaw = novelRatingMap.getOrDefault(novelId, 0.0f);
+                    Float novelRating = roundToFirstDecimal(novelRatingRaw);
                     List<String> feeds = feedMap.getOrDefault(novelId, List.of());
                     return UserNovelAndNovelGetResponse.from(userNovel, novelRating, feeds);
                 })
@@ -299,6 +300,10 @@ public class UserNovelService {
         return feeds.stream()
                 .collect(Collectors.groupingBy(Feed::getNovelId,
                         Collectors.mapping(Feed::getFeedContent, Collectors.toList())));
+    }
+
+    private float roundToFirstDecimal(float value) {
+        return Math.round(value * 10.0f) / 10.0f;
     }
 
     @Transactional(readOnly = true)
