@@ -44,7 +44,7 @@ public class FeedCategoryCustomRepositoryImpl implements FeedCategoryCustomRepos
                         checkCategory(category),
                         checkHidden(),
                         checkBlocking(userId),
-                        genre.in(genres)
+                        checkGenres(genres)
                 )
                 .orderBy(feed.feedId.desc())
                 .limit(pageRequest.getPageSize() + 1)
@@ -81,6 +81,13 @@ public class FeedCategoryCustomRepositoryImpl implements FeedCategoryCustomRepos
                             .from(block)
                             .where(block.blockingId.eq(userId)) // userId는 파라미터
             );
+        }
+        return null;
+    }
+
+    private BooleanExpression checkGenres(List<Genre> genres) {
+        if (genres != null && !genres.isEmpty()) {
+            return genre.in(genres);
         }
         return null;
     }
