@@ -20,6 +20,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
+import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
@@ -44,6 +45,7 @@ import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
+import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.UserNovelAttractivePointRepository;
@@ -63,6 +65,9 @@ public class UserNovelService {
     private final AttractivePointService attractivePointService;
     private final UserService userService;
     private final GenreRepository genreRepository;
+    private final FeedRepository feedRepository;
+
+    public static final String SORT_TYPE_OLDEST = "OLDEST";
 
     private static final List<String> priorityGenreNamesOfMale = List.of(
             "fantasy", "modernFantasy", "wuxia", "drama", "mystery", "lightNovel", "romance", "romanceFantasy", "BL"
@@ -233,40 +238,71 @@ public class UserNovelService {
     }
 
     @Transactional(readOnly = true)
-    public UserNovelAndNovelsGetResponse getUserNovelsAndNovels(User visitor, Long ownerId, String readStatus,
-                                                                Long lastUserNovelId, int size, String sortType) {
+    public UserNovelAndNovelsGetResponse getUserNovelsAndNovels(User visitor, Long ownerId, Boolean isInterest,
+                                                                List<String> readStatuses,
+                                                                List<String> attractivePoints, Float novelRating,
+                                                                String query, Long lastUserNovelId, int size,
+                                                                String sortType) {
         User owner = userService.getUserOrException(ownerId);
 
         if (isProfileInaccessible(visitor, ownerId, owner)) {
             throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
         }
 
-        // TODO 성능 개선
-        List<UserNovel> userNovelsByUserAndSortType =
-                userNovelRepository.findByUserAndReadStatus(owner, readStatus);
-        long evaluatedUserNovelCount = userNovelsByUserAndSortType.stream()
-                .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
-                .count();
-        float evaluatedUserNovelSum = (float) userNovelsByUserAndSortType
-                .stream()
-                .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
-                .mapToDouble(UserNovel::getUserNovelRating)
-                .sum();
-        Float evaluatedUserNovelRating = evaluatedUserNovelCount > 0
-                ? evaluatedUserNovelSum / evaluatedUserNovelCount
-                : 0;
-        Long userNovelCount = (long) userNovelsByUserAndSortType.size();
+        boolean isOwner = visitor.getUserId().equals(ownerId);
+        boolean isAscending = sortType.equalsIgnoreCase(SORT_TYPE_OLDEST);
 
-        List<UserNovel> userNovelsByNoOffsetPagination = userNovelRepository.findUserNovelsByNoOffsetPagination(
-                owner, lastUserNovelId, size, readStatus, sortType);
-        // TODO Slice의 hasNext()로 판단하도록 수정
-        Boolean isLoadable = userNovelsByNoOffsetPagination.size() == size;
-        List<UserNovelAndNovelGetResponse> userNovelAndNovelGetResponses = userNovelsByNoOffsetPagination.stream()
-                .map(UserNovelAndNovelGetResponse::of)
+        List<UserNovel> userNovels = userNovelRepository.findFilteredUserNovels(ownerId, isInterest, readStatuses,
+                attractivePoints, novelRating, query, lastUserNovelId, size, isAscending);
+
+        Long totalCount = userNovelRepository.countByUserIdAndFilters(ownerId, isInterest, readStatuses,
+                attractivePoints, novelRating, query);
+
+        boolean isLoadable = userNovels.size() == size;
+
+        List<UserNovelAndNovelGetResponse> userNovelAndNovelGetResponses = buildUserNovelAndNovelGetResponses(
+                userNovels, ownerId, isOwner);
+
+        return new UserNovelAndNovelsGetResponse(totalCount, isLoadable, userNovelAndNovelGetResponses);
+    }
+
+    private List<UserNovelAndNovelGetResponse> buildUserNovelAndNovelGetResponses(List<UserNovel> userNovels,
+                                                                                  Long ownerId, boolean isOwner) {
+        Map<Long, List<String>> feedMap = getFeedsGroupedByNovel(userNovels, ownerId, isOwner);
+
+        return userNovels.stream()
+                .map(userNovel -> {
+                    Long novelId = userNovel.getNovel().getNovelId();
+                    Integer novelRatingCount = userNovelRepository.countByNovelAndUserNovelRatingNot(
+                            userNovel.getNovel(), 0.0f);
+                    Float novelRatingAvg = novelRatingCount == 0
+                            ? 0.0f
+                            : roundToFirstDecimal(userNovelRepository.sumUserNovelRatingByNovel(userNovel.getNovel())
+                                    / novelRatingCount);
+                    List<String> feeds = feedMap.getOrDefault(novelId, List.of());
+                    return UserNovelAndNovelGetResponse.from(userNovel, novelRatingAvg, feeds);
+                })
+                .toList();
+    }
+
+    private Map<Long, List<String>> getFeedsGroupedByNovel(List<UserNovel> userNovels, Long ownerId, boolean isOwner) {
+        List<Long> novelIds = userNovels.stream()
+                .map(un -> un.getNovel().getNovelId())
+                .distinct()
                 .toList();
 
-        return UserNovelAndNovelsGetResponse.of(userNovelCount, evaluatedUserNovelRating, isLoadable,
-                userNovelAndNovelGetResponses);
+        List<Feed> feeds = isOwner
+                ? feedRepository.findByUserUserIdAndIsHiddenFalseAndNovelIdIn(ownerId, novelIds)
+                : feedRepository.findByUserUserIdAndIsHiddenFalseAndNovelIdInAndIsPublicTrueAndIsSpoilerFalse(ownerId,
+                        novelIds);
+
+        return feeds.stream()
+                .collect(Collectors.groupingBy(Feed::getNovelId,
+                        Collectors.mapping(Feed::getFeedContent, Collectors.toList())));
+    }
+
+    private float roundToFirstDecimal(float value) {
+        return Math.round(value * 10.0f) / 10.0f;
     }
 
     @Transactional(readOnly = true)
