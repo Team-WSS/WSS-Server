@@ -58,7 +58,7 @@ public record FeedGetResponse(
                             .mapToDouble(d -> d).sum(),
                     novelRatingCount);
             novelThumbnailImage = novel.getNovelImage();
-            novelGenre = novel.getNovelGenres().getFirst().getGenre().getGenreName();
+            novelGenre = novel.getNovelGenres().get(0).getGenre().getGenreName();
             novelAuthor = novel.getAuthor();
             userNovelRating = getUserNovelRating(novel, user.getUserId());
             novelDescription = novel.getNovelDescription();

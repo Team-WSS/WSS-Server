@@ -91,7 +91,7 @@ public record FeedInfo(
             return null;
         }
 
-        return novel.getNovelGenres().getFirst().getGenre().getGenreName();
+        return novel.getNovelGenres().get(0).getGenre().getGenreName();
     }
 
     private static Float getUserNovelRating(Novel novel, User user) {
