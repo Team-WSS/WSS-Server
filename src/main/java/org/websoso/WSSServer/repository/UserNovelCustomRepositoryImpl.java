@@ -162,6 +162,27 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
     public List<UserNovel> findFilteredUserNovels(Long userId, Boolean isInterest, List<String> readStatuses,
                                                   List<String> attractivePoints, Float novelRating, String query,
                                                   Long lastUserNovelId, int size, boolean isAscending) {
+        JPAQuery<UserNovel> queryBuilder = buildFilterBaseQuery(userId, isInterest, readStatuses, attractivePoints,
+                novelRating, query);
+        queryBuilder.where(isAscending
+                ? userNovel.userNovelId.gt(lastUserNovelId)
+                : userNovel.userNovelId.lt(lastUserNovelId));
+        queryBuilder.orderBy(isAscending
+                ? userNovel.userNovelId.asc()
+                : userNovel.userNovelId.desc());
+        return queryBuilder.limit(size).fetch();
+    }
+
+    @Override
+    public Long countByUserIdAndFilters(Long userId, Boolean isInterest, List<String> readStatuses,
+                                        List<String> attractivePoints, Float novelRating, String query) {
+        return buildFilterBaseQuery(userId, isInterest, readStatuses, attractivePoints, novelRating, query)
+                .select(userNovel.count())
+                .fetchOne();
+    }
+
+    private JPAQuery<UserNovel> buildFilterBaseQuery(Long userId, Boolean isInterest, List<String> readStatuses,
+                                                     List<String> attractivePoints, Float novelRating, String query) {
         JPAQuery<UserNovel> queryBuilder = jpaQueryFactory
                 .selectFrom(userNovel)
                 .join(userNovel.novel, novel).fetchJoin()
@@ -171,10 +192,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
             queryBuilder.where(userNovel.isInterest.eq(isInterest));
         }
         if (readStatuses != null && !readStatuses.isEmpty()) {
-            List<ReadStatus> statusEnums = readStatuses.stream()
-                    .map(ReadStatus::valueOf)
-                    .toList();
-            queryBuilder.where(userNovel.status.in(statusEnums));
+            queryBuilder.where(userNovel.status.in(readStatuses.stream().map(ReadStatus::valueOf).toList()));
         }
         if (attractivePoints != null && !attractivePoints.isEmpty()) {
             queryBuilder.where(
@@ -186,44 +204,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
         if (query != null && !query.isBlank()) {
             queryBuilder.where(novel.title.containsIgnoreCase(query).or(novel.author.containsIgnoreCase(query)));
         }
-        if (isAscending) {
-            queryBuilder.where(userNovel.userNovelId.gt(lastUserNovelId));
-        } else {
-            queryBuilder.where(userNovel.userNovelId.lt(lastUserNovelId));
-        }
-        queryBuilder.orderBy(isAscending ? userNovel.userNovelId.asc() : userNovel.userNovelId.desc()).limit(size);
 
-        return queryBuilder.fetch();
-    }
-
-    @Override
-    public Long countByUserIdAndFilters(Long userId, Boolean isInterest, List<String> readStatuses,
-                                        List<String> attractivePoints, Float novelRating, String query) {
-        JPAQuery<Long> queryBuilder = jpaQueryFactory
-                .select(userNovel.count())
-                .from(userNovel)
-                .join(userNovel.novel, novel)
-                .where(userNovel.user.userId.eq(userId));
-
-        if (isInterest != null) {
-            queryBuilder.where(userNovel.isInterest.eq(isInterest));
-        }
-        if (readStatuses != null && !readStatuses.isEmpty()) {
-            List<ReadStatus> statusEnums = readStatuses.stream()
-                    .map(ReadStatus::valueOf)
-                    .toList();
-            queryBuilder.where(userNovel.status.in(statusEnums));
-        }
-        if (attractivePoints != null && !attractivePoints.isEmpty()) {
-            queryBuilder.where(
-                    userNovel.userNovelAttractivePoints.any().attractivePoint.attractivePointName.in(attractivePoints));
-        }
-        if (novelRating != null) {
-            queryBuilder.where(userNovel.userNovelRating.goe(novelRating));
-        }
-        if (query != null && !query.isBlank()) {
-            queryBuilder.where(novel.title.containsIgnoreCase(query).or(novel.author.containsIgnoreCase(query)));
-        }
-        return queryBuilder.fetchOne();
+        return queryBuilder;
     }
 }
