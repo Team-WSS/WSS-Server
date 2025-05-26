@@ -164,10 +164,10 @@ public class UserController {
                                                              @PathVariable("userId") Long userId,
                                                              @RequestParam("lastFeedId") Long lastFeedId,
                                                              @RequestParam("size") int size,
-                                                             @RequestParam("isVisible") boolean isVisible,
-                                                             @RequestParam("isUnVisible") boolean isUnVisible,
-                                                             @RequestParam("genreNames") List<String> genreNames,
-                                                             @RequestParam("sortCriteria") SortCriteria sortCriteria) {
+                                                             @RequestParam(value = "isVisible", required = false) Boolean isVisible,
+                                                             @RequestParam(value = "isUnVisible", required = false) Boolean isUnVisible,
+                                                             @RequestParam(value = "genreNames", required = false) List<String> genreNames,
+                                                             @RequestParam(value = "sortCriteria", required = false) SortCriteria sortCriteria) {
         return ResponseEntity
                 .status(OK)
                 // ToDo: isVisible -> isPublic으로 수정

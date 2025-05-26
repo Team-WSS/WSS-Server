@@ -66,7 +66,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                         ltFeedId(lastFeedId),
                         eqVisible(isVisible),
                         eqUnVisible(isUnVisible),
-                        genre.in(genres)
+                        checkGenres(genres)
                 )
                 .orderBy(
                         checkSortCriteria(sortCriteria),
@@ -95,16 +95,22 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
         return feed.feedId.lt(lastFeedId);
     }
 
-    private BooleanExpression eqVisible(boolean isVisible) {
-        return feed.isPublic.eq(isVisible);
+    private BooleanExpression eqVisible(Boolean isVisible) {
+        if (isVisible != null) {
+            return feed.isPublic.eq(isVisible);
+        }
+        return null;
     }
 
-    private BooleanExpression eqUnVisible(boolean isUnVisible) {
-        return feed.isPublic.eq(isUnVisible);
+    private BooleanExpression eqUnVisible(Boolean isUnVisible) {
+        if (isUnVisible != null) {
+            return feed.isPublic.eq(isUnVisible);
+        }
+        return null;
     }
 
     private OrderSpecifier<?> checkSortCriteria(SortCriteria sortCriteria) {
-        if (sortCriteria.equals(SortCriteria.OLD)) {
+        if (sortCriteria != null && sortCriteria.equals(SortCriteria.OLD)) {
             return new OrderSpecifier<>(Order.ASC, feed.createdDate);
         }
         return new OrderSpecifier<>(Order.DESC, feed.createdDate);

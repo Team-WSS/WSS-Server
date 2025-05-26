@@ -71,7 +71,7 @@ public class FeedController {
                                                      @RequestParam(value = "category", required = false) String category,
                                                      @RequestParam("lastFeedId") Long lastFeedId,
                                                      @RequestParam("size") int size,
-                                                     @RequestParam("feedsOption") FeedGetOption feedGetOption) {
+                                                     @RequestParam(value = "feedsOption", required = false) FeedGetOption feedGetOption) {
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getFeeds(user, category, lastFeedId, size, feedGetOption));

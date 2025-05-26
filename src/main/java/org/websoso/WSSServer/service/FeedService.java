@@ -447,8 +447,8 @@ public class FeedService {
     }
 
     @Transactional(readOnly = true)
-    public UserFeedsGetResponse getUserFeeds(User visitor, Long ownerId, Long lastFeedId, int size, boolean isVisible,
-                                             boolean isUnVisible, List<String> genreNames,
+    public UserFeedsGetResponse getUserFeeds(User visitor, Long ownerId, Long lastFeedId, int size, Boolean isVisible,
+                                             Boolean isUnVisible, List<String> genreNames,
                                              SortCriteria sortCriteria) {
         User owner = userService.getUserOrException(ownerId);
         Long visitorId = Optional.ofNullable(visitor)
@@ -456,9 +456,7 @@ public class FeedService {
                 .orElse(null);
 
         if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
-            List<Genre> genres = genreNames.stream()
-                    .map(genreService::getGenreOrException)
-                    .toList();
+            List<Genre> genres = getGenres(genreNames);
 
             List<Feed> feeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size, isVisible,
                     isUnVisible, sortCriteria, genres);
@@ -492,5 +490,14 @@ public class FeedService {
     private static boolean isOwner(User visitor, Long ownerId) {
         //TODO 현재는 비로그인 회원인 경우
         return visitor != null && visitor.getUserId().equals(ownerId);
+    }
+
+    private List<Genre> getGenres(List<String> genreNames) {
+        if (genreNames != null && !genreNames.isEmpty()) {
+            return genreNames.stream()
+                    .map(genreService::getGenreOrException)
+                    .toList();
+        }
+        return null;
     }
 }
