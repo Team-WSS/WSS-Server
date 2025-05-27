@@ -375,7 +375,7 @@ public class FeedService {
     private Slice<Feed> findFeedsByCategoryLabel(String category, Long lastFeedId, Long userId,
                                                  PageRequest pageRequest, FeedGetOption feedGetOption,
                                                  List<Genre> genres) {
-        if (category.equals(DEFAULT_CATEGORY)) {
+        if (DEFAULT_CATEGORY.equals(category)) {
             if (feedGetOption.equals(FeedGetOption.ALL)) {
                 return feedRepository.findFeeds(lastFeedId, userId, pageRequest);
             } else {
