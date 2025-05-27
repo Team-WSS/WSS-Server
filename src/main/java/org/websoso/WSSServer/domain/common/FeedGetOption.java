@@ -17,4 +17,11 @@ public enum FeedGetOption {
         throw new CustomFilteringException(FEED_GET_OPTION_NOT_FOUND,
                 "given feed option does not exist");
     }
+
+    public static boolean isAll(FeedGetOption feedGetOption) {
+        if (feedGetOption == null) {
+            return true;
+        }
+        return ALL.equals(feedGetOption);
+    }
 }

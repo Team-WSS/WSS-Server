@@ -376,13 +376,13 @@ public class FeedService {
                                                  PageRequest pageRequest, FeedGetOption feedGetOption,
                                                  List<Genre> genres) {
         if (DEFAULT_CATEGORY.equals(category)) {
-            if (feedGetOption.equals(FeedGetOption.ALL)) {
+            if (FeedGetOption.isAll(feedGetOption)) {
                 return feedRepository.findFeeds(lastFeedId, userId, pageRequest);
             } else {
                 return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, genres);
             }
         } else {
-            if (feedGetOption.equals(FeedGetOption.ALL)) {
+            if (FeedGetOption.isAll(feedGetOption)) {
                 return feedCategoryService.getFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest);
             } else {
                 return feedCategoryService.getRecommendedFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest,
