@@ -8,7 +8,7 @@ public enum FeedGetOption {
     ALL,
     RECOMMENDED;
 
-    public static FeedGetOption create(final String feedGetOption) {
+    public static FeedGetOption of(final String feedGetOption) {
         for (FeedGetOption value : FeedGetOption.values()) {
             if (value.toString().equals(feedGetOption)) {
                 return value;

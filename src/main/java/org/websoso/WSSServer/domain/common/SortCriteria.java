@@ -8,7 +8,7 @@ public enum SortCriteria {
     RECENT,
     OLD;
 
-    public static SortCriteria create(final String sortCriteria) {
+    public static SortCriteria of(final String sortCriteria) {
         for (SortCriteria value : SortCriteria.values()) {
             if (value.toString().equals(sortCriteria)) {
                 return value;

@@ -7,6 +7,6 @@ public class SortCriteriaConverter implements Converter<String, SortCriteria> {
 
     @Override
     public SortCriteria convert(final String sortCriteria) {
-        return SortCriteria.create(sortCriteria.toUpperCase());
+        return SortCriteria.of(sortCriteria.toUpperCase());
     }
 }

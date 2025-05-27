@@ -7,6 +7,6 @@ public class FeedGetOptionConverter implements Converter<String, FeedGetOption> 
 
     @Override
     public FeedGetOption convert(final String feedGetOption) {
-        return FeedGetOption.create(feedGetOption.toUpperCase());
+        return FeedGetOption.of(feedGetOption.toUpperCase());
     }
 }
