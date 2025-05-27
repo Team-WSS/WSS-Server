@@ -95,16 +95,16 @@ public record FeedInfo(
     }
 
     private static Float getUserNovelRating(Novel novel, User user) {
-        if (novel != null && user != null) {
-            return novel.getUserNovels()
-                    .stream()
-                    .filter(userNovel -> userNovel.getUser().getUserId().equals(user.getUserId()))
-                    .findFirst()
-                    .map(UserNovel::getUserNovelRating)
-                    .orElse(null);
-
+        if (novel == null || user == null) {
+            return null;
         }
-        return null;
+
+        return novel.getUserNovels()
+                .stream()
+                .filter(userNovel -> userNovel.getUser().getUserId().equals(user.getUserId()))
+                .findFirst()
+                .map(UserNovel::getUserNovelRating)
+                .orElse(null);
     }
 
 }
