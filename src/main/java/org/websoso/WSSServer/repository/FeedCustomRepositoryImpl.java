@@ -53,8 +53,8 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     }
 
     @Override
-    public List<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size, boolean isVisible,
-                                                    boolean isUnVisible, SortCriteria sortCriteria,
+    public List<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size, Boolean isVisible,
+                                                    Boolean isUnVisible, SortCriteria sortCriteria,
                                                     List<Genre> genres) {
         return jpaQueryFactory
                 .selectFrom(feed)
