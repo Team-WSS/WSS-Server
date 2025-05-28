@@ -24,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedImage;
+import org.websoso.WSSServer.domain.Genre;
+import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.Novel;
@@ -31,7 +33,9 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
+import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.domain.common.ReportedType;
+import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
@@ -57,6 +61,7 @@ import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.FeedImageCustomRepository;
 import org.websoso.WSSServer.repository.FeedImageRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
@@ -91,6 +96,8 @@ public class FeedService {
     private final NotificationRepository notificationRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final FeedImageRepository feedImageRepository;
+    private final GenreService genreService;
+    private final GenrePreferenceRepository genrePreferenceRepository;
 
     public void createFeed(User user, FeedCreateRequest request, FeedImageCreateRequest imagesRequest) {
         List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
@@ -235,23 +242,26 @@ public class FeedService {
     @Transactional(readOnly = true)
     public FeedGetResponse getFeedById(User user, Long feedId) {
         Feed feed = getFeedOrException(feedId);
-        UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
+        UserBasicInfo feedUserBasicInfo = getUserBasicInfo(feed.getUser());
         Novel novel = getLinkedNovelOrNull(feed.getNovelId());
         Boolean isLiked = isUserLikedFeed(user, feed);
         List<String> relevantCategories = feedCategoryService.getRelevantCategoryNames(feed.getFeedCategories());
         Boolean isMyFeed = isUserFeedOwner(feed.getUser(), user);
 
-        return FeedGetResponse.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed);
+        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, relevantCategories, isMyFeed, user);
     }
 
     @Transactional(readOnly = true)
-    public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size) {
+    public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size,
+                                     FeedGetOption feedGetOption) {
         Long userIdOrNull = Optional.ofNullable(user)
                 .map(User::getUserId)
                 .orElse(null);
 
+        List<Genre> genres = getPreferenceGenres(user);
+
         Slice<Feed> feeds = findFeedsByCategoryLabel(getChosenCategoryOrDefault(category),
-                lastFeedId, userIdOrNull, PageRequest.of(DEFAULT_PAGE_NUMBER, size));
+                lastFeedId, userIdOrNull, PageRequest.of(DEFAULT_PAGE_NUMBER, size), feedGetOption, genres);
 
         List<FeedInfo> feedGetResponses = feeds.getContent()
                 .stream()
@@ -260,6 +270,15 @@ public class FeedService {
                 .toList();
 
         return FeedsGetResponse.of(getChosenCategoryOrDefault(category), feeds.hasNext(), feedGetResponses);
+    }
+
+    private List<Genre> getPreferenceGenres(User user) {
+        if (user == null) {
+            return null;
+        }
+        return genrePreferenceRepository.findByUser(user).stream()
+                .map(GenrePreference::getGenre)
+                .toList();
     }
 
     private static String getChosenCategoryOrDefault(String category) {
@@ -349,15 +368,27 @@ public class FeedService {
         Optional<FeedImage> thumbnailImage = feedImageCustomRepository.findThumbnailFeedImageByFeedId(feed.getFeedId());
         String thumbnailUrl = thumbnailImage.map(FeedImage::getUrl).orElse(null);
 
-        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed, thumbnailUrl, imageCount);
+        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed, thumbnailUrl, imageCount,
+                user);
     }
 
     private Slice<Feed> findFeedsByCategoryLabel(String category, Long lastFeedId, Long userId,
-                                                 PageRequest pageRequest) {
-        if (category.equals(DEFAULT_CATEGORY)) {
-            return (feedRepository.findFeeds(lastFeedId, userId, pageRequest));
+                                                 PageRequest pageRequest, FeedGetOption feedGetOption,
+                                                 List<Genre> genres) {
+        if (DEFAULT_CATEGORY.equals(category)) {
+            if (FeedGetOption.isAll(feedGetOption)) {
+                return feedRepository.findFeeds(lastFeedId, userId, pageRequest);
+            } else {
+                return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, genres);
+            }
+        } else {
+            if (FeedGetOption.isAll(feedGetOption)) {
+                return feedCategoryService.getFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest);
+            } else {
+                return feedCategoryService.getRecommendedFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest,
+                        genres);
+            }
         }
-        return feedCategoryService.getFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest);
     }
 
     public InterestFeedsGetResponse getInterestFeeds(User user) {
@@ -416,14 +447,19 @@ public class FeedService {
     }
 
     @Transactional(readOnly = true)
-    public UserFeedsGetResponse getUserFeeds(User visitor, Long ownerId, Long lastFeedId, int size) {
+    public UserFeedsGetResponse getUserFeeds(User visitor, Long ownerId, Long lastFeedId, int size, Boolean isVisible,
+                                             Boolean isUnVisible, List<String> genreNames,
+                                             SortCriteria sortCriteria) {
         User owner = userService.getUserOrException(ownerId);
         Long visitorId = Optional.ofNullable(visitor)
                 .map(User::getUserId)
                 .orElse(null);
 
         if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
-            List<Feed> feeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size);
+            List<Genre> genres = getGenres(genreNames);
+
+            List<Feed> feeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size, isVisible,
+                    isUnVisible, sortCriteria, genres);
 
             List<Feed> visibleFeeds = feeds.stream()
                     .filter(feed -> feed.isVisibleTo(visitorId))
@@ -443,8 +479,9 @@ public class FeedService {
 
             // TODO Slice의 hasNext()로 판단하도록 수정
             Boolean isLoadable = feeds.size() == size;
+            int feedsCount = visibleFeeds.size();
 
-            return UserFeedsGetResponse.of(isLoadable, userFeedGetResponseList);
+            return UserFeedsGetResponse.of(isLoadable, feedsCount, userFeedGetResponseList);
         }
 
         throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
@@ -453,5 +490,14 @@ public class FeedService {
     private static boolean isOwner(User visitor, Long ownerId) {
         //TODO 현재는 비로그인 회원인 경우
         return visitor != null && visitor.getUserId().equals(ownerId);
+    }
+
+    private List<Genre> getGenres(List<String> genreNames) {
+        if (genreNames != null && !genreNames.isEmpty()) {
+            return genreNames.stream()
+                    .map(genreService::getGenreOrException)
+                    .toList();
+        }
+        return null;
     }
 }

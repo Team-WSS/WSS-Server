@@ -11,7 +11,7 @@ import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedCategory;
 
 @Repository
-public interface FeedCategoryRepository extends JpaRepository<FeedCategory, Long> {
+public interface FeedCategoryRepository extends JpaRepository<FeedCategory, Long>, FeedCategoryCustomRepository {
 
     List<FeedCategory> findByFeed(Feed feed);
 

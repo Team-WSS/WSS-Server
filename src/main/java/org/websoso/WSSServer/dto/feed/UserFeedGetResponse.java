@@ -24,7 +24,9 @@ public record UserFeedGetResponse(
         Float novelRating,
         Long novelRatingCount,
         List<String> relevantCategories,
-        Boolean isPublic
+        Boolean isPublic,
+        String genre,
+        Float userNovelRating
 ) {
 
     public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId) {
@@ -34,6 +36,8 @@ public record UserFeedGetResponse(
         List<Long> likeUsers = getLikeUsers(feed);
         boolean isLiked = likeUsers.contains(visitorId);
         List<String> relevantCategories = getFeedCategories(feed);
+        String genreName = getNovelGenreName(novel);
+        Float userNovelRating = getUserNovelRating(novel, visitorId);
 
         return new UserFeedGetResponse(
                 feed.getFeedId(),
@@ -52,7 +56,9 @@ public record UserFeedGetResponse(
                 novelRating,
                 novelRatingCount,
                 relevantCategories,
-                feed.getIsPublic()
+                feed.getIsPublic(),
+                genreName,
+                userNovelRating
         );
     }
 
@@ -101,5 +107,26 @@ public record UserFeedGetResponse(
         return novelRatingCount > 0
                 ? Math.round(getNovelRatingSum(novel) / novelRatingCount * 10) / 10.0f
                 : 0.0f;
+    }
+
+    private static String getNovelGenreName(Novel novel) {
+        if (novel == null) {
+            return null;
+        }
+
+        return novel.getNovelGenres().get(0).getGenre().getGenreName();
+    }
+
+    private static Float getUserNovelRating(Novel novel, Long visitorId) {
+        if (novel == null) {
+            return null;
+        }
+
+        return novel.getUserNovels()
+                .stream()
+                .filter(userNovel -> userNovel.getUser().getUserId().equals(visitorId))
+                .findFirst()
+                .map(UserNovel::getUserNovelRating)
+                .orElse(null);
     }
 }

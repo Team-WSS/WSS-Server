@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
@@ -69,10 +70,11 @@ public class FeedController {
     public ResponseEntity<FeedsGetResponse> getFeeds(@AuthenticationPrincipal User user,
                                                      @RequestParam(value = "category", required = false) String category,
                                                      @RequestParam("lastFeedId") Long lastFeedId,
-                                                     @RequestParam("size") int size) {
+                                                     @RequestParam("size") int size,
+                                                     @RequestParam(value = "feedsOption", required = false) FeedGetOption feedGetOption) {
         return ResponseEntity
                 .status(OK)
-                .body(feedService.getFeeds(user, category, lastFeedId, size));
+                .body(feedService.getFeeds(user, category, lastFeedId, size, feedGetOption));
     }
 
     @PutMapping("/{feedId}")
