@@ -8,6 +8,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_EVA
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -242,7 +243,7 @@ public class UserNovelService {
                                                                 List<String> readStatuses,
                                                                 List<String> attractivePoints, Float novelRating,
                                                                 String query, Long lastUserNovelId, int size,
-                                                                String sortType) {
+                                                                String sortType, LocalDateTime updatedSince) {
         User owner = userService.getUserOrException(ownerId);
 
         if (isProfileInaccessible(visitor, ownerId, owner)) {
@@ -253,10 +254,10 @@ public class UserNovelService {
         boolean isAscending = sortType.equalsIgnoreCase(SORT_TYPE_OLDEST);
 
         List<UserNovel> userNovels = userNovelRepository.findFilteredUserNovels(ownerId, isInterest, readStatuses,
-                attractivePoints, novelRating, query, lastUserNovelId, size, isAscending);
+                attractivePoints, novelRating, query, lastUserNovelId, size, isAscending, updatedSince);
 
         Long totalCount = userNovelRepository.countByUserIdAndFilters(ownerId, isInterest, readStatuses,
-                attractivePoints, novelRating, query);
+                attractivePoints, novelRating, query, updatedSince);
 
         boolean isLoadable = userNovels.size() == size;
 
