@@ -106,7 +106,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
     private NumberExpression<Double> getAverageRating(QNovel novel) {
         return Expressions.numberTemplate(Double.class,
-                "(SELECT AVG(un.userNovelRating) FROM UserNovel un WHERE un.novel = {0} AND un.userNovelRating <> 0)",
+                "(SELECT AVG(un.feedWriterNovelRating) FROM UserNovel un WHERE un.novel = {0} AND un.feedWriterNovelRating <> 0)",
                 novel);
     }
 
