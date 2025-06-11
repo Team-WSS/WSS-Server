@@ -18,7 +18,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +57,6 @@ import org.websoso.WSSServer.repository.UserNovelRepository;
 @Service
 @RequiredArgsConstructor
 @Transactional
-@Slf4j
 public class UserNovelService {
 
     private final NovelRepository novelRepository;
