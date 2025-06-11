@@ -11,6 +11,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -100,13 +101,14 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
     @Override
     public List<UserNovel> findFilteredUserNovels(Long userId, Boolean isInterest, List<String> readStatuses,
                                                   List<String> attractivePoints, Float novelRating, String query,
-                                                  Long lastUserNovelId, int size, boolean isAscending) {
+                                                  Long lastUserNovelId, int size, boolean isAscending,
+                                                  LocalDateTime updatedSince) {
         JPAQuery<UserNovel> queryBuilder = jpaQueryFactory
                 .selectFrom(userNovel)
                 .join(userNovel.novel, novel).fetchJoin()
                 .where(userNovel.user.userId.eq(userId));
 
-        applyFilters(queryBuilder, isInterest, readStatuses, attractivePoints, novelRating, query);
+        applyFilters(queryBuilder, isInterest, readStatuses, attractivePoints, novelRating, query, updatedSince);
 
         queryBuilder.where(isAscending
                 ? userNovel.userNovelId.gt(lastUserNovelId)
@@ -119,20 +121,22 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
 
     @Override
     public Long countByUserIdAndFilters(Long userId, Boolean isInterest, List<String> readStatuses,
-                                        List<String> attractivePoints, Float novelRating, String query) {
+                                        List<String> attractivePoints, Float novelRating, String query,
+                                        LocalDateTime updatedSince) {
         JPAQuery<Long> queryBuilder = jpaQueryFactory
                 .select(userNovel.count())
                 .from(userNovel)
                 .join(userNovel.novel, novel)
                 .where(userNovel.user.userId.eq(userId));
 
-        applyFilters(queryBuilder, isInterest, readStatuses, attractivePoints, novelRating, query);
+        applyFilters(queryBuilder, isInterest, readStatuses, attractivePoints, novelRating, query, updatedSince);
 
         return queryBuilder.fetchOne();
     }
 
     private <T> void applyFilters(JPAQuery<T> queryBuilder, Boolean isInterest, List<String> readStatuses,
-                                  List<String> attractivePoints, Float novelRating, String query) {
+                                  List<String> attractivePoints, Float novelRating, String query,
+                                  LocalDateTime updatedSince) {
         Optional.ofNullable(isInterest)
                 .ifPresent(interest -> queryBuilder.where(userNovel.isInterest.eq(interest)));
 
@@ -154,5 +158,8 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .filter(q -> !q.isBlank())
                 .ifPresent(q -> queryBuilder.where(
                         novel.title.containsIgnoreCase(q).or(novel.author.containsIgnoreCase(q))));
+
+        Optional.ofNullable(updatedSince)
+                .ifPresent(ts -> queryBuilder.where(userNovel.modifiedDate.gt(ts)));
     }
 }

@@ -35,4 +35,7 @@ public abstract class BaseEntity {
         this.modifiedDate = LocalDateTime.now();
     }
 
+    public void touch() {
+        this.modifiedDate = LocalDateTime.now();
+    }
 }

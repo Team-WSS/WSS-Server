@@ -8,6 +8,8 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_EVA
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -122,50 +124,83 @@ public class UserNovelService {
     }
 
     private void updateAssociations(UserNovel userNovel, UserNovelUpdateRequest request) {
-        Set<AttractivePoint> previousAttractivePoints = getPreviousAttractivePoints(userNovel);
-        Set<Keyword> previousKeywords = getPreviousKeywords(userNovel);
-
-        manageAttractivePoints(userNovel, request.attractivePoints(), previousAttractivePoints);
-        manageKeywords(userNovel, request.keywordIds(), previousKeywords);
-
-        userNovelAttractivePointRepository.deleteByAttractivePointsAndUserNovel(previousAttractivePoints, userNovel);
-        userNovelKeywordRepository.deleteByKeywordsAndUserNovel(previousKeywords, userNovel);
+        updateAttractivePoints(userNovel, request.attractivePoints());
+        updateKeywords(userNovel, request.keywordIds());
     }
 
-    private Set<AttractivePoint> getPreviousAttractivePoints(UserNovel userNovel) {
-        return userNovel.getUserNovelAttractivePoints()
+    private void updateAttractivePoints(UserNovel userNovel, List<String> attractivePoints) {
+        Map<AttractivePoint, UserNovelAttractivePoint> currentPointMap = userNovel.getUserNovelAttractivePoints()
                 .stream()
-                .map(UserNovelAttractivePoint::getAttractivePoint)
+                .collect(Collectors.toMap(UserNovelAttractivePoint::getAttractivePoint, it -> it));
+
+        Set<AttractivePoint> requestedPoints = attractivePoints.stream()
+                .map(attractivePointService::getAttractivePointByString)
                 .collect(Collectors.toSet());
+
+        addUserNovelAttractivePoints(userNovel, currentPointMap, requestedPoints);
+        deleteUserNovelAttractivePoints(userNovel, currentPointMap, requestedPoints);
     }
 
-    private Set<Keyword> getPreviousKeywords(UserNovel userNovel) {
-        return userNovel.getUserNovelKeywords()
-                .stream()
-                .map(UserNovelKeyword::getKeyword)
-                .collect(Collectors.toSet());
-    }
-
-    private void manageAttractivePoints(UserNovel userNovel, List<String> attractivePoints,
-                                        Set<AttractivePoint> previousAttractivePoints) {
-        for (String stringAttractivePoint : attractivePoints) {
-            AttractivePoint attractivePoint = attractivePointService.getAttractivePointByString(stringAttractivePoint);
-            if (previousAttractivePoints.contains(attractivePoint)) {
-                previousAttractivePoints.remove(attractivePoint);
-            } else {
-                userNovelAttractivePointRepository.save(UserNovelAttractivePoint.create(userNovel, attractivePoint));
+    private void addUserNovelAttractivePoints(UserNovel userNovel,
+                                              Map<AttractivePoint, UserNovelAttractivePoint> currentPointMap,
+                                              Set<AttractivePoint> requestedPoints) {
+        for (AttractivePoint requested : requestedPoints) {
+            if (!currentPointMap.containsKey(requested)) {
+                userNovelAttractivePointRepository.save(UserNovelAttractivePoint.create(userNovel, requested));
             }
         }
     }
 
-    private void manageKeywords(UserNovel userNovel, List<Integer> keywordIds, Set<Keyword> previousKeywords) {
-        for (Integer keywordId : keywordIds) {
-            Keyword keyword = keywordService.getKeywordOrException(keywordId);
-            if (previousKeywords.contains(keyword)) {
-                previousKeywords.remove(keyword);
-            } else {
-                userNovelKeywordRepository.save(UserNovelKeyword.create(userNovel, keyword));
+    private void deleteUserNovelAttractivePoints(UserNovel userNovel,
+                                                 Map<AttractivePoint, UserNovelAttractivePoint> currentPointMap,
+                                                 Set<AttractivePoint> requestedPoints) {
+        List<UserNovelAttractivePoint> toDelete = new ArrayList<>();
+        for (Map.Entry<AttractivePoint, UserNovelAttractivePoint> entry : currentPointMap.entrySet()) {
+            if (!requestedPoints.contains(entry.getKey())) {
+                toDelete.add(entry.getValue());
             }
+        }
+        if (!toDelete.isEmpty()) {
+            userNovel.getUserNovelAttractivePoints().removeAll(toDelete);
+            userNovel.touch();
+        }
+    }
+
+    private void updateKeywords(UserNovel userNovel, List<Integer> keywordIds) {
+        Map<Keyword, UserNovelKeyword> currentKeywordMap = userNovel.getUserNovelKeywords()
+                .stream()
+                .collect(Collectors.toMap(UserNovelKeyword::getKeyword, it -> it));
+
+        Set<Keyword> requestedKeywords = keywordIds.stream()
+                .map(keywordService::getKeywordOrException)
+                .collect(Collectors.toSet());
+
+        addUserNovelKeywords(userNovel, currentKeywordMap, requestedKeywords);
+        deleteUserNovelKeywords(userNovel, currentKeywordMap, requestedKeywords);
+    }
+
+    private void addUserNovelKeywords(UserNovel userNovel,
+                                      Map<Keyword, UserNovelKeyword> currentKeywordMap,
+                                      Set<Keyword> requestedKeywords) {
+        for (Keyword requested : requestedKeywords) {
+            if (!currentKeywordMap.containsKey(requested)) {
+                userNovelKeywordRepository.save(UserNovelKeyword.create(userNovel, requested));
+            }
+        }
+    }
+
+    private void deleteUserNovelKeywords(UserNovel userNovel,
+                                         Map<Keyword, UserNovelKeyword> currentKeywordMap,
+                                         Set<Keyword> requestedKeywords) {
+        List<UserNovelKeyword> toDelete = new ArrayList<>();
+        for (Map.Entry<Keyword, UserNovelKeyword> entry : currentKeywordMap.entrySet()) {
+            if (!requestedKeywords.contains(entry.getKey())) {
+                toDelete.add(entry.getValue());
+            }
+        }
+        if (!toDelete.isEmpty()) {
+            userNovel.getUserNovelKeywords().removeAll(toDelete);
+            userNovel.touch();
         }
     }
 
@@ -242,7 +277,7 @@ public class UserNovelService {
                                                                 List<String> readStatuses,
                                                                 List<String> attractivePoints, Float novelRating,
                                                                 String query, Long lastUserNovelId, int size,
-                                                                String sortType) {
+                                                                String sortType, LocalDateTime updatedSince) {
         User owner = userService.getUserOrException(ownerId);
 
         if (isProfileInaccessible(visitor, ownerId, owner)) {
@@ -253,10 +288,10 @@ public class UserNovelService {
         boolean isAscending = sortType.equalsIgnoreCase(SORT_TYPE_OLDEST);
 
         List<UserNovel> userNovels = userNovelRepository.findFilteredUserNovels(ownerId, isInterest, readStatuses,
-                attractivePoints, novelRating, query, lastUserNovelId, size, isAscending);
+                attractivePoints, novelRating, query, lastUserNovelId, size, isAscending, updatedSince);
 
         Long totalCount = userNovelRepository.countByUserIdAndFilters(ownerId, isInterest, readStatuses,
-                attractivePoints, novelRating, query);
+                attractivePoints, novelRating, query, updatedSince);
 
         boolean isLoadable = userNovels.size() == size;
 

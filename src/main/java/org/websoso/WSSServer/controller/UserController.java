@@ -5,6 +5,7 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -156,12 +157,13 @@ public class UserController {
                                                                                 @RequestParam(value = "query", required = false) String query,
                                                                                 @RequestParam("lastUserNovelId") Long lastUserNovelId,
                                                                                 @RequestParam("size") int size,
-                                                                                @RequestParam("sortType") String sortType) {
+                                                                                @RequestParam("sortType") String sortType,
+                                                                                @RequestParam(value = "updatedSince", required = false) LocalDateTime updatedSince) {
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserNovelsAndNovels(
                         visitor, userId, isInterest, readStatuses, attractivePoints, novelRating, query,
-                        lastUserNovelId, size, sortType));
+                        lastUserNovelId, size, sortType, updatedSince));
     }
 
     @GetMapping("/{userId}/feeds")
