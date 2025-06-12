@@ -5,7 +5,6 @@ import java.util.List;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedImage;
 import org.websoso.WSSServer.domain.Novel;
-import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 
@@ -36,7 +35,7 @@ public record FeedGetResponse(
         String novelDescription
 ) {
     public static FeedGetResponse of(Feed feed, UserBasicInfo feedUserBasicInfo, Novel novel, Boolean isLiked,
-                                     List<String> relevantCategories, Boolean isMyFeed, User user) {
+                                     List<String> relevantCategories, Boolean isMyFeed) {
         String title = null;
         Integer novelRatingCount = null;
         Float novelRating = null;
