@@ -248,7 +248,7 @@ public class FeedService {
         List<String> relevantCategories = feedCategoryService.getRelevantCategoryNames(feed.getFeedCategories());
         Boolean isMyFeed = isUserFeedOwner(feed.getUser(), user);
 
-        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, relevantCategories, isMyFeed, user);
+        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, relevantCategories, isMyFeed);
     }
 
     @Transactional(readOnly = true)
