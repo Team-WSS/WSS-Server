@@ -5,7 +5,6 @@ import java.util.List;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedImage;
 import org.websoso.WSSServer.domain.Novel;
-import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 
@@ -32,18 +31,18 @@ public record FeedGetResponse(
         String novelThumbnailImage,
         String novelGenre,
         String novelAuthor,
-        Float userNovelRating,
+        Float feedWriterNovelRating,
         String novelDescription
 ) {
     public static FeedGetResponse of(Feed feed, UserBasicInfo feedUserBasicInfo, Novel novel, Boolean isLiked,
-                                     List<String> relevantCategories, Boolean isMyFeed, User user) {
+                                     List<String> relevantCategories, Boolean isMyFeed) {
         String title = null;
         Integer novelRatingCount = null;
         Float novelRating = null;
         String novelThumbnailImage = null;
         String novelGenre = null;
         String novelAuthor = null;
-        Float userNovelRating = null;
+        Float feedWriterNovelRating = null;
         String novelDescription = null;
 
         if (novel != null) {
@@ -60,7 +59,7 @@ public record FeedGetResponse(
             novelThumbnailImage = novel.getNovelImage();
             novelGenre = novel.getNovelGenres().get(0).getGenre().getGenreName();
             novelAuthor = novel.getAuthor();
-            userNovelRating = getUserNovelRating(novel, user.getUserId());
+            feedWriterNovelRating = getFeedWriterNovelRating(novel, feed.getUser().getUserId());
             novelDescription = novel.getNovelDescription();
         }
 
@@ -91,7 +90,7 @@ public record FeedGetResponse(
                 novelThumbnailImage,
                 novelGenre,
                 novelAuthor,
-                userNovelRating,
+                feedWriterNovelRating,
                 novelDescription
         );
     }
@@ -103,14 +102,14 @@ public record FeedGetResponse(
         return Math.round((novelRatingSum / (float) novelRatingCount) * 10) / 10.0f;
     }
 
-    private static Float getUserNovelRating(Novel novel, Long visitorId) {
+    private static Float getFeedWriterNovelRating(Novel novel, Long feedWriterId) {
         if (novel == null) {
             return null;
         }
 
         return novel.getUserNovels()
                 .stream()
-                .filter(userNovel -> userNovel.getUser().getUserId().equals(visitorId))
+                .filter(userNovel -> userNovel.getUser().getUserId().equals(feedWriterId))
                 .findFirst()
                 .map(UserNovel::getUserNovelRating)
                 .orElse(null);
