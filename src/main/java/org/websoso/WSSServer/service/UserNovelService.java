@@ -285,7 +285,7 @@ public class UserNovelService {
         }
 
         boolean isOwner = visitor.getUserId().equals(ownerId);
-        boolean isAscending = sortType.equalsIgnoreCase(SORT_TYPE_OLDEST);
+        boolean isAscending = SORT_TYPE_OLDEST.equalsIgnoreCase(sortType);
 
         List<UserNovel> userNovels = userNovelRepository.findFilteredUserNovels(ownerId, isInterest, readStatuses,
                 attractivePoints, novelRating, query, lastUserNovelId, size, isAscending, updatedSince);
