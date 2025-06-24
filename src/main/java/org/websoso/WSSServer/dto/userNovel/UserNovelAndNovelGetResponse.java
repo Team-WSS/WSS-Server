@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.dto.userNovel;
 
+import java.time.LocalDate;
 import java.util.List;
 import org.websoso.WSSServer.domain.AttractivePoint;
 import org.websoso.WSSServer.domain.Keyword;
@@ -18,8 +19,8 @@ public record UserNovelAndNovelGetResponse(
         Boolean isInterest,
         Float userNovelRating,
         List<String> attractivePoints,
-        String startDate,
-        String endDate,
+        LocalDate startDate,
+        LocalDate endDate,
         List<String> keywords,
         List<String> myFeeds
 ) {
@@ -42,12 +43,14 @@ public record UserNovelAndNovelGetResponse(
                 novel.getTitle(),
                 novel.getNovelImage(),
                 novelRatingAvg,
-                userNovel.getStatus() != null ? userNovel.getStatus().name() : null,
+                userNovel.getStatus() != null
+                        ? userNovel.getStatus().name()
+                        : null,
                 userNovel.getIsInterest(),
                 userNovel.getUserNovelRating(),
                 attractivePoints,
-                userNovel.getStartDate() != null ? userNovel.getStartDate().toString() : null,
-                userNovel.getEndDate() != null ? userNovel.getEndDate().toString() : null,
+                userNovel.getStartDate(),
+                userNovel.getEndDate(),
                 keywords,
                 feeds
         );
