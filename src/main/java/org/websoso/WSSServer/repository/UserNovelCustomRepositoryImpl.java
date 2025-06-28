@@ -7,7 +7,10 @@ import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
@@ -28,6 +31,7 @@ import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 @RequiredArgsConstructor
 public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository {
 
+    private static final long NO_CURSOR = 0L;
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
@@ -110,13 +114,24 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
 
         applyFilters(queryBuilder, isInterest, readStatuses, attractivePoints, novelRating, query, updatedSince);
 
-        queryBuilder.where(isAscending
-                ? userNovel.userNovelId.gt(lastUserNovelId)
-                : userNovel.userNovelId.lt(lastUserNovelId));
-        queryBuilder.orderBy(isAscending
-                ? userNovel.userNovelId.asc()
-                : userNovel.userNovelId.desc());
+        queryBuilder.where(ltUserNovelId(lastUserNovelId));
+        queryBuilder.orderBy(checkSortOrder(isAscending));
+
         return queryBuilder.limit(size).fetch();
+    }
+
+    private BooleanExpression ltUserNovelId(Long lastUserNovelId) {
+        if (lastUserNovelId == NO_CURSOR) {
+            return null;
+        }
+        return userNovel.userNovelId.lt(lastUserNovelId);
+    }
+
+    private OrderSpecifier<?> checkSortOrder(boolean isAscending) {
+        if (isAscending) {
+            return new OrderSpecifier<>(Order.ASC, userNovel.userNovelId);
+        }
+        return new OrderSpecifier<>(Order.DESC, userNovel.userNovelId);
     }
 
     @Override
