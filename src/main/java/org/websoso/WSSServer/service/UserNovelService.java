@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Gender.M;
+import static org.websoso.WSSServer.domain.common.SortCriteria.OLD;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
@@ -32,6 +33,7 @@ import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelAttractivePoint;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.domain.common.Gender;
+import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteKeywordGetResponse;
@@ -277,7 +279,7 @@ public class UserNovelService {
                                                                 List<String> readStatuses,
                                                                 List<String> attractivePoints, Float novelRating,
                                                                 String query, Long lastUserNovelId, int size,
-                                                                String sortType, LocalDateTime updatedSince) {
+                                                                SortCriteria sortCriteria, LocalDateTime updatedSince) {
         User owner = userService.getUserOrException(ownerId);
 
         if (isProfileInaccessible(visitor, ownerId, owner)) {
@@ -285,7 +287,7 @@ public class UserNovelService {
         }
 
         boolean isOwner = visitor.getUserId().equals(ownerId);
-        boolean isAscending = sortType.equalsIgnoreCase(SORT_TYPE_OLDEST);
+        boolean isAscending = sortCriteria == OLD;
 
         List<UserNovel> userNovels = userNovelRepository.findFilteredUserNovels(ownerId, isInterest, readStatuses,
                 attractivePoints, novelRating, query, lastUserNovelId, size, isAscending, updatedSince);
