@@ -157,13 +157,13 @@ public class UserController {
                                                                                 @RequestParam(value = "query", required = false) String query,
                                                                                 @RequestParam("lastUserNovelId") Long lastUserNovelId,
                                                                                 @RequestParam("size") int size,
-                                                                                @RequestParam("sortType") String sortType,
+                                                                                @RequestParam("sortCriteria") SortCriteria sortCriteria,
                                                                                 @RequestParam(value = "updatedSince", required = false) LocalDateTime updatedSince) {
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserNovelsAndNovels(
                         visitor, userId, isInterest, readStatuses, attractivePoints, novelRating, query,
-                        lastUserNovelId, size, sortType, updatedSince));
+                        lastUserNovelId, size, sortCriteria, updatedSince));
     }
 
     @GetMapping("/{userId}/feeds")
