@@ -114,17 +114,21 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
 
         applyFilters(queryBuilder, isInterest, readStatuses, attractivePoints, novelRating, query, updatedSince);
 
-        queryBuilder.where(ltUserNovelId(lastUserNovelId));
+        queryBuilder.where(checkLastUserNovelId(lastUserNovelId, isAscending));
         queryBuilder.orderBy(checkSortOrder(isAscending));
 
         return queryBuilder.limit(size).fetch();
     }
 
-    private BooleanExpression ltUserNovelId(Long lastUserNovelId) {
+    private BooleanExpression checkLastUserNovelId(Long lastUserNovelId, boolean isAscending) {
         if (lastUserNovelId == NO_CURSOR) {
             return null;
         }
-        return userNovel.userNovelId.lt(lastUserNovelId);
+        if (isAscending) {
+            return userNovel.userNovelId.gt(lastUserNovelId);
+        } else {
+            return userNovel.userNovelId.lt(lastUserNovelId);
+        }
     }
 
     private OrderSpecifier<?> checkSortOrder(boolean isAscending) {
