@@ -5,6 +5,7 @@ import java.util.List;
 import org.websoso.WSSServer.domain.Category;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedCategory;
+import org.websoso.WSSServer.domain.FeedImage;
 import org.websoso.WSSServer.domain.Like;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.UserNovel;
@@ -26,7 +27,8 @@ public record UserFeedGetResponse(
         List<String> relevantCategories,
         Boolean isPublic,
         String genre,
-        Float userNovelRating
+        Float userNovelRating,
+        List<String> feedImages
 ) {
 
     public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId) {
@@ -38,6 +40,9 @@ public record UserFeedGetResponse(
         List<String> relevantCategories = getFeedCategories(feed);
         String genreName = getNovelGenreName(novel);
         Float userNovelRating = getUserNovelRating(novel, visitorId);
+        List<String> feedImages = feed.getImages().stream()
+                .map(FeedImage::getUrl)
+                .toList();
 
         return new UserFeedGetResponse(
                 feed.getFeedId(),
@@ -58,7 +63,8 @@ public record UserFeedGetResponse(
                 relevantCategories,
                 feed.getIsPublic(),
                 genreName,
-                userNovelRating
+                userNovelRating,
+                feedImages
         );
     }
 
