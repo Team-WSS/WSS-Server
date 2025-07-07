@@ -1,7 +1,6 @@
 package org.websoso.WSSServer.service;
 
 import static org.websoso.WSSServer.domain.common.Gender.M;
-import static org.websoso.WSSServer.domain.common.SortCriteria.OLD;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
@@ -287,7 +286,7 @@ public class UserNovelService {
         }
 
         boolean isOwner = visitor.getUserId().equals(ownerId);
-        boolean isAscending = sortCriteria == OLD;
+        boolean isAscending = sortCriteria.isOld();
 
         List<UserNovel> userNovels = userNovelRepository.findFilteredUserNovels(ownerId, isInterest, readStatuses,
                 attractivePoints, novelRating, query, lastUserNovelId, size, isAscending, updatedSince);

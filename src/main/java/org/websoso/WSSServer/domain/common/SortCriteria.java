@@ -17,4 +17,8 @@ public enum SortCriteria {
         throw new CustomFilteringException(SORT_CRITERIA_NOT_FOUND,
                 "given sort criteria does not exist");
     }
+
+    public boolean isOld() {
+        return this == OLD;
+    }
 }
