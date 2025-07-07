@@ -470,7 +470,9 @@ public class FeedService {
                     .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
 
             List<UserFeedGetResponse> userFeedGetResponseList = visibleFeeds.stream()
-                    .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId))
+                    .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId,
+                            getThumbnailUrl(feed),
+                            getImageCount(feed)))
                     .toList();
 
             // TODO Slice의 hasNext()로 판단하도록 수정
@@ -495,5 +497,15 @@ public class FeedService {
                     .toList();
         }
         return null;
+    }
+
+    private String getThumbnailUrl(Feed feed) {
+        Optional<FeedImage> thumbnailImage = feedImageCustomRepository.findThumbnailFeedImageByFeedId(
+                feed.getFeedId());
+        return thumbnailImage.map(FeedImage::getUrl).orElse(null);
+    }
+
+    private Integer getImageCount(Feed feed) {
+        return feedImageRepository.countByFeedId(feed.getFeedId());
     }
 }

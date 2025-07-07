@@ -5,7 +5,6 @@ import java.util.List;
 import org.websoso.WSSServer.domain.Category;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedCategory;
-import org.websoso.WSSServer.domain.FeedImage;
 import org.websoso.WSSServer.domain.Like;
 import org.websoso.WSSServer.domain.Novel;
 import org.websoso.WSSServer.domain.UserNovel;
@@ -28,10 +27,12 @@ public record UserFeedGetResponse(
         Boolean isPublic,
         String genre,
         Float userNovelRating,
-        List<String> feedImages
+        String thumbnailUrl,
+        Integer imageCount
 ) {
 
-    public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId) {
+    public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId, String thumbnailUrl,
+                                         Integer imageCount) {
         boolean isModified = !feed.getCreatedDate().equals(feed.getModifiedDate());
         Long novelRatingCount = getNovelRatingCount(novel);
         Float novelRating = getNovelRating(novel, novelRatingCount);
@@ -40,9 +41,6 @@ public record UserFeedGetResponse(
         List<String> relevantCategories = getFeedCategories(feed);
         String genreName = getNovelGenreName(novel);
         Float userNovelRating = getUserNovelRating(novel, visitorId);
-        List<String> feedImages = feed.getImages().stream()
-                .map(FeedImage::getUrl)
-                .toList();
 
         return new UserFeedGetResponse(
                 feed.getFeedId(),
@@ -64,7 +62,8 @@ public record UserFeedGetResponse(
                 feed.getIsPublic(),
                 genreName,
                 userNovelRating,
-                feedImages
+                thumbnailUrl,
+                imageCount
         );
     }
 
