@@ -58,9 +58,9 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                                                     List<Genre> genres) {
         return jpaQueryFactory
                 .selectFrom(feed)
-                .join(novel).on(feed.novelId.eq(novel.novelId))
-                .join(novelGenre).on(novel.eq(novelGenre.novel))
-                .join(genre).on(novelGenre.genre.eq(genre))
+                .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
+                .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
+                .leftJoin(genre).on(novelGenre.genre.eq(genre))
                 .where(
                         feed.user.eq(owner),
                         ltFeedId(lastFeedId),
