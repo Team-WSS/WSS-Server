@@ -104,7 +104,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
 
     private BooleanExpression eqUnVisible(Boolean isUnVisible) {
         if (isUnVisible != null) {
-            return feed.isPublic.eq(isUnVisible);
+            return feed.isPublic.eq(!isUnVisible);
         }
         return null;
     }
