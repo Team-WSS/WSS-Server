@@ -11,6 +11,7 @@ import static org.websoso.WSSServer.domain.QNovelGenre.novelGenre;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -64,8 +65,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .where(
                         feed.user.eq(owner),
                         ltFeedId(lastFeedId),
-                        eqVisible(isVisible),
-                        eqUnVisible(isUnVisible),
+                        checkPublic(isVisible, isUnVisible),
                         checkGenres(genres)
                 )
                 .orderBy(
@@ -95,16 +95,30 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
         return feed.feedId.lt(lastFeedId);
     }
 
-    private BooleanExpression eqVisible(Boolean isVisible) {
-        if (isVisible != null) {
-            return feed.isPublic.eq(isVisible);
+    private BooleanExpression checkPublic(Boolean isVisible, Boolean isUnVisible) {
+        if (Boolean.TRUE.equals(isVisible) && Boolean.TRUE.equals(isUnVisible)) {
+            return null;
         }
-        return null;
-    }
-
-    private BooleanExpression eqUnVisible(Boolean isUnVisible) {
-        if (isUnVisible != null) {
-            return feed.isPublic.eq(!isUnVisible);
+        if (Boolean.TRUE.equals(isVisible) && Boolean.FALSE.equals(isUnVisible)) {
+            return feed.isPublic.eq(true);
+        }
+        if (Boolean.FALSE.equals(isVisible) && Boolean.TRUE.equals(isUnVisible)) {
+            return feed.isPublic.eq(false);
+        }
+        if (Boolean.FALSE.equals(isVisible) && Boolean.FALSE.equals(isUnVisible)) {
+            return Expressions.FALSE;
+        }
+        if (Boolean.TRUE.equals(isVisible)) {
+            return feed.isPublic.eq(true);
+        }
+        if (Boolean.FALSE.equals(isVisible)) {
+            return feed.isPublic.eq(false);
+        }
+        if (Boolean.TRUE.equals(isUnVisible)) {
+            return feed.isPublic.eq(false);
+        }
+        if (Boolean.FALSE.equals(isUnVisible)) {
+            return feed.isPublic.eq(true);
         }
         return null;
     }
