@@ -471,12 +471,8 @@ public class FeedService {
         if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
             List<Genre> genres = getGenres(genreNames);
 
-            List<Feed> feeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size, isVisible,
-                    isUnVisible, sortCriteria, genres);
-
-            List<Feed> visibleFeeds = feeds.stream()
-                    .filter(feed -> feed.isVisibleTo(visitorId))
-                    .toList();
+            List<Feed> visibleFeeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size, isVisible,
+                    isUnVisible, sortCriteria, genres, visitorId);
 
             List<Long> novelIds = visibleFeeds.stream()
                     .map(Feed::getNovelId)
@@ -487,11 +483,13 @@ public class FeedService {
                     .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
 
             List<UserFeedGetResponse> userFeedGetResponseList = visibleFeeds.stream()
-                    .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId))
+                    .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId,
+                            getThumbnailUrl(feed),
+                            getImageCount(feed)))
                     .toList();
 
             // TODO Slice의 hasNext()로 판단하도록 수정
-            Boolean isLoadable = feeds.size() == size;
+            Boolean isLoadable = visibleFeeds.size() == size;
             int feedsCount = visibleFeeds.size();
 
             return UserFeedsGetResponse.of(isLoadable, feedsCount, userFeedGetResponseList);
@@ -512,5 +510,15 @@ public class FeedService {
                     .toList();
         }
         return null;
+    }
+
+    private String getThumbnailUrl(Feed feed) {
+        Optional<FeedImage> thumbnailImage = feedImageCustomRepository.findThumbnailFeedImageByFeedId(
+                feed.getFeedId());
+        return thumbnailImage.map(FeedImage::getUrl).orElse(null);
+    }
+
+    private Integer getImageCount(Feed feed) {
+        return feedImageRepository.countByFeedId(feed.getFeedId());
     }
 }

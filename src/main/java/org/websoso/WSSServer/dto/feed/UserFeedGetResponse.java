@@ -26,10 +26,13 @@ public record UserFeedGetResponse(
         List<String> relevantCategories,
         Boolean isPublic,
         String genre,
-        Float userNovelRating
+        Float userNovelRating,
+        String thumbnailUrl,
+        Integer imageCount
 ) {
 
-    public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId) {
+    public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId, String thumbnailUrl,
+                                         Integer imageCount) {
         boolean isModified = !feed.getCreatedDate().equals(feed.getModifiedDate());
         Long novelRatingCount = getNovelRatingCount(novel);
         Float novelRating = getNovelRating(novel, novelRatingCount);
@@ -58,7 +61,9 @@ public record UserFeedGetResponse(
                 relevantCategories,
                 feed.getIsPublic(),
                 genreName,
-                userNovelRating
+                userNovelRating,
+                thumbnailUrl,
+                imageCount
         );
     }
 
