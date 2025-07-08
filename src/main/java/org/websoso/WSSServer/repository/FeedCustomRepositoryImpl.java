@@ -56,7 +56,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     @Override
     public List<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size, Boolean isVisible,
                                                     Boolean isUnVisible, SortCriteria sortCriteria,
-                                                    List<Genre> genres) {
+                                                    List<Genre> genres, Long visitorId) {
         return jpaQueryFactory
                 .selectFrom(feed)
                 .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
@@ -65,6 +65,8 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .where(
                         feed.user.eq(owner),
                         ltFeedId(lastFeedId),
+                        checkGenres(genres),
+                        checkVisible(visitorId),
                         checkPublic(isVisible, isUnVisible),
                         checkGenres(genres)
                 )
@@ -174,5 +176,12 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
 
     private BooleanExpression checkHidden() {
         return feed.isHidden.eq(false);
+    }
+
+    private BooleanExpression checkVisible(Long userId) {
+        if (userId != null) {
+            return feed.isPublic.isTrue().or(feed.user.userId.eq(userId));
+        }
+        return null;
     }
 }
