@@ -4,6 +4,7 @@ import static java.lang.Boolean.TRUE;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_NOT_ALLOWED;
+import static org.websoso.WSSServer.exception.error.CustomImageError.UPLOAD_FAIL_FILE;
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
+import org.websoso.WSSServer.exception.exception.CustomImageException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
@@ -141,17 +143,28 @@ public class FeedService {
     }
 
     private List<FeedImage> processFeedImages(List<MultipartFile> images) {
-        List<FeedImage> feedImages = new ArrayList<>();
+        List<String> uploadedImageUrls = new ArrayList<>();
 
         if (images != null && !images.isEmpty()) {
-            List<String> imageUrls = images.stream()
-                    .map(imageService::uploadFeedImage)
-                    .toList();
+            try {
+                for (MultipartFile image : images) {
+                    String imageUrl = imageService.uploadFeedImage(image);
+                    uploadedImageUrls.add(imageUrl);
+                }
+            } catch (Exception e) {
+                if (!uploadedImageUrls.isEmpty()) {
+                    imageService.deleteImages(uploadedImageUrls);
+                }
+                // TODO: 업로드 실패의 경우, 일반적으로 네트워크 문제이지만 상세한 사유별로 구분지어야함
+                throw new CustomImageException(UPLOAD_FAIL_FILE, "이미지 업로드에 실패했습니다.");
+            }
+        }
 
-            feedImages.add(FeedImage.createThumbnail(imageUrls.get(0)));
-
-            for (int i = 1; i < imageUrls.size(); i++) {
-                feedImages.add(FeedImage.createCommon(imageUrls.get(i), i));
+        List<FeedImage> feedImages = new ArrayList<>();
+        if (!uploadedImageUrls.isEmpty()) {
+            feedImages.add(FeedImage.createThumbnail(uploadedImageUrls.get(0)));
+            for (int i = 1; i < uploadedImageUrls.size(); i++) {
+                feedImages.add(FeedImage.createCommon(uploadedImageUrls.get(i), i));
             }
         }
 
