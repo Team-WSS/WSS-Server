@@ -65,7 +65,6 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .where(
                         feed.user.eq(owner),
                         ltFeedId(lastFeedId),
-                        checkGenres(genres),
                         checkVisible(visitorId),
                         checkPublic(isVisible, isUnVisible),
                         checkGenres(genres)
