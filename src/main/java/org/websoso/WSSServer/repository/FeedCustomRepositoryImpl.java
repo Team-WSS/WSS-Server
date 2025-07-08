@@ -99,26 +99,14 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
         if (Boolean.TRUE.equals(isVisible) && Boolean.TRUE.equals(isUnVisible)) {
             return null;
         }
-        if (Boolean.TRUE.equals(isVisible) && Boolean.FALSE.equals(isUnVisible)) {
-            return feed.isPublic.eq(true);
-        }
-        if (Boolean.FALSE.equals(isVisible) && Boolean.TRUE.equals(isUnVisible)) {
-            return feed.isPublic.eq(false);
-        }
         if (Boolean.FALSE.equals(isVisible) && Boolean.FALSE.equals(isUnVisible)) {
             return Expressions.FALSE;
         }
         if (Boolean.TRUE.equals(isVisible)) {
             return feed.isPublic.eq(true);
         }
-        if (Boolean.FALSE.equals(isVisible)) {
-            return feed.isPublic.eq(false);
-        }
         if (Boolean.TRUE.equals(isUnVisible)) {
             return feed.isPublic.eq(false);
-        }
-        if (Boolean.FALSE.equals(isUnVisible)) {
-            return feed.isPublic.eq(true);
         }
         return null;
     }
