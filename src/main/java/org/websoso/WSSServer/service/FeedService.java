@@ -4,6 +4,7 @@ import static java.lang.Boolean.TRUE;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_NOT_ALLOWED;
+import static org.websoso.WSSServer.exception.error.CustomImageError.UPLOAD_FAIL_FILE;
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
+import org.websoso.WSSServer.exception.exception.CustomImageException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
@@ -141,17 +143,28 @@ public class FeedService {
     }
 
     private List<FeedImage> processFeedImages(List<MultipartFile> images) {
-        List<FeedImage> feedImages = new ArrayList<>();
+        List<String> uploadedImageUrls = new ArrayList<>();
 
         if (images != null && !images.isEmpty()) {
-            List<String> imageUrls = images.stream()
-                    .map(imageService::uploadFeedImage)
-                    .toList();
+            try {
+                for (MultipartFile image : images) {
+                    String imageUrl = imageService.uploadFeedImage(image);
+                    uploadedImageUrls.add(imageUrl);
+                }
+            } catch (Exception e) {
+                if (!uploadedImageUrls.isEmpty()) {
+                    imageService.deleteImages(uploadedImageUrls);
+                }
+                // TODO: 업로드 실패의 경우, 일반적으로 네트워크 문제이지만 상세한 사유별로 구분지어야함
+                throw new CustomImageException(UPLOAD_FAIL_FILE, "이미지 업로드에 실패했습니다.");
+            }
+        }
 
-            feedImages.add(FeedImage.createThumbnail(imageUrls.get(0)));
-
-            for (int i = 1; i < imageUrls.size(); i++) {
-                feedImages.add(FeedImage.createCommon(imageUrls.get(i), i));
+        List<FeedImage> feedImages = new ArrayList<>();
+        if (!uploadedImageUrls.isEmpty()) {
+            feedImages.add(FeedImage.createThumbnail(uploadedImageUrls.get(0)));
+            for (int i = 1; i < uploadedImageUrls.size(); i++) {
+                feedImages.add(FeedImage.createCommon(uploadedImageUrls.get(i), i));
             }
         }
 
@@ -458,12 +471,8 @@ public class FeedService {
         if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
             List<Genre> genres = getGenres(genreNames);
 
-            List<Feed> feeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size, isVisible,
-                    isUnVisible, sortCriteria, genres);
-
-            List<Feed> visibleFeeds = feeds.stream()
-                    .filter(feed -> feed.isVisibleTo(visitorId))
-                    .toList();
+            List<Feed> visibleFeeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size, isVisible,
+                    isUnVisible, sortCriteria, genres, visitorId);
 
             List<Long> novelIds = visibleFeeds.stream()
                     .map(Feed::getNovelId)
@@ -474,11 +483,13 @@ public class FeedService {
                     .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
 
             List<UserFeedGetResponse> userFeedGetResponseList = visibleFeeds.stream()
-                    .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId))
+                    .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId,
+                            getThumbnailUrl(feed),
+                            getImageCount(feed)))
                     .toList();
 
             // TODO Slice의 hasNext()로 판단하도록 수정
-            Boolean isLoadable = feeds.size() == size;
+            Boolean isLoadable = visibleFeeds.size() == size;
             int feedsCount = visibleFeeds.size();
 
             return UserFeedsGetResponse.of(isLoadable, feedsCount, userFeedGetResponseList);
@@ -499,5 +510,15 @@ public class FeedService {
                     .toList();
         }
         return null;
+    }
+
+    private String getThumbnailUrl(Feed feed) {
+        Optional<FeedImage> thumbnailImage = feedImageCustomRepository.findThumbnailFeedImageByFeedId(
+                feed.getFeedId());
+        return thumbnailImage.map(FeedImage::getUrl).orElse(null);
+    }
+
+    private Integer getImageCount(Feed feed) {
+        return feedImageRepository.countByFeedId(feed.getFeedId());
     }
 }

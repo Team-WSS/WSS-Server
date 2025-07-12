@@ -77,6 +77,7 @@ public class UserNovel extends BaseEntity {
         this.endDate = endDate;
         this.user = user;
         this.novel = novel;
+        this.isInterest = false;
     }
 
     public static UserNovel create(ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,

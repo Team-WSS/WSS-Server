@@ -5,6 +5,7 @@ import static org.websoso.WSSServer.exception.error.CustomImageError.IMAGE_FILE_
 import static org.websoso.WSSServer.exception.error.CustomImageError.INVALID_IMAGE_FILE_NAME;
 import static org.websoso.WSSServer.exception.error.CustomImageError.UPLOAD_FAIL_FILE;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,8 @@ import java.util.UUID;
 public class ImageService {
 
     private static final String FEED_UPLOAD_DIRECTORY = "feed/";
+    private static final String SOURCE_DEFAULT = "DEFAULT";
+    private static final String SOURCE_AFTER_COMMIT = "AFTER_COMMIT";
 
     private final S3FileService s3FileService;
 
@@ -58,18 +61,26 @@ public class ImageService {
             throw new CustomImageException(IMAGE_FILE_IO, "이미지 파일을 읽는 중 오류가 발생했습니다. 파일이 손상되었거나 존재하지 않습니다.");
         } catch (Exception e) {
             // TODO: 이미지 파일 업로드 실패 예외 처리는 라이브러리 Exception 전부 정의된 후 수정짓도록 하겠습니다.
-            throw new CustomImageException(UPLOAD_FAIL_FILE, "이미지 업로드에 실패했습니다");
+            throw new CustomImageException(UPLOAD_FAIL_FILE, "이미지 업로드에 실패했습니다.");
         }
     }
 
+    public void deleteImages(List<String> imageUrls) {
+        deleteByUrls(imageUrls, SOURCE_DEFAULT);
+    }
+
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void deleteImages(FeedImageDeleteEvent event) {
-        for (String url : event.imageUrls()) {
+    public void handleDeleteEvent(FeedImageDeleteEvent event) {
+        deleteByUrls(event.imageUrls(), SOURCE_AFTER_COMMIT);
+    }
+
+    private void deleteByUrls(List<String> imageUrls, String source) {
+        for (String url : imageUrls) {
             try {
                 String key = extractS3Key(url);
                 s3FileService.delete(key);
             } catch (Exception e) {
-                log.error("S3 이미지 삭제 실패. url = {}", url, e);
+                log.error("[{}] S3 이미지 삭제 실패 url = {}", source, url, e);
             }
         }
     }
