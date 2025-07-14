@@ -30,7 +30,8 @@ public record FeedInfo(
         String thumbnailUrl,
         Integer imageCount,
         String genreName,
-        Float userNovelRating
+        Float userNovelRating,
+        Float feedWriterNovelRating
 ) {
     public static FeedInfo of(Feed feed, UserBasicInfo userBasicInfo, Novel novel, Boolean isLiked,
                               List<String> relevantCategories, Boolean isMyFeed, String thumbnailUrl,
@@ -40,6 +41,7 @@ public record FeedInfo(
         Float novelRating = null;
         String genreName = null;
         Float userNovelRating = null;
+        Float feedWriterNovelRating = null;
 
         if (novel != null) {
             List<UserNovel> userNovels = novel.getUserNovels().stream().filter(un -> un.getUserNovelRating() > 0.0)
@@ -51,6 +53,7 @@ public record FeedInfo(
                     novelRatingCount);
             genreName = getNovelGenreName(novel);
             userNovelRating = getUserNovelRating(novel, user);
+            feedWriterNovelRating = getFeedWriterNovelRating(novel, feed.getUser().getUserId());
         }
 
         return new FeedInfo(
@@ -75,7 +78,8 @@ public record FeedInfo(
                 thumbnailUrl,
                 imageCount,
                 genreName,
-                userNovelRating
+                userNovelRating,
+                feedWriterNovelRating
         );
     }
 
@@ -102,6 +106,19 @@ public record FeedInfo(
         return novel.getUserNovels()
                 .stream()
                 .filter(userNovel -> userNovel.getUser().getUserId().equals(user.getUserId()))
+                .findFirst()
+                .map(UserNovel::getUserNovelRating)
+                .orElse(null);
+    }
+
+    private static Float getFeedWriterNovelRating(Novel novel, Long feedWriterId) {
+        if (novel == null) {
+            return null;
+        }
+
+        return novel.getUserNovels()
+                .stream()
+                .filter(userNovel -> userNovel.getUser().getUserId().equals(feedWriterId))
                 .findFirst()
                 .map(UserNovel::getUserNovelRating)
                 .orElse(null);

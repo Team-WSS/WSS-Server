@@ -28,7 +28,8 @@ public record UserFeedGetResponse(
         String genre,
         Float userNovelRating,
         String thumbnailUrl,
-        Integer imageCount
+        Integer imageCount,
+        Float feedWriterNovelRating
 ) {
 
     public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId, String thumbnailUrl,
@@ -41,6 +42,7 @@ public record UserFeedGetResponse(
         List<String> relevantCategories = getFeedCategories(feed);
         String genreName = getNovelGenreName(novel);
         Float userNovelRating = getUserNovelRating(novel, visitorId);
+        Float feedWriterNovelRating = getFeedWriterNovelRating(novel, feed.getUser().getUserId());
 
         return new UserFeedGetResponse(
                 feed.getFeedId(),
@@ -63,7 +65,8 @@ public record UserFeedGetResponse(
                 genreName,
                 userNovelRating,
                 thumbnailUrl,
-                imageCount
+                imageCount,
+                feedWriterNovelRating
         );
     }
 
@@ -130,6 +133,19 @@ public record UserFeedGetResponse(
         return novel.getUserNovels()
                 .stream()
                 .filter(userNovel -> userNovel.getUser().getUserId().equals(visitorId))
+                .findFirst()
+                .map(UserNovel::getUserNovelRating)
+                .orElse(null);
+    }
+
+    private static Float getFeedWriterNovelRating(Novel novel, Long feedWriterId) {
+        if (novel == null) {
+            return null;
+        }
+
+        return novel.getUserNovels()
+                .stream()
+                .filter(userNovel -> userNovel.getUser().getUserId().equals(feedWriterId))
                 .findFirst()
                 .map(UserNovel::getUserNovelRating)
                 .orElse(null);
