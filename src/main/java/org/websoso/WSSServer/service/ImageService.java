@@ -36,12 +36,14 @@ public class ImageService {
     public String uploadFeedImage(MultipartFile file) {
 
         if (file == null || file.isEmpty()) {
+            log.error("빈 이미지 파일은 업로드 할 수 없습니다.");
             throw new CustomImageException(EMPTY_IMAGE_FILE, "빈 이미지 파일은 업로드할 수 없습니다.");
         }
 
         String originalFilename = file.getOriginalFilename();
 
         if (originalFilename == null || !originalFilename.contains(".")) {
+            log.error("이미지 파일의 이름이 유효하지 않습니다. : {}", originalFilename);
             throw new CustomImageException(INVALID_IMAGE_FILE_NAME, "이미지 파일의 이름이 유효하지 않습니다.");
         }
 
@@ -58,8 +60,10 @@ public class ImageService {
             );
             return result.url();
         } catch (IOException e) {
+            log.error(e.getMessage(), e);
             throw new CustomImageException(IMAGE_FILE_IO, "이미지 파일을 읽는 중 오류가 발생했습니다. 파일이 손상되었거나 존재하지 않습니다.");
         } catch (Exception e) {
+            log.error(e.getMessage(), e);
             // TODO: 이미지 파일 업로드 실패 예외 처리는 라이브러리 Exception 전부 정의된 후 수정짓도록 하겠습니다.
             throw new CustomImageException(UPLOAD_FAIL_FILE, "이미지 업로드에 실패했습니다.");
         }
