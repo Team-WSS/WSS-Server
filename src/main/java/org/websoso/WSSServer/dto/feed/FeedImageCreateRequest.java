@@ -6,7 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public record FeedImageCreateRequest(
-        @Size(max = 20, message = "피드 이미지는 20개를 초과할 수 없습니다.")
+        @Size(max = 5, message = "피드 이미지는 5개를 초과할 수 없습니다.")
         List<MultipartFile> images
 ) {
 }
