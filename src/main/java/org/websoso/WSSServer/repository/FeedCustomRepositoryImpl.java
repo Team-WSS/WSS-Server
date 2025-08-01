@@ -155,10 +155,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     }
 
     private BooleanExpression checkGenres(List<Genre> genres) {
-        if (genres != null && !genres.isEmpty() && feed.novelId != null) {
-            return genre.in(genres);
-        }
-        return null;
+        return genre.in(genres).or(feed.novelId.isNull());
     }
 
     private BooleanExpression checkBlocking(Long userId) {
