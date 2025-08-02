@@ -22,6 +22,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.websoso.WSSServer.domain.common.BaseEntity;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 
@@ -32,6 +34,8 @@ import org.websoso.WSSServer.domain.common.ReadStatus;
 @Table(name = "user_novel", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "novel_id"})
 })
+@SQLDelete(sql = "UPDATE user_novel SET is_deleted = true WHERE user_novel_id = ?")
+@SQLRestriction("is_deleted = false")
 public class UserNovel extends BaseEntity {
 
     @Id
@@ -54,6 +58,9 @@ public class UserNovel extends BaseEntity {
 
     @Column
     private LocalDate endDate;
+
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    private boolean isDeleted = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -78,6 +85,7 @@ public class UserNovel extends BaseEntity {
         this.user = user;
         this.novel = novel;
         this.isInterest = false;
+        this.isDeleted = false;
     }
 
     public static UserNovel create(ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,
