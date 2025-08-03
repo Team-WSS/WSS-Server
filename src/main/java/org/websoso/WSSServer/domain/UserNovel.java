@@ -32,7 +32,7 @@ import org.websoso.WSSServer.domain.common.ReadStatus;
 @DynamicInsert
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "user_novel", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "novel_id"})
+        @UniqueConstraint(columnNames = {"user_id", "novel_id", "is_deleted"})
 })
 @SQLDelete(sql = "UPDATE user_novel SET is_deleted = true WHERE user_novel_id = ?")
 @SQLRestriction("is_deleted = false")
@@ -111,4 +111,7 @@ public class UserNovel extends BaseEntity {
         this.endDate = null;
     }
 
+    public void restore() {
+        this.isDeleted = false;
+    }
 }
