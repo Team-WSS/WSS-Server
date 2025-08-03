@@ -23,8 +23,8 @@ import org.websoso.WSSServer.exception.common.ICustomError;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final long MAX_TOTAL_FILE_SIZE_MB = 100;
-    private static final long MAX_FILE_SIZE_MB = 5;
+    private static final double MAX_TOTAL_FILE_SIZE_MB = 2.5;
+    private static final double MAX_FILE_SIZE_MB = 0.5;
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResult> MethodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
@@ -64,8 +64,8 @@ public class GlobalExceptionHandler {
         log.error("[MaxUploadSizeExceededException] exception ", e);
 
         String message = (e.getCause() instanceof SizeLimitExceededException)
-                ? String.format("업로드하는 총 파일의 용량이 %dMB를 초과할 수 없습니다.", MAX_TOTAL_FILE_SIZE_MB)
-                : String.format("업로드하는 각 파일의 용량이 %dMB를 초과할 수 없습니다.", MAX_FILE_SIZE_MB);
+                ? String.format("업로드하는 총 파일의 용량이 %.1fMB를 초과할 수 없습니다.", MAX_TOTAL_FILE_SIZE_MB)
+                : String.format("업로드하는 각 파일의 용량이 %.1fMB를 초과할 수 없습니다.", MAX_FILE_SIZE_MB);
 
         return ResponseEntity
                 .status(BAD_REQUEST)
