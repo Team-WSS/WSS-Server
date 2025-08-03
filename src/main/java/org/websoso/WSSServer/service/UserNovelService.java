@@ -252,8 +252,14 @@ public class UserNovelService {
     }
 
     public UserNovel createUserNovelByInterest(User user, Novel novel) {
-        if (getUserNovelOrNull(user, novel) != null) {
-            throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
+        Optional<UserNovel> conflictingUserNovel = userNovelRepository.findByUserAndNovelIncludeDeleted(user, novel);
+        if (conflictingUserNovel.isPresent()) {
+            UserNovel userNovel = conflictingUserNovel.get();
+            if (!userNovel.isDeleted()) {
+                throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
+            }
+            userNovel.restore();
+            return userNovel;
         }
         return userNovelRepository.save(UserNovel.create(null, 0.0f, null, null, user, novel));
     }
