@@ -29,4 +29,7 @@ public interface UserNovelRepository extends JpaRepository<UserNovel, Long>, Use
     List<UserNovel> findUserNovelByUser(User user);
 
     Optional<UserNovel> findByNovel_NovelIdAndUser(Long novelId, User user);
+
+    @Query("SELECT un FROM UserNovel un WHERE un.user = :user AND un.novel = :novel")
+    Optional<UserNovel> findByUserAndNovelIncludeDeleted(User user, Novel novel);
 }

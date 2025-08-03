@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -97,6 +98,21 @@ public class UserNovelService {
     public void createEvaluation(User user, UserNovelCreateRequest request) {
         Novel novel = novelRepository.findById(request.novelId())
                 .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
+
+        Optional<UserNovel> conflictingUserNovel = userNovelRepository.findByUserAndNovelIncludeDeleted(user, novel);
+
+        if (conflictingUserNovel.isPresent()) {
+            UserNovel userNovel = conflictingUserNovel.get();
+            if (!userNovel.isDeleted()) {
+                throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
+            }
+            userNovel.restore();
+            userNovel.updateUserNovel(request.userNovelRating(), request.status(), request.startDate(),
+                    request.endDate());
+            createUserNovelAttractivePoints(userNovel, request.attractivePoints());
+            createNovelKeywords(userNovel, request.keywordIds());
+            return;
+        }
 
         try {
             UserNovel userNovel = userNovelRepository.save(UserNovel.create(
