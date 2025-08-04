@@ -90,11 +90,12 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     }
 
     @Override
-    public int countVisibleFeeds(User owner, Long lastFeedId, Boolean isVisible,
-                                 Boolean isUnVisible, List<Genre> genres,
-                                 Long visitorId) {
+    public Long countVisibleFeeds(User owner, Long lastFeedId, Boolean isVisible,
+                                  Boolean isUnVisible, List<Genre> genres,
+                                  Long visitorId) {
         return jpaQueryFactory
-                .selectFrom(feed)
+                .select(feed.count())
+                .from(feed)
                 .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
                 .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
                 .leftJoin(genre).on(novelGenre.genre.eq(genre))
@@ -105,8 +106,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                         checkPublic(isVisible, isUnVisible),
                         checkGenres(genres)
                 )
-                .fetch()
-                .size();
+                .fetchOne();
     }
 
     private BooleanExpression ltFeedId(Long lastFeedId) {
