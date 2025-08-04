@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.websoso.WSSServer.domain.Avatar;
+import org.websoso.WSSServer.domain.Comment;
 import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.FeedImage;
 import org.websoso.WSSServer.domain.Genre;
@@ -58,6 +59,7 @@ import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.notification.FCMService;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.AvatarRepository;
+import org.websoso.WSSServer.repository.CommentRepository;
 import org.websoso.WSSServer.repository.FeedImageCustomRepository;
 import org.websoso.WSSServer.repository.FeedImageRepository;
 import org.websoso.WSSServer.repository.FeedRepository;
@@ -65,6 +67,7 @@ import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
+import org.websoso.WSSServer.repository.ReportedCommentRepository;
 import org.websoso.WSSServer.repository.UserNovelRepository;
 
 @Service
@@ -98,6 +101,8 @@ public class FeedService {
     private final FeedImageRepository feedImageRepository;
     private final GenreService genreService;
     private final GenrePreferenceRepository genrePreferenceRepository;
+    private final CommentRepository commentRepository;
+    private final ReportedCommentRepository reportedCommentRepository;
 
     public void createFeed(User user, FeedCreateRequest request, FeedImageCreateRequest imagesRequest) {
         List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
@@ -170,6 +175,9 @@ public class FeedService {
     }
 
     public void deleteFeed(Long feedId) {
+        List<Long> commentIds = commentRepository.findAllByFeedId(feedId).stream()
+                .map(Comment::getCommentId).toList();
+        reportedCommentRepository.deleteByCommentIdsIn(commentIds);
         feedRepository.deleteById(feedId);
     }
 

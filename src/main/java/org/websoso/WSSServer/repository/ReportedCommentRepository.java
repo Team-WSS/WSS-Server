@@ -1,6 +1,10 @@
 package org.websoso.WSSServer.repository;
 
+import io.lettuce.core.dynamic.annotation.Param;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Comment;
 import org.websoso.WSSServer.domain.ReportedComment;
@@ -14,4 +18,7 @@ public interface ReportedCommentRepository extends JpaRepository<ReportedComment
 
     Integer countByCommentAndReportedType(Comment comment, ReportedType reportedType);
 
+    @Modifying
+    @Query("DELETE FROM ReportedComment rc WHERE rc.comment.commentId IN :commentIds")
+    void deleteByCommentIdsIn(@Param("commentIds") List<Long> commentIds);
 }
