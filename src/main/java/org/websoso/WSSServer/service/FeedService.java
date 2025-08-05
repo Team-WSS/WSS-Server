@@ -496,7 +496,8 @@ public class FeedService {
 
             // TODO Slice의 hasNext()로 판단하도록 수정
             Boolean isLoadable = visibleFeeds.size() == size;
-            int feedsCount = visibleFeeds.size();
+            long feedsCount = feedRepository.countVisibleFeeds(owner, lastFeedId, isVisible,
+                    isUnVisible, genres, visitorId);
 
             return UserFeedsGetResponse.of(isLoadable, feedsCount, userFeedGetResponseList);
         }

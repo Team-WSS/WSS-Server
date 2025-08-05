@@ -89,6 +89,26 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .fetchOne());
     }
 
+    @Override
+    public Long countVisibleFeeds(User owner, Long lastFeedId, Boolean isVisible,
+                                  Boolean isUnVisible, List<Genre> genres,
+                                  Long visitorId) {
+        return jpaQueryFactory
+                .select(feed.count())
+                .from(feed)
+                .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
+                .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
+                .leftJoin(genre).on(novelGenre.genre.eq(genre))
+                .where(
+                        feed.user.eq(owner),
+                        ltFeedId(lastFeedId),
+                        checkVisible(visitorId),
+                        checkPublic(isVisible, isUnVisible),
+                        checkGenres(genres)
+                )
+                .fetchOne();
+    }
+
     private BooleanExpression ltFeedId(Long lastFeedId) {
         if (lastFeedId == NO_CURSOR) {
             return null;
