@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -131,13 +132,19 @@ public class NovelService {
 
     public void registerAsInterest(User user, Long novelId) {
         Novel novel = getNovelOrException(novelId);
-        UserNovel userNovel = userNovelService.getUserNovelOrNull(user, novel);
+        Optional<UserNovel> existingUserNovel = userNovelRepository.findByUserAndNovelIncludeDeleted(user.getUserId(),
+                novelId);
+        UserNovel userNovel;
 
-        if (userNovel != null && userNovel.getIsInterest()) {
-            throw new CustomUserNovelException(ALREADY_INTERESTED, "already registered as interested");
-        }
-
-        if (userNovel == null) {
+        if (existingUserNovel.isPresent()) {
+            userNovel = existingUserNovel.get();
+            if ((!userNovel.isDeleted()) && userNovel.getIsInterest()) {
+                throw new CustomUserNovelException(ALREADY_INTERESTED, "already registered as interested");
+            }
+            if (userNovel.isDeleted()) {
+                userNovel.restore();
+            }
+        } else {
             try {
                 userNovel = userNovelService.createUserNovelByInterest(user, novel);
             } catch (DataIntegrityViolationException e) {
