@@ -101,7 +101,6 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .leftJoin(genre).on(novelGenre.genre.eq(genre))
                 .where(
                         feed.user.eq(owner),
-                        ltFeedId(lastFeedId),
                         checkVisible(visitorId),
                         checkPublic(isVisible, isUnVisible),
                         checkGenres(genres)
