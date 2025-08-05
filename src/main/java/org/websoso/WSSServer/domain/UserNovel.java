@@ -113,5 +113,6 @@ public class UserNovel extends BaseEntity {
 
     public void restore() {
         this.isDeleted = false;
+        deleteEvaluation();
     }
 }
