@@ -99,7 +99,8 @@ public class UserNovelService {
         Novel novel = novelRepository.findById(request.novelId())
                 .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
 
-        Optional<UserNovel> conflictingUserNovel = userNovelRepository.findByUserAndNovelIncludeDeleted(user, novel);
+        Optional<UserNovel> conflictingUserNovel = userNovelRepository.findByUserAndNovelIncludeDeleted(
+                user.getUserId(), novel.getNovelId());
 
         if (conflictingUserNovel.isPresent()) {
             UserNovel userNovel = conflictingUserNovel.get();
@@ -252,7 +253,8 @@ public class UserNovelService {
     }
 
     public UserNovel createUserNovelByInterest(User user, Novel novel) {
-        Optional<UserNovel> conflictingUserNovel = userNovelRepository.findByUserAndNovelIncludeDeleted(user, novel);
+        Optional<UserNovel> conflictingUserNovel = userNovelRepository.findByUserAndNovelIncludeDeleted(
+                user.getUserId(), novel.getNovelId());
         if (conflictingUserNovel.isPresent()) {
             UserNovel userNovel = conflictingUserNovel.get();
             if (!userNovel.isDeleted()) {

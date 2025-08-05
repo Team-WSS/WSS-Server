@@ -30,6 +30,6 @@ public interface UserNovelRepository extends JpaRepository<UserNovel, Long>, Use
 
     Optional<UserNovel> findByNovel_NovelIdAndUser(Long novelId, User user);
 
-    @Query("SELECT un FROM UserNovel un WHERE un.user = :user AND un.novel = :novel")
-    Optional<UserNovel> findByUserAndNovelIncludeDeleted(User user, Novel novel);
+    @Query(value = "SELECT * FROM user_novel WHERE user_id = :userId AND novel_id = :novelId", nativeQuery = true)
+    Optional<UserNovel> findByUserAndNovelIncludeDeleted(Long userId, Long novelId);
 }
