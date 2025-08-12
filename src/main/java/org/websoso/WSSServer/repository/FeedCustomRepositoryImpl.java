@@ -177,7 +177,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
         if (genres != null && !genres.isEmpty()) {
             return genre.in(genres).or(feed.novelId.isNull());
         }
-        return feed.novelId.isNull();
+        return null;
     }
 
     private BooleanExpression checkBlocking(Long userId) {
