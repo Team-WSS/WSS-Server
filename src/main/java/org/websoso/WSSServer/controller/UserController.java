@@ -43,6 +43,7 @@ import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserGenrePreferencesGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponseLegacy;
 import org.websoso.WSSServer.dto.userNovel.UserTasteAttractivePointPreferencesAndKeywordsGetResponse;
 import org.websoso.WSSServer.service.FeedService;
 import org.websoso.WSSServer.service.UserNovelService;
@@ -164,6 +165,20 @@ public class UserController {
                 .body(userNovelService.getUserNovelsAndNovels(
                         visitor, userId, isInterest, readStatuses, attractivePoints, novelRating, query,
                         lastUserNovelId, size, sortCriteria, updatedSince));
+    }
+
+    @GetMapping("/{userId}/novels/legacy")
+    public ResponseEntity<UserNovelAndNovelsGetResponseLegacy> getUserNovelsAndNovelsOld(
+            @AuthenticationPrincipal User visitor,
+            @PathVariable("userId") Long userId,
+            @RequestParam("readStatus") String readStatus,
+            @RequestParam("lastUserNovelId") Long lastUserNovelId,
+            @RequestParam("size") int size,
+            @RequestParam("sortCriteria") SortCriteria sortCriteria) {
+        return ResponseEntity
+                .status(OK)
+                .body(userNovelService.getUserNovelsAndNovelsLegacy(visitor, userId, readStatus, lastUserNovelId, size,
+                        sortCriteria));
     }
 
     @GetMapping("/{userId}/feeds")
