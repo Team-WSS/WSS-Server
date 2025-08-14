@@ -39,7 +39,9 @@ import org.websoso.WSSServer.dto.userNovel.TasteKeywordGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserGenrePreferenceGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserGenrePreferencesGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponseLegacy;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponseLegacy;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
@@ -300,6 +302,35 @@ public class UserNovelService {
                 userNovels, ownerId, isOwner);
 
         return new UserNovelAndNovelsGetResponse(totalCount, isLoadable, userNovelAndNovelGetResponses);
+    }
+
+    @Transactional(readOnly = true)
+    public UserNovelAndNovelsGetResponseLegacy getUserNovelsAndNovelsLegacy(User visitor, Long ownerId,
+                                                                            String readStatus,
+                                                                            Long lastUserNovelId, int size,
+                                                                            SortCriteria sortCriteria) {
+        User owner = userService.getUserOrException(ownerId);
+
+        if (isProfileInaccessible(visitor, ownerId, owner)) {
+            throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
+        }
+
+        boolean isAscending = sortCriteria.isOld();
+        List<String> readStatuses = List.of(readStatus);
+
+        List<UserNovel> userNovels = userNovelRepository.findFilteredUserNovels(ownerId, null, readStatuses,
+                null, null, null, lastUserNovelId, size, isAscending, null);
+
+        Long totalCount = userNovelRepository.countByUserIdAndFilters(ownerId, null, readStatuses,
+                null, null, null, null);
+
+        boolean isLoadable = userNovels.size() == size;
+
+        List<UserNovelAndNovelGetResponseLegacy> userNovelAndNovelGetResponseLegacies = userNovels.stream()
+                .map(UserNovelAndNovelGetResponseLegacy::of)
+                .toList();
+
+        return new UserNovelAndNovelsGetResponseLegacy(totalCount, isLoadable, userNovelAndNovelGetResponseLegacies);
     }
 
     private List<UserNovelAndNovelGetResponse> buildUserNovelAndNovelGetResponses(List<UserNovel> userNovels,
