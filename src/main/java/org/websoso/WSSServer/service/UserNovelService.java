@@ -316,12 +316,19 @@ public class UserNovelService {
         }
 
         boolean isAscending = sortCriteria.isOld();
-        List<String> readStatuses = List.of(readStatus);
+        List<String> readStatuses = null;
+        Boolean isInterest = null;
 
-        List<UserNovel> userNovels = userNovelRepository.findFilteredUserNovels(ownerId, null, readStatuses,
+        if ("INTEREST".equalsIgnoreCase(readStatus)) {
+            isInterest = true;
+        } else {
+            readStatuses = List.of(readStatus);
+        }
+
+        List<UserNovel> userNovels = userNovelRepository.findFilteredUserNovels(ownerId, isInterest, readStatuses,
                 null, null, null, lastUserNovelId, size, isAscending, null);
 
-        Long totalCount = userNovelRepository.countByUserIdAndFilters(ownerId, null, readStatuses,
+        Long totalCount = userNovelRepository.countByUserIdAndFilters(ownerId, isInterest, readStatuses,
                 null, null, null, null);
 
         boolean isLoadable = userNovels.size() == size;
