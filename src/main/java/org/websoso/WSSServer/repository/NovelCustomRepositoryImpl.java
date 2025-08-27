@@ -78,7 +78,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                                           List<Keyword> keywords) {
 
         NumberTemplate<Long> popularity = Expressions.numberTemplate(Long.class,
-                "(SELECT COUNT(un) FROM UserNovel un WHERE un.novel = {0} AND (un.isInterest = true OR un.status <> 'QUIT'))",
+                "(SELECT COUNT(un) FROM UserNovel un WHERE un.novel = {0} AND un.isDeleted = false AND (un.isInterest = true OR un.status <> 'QUIT'))",
                 novel);
 
         JPAQuery<Novel> query = jpaQueryFactory
@@ -106,20 +106,25 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
     private NumberExpression<Double> getAverageRating(QNovel novel) {
         return Expressions.numberTemplate(Double.class,
-                "(SELECT AVG(un.userNovelRating) FROM UserNovel un WHERE un.novel = {0} AND un.userNovelRating <> 0)",
+                "(SELECT AVG(un.userNovelRating) FROM UserNovel un WHERE un.novel = {0} AND un.isDeleted = false AND un.userNovelRating <> 0)",
                 novel);
     }
 
     private NumberExpression<Integer> getKeywordCount(QNovel novel, List<Keyword> keywords) {
         return Expressions.numberTemplate(Integer.class,
-                "(SELECT COUNT(unk.keyword) FROM UserNovelKeyword unk WHERE unk.userNovel.novel = {0} AND unk.keyword IN ({1}) GROUP BY unk.userNovel.novel.id)",
+                "(SELECT COUNT(unk.keyword) FROM UserNovelKeyword unk JOIN unk.userNovel un WHERE un.novel = {0} AND un.isDeleted = false AND unk.keyword IN ({1}) GROUP BY un.novel.id)",
                 novel, keywords);
     }
 
     private NumberExpression<Long> getPopularity(QNovel novel) {
         return new CaseBuilder()
-                .when(userNovel.isInterest.isTrue()
-                        .or(userNovel.status.in(WATCHING, WATCHED)))
+                .when(
+                        userNovel.isDeleted.isFalse()
+                                .and(
+                                        userNovel.isInterest.isTrue()
+                                                .or(userNovel.status.in(WATCHING, WATCHED))
+                                )
+                )
                 .then(1L)
                 .otherwise(0L)
                 .sum();

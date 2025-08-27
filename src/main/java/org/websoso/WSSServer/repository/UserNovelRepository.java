@@ -19,7 +19,7 @@ public interface UserNovelRepository extends JpaRepository<UserNovel, Long>, Use
 
     Integer countByNovelAndIsInterestTrue(Novel novel);
 
-    @Query("SELECT SUM(un.userNovelRating) FROM UserNovel un WHERE un.novel = :novel")
+    @Query("SELECT SUM(un.userNovelRating) FROM UserNovel un WHERE un.novel = :novel AND un.isDeleted = false")
     Float sumUserNovelRatingByNovel(Novel novel);
 
     Integer countByNovelAndUserNovelRatingNot(Novel novel, float ratingToExclude);
@@ -29,4 +29,7 @@ public interface UserNovelRepository extends JpaRepository<UserNovel, Long>, Use
     List<UserNovel> findUserNovelByUser(User user);
 
     Optional<UserNovel> findByNovel_NovelIdAndUser(Long novelId, User user);
+
+    @Query(value = "SELECT * FROM user_novel WHERE user_id = :userId AND novel_id = :novelId", nativeQuery = true)
+    Optional<UserNovel> findByUserAndNovelIncludeDeleted(Long userId, Long novelId);
 }
