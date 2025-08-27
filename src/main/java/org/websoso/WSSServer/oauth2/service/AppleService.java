@@ -263,6 +263,7 @@ public class AppleService {
                     .retrieve()
                     .body(AppleTokenResponse.class);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new CustomAppleLoginException(TOKEN_REQUEST_FAILED, "failed to get token from Apple server");
         }
     }
