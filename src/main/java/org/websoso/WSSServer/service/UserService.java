@@ -18,8 +18,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.config.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
-import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
@@ -28,6 +28,7 @@ import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.WithdrawalReason;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
+import org.websoso.WSSServer.dto.auth.LogoutRequest;
 import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
@@ -95,8 +96,8 @@ public class UserService {
     public LoginResponse login(Long userId) {
         User user = getUserOrException(userId);
 
-        UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
-        String token = jwtProvider.generateAccessToken(userAuthentication);
+        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null, null);
+        String token = jwtProvider.generateAccessToken(customAuthenticationToken);
 
         return LoginResponse.of(token);
     }
@@ -120,8 +121,8 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public User getUserOrException(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() ->
-                new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
     }
 
     @Transactional(readOnly = true)
@@ -182,9 +183,12 @@ public class UserService {
                 MessageFormatter.formatUserJoinMessage(user, SocialLoginType.fromSocialId(user.getSocialId())), JOIN));
     }
 
-    public void logout(User user, String refreshToken, String deviceIdentifier) {
-        refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
-        userDeviceRepository.deleteByUserAndDeviceIdentifier(user, deviceIdentifier);
+    public void logout(User user, LogoutRequest request) {
+        refreshTokenRepository.findByRefreshToken(request.refreshToken())
+                .ifPresent(refreshTokenRepository::delete);
+
+        userDeviceRepository.deleteByUserAndDeviceIdentifier(user, request.deviceIdentifier());
+
         if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
             kakaoService.kakaoLogout(user);
         }
@@ -196,7 +200,7 @@ public class UserService {
         String messageContent = MessageFormatter.formatUserWithdrawMessage(user.getUserId(), user.getNickname(),
                 withdrawalRequest.reason());
 
-        cleanupUserData(user.getUserId(), withdrawalRequest.refreshToken());
+        cleanupUserData(user.getUserId());
 
         messageService.sendDiscordWebhookMessage(
                 DiscordWebhookMessage.of(messageContent, WITHDRAW));
@@ -239,9 +243,8 @@ public class UserService {
         }
     }
 
-    private void cleanupUserData(Long userId, String refreshToken) {
-        refreshTokenRepository.findByRefreshToken(refreshToken)
-                .ifPresent(refreshTokenRepository::delete);
+    private void cleanupUserData(Long userId) {
+        refreshTokenRepository.deleteAll(refreshTokenRepository.findAllByUserId(userId));
         feedRepository.updateUserToUnknown(userId);
         commentRepository.updateUserToUnknown(userId);
         userRepository.deleteById(userId);

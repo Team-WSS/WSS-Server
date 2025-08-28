@@ -8,6 +8,8 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_EVA
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -16,9 +18,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AttractivePoint;
+import org.websoso.WSSServer.domain.Feed;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.Keyword;
 import org.websoso.WSSServer.domain.Novel;
@@ -28,13 +32,16 @@ import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.UserNovelAttractivePoint;
 import org.websoso.WSSServer.domain.UserNovelKeyword;
 import org.websoso.WSSServer.domain.common.Gender;
+import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteKeywordGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserGenrePreferenceGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserGenrePreferencesGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponseLegacy;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
+import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponseLegacy;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
@@ -43,6 +50,7 @@ import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
+import org.websoso.WSSServer.repository.FeedRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.NovelRepository;
 import org.websoso.WSSServer.repository.UserNovelAttractivePointRepository;
@@ -62,6 +70,9 @@ public class UserNovelService {
     private final AttractivePointService attractivePointService;
     private final UserService userService;
     private final GenreRepository genreRepository;
+    private final FeedRepository feedRepository;
+
+    public static final String SORT_TYPE_OLDEST = "OLDEST";
 
     private static final List<String> priorityGenreNamesOfMale = List.of(
             "fantasy", "modernFantasy", "wuxia", "drama", "mystery", "lightNovel", "romance", "romanceFantasy", "BL"
@@ -71,9 +82,9 @@ public class UserNovelService {
     );
 
     @Transactional(readOnly = true)
-    public UserNovel getUserNovelOrException(User user, Novel novel) {
-        return userNovelRepository.findByNovelAndUser(novel, user).orElseThrow(
-                () -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
+    public UserNovel getUserNovelOrException(User user, Long novelId) {
+        return userNovelRepository.findByNovel_NovelIdAndUser(novelId, user)
+                .orElseThrow(() -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
                         "user novel with the given user and novel is not found"));
     }
 
@@ -89,25 +100,24 @@ public class UserNovelService {
         Novel novel = novelRepository.findById(request.novelId())
                 .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
 
-        if (getUserNovelOrNull(user, novel) != null) {
+        try {
+            UserNovel userNovel = userNovelRepository.save(UserNovel.create(
+                    request.status(),
+                    request.userNovelRating(),
+                    request.startDate(),
+                    request.endDate(),
+                    user,
+                    novel));
+
+            createUserNovelAttractivePoints(userNovel, request.attractivePoints());
+            createNovelKeywords(userNovel, request.keywordIds());
+        } catch (DataIntegrityViolationException e) {
             throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
         }
-
-        UserNovel userNovel = userNovelRepository.save(UserNovel.create(
-                request.status(),
-                request.userNovelRating(),
-                request.startDate(),
-                request.endDate(),
-                user,
-                novel));
-
-        createUserNovelAttractivePoints(userNovel, request.attractivePoints());
-        createNovelKeywords(userNovel, request.keywordIds());
     }
 
-    public void updateEvaluation(User user, Novel novel, UserNovelUpdateRequest request) {
-        UserNovel userNovel = getUserNovelOrException(user, novel);
-
+    public void updateEvaluation(User user, Long novelId, UserNovelUpdateRequest request) {
+        UserNovel userNovel = getUserNovelOrException(user, novelId);
         updateUserNovel(userNovel, request);
         updateAssociations(userNovel, request);
     }
@@ -117,50 +127,83 @@ public class UserNovelService {
     }
 
     private void updateAssociations(UserNovel userNovel, UserNovelUpdateRequest request) {
-        Set<AttractivePoint> previousAttractivePoints = getPreviousAttractivePoints(userNovel);
-        Set<Keyword> previousKeywords = getPreviousKeywords(userNovel);
-
-        manageAttractivePoints(userNovel, request.attractivePoints(), previousAttractivePoints);
-        manageKeywords(userNovel, request.keywordIds(), previousKeywords);
-
-        userNovelAttractivePointRepository.deleteByAttractivePointsAndUserNovel(previousAttractivePoints, userNovel);
-        userNovelKeywordRepository.deleteByKeywordsAndUserNovel(previousKeywords, userNovel);
+        updateAttractivePoints(userNovel, request.attractivePoints());
+        updateKeywords(userNovel, request.keywordIds());
     }
 
-    private Set<AttractivePoint> getPreviousAttractivePoints(UserNovel userNovel) {
-        return userNovel.getUserNovelAttractivePoints()
+    private void updateAttractivePoints(UserNovel userNovel, List<String> attractivePoints) {
+        Map<AttractivePoint, UserNovelAttractivePoint> currentPointMap = userNovel.getUserNovelAttractivePoints()
                 .stream()
-                .map(UserNovelAttractivePoint::getAttractivePoint)
+                .collect(Collectors.toMap(UserNovelAttractivePoint::getAttractivePoint, it -> it));
+
+        Set<AttractivePoint> requestedPoints = attractivePoints.stream()
+                .map(attractivePointService::getAttractivePointByString)
                 .collect(Collectors.toSet());
+
+        addUserNovelAttractivePoints(userNovel, currentPointMap, requestedPoints);
+        deleteUserNovelAttractivePoints(userNovel, currentPointMap, requestedPoints);
     }
 
-    private Set<Keyword> getPreviousKeywords(UserNovel userNovel) {
-        return userNovel.getUserNovelKeywords()
-                .stream()
-                .map(UserNovelKeyword::getKeyword)
-                .collect(Collectors.toSet());
-    }
-
-    private void manageAttractivePoints(UserNovel userNovel, List<String> attractivePoints,
-                                        Set<AttractivePoint> previousAttractivePoints) {
-        for (String stringAttractivePoint : attractivePoints) {
-            AttractivePoint attractivePoint = attractivePointService.getAttractivePointByString(stringAttractivePoint);
-            if (previousAttractivePoints.contains(attractivePoint)) {
-                previousAttractivePoints.remove(attractivePoint);
-            } else {
-                userNovelAttractivePointRepository.save(UserNovelAttractivePoint.create(userNovel, attractivePoint));
+    private void addUserNovelAttractivePoints(UserNovel userNovel,
+                                              Map<AttractivePoint, UserNovelAttractivePoint> currentPointMap,
+                                              Set<AttractivePoint> requestedPoints) {
+        for (AttractivePoint requested : requestedPoints) {
+            if (!currentPointMap.containsKey(requested)) {
+                userNovelAttractivePointRepository.save(UserNovelAttractivePoint.create(userNovel, requested));
             }
         }
     }
 
-    private void manageKeywords(UserNovel userNovel, List<Integer> keywordIds, Set<Keyword> previousKeywords) {
-        for (Integer keywordId : keywordIds) {
-            Keyword keyword = keywordService.getKeywordOrException(keywordId);
-            if (previousKeywords.contains(keyword)) {
-                previousKeywords.remove(keyword);
-            } else {
-                userNovelKeywordRepository.save(UserNovelKeyword.create(userNovel, keyword));
+    private void deleteUserNovelAttractivePoints(UserNovel userNovel,
+                                                 Map<AttractivePoint, UserNovelAttractivePoint> currentPointMap,
+                                                 Set<AttractivePoint> requestedPoints) {
+        List<UserNovelAttractivePoint> toDelete = new ArrayList<>();
+        for (Map.Entry<AttractivePoint, UserNovelAttractivePoint> entry : currentPointMap.entrySet()) {
+            if (!requestedPoints.contains(entry.getKey())) {
+                toDelete.add(entry.getValue());
             }
+        }
+        if (!toDelete.isEmpty()) {
+            userNovel.getUserNovelAttractivePoints().removeAll(toDelete);
+            userNovel.touch();
+        }
+    }
+
+    private void updateKeywords(UserNovel userNovel, List<Integer> keywordIds) {
+        Map<Keyword, UserNovelKeyword> currentKeywordMap = userNovel.getUserNovelKeywords()
+                .stream()
+                .collect(Collectors.toMap(UserNovelKeyword::getKeyword, it -> it));
+
+        Set<Keyword> requestedKeywords = keywordIds.stream()
+                .map(keywordService::getKeywordOrException)
+                .collect(Collectors.toSet());
+
+        addUserNovelKeywords(userNovel, currentKeywordMap, requestedKeywords);
+        deleteUserNovelKeywords(userNovel, currentKeywordMap, requestedKeywords);
+    }
+
+    private void addUserNovelKeywords(UserNovel userNovel,
+                                      Map<Keyword, UserNovelKeyword> currentKeywordMap,
+                                      Set<Keyword> requestedKeywords) {
+        for (Keyword requested : requestedKeywords) {
+            if (!currentKeywordMap.containsKey(requested)) {
+                userNovelKeywordRepository.save(UserNovelKeyword.create(userNovel, requested));
+            }
+        }
+    }
+
+    private void deleteUserNovelKeywords(UserNovel userNovel,
+                                         Map<Keyword, UserNovelKeyword> currentKeywordMap,
+                                         Set<Keyword> requestedKeywords) {
+        List<UserNovelKeyword> toDelete = new ArrayList<>();
+        for (Map.Entry<Keyword, UserNovelKeyword> entry : currentKeywordMap.entrySet()) {
+            if (!requestedKeywords.contains(entry.getKey())) {
+                toDelete.add(entry.getValue());
+            }
+        }
+        if (!toDelete.isEmpty()) {
+            userNovel.getUserNovelKeywords().removeAll(toDelete);
+            userNovel.touch();
         }
     }
 
@@ -178,8 +221,8 @@ public class UserNovelService {
         }
     }
 
-    public void deleteEvaluation(User user, Novel novel) {
-        UserNovel userNovel = getUserNovelOrException(user, novel);
+    public void deleteEvaluation(User user, Long novelId) {
+        UserNovel userNovel = getUserNovelOrException(user, novelId);
 
         if (userNovel.getStatus() == null) {
             throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
@@ -233,40 +276,107 @@ public class UserNovelService {
     }
 
     @Transactional(readOnly = true)
-    public UserNovelAndNovelsGetResponse getUserNovelsAndNovels(User visitor, Long ownerId, String readStatus,
-                                                                Long lastUserNovelId, int size, String sortType) {
+    public UserNovelAndNovelsGetResponse getUserNovelsAndNovels(User visitor, Long ownerId, Boolean isInterest,
+                                                                List<String> readStatuses,
+                                                                List<String> attractivePoints, Float novelRating,
+                                                                String query, Long lastUserNovelId, int size,
+                                                                SortCriteria sortCriteria, LocalDateTime updatedSince) {
         User owner = userService.getUserOrException(ownerId);
 
         if (isProfileInaccessible(visitor, ownerId, owner)) {
             throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
         }
 
-        // TODO 성능 개선
-        List<UserNovel> userNovelsByUserAndSortType =
-                userNovelRepository.findByUserAndReadStatus(owner, readStatus);
-        long evaluatedUserNovelCount = userNovelsByUserAndSortType.stream()
-                .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
-                .count();
-        float evaluatedUserNovelSum = (float) userNovelsByUserAndSortType
-                .stream()
-                .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
-                .mapToDouble(UserNovel::getUserNovelRating)
-                .sum();
-        Float evaluatedUserNovelRating = evaluatedUserNovelCount > 0
-                ? evaluatedUserNovelSum / evaluatedUserNovelCount
-                : 0;
-        Long userNovelCount = (long) userNovelsByUserAndSortType.size();
+        boolean isOwner = visitor.getUserId().equals(ownerId);
+        boolean isAscending = sortCriteria.isOld();
 
-        List<UserNovel> userNovelsByNoOffsetPagination = userNovelRepository.findUserNovelsByNoOffsetPagination(
-                owner, lastUserNovelId, size, readStatus, sortType);
-        // TODO Slice의 hasNext()로 판단하도록 수정
-        Boolean isLoadable = userNovelsByNoOffsetPagination.size() == size;
-        List<UserNovelAndNovelGetResponse> userNovelAndNovelGetResponses = userNovelsByNoOffsetPagination.stream()
-                .map(UserNovelAndNovelGetResponse::of)
+        List<UserNovel> userNovels = userNovelRepository.findFilteredUserNovels(ownerId, isInterest, readStatuses,
+                attractivePoints, novelRating, query, lastUserNovelId, size, isAscending, updatedSince);
+
+        Long totalCount = userNovelRepository.countByUserIdAndFilters(ownerId, isInterest, readStatuses,
+                attractivePoints, novelRating, query, updatedSince);
+
+        boolean isLoadable = userNovels.size() == size;
+
+        List<UserNovelAndNovelGetResponse> userNovelAndNovelGetResponses = buildUserNovelAndNovelGetResponses(
+                userNovels, ownerId, isOwner);
+
+        return new UserNovelAndNovelsGetResponse(totalCount, isLoadable, userNovelAndNovelGetResponses);
+    }
+
+    @Transactional(readOnly = true)
+    public UserNovelAndNovelsGetResponseLegacy getUserNovelsAndNovelsLegacy(User visitor, Long ownerId,
+                                                                            String readStatus,
+                                                                            Long lastUserNovelId, int size,
+                                                                            SortCriteria sortCriteria) {
+        User owner = userService.getUserOrException(ownerId);
+
+        if (isProfileInaccessible(visitor, ownerId, owner)) {
+            throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
+        }
+
+        boolean isAscending = sortCriteria.isOld();
+        List<String> readStatuses = null;
+        Boolean isInterest = null;
+
+        if ("INTEREST".equalsIgnoreCase(readStatus)) {
+            isInterest = true;
+        } else {
+            readStatuses = List.of(readStatus);
+        }
+
+        List<UserNovel> userNovels = userNovelRepository.findFilteredUserNovels(ownerId, isInterest, readStatuses,
+                null, null, null, lastUserNovelId, size, isAscending, null);
+
+        Long totalCount = userNovelRepository.countByUserIdAndFilters(ownerId, isInterest, readStatuses,
+                null, null, null, null);
+
+        boolean isLoadable = userNovels.size() == size;
+
+        List<UserNovelAndNovelGetResponseLegacy> userNovelAndNovelGetResponseLegacies = userNovels.stream()
+                .map(UserNovelAndNovelGetResponseLegacy::of)
                 .toList();
 
-        return UserNovelAndNovelsGetResponse.of(userNovelCount, evaluatedUserNovelRating, isLoadable,
-                userNovelAndNovelGetResponses);
+        return new UserNovelAndNovelsGetResponseLegacy(totalCount, isLoadable, userNovelAndNovelGetResponseLegacies);
+    }
+
+    private List<UserNovelAndNovelGetResponse> buildUserNovelAndNovelGetResponses(List<UserNovel> userNovels,
+                                                                                  Long ownerId, boolean isOwner) {
+        Map<Long, List<String>> feedMap = getFeedsGroupedByNovel(userNovels, ownerId, isOwner);
+
+        return userNovels.stream()
+                .map(userNovel -> {
+                    Long novelId = userNovel.getNovel().getNovelId();
+                    Integer novelRatingCount = userNovelRepository.countByNovelAndUserNovelRatingNot(
+                            userNovel.getNovel(), 0.0f);
+                    Float novelRatingAvg = novelRatingCount == 0
+                            ? 0.0f
+                            : roundToFirstDecimal(userNovelRepository.sumUserNovelRatingByNovel(userNovel.getNovel())
+                                    / novelRatingCount);
+                    List<String> feeds = feedMap.getOrDefault(novelId, List.of());
+                    return UserNovelAndNovelGetResponse.from(userNovel, novelRatingAvg, feeds);
+                })
+                .toList();
+    }
+
+    private Map<Long, List<String>> getFeedsGroupedByNovel(List<UserNovel> userNovels, Long ownerId, boolean isOwner) {
+        List<Long> novelIds = userNovels.stream()
+                .map(un -> un.getNovel().getNovelId())
+                .distinct()
+                .toList();
+
+        List<Feed> feeds = isOwner
+                ? feedRepository.findByUserUserIdAndIsHiddenFalseAndNovelIdIn(ownerId, novelIds)
+                : feedRepository.findByUserUserIdAndIsHiddenFalseAndNovelIdInAndIsPublicTrueAndIsSpoilerFalse(ownerId,
+                        novelIds);
+
+        return feeds.stream()
+                .collect(Collectors.groupingBy(Feed::getNovelId,
+                        Collectors.mapping(Feed::getFeedContent, Collectors.toList())));
+    }
+
+    private float roundToFirstDecimal(float value) {
+        return Math.round(value * 10.0f) / 10.0f;
     }
 
     @Transactional(readOnly = true)

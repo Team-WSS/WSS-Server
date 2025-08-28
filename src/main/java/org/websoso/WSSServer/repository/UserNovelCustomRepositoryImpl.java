@@ -7,18 +7,22 @@ import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 
+import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.Novel;
-import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
@@ -27,6 +31,7 @@ import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 @RequiredArgsConstructor
 public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository {
 
+    private static final long NO_CURSOR = 0L;
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
@@ -63,66 +68,6 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .fetchOne();
     }
 
-    @Override
-    public List<UserNovel> findUserNovelsByNoOffsetPagination(User owner, Long lastUserNovelId, int size,
-                                                              String readStatus, String sortType) {
-        return jpaQueryFactory
-                .selectFrom(userNovel)
-                .where(
-                        userNovel.user.eq(owner),
-                        generateReadStatusCondition(readStatus),
-                        compareFeedId(lastUserNovelId, sortType)
-                )
-                .orderBy(getSortOrder(sortType))
-                .limit(size)
-                .fetch();
-    }
-
-    private BooleanExpression compareFeedId(Long lastUserNovelId, String sortType) {
-        if (lastUserNovelId == 0) {
-            return null;
-        }
-
-        // TODO 잘못된 sortType이 오는 경우 default null로 return이 아닌 예외 처리
-        if ("NEWEST".equalsIgnoreCase(sortType)) {
-            return userNovel.userNovelId.lt(lastUserNovelId);
-        } else if ("OLDEST".equalsIgnoreCase(sortType)) {
-            return userNovel.userNovelId.gt(lastUserNovelId);
-        }
-
-        return null;
-    }
-
-    private BooleanExpression generateReadStatusCondition(String readStatus) {
-        // TODO 잘못된 readStatus가 오는 경우 예외 처리
-        if (readStatus.equals("INTEREST")) {
-            return userNovel.isInterest.isTrue();
-        } else {
-            ReadStatus status = ReadStatus.valueOf(readStatus);
-            return userNovel.status.eq(status);
-        }
-    }
-
-    private OrderSpecifier<?> getSortOrder(String sortType) {
-        // TODO 잘못된 sortType이 오는 경우 default desc가 아닌 예외 처리
-        if ("NEWEST".equalsIgnoreCase(sortType)) {
-            return userNovel.userNovelId.desc();
-        } else if ("OLDEST".equalsIgnoreCase(sortType)) {
-            return userNovel.userNovelId.asc();
-        }
-        return userNovel.userNovelId.desc();
-    }
-
-    @Override
-    public List<UserNovel> findByUserAndReadStatus(User owner, String readStatus) {
-        return jpaQueryFactory
-                .selectFrom(userNovel)
-                .where(userNovel.user.eq(owner),
-                        generateReadStatusCondition(readStatus)
-                )
-                .fetch();
-    }
-
     public List<Long> findTodayPopularNovelsId(Pageable pageable) {
         LocalDate sevenDaysAgo = LocalDate.now().minusDays(7);
 
@@ -155,5 +100,85 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .distinct()
                 .limit(10)
                 .toList();
+    }
+
+    @Override
+    public List<UserNovel> findFilteredUserNovels(Long userId, Boolean isInterest, List<String> readStatuses,
+                                                  List<String> attractivePoints, Float novelRating, String query,
+                                                  Long lastUserNovelId, int size, boolean isAscending,
+                                                  LocalDateTime updatedSince) {
+        JPAQuery<UserNovel> queryBuilder = jpaQueryFactory
+                .selectFrom(userNovel)
+                .join(userNovel.novel, novel).fetchJoin()
+                .where(userNovel.user.userId.eq(userId));
+
+        applyFilters(queryBuilder, isInterest, readStatuses, attractivePoints, novelRating, query, updatedSince);
+
+        queryBuilder.where(checkLastUserNovelId(lastUserNovelId, isAscending));
+        queryBuilder.orderBy(checkSortOrder(isAscending));
+
+        return queryBuilder.limit(size).fetch();
+    }
+
+    private BooleanExpression checkLastUserNovelId(Long lastUserNovelId, boolean isAscending) {
+        if (lastUserNovelId == NO_CURSOR) {
+            return null;
+        }
+        if (isAscending) {
+            return userNovel.userNovelId.gt(lastUserNovelId);
+        } else {
+            return userNovel.userNovelId.lt(lastUserNovelId);
+        }
+    }
+
+    private OrderSpecifier<?> checkSortOrder(boolean isAscending) {
+        if (isAscending) {
+            return new OrderSpecifier<>(Order.ASC, userNovel.userNovelId);
+        }
+        return new OrderSpecifier<>(Order.DESC, userNovel.userNovelId);
+    }
+
+    @Override
+    public Long countByUserIdAndFilters(Long userId, Boolean isInterest, List<String> readStatuses,
+                                        List<String> attractivePoints, Float novelRating, String query,
+                                        LocalDateTime updatedSince) {
+        JPAQuery<Long> queryBuilder = jpaQueryFactory
+                .select(userNovel.count())
+                .from(userNovel)
+                .join(userNovel.novel, novel)
+                .where(userNovel.user.userId.eq(userId));
+
+        applyFilters(queryBuilder, isInterest, readStatuses, attractivePoints, novelRating, query, updatedSince);
+
+        return queryBuilder.fetchOne();
+    }
+
+    private <T> void applyFilters(JPAQuery<T> queryBuilder, Boolean isInterest, List<String> readStatuses,
+                                  List<String> attractivePoints, Float novelRating, String query,
+                                  LocalDateTime updatedSince) {
+        Optional.ofNullable(isInterest)
+                .ifPresent(interest -> queryBuilder.where(userNovel.isInterest.eq(interest)));
+
+        Optional.ofNullable(readStatuses)
+                .filter(list -> !list.isEmpty())
+                .map(list -> list.stream().map(String::toUpperCase).map(ReadStatus::valueOf)
+                        .collect(Collectors.toList()))
+                .ifPresent(statusEnums -> queryBuilder.where(userNovel.status.in(statusEnums)));
+
+        Optional.ofNullable(attractivePoints)
+                .filter(list -> !list.isEmpty())
+                .ifPresent(points -> queryBuilder.where(
+                        userNovel.userNovelAttractivePoints.any().attractivePoint.attractivePointName.in(points)));
+
+        Optional.ofNullable(novelRating)
+                .ifPresent(rating -> queryBuilder.where(userNovel.userNovelRating.goe(rating)));
+
+        Optional.ofNullable(query)
+                .filter(q -> !q.isBlank())
+                .ifPresent(q -> queryBuilder.where(
+                        novel.title.containsIgnoreCase(q).or(novel.author.containsIgnoreCase(q))));
+
+        Optional.ofNullable(updatedSince)
+                .ifPresent(ts -> queryBuilder.where(userNovel.modifiedDate.gt(ts)));
     }
 }

@@ -48,8 +48,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.websoso.WSSServer.config.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
-import org.websoso.WSSServer.config.jwt.UserAuthentication;
 import org.websoso.WSSServer.domain.RefreshToken;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserAppleToken;
@@ -263,6 +263,7 @@ public class AppleService {
                     .retrieve()
                     .body(AppleTokenResponse.class);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new CustomAppleLoginException(TOKEN_REQUEST_FAILED, "failed to get token from Apple server");
         }
     }
@@ -284,9 +285,9 @@ public class AppleService {
             userAppleTokenRepository.save(UserAppleToken.create(user, appleRefreshToken));
         }
 
-        UserAuthentication userAuthentication = new UserAuthentication(user.getUserId(), null, null);
-        String accessToken = jwtProvider.generateAccessToken(userAuthentication);
-        String refreshToken = jwtProvider.generateRefreshToken(userAuthentication);
+        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null, null);
+        String accessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
+        String refreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
 
         refreshTokenRepository.save(new RefreshToken(refreshToken, user.getUserId()));
 

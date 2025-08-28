@@ -2,7 +2,6 @@ package org.websoso.WSSServer.domain;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
-import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,17 +12,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
-import org.websoso.WSSServer.domain.common.Action;
-import org.websoso.WSSServer.exception.exception.CustomUserException;
 
 @Getter
 @DynamicInsert
@@ -48,6 +45,9 @@ public class Feed {
     @Column(nullable = false)
     private Boolean isSpoiler;
 
+    @Column(columnDefinition = "Boolean default true", nullable = false)
+    private Boolean isPublic;
+
     @Column(nullable = false)
     private LocalDateTime createdDate;
 
@@ -67,34 +67,40 @@ public class Feed {
     @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
+    @OneToMany(cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JoinColumn(name = "feed_id")
+    @OrderBy("sequence ASC")
+    private List<FeedImage> images = new ArrayList<>();
+
     @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ReportedFeed> reportedFeeds = new ArrayList<>();
 
     @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private PopularFeed popularFeed;
 
-    @Builder
-    public Feed(String feedContent, Boolean isSpoiler, Long novelId, User user) {
+    private Feed(String feedContent, Long novelId, Boolean isSpoiler, Boolean isPublic, User user, List<FeedImage> images) {
         this.feedContent = feedContent;
-        this.isSpoiler = isSpoiler;
         this.novelId = novelId;
+        this.isSpoiler = isSpoiler;
+        this.isPublic = isPublic;
         this.user = user;
+        this.images = images;
         this.createdDate = LocalDateTime.now();
         this.modifiedDate = this.createdDate;
     }
 
-    public void updateFeed(String feedContent, Boolean isSpoiler, Long novelId) {
-        this.feedContent = feedContent;
-        this.isSpoiler = isSpoiler;
-        this.novelId = novelId;
-        this.modifiedDate = LocalDateTime.now();
+    public static Feed create(String feedContent, Long novelId, Boolean isSpoiler, Boolean isPublic, User user, List<FeedImage> images) {
+        return new Feed(feedContent, novelId, isSpoiler, isPublic, user, images);
     }
 
-    public void validateUserAuthorization(User user, Action action) {
-        if (!this.user.equals(user)) {
-            throw new CustomUserException(INVALID_AUTHORIZED,
-                    "only the author can " + action.getLabel() + " the feed");
-        }
+    public void updateFeed(String feedContent, Boolean isSpoiler, Boolean isPublic, Long novelId, List<FeedImage> images) {
+        this.feedContent = feedContent;
+        this.isSpoiler = isSpoiler;
+        this.isPublic = isPublic;
+        this.novelId = novelId;
+        this.images.clear();
+        this.images.addAll(images);
+        this.modifiedDate = LocalDateTime.now();
     }
 
     public boolean isNovelChanged(Long novelId) {
@@ -105,4 +111,15 @@ public class Feed {
         this.isHidden = true;
     }
 
+    public Long getWriterId() {
+        return user.getUserId();
+    }
+
+    public boolean isMine(Long userId) {
+        return this.getWriterId().equals(userId);
+    }
+
+    public boolean isVisibleTo(Long userId) {
+        return this.isPublic || this.isMine(userId);
+    }
 }

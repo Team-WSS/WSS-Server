@@ -3,6 +3,7 @@ package org.websoso.WSSServer.service;
 import static java.lang.Boolean.TRUE;
 
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,20 +104,32 @@ public class PopularFeedService {
 
     @Transactional(readOnly = true)
     public PopularFeedsGetResponse getPopularFeeds(User user) {
-        List<PopularFeed> popularFeeds = findPopularFeeds(user);
-        List<PopularFeedGetResponse> popularFeedGetResponses = mapToPopularFeedGetResponseList(popularFeeds);
+        Long currentUserId = Optional.ofNullable(user)
+                .map(User::getUserId)
+                .orElse(null);
+
+        List<PopularFeed> popularFeeds = Optional.ofNullable(user)
+                .map(u -> findPopularFeedsWithUser(u.getUserId()))
+                .orElseGet(this::findPopularFeedsWithoutUser);
+
+        List<PopularFeedGetResponse> popularFeedGetResponses =
+                mapToPopularFeedGetResponseList(popularFeeds, currentUserId);
+
         return new PopularFeedsGetResponse(popularFeedGetResponses);
     }
 
-    private List<PopularFeed> findPopularFeeds(User user) {
-        if (user == null) {
-            return popularFeedRepository.findTop9ByOrderByPopularFeedIdDesc();
-        }
-        return popularFeedRepository.findTodayPopularFeeds(user.getUserId());
+    private List<PopularFeed> findPopularFeedsWithUser(Long userId) {
+        return popularFeedRepository.findTodayPopularFeeds(userId);
     }
 
-    private static List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(List<PopularFeed> popularFeeds) {
+    private List<PopularFeed> findPopularFeedsWithoutUser() {
+        return popularFeedRepository.findTop9ByOrderByPopularFeedIdDesc();
+    }
+
+    private static List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(List<PopularFeed> popularFeeds,
+                                                                                Long currentUserId) {
         return popularFeeds.stream()
+                .filter(pf -> pf.getFeed().isVisibleTo(currentUserId))
                 .map(PopularFeedGetResponse::of)
                 .toList();
     }

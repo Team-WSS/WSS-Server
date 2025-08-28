@@ -13,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,9 @@ import org.websoso.WSSServer.domain.common.ReadStatus;
 @Getter
 @DynamicInsert
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "user_novel", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "novel_id"})
+})
 public class UserNovel extends BaseEntity {
 
     @Id
@@ -72,6 +77,7 @@ public class UserNovel extends BaseEntity {
         this.endDate = endDate;
         this.user = user;
         this.novel = novel;
+        this.isInterest = false;
     }
 
     public static UserNovel create(ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,

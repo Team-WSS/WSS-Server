@@ -92,4 +92,8 @@ public class Comment {
     public void spoiler() {
         this.isSpoiler = true;
     }
+
+    public boolean isMine(Long userId) {
+        return this.getUserId().equals(userId);
+    }
 }

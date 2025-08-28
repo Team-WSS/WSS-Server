@@ -18,6 +18,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -137,15 +138,18 @@ public class NovelService {
         }
 
         if (userNovel == null) {
-            userNovel = userNovelService.createUserNovelByInterest(user, novel);
+            try {
+                userNovel = userNovelService.createUserNovelByInterest(user, novel);
+            } catch (DataIntegrityViolationException e) {
+                userNovel = userNovelService.getUserNovelOrException(user, novelId);
+            }
         }
 
         userNovel.setIsInterest(true);
     }
 
     public void unregisterAsInterest(User user, Long novelId) {
-        Novel novel = getNovelOrException(novelId);
-        UserNovel userNovel = userNovelService.getUserNovelOrException(user, novel);
+        UserNovel userNovel = userNovelService.getUserNovelOrException(user, novelId);
 
         if (!userNovel.getIsInterest()) {
             throw new CustomUserNovelException(NOT_INTERESTED, "not registered as interest");

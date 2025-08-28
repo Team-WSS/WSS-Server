@@ -23,16 +23,26 @@ public record UserFeedGetResponse(
         String title,
         Float novelRating,
         Long novelRatingCount,
-        List<String> relevantCategories
+        List<String> relevantCategories,
+        Boolean isPublic,
+        String genre,
+        Float userNovelRating,
+        String thumbnailUrl,
+        Integer imageCount,
+        Float feedWriterNovelRating
 ) {
 
-    public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId) {
+    public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId, String thumbnailUrl,
+                                         Integer imageCount) {
         boolean isModified = !feed.getCreatedDate().equals(feed.getModifiedDate());
         Long novelRatingCount = getNovelRatingCount(novel);
         Float novelRating = getNovelRating(novel, novelRatingCount);
         List<Long> likeUsers = getLikeUsers(feed);
         boolean isLiked = likeUsers.contains(visitorId);
         List<String> relevantCategories = getFeedCategories(feed);
+        String genreName = getNovelGenreName(novel);
+        Float userNovelRating = getUserNovelRating(novel, visitorId);
+        Float feedWriterNovelRating = getFeedWriterNovelRating(novel, feed.getUser().getUserId());
 
         return new UserFeedGetResponse(
                 feed.getFeedId(),
@@ -50,7 +60,13 @@ public record UserFeedGetResponse(
                         null : novel.getTitle(),
                 novelRating,
                 novelRatingCount,
-                relevantCategories
+                relevantCategories,
+                feed.getIsPublic(),
+                genreName,
+                userNovelRating,
+                thumbnailUrl,
+                imageCount,
+                feedWriterNovelRating
         );
     }
 
@@ -99,5 +115,39 @@ public record UserFeedGetResponse(
         return novelRatingCount > 0
                 ? Math.round(getNovelRatingSum(novel) / novelRatingCount * 10) / 10.0f
                 : 0.0f;
+    }
+
+    private static String getNovelGenreName(Novel novel) {
+        if (novel == null) {
+            return null;
+        }
+
+        return novel.getNovelGenres().get(0).getGenre().getGenreName();
+    }
+
+    private static Float getUserNovelRating(Novel novel, Long visitorId) {
+        if (novel == null) {
+            return null;
+        }
+
+        return novel.getUserNovels()
+                .stream()
+                .filter(userNovel -> userNovel.getUser().getUserId().equals(visitorId))
+                .findFirst()
+                .map(UserNovel::getUserNovelRating)
+                .orElse(null);
+    }
+
+    private static Float getFeedWriterNovelRating(Novel novel, Long feedWriterId) {
+        if (novel == null) {
+            return null;
+        }
+
+        return novel.getUserNovels()
+                .stream()
+                .filter(userNovel -> userNovel.getUser().getUserId().equals(feedWriterId))
+                .findFirst()
+                .map(UserNovel::getUserNovelRating)
+                .orElse(null);
     }
 }

@@ -4,9 +4,10 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.block.BlocksGetResponse;
 import org.websoso.WSSServer.service.BlockService;
-import org.websoso.WSSServer.service.UserService;
 import org.websoso.WSSServer.validation.BlockIdConstraint;
 import org.websoso.WSSServer.validation.UserIdConstraint;
 
@@ -26,13 +26,12 @@ import org.websoso.WSSServer.validation.UserIdConstraint;
 @RequiredArgsConstructor
 public class BlockController {
 
-    private final UserService userService;
     private final BlockService blockService;
 
     @PostMapping
-    public ResponseEntity<Void> block(Principal principal,
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> block(@AuthenticationPrincipal User blocker,
                                       @RequestParam("userId") @UserIdConstraint Long blockedId) {
-        User blocker = userService.getUserOrException(Long.valueOf(principal.getName()));
         blockService.block(blocker, blockedId);
         return ResponseEntity
                 .status(CREATED)
@@ -40,18 +39,18 @@ public class BlockController {
     }
 
     @GetMapping
-    public ResponseEntity<BlocksGetResponse> getBlockList(Principal principal) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<BlocksGetResponse> getBlockList(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
                 .body(blockService.getBlockList(user));
     }
 
     @DeleteMapping("/{blockId}")
-    public ResponseEntity<Void> deleteBlock(Principal principal,
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#blockId, #user, T(org.websoso.WSSServer.domain.Block))")
+    public ResponseEntity<Void> deleteBlock(@AuthenticationPrincipal User user,
                                             @PathVariable("blockId") @BlockIdConstraint Long blockId) {
-        User user = userService.getUserOrException(Long.valueOf(principal.getName()));
-        blockService.deleteBlock(user, blockId);
+        blockService.deleteBlock(blockId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
