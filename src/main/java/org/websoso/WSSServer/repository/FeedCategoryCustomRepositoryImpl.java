@@ -35,10 +35,10 @@ public class FeedCategoryCustomRepositoryImpl implements FeedCategoryCustomRepos
         List<Feed> results = jpaQueryFactory
                 .select(feedCategory.feed)
                 .from(feedCategory)
-                .join(feedCategory.feed, feed)
-                .join(novel).on(feed.novelId.eq(novel.novelId))
-                .join(novelGenre).on(novel.eq(novelGenre.novel))
-                .join(genre).on(novelGenre.genre.eq(genre))
+                .leftJoin(feedCategory.feed, feed)
+                .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
+                .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
+                .leftJoin(genre).on(novelGenre.genre.eq(genre))
                 .where(
                         ltFeedId(lastFeedId),
                         checkCategory(category),
@@ -87,7 +87,7 @@ public class FeedCategoryCustomRepositoryImpl implements FeedCategoryCustomRepos
 
     private BooleanExpression checkGenres(List<Genre> genres) {
         if (genres != null && !genres.isEmpty()) {
-            return genre.in(genres);
+            return genre.in(genres).or(feed.novelId.isNull());
         }
         return null;
     }
