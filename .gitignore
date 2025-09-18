@@ -46,3 +46,6 @@ src/main/generated/
 *.p8
 
 /src/main/resources/websoso-fcm.json
+
+## Mac ##
+.DS_Store
