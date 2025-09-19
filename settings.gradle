@@ -1,1 +1,5 @@
 rootProject.name = 'WSS-Server'
+
+include(
+   'wss-service-support'
+)

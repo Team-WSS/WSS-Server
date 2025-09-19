@@ -7,8 +7,10 @@ plugins {
 group = 'org.websoso'
 version = '0.0.1-SNAPSHOT'
 
-java {
-    sourceCompatibility = '17'
+allprojects {
+    repositories {
+        mavenCentral()
+    }
 }
 
 configurations {
@@ -18,8 +20,15 @@ configurations {
 }
 
 repositories {
-    mavenCentral()
     maven { url 'https://jitpack.io' }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    java {
+        sourceCompatibility = '17'
+    }
 }
 
 dependencies {
@@ -77,6 +86,8 @@ dependencies {
 
     // S3 Mapping Library
     implementation 'com.github.Team-WSS:WSS-Server-S3:0.0.3'
+
+    implementation project(':wss-service-support')
 }
 
 tasks.named('test') {
