@@ -12,7 +12,7 @@ public record MinimumVersionGetResponse(
 
     public static MinimumVersionGetResponse of(MinimumVersion minimumVersion) {
         return new MinimumVersionGetResponse(
-                minimumVersion.getMinimumVersion(),
+                minimumVersion.getMinimumVersion().getValue(),
                 minimumVersion.getUpdateDate().format(FORMATTER)
         );
     }

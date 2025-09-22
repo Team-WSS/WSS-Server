@@ -3,6 +3,7 @@ package org.websoso.support.version.domain;
 import static jakarta.persistence.EnumType.STRING;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Enumerated;
@@ -25,24 +26,24 @@ public class MinimumVersion {
     @Column(columnDefinition = "varchar(10)", nullable = false)
     private OS os;
 
-    @Column(columnDefinition = "varchar(20)", nullable = false)
-    private String minimumVersion;
+    @Embedded
+    private Version minimumVersion;
 
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updateDate;
 
-    private MinimumVersion(OS os, String minimumVersion) {
+    private MinimumVersion(OS os, Version minimumVersion) {
         this.os = os;
         this.minimumVersion = minimumVersion;
         this.updateDate = LocalDateTime.now();
     }
 
-    public static MinimumVersion create(OS os, String minimumVersion) {
+    public static MinimumVersion create(OS os, Version minimumVersion) {
         return new MinimumVersion(os, minimumVersion);
     }
 
-    public void updateMinimumVersion(String minimumVersion) {
+    public void updateMinimumVersion(Version minimumVersion) {
         this.minimumVersion = minimumVersion;
     }
 }

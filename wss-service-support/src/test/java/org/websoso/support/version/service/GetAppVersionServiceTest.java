@@ -8,11 +8,13 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.websoso.support.version.domain.MinimumVersion;
 import org.websoso.support.version.domain.OS;
+import org.websoso.support.version.domain.Version;
 import org.websoso.support.version.dto.MinimumVersionGetResponse;
 import org.websoso.support.version.exception.CustomMinimumVersionException;
 import org.websoso.support.version.repository.MinimumVersionRepository;
@@ -31,7 +33,7 @@ class GetAppVersionServiceTest {
     void returnsMinimumVersionIfOsExists() {
         // given
         OS os = OS.ANDROID;
-        String minimumVersion = "1.0.0";
+        Version minimumVersion = Version.of("1.0.0");
         MinimumVersion minimumVersionEntity = MinimumVersion.create(os, minimumVersion);
 
         given(minimumVersionRepository.findById(os)).willReturn(Optional.of(minimumVersionEntity));
@@ -40,7 +42,7 @@ class GetAppVersionServiceTest {
         MinimumVersionGetResponse response = getAppVersionService.getMinimumVersion(os.getLabel());
 
         // then
-        assertThat(response.minimumVersion()).isEqualTo(minimumVersion);
+        assertThat(response.minimumVersion()).isEqualTo(minimumVersion.getValue());
     }
 
     @DisplayName("최소 버전이 존재하지 않으면 예외가 발생한다.")

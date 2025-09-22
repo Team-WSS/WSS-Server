@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.websoso.support.version.domain.MinimumVersion;
 import org.websoso.support.version.domain.OS;
+import org.websoso.support.version.domain.Version;
 import org.websoso.support.version.dto.MinimumVersionUpdateRequest;
 import org.websoso.support.version.repository.MinimumVersionRepository;
 
@@ -48,9 +49,9 @@ class UpdateAppVersionServiceTest {
     void updateExistingVersionIfOsExists() {
         // given
         OS os = OS.IOS;
-        String initialVersion = "1.0.0";
-        String updatedVersion = "1.0.2";
-        MinimumVersionUpdateRequest request = new MinimumVersionUpdateRequest(os.getLabel(), updatedVersion);
+        Version initialVersion = Version.of("1.0.0");
+        Version updatedVersion = Version.of("1.0.2");
+        MinimumVersionUpdateRequest request = new MinimumVersionUpdateRequest(os.getLabel(), updatedVersion.getValue());
         MinimumVersion minimumVersion = MinimumVersion.create(os, initialVersion);
 
         given(minimumVersionRepository.findById(os)).willReturn(Optional.of(minimumVersion));

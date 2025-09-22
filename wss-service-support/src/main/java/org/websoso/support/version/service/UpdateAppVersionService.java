@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.support.version.domain.MinimumVersion;
 import org.websoso.support.version.domain.OS;
+import org.websoso.support.version.domain.Version;
 import org.websoso.support.version.dto.MinimumVersionUpdateRequest;
 import org.websoso.support.version.repository.MinimumVersionRepository;
 import org.websoso.support.version.usecase.UpdateAppVersionUseCase;
@@ -19,12 +20,14 @@ public class UpdateAppVersionService implements UpdateAppVersionUseCase {
     @Override
     public void updateMinimumVersion(MinimumVersionUpdateRequest request) {
         OS os = OS.fromLabel(request.os());
+        Version version = Version.of(request.minimumVersion());
+
         MinimumVersion minimumVersion = minimumVersionRepository.findById(os).orElse(null);
 
         if (minimumVersion == null) {
-            minimumVersion = MinimumVersion.create(os, request.minimumVersion());
+            minimumVersion = MinimumVersion.create(os, version);
         } else {
-            minimumVersion.updateMinimumVersion(request.minimumVersion());
+            minimumVersion.updateMinimumVersion(version);
         }
 
         minimumVersionRepository.save(minimumVersion);
