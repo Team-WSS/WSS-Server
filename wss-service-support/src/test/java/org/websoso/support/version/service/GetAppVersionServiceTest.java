@@ -55,6 +55,7 @@ class GetAppVersionServiceTest {
 
         // when & then
         assertThatThrownBy(() -> getAppVersionService.getMinimumVersion(os.getLabel()))
-                .isInstanceOf(CustomMinimumVersionException.class);
+                .isInstanceOf(CustomMinimumVersionException.class)
+                .hasMessage("the minimum supported version for the specified OS could not be found");
     }
 }
