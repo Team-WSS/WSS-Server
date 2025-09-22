@@ -48,9 +48,6 @@ dependencies {
     //spring boot starter
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
-    //spring actuator
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
     //spring data jpa
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
