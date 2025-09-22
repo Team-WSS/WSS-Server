@@ -42,6 +42,10 @@ subprojects {
             implementation project(':wss-common')
         }
     }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
 }
 
 dependencies {

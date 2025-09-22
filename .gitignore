@@ -40,7 +40,7 @@ out/
 *.yml
 
 ## QClass ##
-src/main/generated/
+**/generated/
 
 ## Apple Login Key File ##
 *.p8
