@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.domain.common;
+package org.websoso.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

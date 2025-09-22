@@ -1,7 +1,7 @@
-package org.websoso.WSSServer.dto.AppVersion;
+package org.websoso.support.version.dto;
 
 import java.time.format.DateTimeFormatter;
-import org.websoso.WSSServer.domain.MinimumVersion;
+import org.websoso.support.version.domain.MinimumVersion;
 
 public record MinimumVersionGetResponse(
         String minimumVersion,

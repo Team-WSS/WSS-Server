@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.dto.AppVersion.MinimumVersionGetResponse;
-import org.websoso.WSSServer.dto.AppVersion.MinimumVersionUpdateRequest;
-import org.websoso.WSSServer.service.AppVersionService;
+import org.websoso.support.version.dto.MinimumVersionGetResponse;
+import org.websoso.support.version.dto.MinimumVersionUpdateRequest;
+import org.websoso.support.version.service.AppVersionService;
 
 @RestController
 @RequiredArgsConstructor

@@ -1,8 +1,7 @@
-package org.websoso.WSSServer.exception.exception;
+package org.websoso.support.version.exception;
 
 import lombok.Getter;
-import org.websoso.WSSServer.exception.common.AbstractCustomException;
-import org.websoso.WSSServer.exception.error.CustomMinimumVersionError;
+import org.websoso.common.exception.AbstractCustomException;
 
 @Getter
 public class CustomMinimumVersionException extends AbstractCustomException {

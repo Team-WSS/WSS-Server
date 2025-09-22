@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.exception.common;
+package org.websoso.common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

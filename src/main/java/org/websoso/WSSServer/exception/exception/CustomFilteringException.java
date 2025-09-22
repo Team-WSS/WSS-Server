@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.exception.exception;
 
-import org.websoso.WSSServer.exception.common.AbstractCustomException;
+import org.websoso.common.exception.AbstractCustomException;
 import org.websoso.WSSServer.exception.error.CustomFilteringError;
 
 public class CustomFilteringException extends AbstractCustomException {

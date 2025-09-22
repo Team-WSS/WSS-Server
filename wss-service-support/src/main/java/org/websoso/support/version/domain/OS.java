@@ -1,11 +1,11 @@
-package org.websoso.WSSServer.domain.common;
+package org.websoso.support.version.domain;
 
-import static org.websoso.WSSServer.exception.error.CustomMinimumVersionError.OS_NOT_FOUND;
+import static org.websoso.support.version.exception.CustomMinimumVersionError.OS_NOT_FOUND;
 
 import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.websoso.WSSServer.exception.exception.CustomMinimumVersionException;
+import org.websoso.support.version.exception.CustomMinimumVersionException;
 
 @Getter
 @AllArgsConstructor

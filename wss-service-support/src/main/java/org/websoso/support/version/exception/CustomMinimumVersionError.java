@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.exception.error;
+package org.websoso.support.version.exception;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -6,7 +6,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
-import org.websoso.WSSServer.exception.common.ICustomError;
+import org.websoso.common.exception.ICustomError;
 
 @AllArgsConstructor
 @Getter

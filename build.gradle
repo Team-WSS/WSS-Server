@@ -25,9 +25,22 @@ repositories {
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
 
     java {
         sourceCompatibility = '17'
+    }
+
+    dependencies {
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+    }
+
+    if (project.name != 'wss-common') {
+        dependencies {
+            implementation project(':wss-common')
+        }
     }
 }
 
@@ -88,6 +101,10 @@ dependencies {
     implementation 'com.github.Team-WSS:WSS-Server-S3:0.0.3'
 
     implementation project(':wss-service-support')
+    implementation project(':wss-common')
+
+    // QueryDSL BaseEntity
+    annotationProcessor project(':wss-common')
 }
 
 tasks.named('test') {

@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.domain;
+package org.websoso.support.version.domain;
 
 import static jakarta.persistence.EnumType.STRING;
 
@@ -13,7 +13,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.websoso.WSSServer.domain.common.OS;
 
 @Entity
 @Getter

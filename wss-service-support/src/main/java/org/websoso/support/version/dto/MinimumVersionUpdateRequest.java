@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.dto.AppVersion;
+package org.websoso.support.version.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

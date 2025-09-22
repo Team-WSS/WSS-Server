@@ -1,5 +1,6 @@
 rootProject.name = 'WSS-Server'
 
 include(
-   'wss-service-support'
+   'wss-service-support',
+   'wss-common'
 )

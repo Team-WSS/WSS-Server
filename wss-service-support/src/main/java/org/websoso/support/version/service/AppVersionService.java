@@ -1,16 +1,16 @@
-package org.websoso.WSSServer.service;
+package org.websoso.support.version.service;
 
-import static org.websoso.WSSServer.exception.error.CustomMinimumVersionError.MINIMUM_VERSION_NOT_FOUND;
+import static org.websoso.support.version.exception.CustomMinimumVersionError.MINIMUM_VERSION_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.MinimumVersion;
-import org.websoso.WSSServer.domain.common.OS;
-import org.websoso.WSSServer.dto.AppVersion.MinimumVersionGetResponse;
-import org.websoso.WSSServer.dto.AppVersion.MinimumVersionUpdateRequest;
-import org.websoso.WSSServer.exception.exception.CustomMinimumVersionException;
-import org.websoso.WSSServer.repository.MinimumVersionRepository;
+import org.websoso.support.version.domain.MinimumVersion;
+import org.websoso.support.version.domain.OS;
+import org.websoso.support.version.dto.MinimumVersionGetResponse;
+import org.websoso.support.version.dto.MinimumVersionUpdateRequest;
+import org.websoso.support.version.exception.CustomMinimumVersionException;
+import org.websoso.support.version.repository.MinimumVersionRepository;
 
 @Service
 @RequiredArgsConstructor
