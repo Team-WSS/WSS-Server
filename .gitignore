@@ -42,6 +42,9 @@ out/
 ## QClass ##
 **/generated/
 
+## Log ##
+/logs
+
 ## Apple Login Key File ##
 *.p8
 
