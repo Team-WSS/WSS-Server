@@ -22,5 +22,6 @@ public class GetAppVersionService implements GetAppVersionQuery {
     public MinimumVersionGetResponse getMinimumVersion(String os) {
         return MinimumVersionGetResponse.of(minimumVersionRepository.findById(OS.fromLabel(os))
                 .orElseThrow(() -> new CustomMinimumVersionException(MINIMUM_VERSION_NOT_FOUND,
-                        "the minimum supported version for the specified OS could not be found")));    }
+                        "the minimum supported version for the specified OS could not be found")));
+    }
 }
