@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %clr(%-5level) %clr([%X{traceId:-EMPTY}]){magenta} %clr(%logger{36}){cyan} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>1024</queueSize>
+        <includeCallerData>true</includeCallerData>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="CONSOLE"/>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="ASYNC"/>
+    </root>
+
+</configuration>
