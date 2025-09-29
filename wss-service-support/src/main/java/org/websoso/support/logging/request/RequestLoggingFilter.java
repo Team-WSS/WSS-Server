@@ -12,7 +12,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 
 @Slf4j
 @Component
@@ -32,10 +31,8 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         log.info("[API REQ] {} {} | Parameters: {}",
                 request.getMethod(), request.getRequestURI(), request.getQueryString());
 
-        ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request);
-
         try {
-            filterChain.doFilter(requestWrapper, response);
+            filterChain.doFilter(request, response);
         } finally {
             long endTime = System.currentTimeMillis();
             log.info("[API RES] {} {} | Status: {} | Total Time: {}ms",
