@@ -1,7 +1,8 @@
-package org.websoso.support.version.dto;
+package org.websoso.WSSServer.dto.version;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import org.websoso.support.version.domain.MinimumVersion;
+import org.websoso.support.version.domain.Version;
 
 public record MinimumVersionGetResponse(
         String minimumVersion,
@@ -10,10 +11,10 @@ public record MinimumVersionGetResponse(
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public static MinimumVersionGetResponse of(MinimumVersion minimumVersion) {
+    public static MinimumVersionGetResponse of(Version version, LocalDateTime updateDate) {
         return new MinimumVersionGetResponse(
-                minimumVersion.getMinimumVersion().getValue(),
-                minimumVersion.getUpdateDate().format(FORMATTER)
+                version.getValue(),
+                updateDate.format(FORMATTER)
         );
     }
 }

@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.websoso.support.version.domain.MinimumVersion;
 import org.websoso.support.version.domain.OS;
 import org.websoso.support.version.domain.Version;
-import org.websoso.support.version.dto.MinimumVersionGetResponse;
+import org.websoso.support.version.dto.GetMinimumVersionResult;
 import org.websoso.support.version.exception.CustomMinimumVersionException;
 import org.websoso.support.version.repository.MinimumVersionRepository;
 
@@ -39,10 +39,10 @@ class GetAppVersionServiceTest {
         given(minimumVersionRepository.findById(os)).willReturn(Optional.of(minimumVersionEntity));
 
         // when
-        MinimumVersionGetResponse response = getAppVersionService.getMinimumVersion(os.getLabel());
+        GetMinimumVersionResult response = getAppVersionService.getMinimumVersion(os);
 
         // then
-        assertThat(response.minimumVersion()).isEqualTo(minimumVersion.getValue());
+        assertThat(response.version()).isEqualTo(minimumVersion);
     }
 
     @DisplayName("최소 버전이 존재하지 않으면 예외가 발생한다.")
@@ -54,7 +54,7 @@ class GetAppVersionServiceTest {
         given(minimumVersionRepository.findById(os)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> getAppVersionService.getMinimumVersion(os.getLabel()))
+        assertThatThrownBy(() -> getAppVersionService.getMinimumVersion(os))
                 .isInstanceOf(CustomMinimumVersionException.class)
                 .hasMessage("the minimum supported version for the specified OS could not be found");
     }

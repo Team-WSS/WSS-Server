@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.websoso.support.version.domain.MinimumVersion;
 import org.websoso.support.version.domain.OS;
 import org.websoso.support.version.domain.Version;
-import org.websoso.support.version.dto.MinimumVersionUpdateRequest;
+import org.websoso.support.version.dto.UpdateMinimumVersionCommand;
 import org.websoso.support.version.repository.MinimumVersionRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,13 +32,13 @@ class UpdateAppVersionServiceTest {
     void createNewVersionIfOsDoesNotExist() {
         // given
         OS os = OS.ANDROID;
-        String newVersion = "1.0.1";
-        MinimumVersionUpdateRequest request = new MinimumVersionUpdateRequest(os.getLabel(), newVersion);
+        Version version = Version.of("1.0.1");
+        UpdateMinimumVersionCommand command = new UpdateMinimumVersionCommand(os, version);
 
         given(minimumVersionRepository.findById(os)).willReturn(Optional.empty());
 
         // when
-        updateAppVersionService.updateMinimumVersion(request);
+        updateAppVersionService.updateMinimumVersion(command);
 
         // then
         verify(minimumVersionRepository, times(1)).save(any(MinimumVersion.class));
@@ -51,13 +51,13 @@ class UpdateAppVersionServiceTest {
         OS os = OS.IOS;
         Version initialVersion = Version.of("1.0.0");
         Version updatedVersion = Version.of("1.0.2");
-        MinimumVersionUpdateRequest request = new MinimumVersionUpdateRequest(os.getLabel(), updatedVersion.getValue());
+        UpdateMinimumVersionCommand command = new UpdateMinimumVersionCommand(os, updatedVersion);
         MinimumVersion minimumVersion = MinimumVersion.create(os, initialVersion);
 
         given(minimumVersionRepository.findById(os)).willReturn(Optional.of(minimumVersion));
 
         // when
-        updateAppVersionService.updateMinimumVersion(request);
+        updateAppVersionService.updateMinimumVersion(command);
 
         // then
         verify(minimumVersionRepository, times(1)).save(any(MinimumVersion.class));
