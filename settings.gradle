@@ -1,6 +1,11 @@
+pluginManagement {
+    plugins {
+        id 'org.springframework.boot' version "${springBootVersion}"
+        id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
+    }
+}
+
 rootProject.name = 'WSS-Server'
 
-include(
-   'wss-service-support',
-   'wss-common'
-)
+include 'wss-service-support'
+include 'wss-common'
