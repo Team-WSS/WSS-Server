@@ -11,26 +11,26 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.dto.AppVersion.MinimumVersionGetResponse;
-import org.websoso.WSSServer.dto.AppVersion.MinimumVersionUpdateRequest;
-import org.websoso.WSSServer.service.AppVersionService;
+import org.websoso.WSSServer.application.AppVersionApplication;
+import org.websoso.WSSServer.dto.version.MinimumVersionGetResponse;
+import org.websoso.WSSServer.dto.version.MinimumVersionUpdateRequest;
 
 @RestController
 @RequiredArgsConstructor
 public class AppVersionController {
 
-    private final AppVersionService appVersionService;
+    private final AppVersionApplication appVersionApplication;
 
     @GetMapping("/minimum-version")
     public ResponseEntity<MinimumVersionGetResponse> getMinimumVersion(@RequestParam String os) {
         return ResponseEntity
                 .status(OK)
-                .body(appVersionService.getMinimumVersion(os));
+                .body(appVersionApplication.getMinimumVersion(os));
     }
 
     @PostMapping("/minimum-version")
     public ResponseEntity<Void> updateMinimumVersion(@Valid @RequestBody MinimumVersionUpdateRequest request) {
-        appVersionService.updateMinimumVersion(request);
+        appVersionApplication.updateMinimumVersion(request);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

@@ -9,7 +9,7 @@ import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.websoso.WSSServer.domain.common.BaseEntity;
+import org.websoso.common.entity.BaseEntity;
 
 @Entity
 @Getter

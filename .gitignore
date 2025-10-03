@@ -40,9 +40,15 @@ out/
 *.yml
 
 ## QClass ##
-src/main/generated/
+**/generated/
+
+## Log ##
+/logs
 
 ## Apple Login Key File ##
 *.p8
 
 /src/main/resources/websoso-fcm.json
+
+## Mac ##
+.DS_Store
