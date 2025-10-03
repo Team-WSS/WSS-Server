@@ -17,7 +17,6 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAd
 public class RequestBodyLoggingAdvice extends RequestBodyAdviceAdapter {
 
     private final ObjectMapper objectMapper;
-    private final HttpServletRequest httpServletRequest;
 
     @Override
     public boolean supports(MethodParameter methodParameter, Type targetType,
