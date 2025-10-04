@@ -142,9 +142,9 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     public Slice<Feed> findRecommendedFeeds(Long lastFeedId, Long userId, PageRequest pageRequest, List<Genre> genres) {
         List<Feed> feeds = jpaQueryFactory
                 .selectFrom(feed)
-                .join(novel).on(feed.novelId.eq(novel.novelId))
-                .join(novelGenre).on(novel.eq(novelGenre.novel))
-                .join(genre).on(novelGenre.genre.eq(genre))
+                .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
+                .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
+                .leftJoin(genre).on(novelGenre.genre.eq(genre))
                 .where(
                         ltFeedId(lastFeedId),
                         checkPopularFeed(),
