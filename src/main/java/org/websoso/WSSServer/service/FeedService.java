@@ -40,18 +40,7 @@ import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
-import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
-import org.websoso.WSSServer.dto.feed.FeedGetResponse;
-import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
-import org.websoso.WSSServer.dto.feed.FeedImageDeleteEvent;
-import org.websoso.WSSServer.dto.feed.FeedImageUpdateRequest;
-import org.websoso.WSSServer.dto.feed.FeedInfo;
-import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
-import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
-import org.websoso.WSSServer.dto.feed.InterestFeedGetResponse;
-import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
-import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
-import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.*;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
@@ -104,7 +93,7 @@ public class FeedService {
     private final CommentRepository commentRepository;
     private final ReportedCommentRepository reportedCommentRepository;
 
-    public void createFeed(User user, FeedCreateRequest request, FeedImageCreateRequest imagesRequest) {
+    public FeedCreateResponse createFeed(User user, FeedCreateRequest request, FeedImageCreateRequest imagesRequest) {
         List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
 
         Optional.ofNullable(request.novelId())
@@ -118,9 +107,11 @@ public class FeedService {
                 feedImages);
         feedRepository.save(feed);
         feedCategoryService.createFeedCategory(feed, request.relevantCategories());
+
+        return FeedCreateResponse.of(feedImages);
     }
 
-    public void updateFeed(Long feedId, FeedUpdateRequest request, FeedImageUpdateRequest imagesRequest) {
+    public FeedCreateResponse updateFeed(Long feedId, FeedUpdateRequest request, FeedImageUpdateRequest imagesRequest) {
         Feed feed = getFeedOrException(feedId);
 
         List<FeedImage> oldImages = new ArrayList<>(feed.getImages());
@@ -143,6 +134,8 @@ public class FeedService {
                 .map(FeedImage::getUrl)
                 .toList();
         eventPublisher.publishEvent(new FeedImageDeleteEvent(oldImageUrls));
+
+        return FeedCreateResponse.of(feedImages);
     }
 
     private List<FeedImage> processFeedImages(List<MultipartFile> images) {
