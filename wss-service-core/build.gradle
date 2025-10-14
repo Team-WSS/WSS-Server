@@ -1,0 +1,25 @@
+dependencies {
+    // ============== Spring Boot Starters ==============
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // ============== Database & Persistence ==============
+    // MySQL Driver
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // QueryDSL
+    implementation 'com.querydsl:querydsl-jpa::jakarta'
+    annotationProcessor 'com.querydsl:querydsl-apt::jakarta'
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+
+    // QueryDSL BaseEntity
+    annotationProcessor project(':wss-common')
+
+    // ============== Project Modules ==============
+    implementation project(':wss-common')
+
+    // ============== Test ==============
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
