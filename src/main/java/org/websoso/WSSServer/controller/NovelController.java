@@ -23,8 +23,8 @@ import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.novel.SearchedNovelsGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
-import org.websoso.WSSServer.service.FeedService;
-import org.websoso.WSSServer.service.NovelService;
+import org.websoso.WSSServer.feed.service.FeedService;
+import org.websoso.WSSServer.novel.service.NovelService;
 
 @RestController
 @RequestMapping("/novels")
@@ -99,7 +99,7 @@ public class NovelController {
     }
 
     @PostMapping("/{novelId}/is-interest")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.domain.Novel))")
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.novel.domain.Novel))")
     public ResponseEntity<Void> registerAsInterest(@AuthenticationPrincipal User user,
                                                    @PathVariable("novelId") Long novelId) {
         novelService.registerAsInterest(user, novelId);
@@ -109,7 +109,7 @@ public class NovelController {
     }
 
     @DeleteMapping("/{novelId}/is-interest")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.domain.UserNovel))")
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.library.domain.UserNovel))")
     public ResponseEntity<Void> unregisterAsInterest(@AuthenticationPrincipal User user,
                                                      @PathVariable("novelId") Long novelId) {
         novelService.unregisterAsInterest(user, novelId);

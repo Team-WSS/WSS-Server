@@ -5,11 +5,11 @@ import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTH
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
-import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.feed.repository.FeedRepository;
 
 @Component
 @RequiredArgsConstructor

@@ -5,13 +5,13 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NO
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.domain.Novel;
+import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.domain.UserNovel;
+import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
-import org.websoso.WSSServer.repository.NovelRepository;
-import org.websoso.WSSServer.repository.UserNovelRepository;
+import org.websoso.WSSServer.novel.repository.NovelRepository;
+import org.websoso.WSSServer.library.repository.UserNovelRepository;
 
 @Component
 @RequiredArgsConstructor

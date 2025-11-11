@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.dto.keyword.KeywordByCategoryGetResponse;
-import org.websoso.WSSServer.service.KeywordService;
+import org.websoso.WSSServer.library.service.KeywordService;
 
 @RestController
 @RequestMapping("/keywords")

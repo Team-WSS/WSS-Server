@@ -6,10 +6,10 @@ import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
-import org.websoso.WSSServer.repository.FeedRepository;
+import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.service.BlockService;
 
 @Component

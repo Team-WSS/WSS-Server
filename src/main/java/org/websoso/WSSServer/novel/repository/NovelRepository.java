@@ -1,0 +1,18 @@
+package org.websoso.WSSServer.novel.repository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+import org.websoso.WSSServer.novel.domain.Novel;
+
+@Repository
+public interface NovelRepository extends JpaRepository<Novel, Long>, NovelCustomRepository {
+
+    @Query("SELECT n FROM Novel n JOIN UserNovel un ON n.novelId = un.novel.novelId " +
+            "GROUP BY n.novelId " +
+            "ORDER BY MAX(un.createdDate) DESC")
+    Page<Novel> findSosoPick(Pageable pageable);
+
+}

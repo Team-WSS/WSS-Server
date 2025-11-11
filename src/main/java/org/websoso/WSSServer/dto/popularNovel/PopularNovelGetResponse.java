@@ -1,8 +1,8 @@
 package org.websoso.WSSServer.dto.popularNovel;
 
 import org.websoso.WSSServer.domain.Avatar;
-import org.websoso.WSSServer.domain.Feed;
-import org.websoso.WSSServer.domain.Novel;
+import org.websoso.WSSServer.feed.domain.Feed;
+import org.websoso.WSSServer.novel.domain.Novel;
 
 public record PopularNovelGetResponse(
         Long novelId,

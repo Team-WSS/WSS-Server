@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.domain.Novel;
+import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
-import org.websoso.WSSServer.service.NovelService;
-import org.websoso.WSSServer.service.UserNovelService;
+import org.websoso.WSSServer.novel.service.NovelService;
+import org.websoso.WSSServer.library.service.UserNovelService;
 
 @RequestMapping("/user-novels")
 @RestController
@@ -54,7 +54,7 @@ public class UserNovelController {
     }
 
     @PutMapping("/{novelId}")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.domain.UserNovel))")
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.library.domain.UserNovel))")
     public ResponseEntity<Void> updateEvaluation(@AuthenticationPrincipal User user,
                                                  @PathVariable Long novelId,
                                                  @Valid @RequestBody UserNovelUpdateRequest request) {
@@ -65,7 +65,7 @@ public class UserNovelController {
     }
 
     @DeleteMapping("/{novelId}")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.domain.UserNovel))")
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.library.domain.UserNovel))")
     public ResponseEntity<Void> deleteEvaluation(@AuthenticationPrincipal User user,
                                                  @PathVariable Long novelId) {
         userNovelService.deleteEvaluation(user, novelId);

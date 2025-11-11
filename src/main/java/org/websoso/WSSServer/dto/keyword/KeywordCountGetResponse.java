@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.dto.keyword;
 
-import org.websoso.WSSServer.domain.Keyword;
+import org.websoso.WSSServer.library.domain.Keyword;
 
 public record KeywordCountGetResponse(
         String keywordName,

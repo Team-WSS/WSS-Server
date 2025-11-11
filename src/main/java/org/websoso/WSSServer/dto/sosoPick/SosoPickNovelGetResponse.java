@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.dto.sosoPick;
 
-import org.websoso.WSSServer.domain.Novel;
+import org.websoso.WSSServer.novel.domain.Novel;
 
 public record SosoPickNovelGetResponse(
         Long novelId,

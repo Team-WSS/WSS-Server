@@ -36,8 +36,8 @@ import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
 import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
-import org.websoso.WSSServer.service.FeedService;
-import org.websoso.WSSServer.service.PopularFeedService;
+import org.websoso.WSSServer.feed.service.FeedService;
+import org.websoso.WSSServer.feed.service.PopularFeedService;
 
 @RequestMapping("/feeds")
 @RestController
@@ -78,7 +78,7 @@ public class FeedController {
     }
 
     @PutMapping("/{feedId}")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.domain.Feed))")
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.feed.domain.Feed))")
     public ResponseEntity<FeedCreateResponse> updateFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId,
                                            @Valid @RequestPart("feed") FeedUpdateRequest request,
@@ -89,7 +89,7 @@ public class FeedController {
     }
 
     @DeleteMapping("/{feedId}")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.domain.Feed))")
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.feed.domain.Feed))")
     public ResponseEntity<Void> deleteFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId) {
         feedService.deleteFeed(feedId);
@@ -155,7 +155,7 @@ public class FeedController {
 
     @PutMapping("/{feedId}/comments/{commentId}")
     @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user) "
-            + "and @authorizationService.validate(#commentId, #user, T(org.websoso.WSSServer.domain.Comment))")
+            + "and @authorizationService.validate(#commentId, #user, T(org.websoso.WSSServer.feed.domain.Comment))")
     public ResponseEntity<Void> updateComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId,
@@ -168,7 +168,7 @@ public class FeedController {
 
     @DeleteMapping("/{feedId}/comments/{commentId}")
     @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user) "
-            + "and @authorizationService.validate(#commentId, #user, T(org.websoso.WSSServer.domain.Comment))")
+            + "and @authorizationService.validate(#commentId, #user, T(org.websoso.WSSServer.feed.domain.Comment))")
     public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId) {

@@ -7,8 +7,8 @@ import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.USER_WI
 import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
 import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 
-import org.websoso.WSSServer.domain.Comment;
-import org.websoso.WSSServer.domain.Feed;
+import org.websoso.WSSServer.feed.domain.Comment;
+import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.DiscordMessageTemplate;
 import org.websoso.WSSServer.domain.common.ReportedType;

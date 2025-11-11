@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.dto.novel;
 
-import org.websoso.WSSServer.domain.Novel;
+import org.websoso.WSSServer.novel.domain.Novel;
 
 public record NovelGetResponsePreview(
         Long novelId,

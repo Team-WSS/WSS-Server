@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.PopularNovel;
 import org.websoso.WSSServer.repository.PopularNovelRepository;
-import org.websoso.WSSServer.repository.UserNovelRepository;
+import org.websoso.WSSServer.library.repository.UserNovelRepository;
 
 @Service
 @Transactional

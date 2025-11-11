@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.dto.novel;
 
-import org.websoso.WSSServer.domain.Novel;
-import org.websoso.WSSServer.domain.UserNovel;
+import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.library.domain.UserNovel;
 
 public record NovelGetResponseBasic(
         Long userNovelId,
