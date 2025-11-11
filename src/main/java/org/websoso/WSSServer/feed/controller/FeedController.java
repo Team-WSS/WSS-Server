@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.controller;
+package org.websoso.WSSServer.feed.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -29,11 +29,11 @@ import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedCreateResponse;
-import org.websoso.WSSServer.dto.feed.FeedImageUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
+import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
+import org.websoso.WSSServer.dto.feed.FeedImageUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
-import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
 import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.feed.service.FeedService;
@@ -80,9 +80,9 @@ public class FeedController {
     @PutMapping("/{feedId}")
     @PreAuthorize("isAuthenticated() and @authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.feed.domain.Feed))")
     public ResponseEntity<FeedCreateResponse> updateFeed(@AuthenticationPrincipal User user,
-                                           @PathVariable("feedId") Long feedId,
-                                           @Valid @RequestPart("feed") FeedUpdateRequest request,
-                                           @Valid @ModelAttribute FeedImageUpdateRequest requestImage) {
+                                                         @PathVariable("feedId") Long feedId,
+                                                         @Valid @RequestPart("feed") FeedUpdateRequest request,
+                                                         @Valid @ModelAttribute FeedImageUpdateRequest requestImage) {
         return ResponseEntity
                 .status(OK)
                 .body(feedService.updateFeed(feedId, request, requestImage));

@@ -14,11 +14,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.feed.domain.Comment;
-import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
-import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
@@ -27,16 +24,19 @@ import org.websoso.WSSServer.dto.comment.CommentGetResponse;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomCommentException;
-import org.websoso.WSSServer.notification.FCMService;
-import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
+import org.websoso.WSSServer.feed.domain.Comment;
+import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.repository.CommentRepository;
+import org.websoso.WSSServer.notification.FCMClient;
+import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
+import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.novel.service.NovelService;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.service.AvatarService;
 import org.websoso.WSSServer.service.BlockService;
 import org.websoso.WSSServer.service.MessageFormatter;
 import org.websoso.WSSServer.service.MessageService;
-import org.websoso.WSSServer.novel.service.NovelService;
 import org.websoso.WSSServer.service.UserService;
 
 @Service
@@ -50,7 +50,7 @@ public class CommentService {
     private final BlockService blockService;
     private final ReportedCommentService reportedCommentService;
     private final MessageService messageService;
-    private final FCMService fcmService;
+    private final FCMClient fcmClient;
     private final NovelService novelService;
     private final NotificationTypeRepository notificationTypeRepository;
     private final NotificationRepository notificationRepository;
@@ -105,7 +105,7 @@ public class CommentService {
                 .map(UserDevice::getFcmToken)
                 .toList();
 
-        fcmService.sendMulticastPushMessage(
+        fcmClient.sendMulticastPushMessage(
                 targetFCMTokens,
                 fcmMessageRequest
         );
@@ -180,7 +180,7 @@ public class CommentService {
                     "feedDetail",
                     String.valueOf(notification.getNotificationId())
             );
-            fcmService.sendMulticastPushMessage(
+            fcmClient.sendMulticastPushMessage(
                     targetFCMTokens,
                     fcmMessageRequest
             );

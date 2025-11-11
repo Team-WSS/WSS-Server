@@ -22,17 +22,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.websoso.WSSServer.domain.Avatar;
-import org.websoso.WSSServer.feed.domain.Comment;
-import org.websoso.WSSServer.feed.domain.Feed;
-import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
-import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserDevice;
-import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.domain.common.ReportedType;
@@ -40,31 +35,48 @@ import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
-import org.websoso.WSSServer.dto.feed.*;
+import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
+import org.websoso.WSSServer.dto.feed.FeedCreateResponse;
+import org.websoso.WSSServer.dto.feed.FeedGetResponse;
+import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
+import org.websoso.WSSServer.dto.feed.FeedImageDeleteEvent;
+import org.websoso.WSSServer.dto.feed.FeedImageUpdateRequest;
+import org.websoso.WSSServer.dto.feed.FeedInfo;
+import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
+import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.InterestFeedGetResponse;
+import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
+import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
-import org.websoso.WSSServer.notification.FCMService;
-import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
-import org.websoso.WSSServer.repository.AvatarRepository;
+import org.websoso.WSSServer.feed.domain.Comment;
+import org.websoso.WSSServer.feed.domain.Feed;
+import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.feed.repository.CommentRepository;
 import org.websoso.WSSServer.feed.repository.FeedImageCustomRepository;
 import org.websoso.WSSServer.feed.repository.FeedImageRepository;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
+import org.websoso.WSSServer.feed.repository.ReportedCommentRepository;
+import org.websoso.WSSServer.library.domain.UserNovel;
+import org.websoso.WSSServer.library.repository.UserNovelRepository;
+import org.websoso.WSSServer.notification.FCMClient;
+import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
+import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.novel.repository.NovelRepository;
+import org.websoso.WSSServer.novel.service.NovelService;
+import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
-import org.websoso.WSSServer.novel.repository.NovelRepository;
-import org.websoso.WSSServer.feed.repository.ReportedCommentRepository;
-import org.websoso.WSSServer.library.repository.UserNovelRepository;
 import org.websoso.WSSServer.service.AvatarService;
 import org.websoso.WSSServer.service.BlockService;
 import org.websoso.WSSServer.service.GenreService;
 import org.websoso.WSSServer.service.ImageService;
 import org.websoso.WSSServer.service.MessageFormatter;
 import org.websoso.WSSServer.service.MessageService;
-import org.websoso.WSSServer.novel.service.NovelService;
 import org.websoso.WSSServer.service.UserService;
 
 @Service
@@ -91,7 +103,7 @@ public class FeedService {
     private final MessageService messageService;
     private final UserService userService;
     private final NovelRepository novelRepository;
-    private final FCMService fcmService;
+    private final FCMClient fcmClient;
     private final NotificationTypeRepository notificationTypeRepository;
     private final NotificationRepository notificationRepository;
     private final ApplicationEventPublisher eventPublisher;
@@ -236,7 +248,7 @@ public class FeedService {
                 .stream()
                 .map(UserDevice::getFcmToken)
                 .toList();
-        fcmService.sendMulticastPushMessage(
+        fcmClient.sendMulticastPushMessage(
                 targetFCMTokens,
                 fcmMessageRequest
         );
