@@ -93,6 +93,7 @@ public class NovelService {
                         "novel with the given id is not found"));
     }
 
+    //이건 상위 계층에서 처리
     @Transactional(readOnly = true)
     public NovelGetResponseBasic getNovelInfoBasic(User user, Long novelId) {
         Novel novel = getNovelOrException(novelId);
