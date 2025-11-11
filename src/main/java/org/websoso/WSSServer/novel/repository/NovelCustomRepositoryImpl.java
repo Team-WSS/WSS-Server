@@ -1,10 +1,10 @@
 package org.websoso.WSSServer.novel.repository;
 
-import static org.websoso.WSSServer.domain.QNovel.novel;
-import static org.websoso.WSSServer.domain.QNovelGenre.novelGenre;
-import static org.websoso.WSSServer.domain.QUserNovel.userNovel;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
+import static org.websoso.WSSServer.library.domain.QUserNovel.userNovel;
+import static org.websoso.WSSServer.novel.domain.QNovel.novel;
+import static org.websoso.WSSServer.novel.domain.QNovelGenre.novelGenre;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.library.domain.Keyword;
 import org.websoso.WSSServer.novel.domain.Novel;
-import org.websoso.WSSServer.domain.QNovel;
+import org.websoso.WSSServer.novel.domain.QNovel;
 
 @Repository
 @RequiredArgsConstructor

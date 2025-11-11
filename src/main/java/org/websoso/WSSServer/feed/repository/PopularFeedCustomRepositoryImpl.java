@@ -1,7 +1,8 @@
 package org.websoso.WSSServer.feed.repository;
 
 import static org.websoso.WSSServer.domain.QBlock.block;
-import static org.websoso.WSSServer.domain.QPopularFeed.popularFeed;
+import static org.websoso.WSSServer.feed.domain.QPopularFeed.popularFeed;
+
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;

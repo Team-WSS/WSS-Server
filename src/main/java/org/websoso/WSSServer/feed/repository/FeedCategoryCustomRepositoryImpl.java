@@ -1,11 +1,11 @@
 package org.websoso.WSSServer.feed.repository;
 
 import static org.websoso.WSSServer.domain.QBlock.block;
-import static org.websoso.WSSServer.domain.QFeed.feed;
-import static org.websoso.WSSServer.domain.QFeedCategory.feedCategory;
 import static org.websoso.WSSServer.domain.QGenre.genre;
-import static org.websoso.WSSServer.domain.QNovel.novel;
-import static org.websoso.WSSServer.domain.QNovelGenre.novelGenre;
+import static org.websoso.WSSServer.feed.domain.QFeed.feed;
+import static org.websoso.WSSServer.feed.domain.QFeedCategory.feedCategory;
+import static org.websoso.WSSServer.novel.domain.QNovel.novel;
+import static org.websoso.WSSServer.novel.domain.QNovelGenre.novelGenre;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
