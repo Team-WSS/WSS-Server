@@ -1,43 +1,24 @@
-package org.websoso.WSSServer.controller;
-
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
-import static org.springframework.http.HttpStatus.OK;
-import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
-import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
+package org.websoso.WSSServer.feed.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
-import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
-import org.websoso.WSSServer.dto.feed.FeedCreateResponse;
-import org.websoso.WSSServer.dto.feed.FeedImageUpdateRequest;
-import org.websoso.WSSServer.dto.feed.FeedGetResponse;
-import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
-import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
-import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
-import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
+import org.websoso.WSSServer.dto.feed.*;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.feed.service.FeedService;
 import org.websoso.WSSServer.feed.service.PopularFeedService;
+
+import static org.springframework.http.HttpStatus.*;
+import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
+import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 
 @RequestMapping("/feeds")
 @RestController
@@ -80,9 +61,9 @@ public class FeedController {
     @PutMapping("/{feedId}")
     @PreAuthorize("isAuthenticated() and @authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.feed.domain.Feed))")
     public ResponseEntity<FeedCreateResponse> updateFeed(@AuthenticationPrincipal User user,
-                                           @PathVariable("feedId") Long feedId,
-                                           @Valid @RequestPart("feed") FeedUpdateRequest request,
-                                           @Valid @ModelAttribute FeedImageUpdateRequest requestImage) {
+                                                         @PathVariable("feedId") Long feedId,
+                                                         @Valid @RequestPart("feed") FeedUpdateRequest request,
+                                                         @Valid @ModelAttribute FeedImageUpdateRequest requestImage) {
         return ResponseEntity
                 .status(OK)
                 .body(feedService.updateFeed(feedId, request, requestImage));
