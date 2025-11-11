@@ -29,7 +29,7 @@ import org.websoso.WSSServer.dto.notification.NotificationsGetResponse;
 import org.websoso.WSSServer.dto.notification.NotificationsReadStatusGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
 import org.websoso.WSSServer.exception.exception.CustomNotificationTypeException;
-import org.websoso.WSSServer.notification.FCMService;
+import org.websoso.WSSServer.notification.FCMClient;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
@@ -46,7 +46,7 @@ public class NotificationService {
     private final ReadNotificationRepository readNotificationRepository;
     private final NotificationTypeRepository notificationTypeRepository;
     private final UserRepository userRepository;
-    private final FCMService fcmService;
+    private final FCMClient fcmClient;
     private final UserService userService;
 
     @Transactional(readOnly = true)
@@ -153,7 +153,7 @@ public class NotificationService {
 
         List<String> targetFCMTokens = getTargetFCMTokens(userId);
 
-        fcmService.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
+        fcmClient.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
     }
 
     private List<String> getTargetFCMTokens(Long userId) {

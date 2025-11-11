@@ -12,13 +12,13 @@ import com.google.firebase.messaging.SendResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
-public class FCMService {
+public class FCMClient {
 
     private final FirebaseMessaging firebaseMessaging;
 

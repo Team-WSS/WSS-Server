@@ -1,27 +1,29 @@
 package org.websoso.WSSServer.feed.service;
 
 import static java.lang.Boolean.TRUE;
+import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
-import org.websoso.WSSServer.novel.domain.Novel;
-import org.websoso.WSSServer.feed.domain.PopularFeed;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
-import org.websoso.WSSServer.notification.FCMService;
+import org.websoso.WSSServer.exception.exception.CustomNovelException;
+import org.websoso.WSSServer.feed.domain.Feed;
+import org.websoso.WSSServer.feed.domain.PopularFeed;
+import org.websoso.WSSServer.feed.repository.PopularFeedRepository;
+import org.websoso.WSSServer.notification.FCMClient;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
-import org.websoso.WSSServer.novel.service.NovelService;
+import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.novel.repository.NovelRepository;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
-import org.websoso.WSSServer.feed.repository.PopularFeedRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -29,10 +31,10 @@ import org.websoso.WSSServer.feed.repository.PopularFeedRepository;
 public class PopularFeedService {
 
     private final PopularFeedRepository popularFeedRepository;
-    private final NovelService novelService;
-    private final FCMService fcmService;
+    private final NovelRepository novelRepository;
     private final NotificationTypeRepository notificationTypeRepository;
     private final NotificationRepository notificationRepository;
+    private final FCMClient fcmClient;
 
     public void createPopularFeed(Feed feed) {
         if (!popularFeedRepository.existsByFeed(feed)) {
@@ -81,7 +83,7 @@ public class PopularFeedService {
                 .stream()
                 .map(UserDevice::getFcmToken)
                 .toList();
-        fcmService.sendMulticastPushMessage(
+        fcmClient.sendMulticastPushMessage(
                 targetFCMTokens,
                 fcmMessageRequest
         );
@@ -99,11 +101,13 @@ public class PopularFeedService {
                     : feedContent.substring(0, 12);
             return "'" + feedContent + "...'";
         }
-        Novel novel = novelService.getNovelOrException(feed.getNovelId());
+        Novel novel = novelRepository.findById(feed.getNovelId())
+                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
+                        "novel with the given id is not found"));
         return String.format("<%s>", novel.getTitle());
     }
 
-    @Transactional(readOnly = true)
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public PopularFeedsGetResponse getPopularFeeds(User user) {
         Long currentUserId = Optional.ofNullable(user)
                 .map(User::getUserId)
