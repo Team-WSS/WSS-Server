@@ -1,11 +1,11 @@
 package org.websoso.WSSServer.library.repository;
 
-import static org.websoso.WSSServer.domain.QNovel.novel;
-import static org.websoso.WSSServer.domain.QNovelGenre.novelGenre;
-import static org.websoso.WSSServer.domain.QUserNovel.userNovel;
 import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
+import static org.websoso.WSSServer.library.domain.QUserNovel.userNovel;
+import static org.websoso.WSSServer.novel.domain.QNovel.novel;
+import static org.websoso.WSSServer.novel.domain.QNovelGenre.novelGenre;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;

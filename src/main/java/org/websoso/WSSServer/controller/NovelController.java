@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.application.SearchNovelApplication;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
@@ -33,14 +34,23 @@ public class NovelController {
 
     private final NovelService novelService;
     private final FeedService feedService;
+    private final SearchNovelApplication searchNovelApplication;
 
+    /**
+     * 검색어를 사용해서 소설을 찾는다.
+     *
+     * @param query 검색할 작품명 or 작가명
+     * @param page  페이지 네이션 페이지
+     * @param size  페이지 네이션 사이즈
+     * @return SearchedNovelsGetResponse
+     */
     @GetMapping
     public ResponseEntity<SearchedNovelsGetResponse> searchNovels(@RequestParam(required = false) String query,
                                                                   @RequestParam int page,
                                                                   @RequestParam int size) {
         return ResponseEntity
                 .status(OK)
-                .body(novelService.searchNovels(query, page, size));
+                .body(searchNovelApplication.searchNovels(query, page, size));
     }
 
     @GetMapping("/filtered")
@@ -54,7 +64,8 @@ public class NovelController {
             @RequestParam int size) {
         return ResponseEntity
                 .status(OK)
-                .body(novelService.getFilteredNovels(genres, isCompleted, novelRating, keywordIds, page, size));
+                .body(searchNovelApplication.getFilteredNovels(genres, isCompleted, novelRating, keywordIds, page,
+                        size));
     }
 
     @GetMapping("/popular")
