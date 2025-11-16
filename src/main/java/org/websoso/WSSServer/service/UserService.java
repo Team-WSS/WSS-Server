@@ -48,11 +48,11 @@ import org.websoso.WSSServer.exception.error.CustomUserError;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
+import org.websoso.WSSServer.feed.repository.CommentRepository;
+import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.repository.AvatarRepository;
-import org.websoso.WSSServer.feed.repository.CommentRepository;
-import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
@@ -75,7 +75,7 @@ public class UserService {
     private final AppleService appleService;
     private final FeedRepository feedRepository;
     private final CommentRepository commentRepository;
-    private final MessageService messageService;
+    private final DiscordMessageClient discordMessageClient;
     private final WithdrawalReasonRepository withdrawalReasonRepository;
     private final UserDeviceRepository userDeviceRepository;
     private static final String KAKAO_PREFIX = "kakao";
@@ -96,7 +96,8 @@ public class UserService {
     public LoginResponse login(Long userId) {
         User user = getUserOrException(userId);
 
-        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null, null);
+        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null,
+                null);
         String token = jwtProvider.generateAccessToken(customAuthenticationToken);
 
         return LoginResponse.of(token);
@@ -179,7 +180,7 @@ public class UserService {
         List<GenrePreference> preferGenres = createGenrePreferences(user, registerUserInfoRequest.genrePreferences());
         genrePreferenceRepository.saveAll(preferGenres);
 
-        messageService.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
+        discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
                 MessageFormatter.formatUserJoinMessage(user, SocialLoginType.fromSocialId(user.getSocialId())), JOIN));
     }
 
@@ -202,7 +203,7 @@ public class UserService {
 
         cleanupUserData(user.getUserId());
 
-        messageService.sendDiscordWebhookMessage(
+        discordMessageClient.sendDiscordWebhookMessage(
                 DiscordWebhookMessage.of(messageContent, WITHDRAW));
 
         withdrawalReasonRepository.save(WithdrawalReason.create(withdrawalRequest.reason()));

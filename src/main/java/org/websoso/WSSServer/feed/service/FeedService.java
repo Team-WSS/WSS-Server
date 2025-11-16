@@ -73,10 +73,10 @@ import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.service.AvatarService;
 import org.websoso.WSSServer.service.BlockService;
+import org.websoso.WSSServer.service.DiscordMessageClient;
 import org.websoso.WSSServer.service.GenreService;
 import org.websoso.WSSServer.service.ImageService;
 import org.websoso.WSSServer.service.MessageFormatter;
-import org.websoso.WSSServer.service.MessageService;
 import org.websoso.WSSServer.service.UserService;
 
 @Service
@@ -100,7 +100,7 @@ public class FeedService {
     private final AvatarRepository avatarRepository;
     private final CommentService commentService;
     private final ReportedFeedService reportedFeedService;
-    private final MessageService messageService;
+    private final DiscordMessageClient discordMessageClient;
     private final UserService userService;
     private final NovelRepository novelRepository;
     private final FCMClient fcmClient;
@@ -355,7 +355,7 @@ public class FeedService {
             feed.hideFeed();
         }
 
-        messageService.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
+        discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
                 MessageFormatter.formatFeedReportMessage(user, feed, reportedType, reportedCount, shouldHide), REPORT));
     }
 

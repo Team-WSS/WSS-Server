@@ -17,7 +17,7 @@ import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 
 @Service
 @Slf4j
-public class MessageService {
+public class DiscordMessageClient {
 
     @Value("${logging.discord.report-webhook-url}")
     private String discordReportWebhookUrl;
