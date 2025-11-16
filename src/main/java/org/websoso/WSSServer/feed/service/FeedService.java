@@ -75,7 +75,7 @@ import org.websoso.WSSServer.service.AvatarService;
 import org.websoso.WSSServer.service.BlockService;
 import org.websoso.WSSServer.service.DiscordMessageClient;
 import org.websoso.WSSServer.service.GenreService;
-import org.websoso.WSSServer.service.ImageService;
+import org.websoso.WSSServer.service.ImageClient;
 import org.websoso.WSSServer.service.MessageFormatter;
 import org.websoso.WSSServer.service.UserService;
 
@@ -94,7 +94,7 @@ public class FeedService {
     private final BlockService blockService;
     private final LikeService likeService;
     private final PopularFeedService popularFeedService;
-    private final ImageService imageService;
+    private final ImageClient imageClient;
     private final FeedImageCustomRepository feedImageCustomRepository;
     private final UserNovelRepository userNovelRepository;
     private final AvatarRepository avatarRepository;
@@ -164,12 +164,12 @@ public class FeedService {
         if (images != null && !images.isEmpty()) {
             try {
                 for (MultipartFile image : images) {
-                    String imageUrl = imageService.uploadFeedImage(image);
+                    String imageUrl = imageClient.uploadFeedImage(image);
                     uploadedImageUrls.add(imageUrl);
                 }
             } catch (Exception e) {
                 if (!uploadedImageUrls.isEmpty()) {
-                    imageService.deleteImages(uploadedImageUrls);
+                    imageClient.deleteImages(uploadedImageUrls);
                 }
 
                 throw e;
