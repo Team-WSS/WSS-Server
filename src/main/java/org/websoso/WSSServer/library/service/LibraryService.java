@@ -1,0 +1,139 @@
+package org.websoso.WSSServer.library.service;
+
+import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
+import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
+import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
+import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserNovelError.ALREADY_INTERESTED;
+import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_INTERESTED;
+import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
+import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
+
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.domain.Genre;
+import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.domain.common.AttractivePointName;
+import org.websoso.WSSServer.exception.exception.CustomNovelException;
+import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
+import org.websoso.WSSServer.library.domain.UserNovel;
+import org.websoso.WSSServer.library.domain.UserNovelKeyword;
+import org.websoso.WSSServer.library.repository.UserNovelAttractivePointRepository;
+import org.websoso.WSSServer.library.repository.UserNovelKeywordRepository;
+import org.websoso.WSSServer.library.repository.UserNovelRepository;
+import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.novel.repository.NovelRepository;
+
+@Service
+@RequiredArgsConstructor
+public class LibraryService {
+
+    private final NovelRepository novelRepository;
+    private final UserNovelRepository userNovelRepository;
+    private final UserNovelKeywordRepository userNovelKeywordRepository;
+    private final UserNovelAttractivePointRepository userNovelAttractivePointRepository;
+
+    @Transactional(readOnly = true)
+    public UserNovel getUserNovelOrException(User user, Long novelId) {
+        return userNovelRepository.findByNovel_NovelIdAndUser(novelId, user)
+                .orElseThrow(() -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
+                        "user novel with the given user and novel is not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public UserNovel getUserNovelOrNull(User user, Novel novel) {
+        if (user == null) {
+            return null;
+        }
+        return userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public void unregisterAsInterest(User user, Long novelId) {
+        UserNovel userNovel = userNovelRepository.findByNovel_NovelIdAndUser(novelId, user)
+                .orElseThrow(() -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
+                        "user novel with the given user and novel is not found"));
+
+        if (!userNovel.getIsInterest()) {
+            throw new CustomUserNovelException(NOT_INTERESTED, "not registered as interest");
+        }
+
+        userNovel.setIsInterest(false);
+
+        if (isUserNovelOnlyByInterest(userNovel)) {
+            userNovelRepository.delete(userNovel);
+        }
+
+    }
+
+    public void registerAsInterest(User user, Long novelId) {
+        Novel novel = novelRepository.findById(novelId)
+                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
+                        "novel with the given id is not found"));
+
+        UserNovel userNovel = user == null ? null : userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
+
+        if (userNovel != null && userNovel.getIsInterest()) {
+            throw new CustomUserNovelException(ALREADY_INTERESTED, "already registered as interested");
+        }
+
+        if (userNovel == null) {
+            try {
+                userNovel = createUserNovelByInterest(user, novel);
+            } catch (DataIntegrityViolationException e) {
+                userNovel = getUserNovelOrException(user, novelId);
+            }
+        }
+
+        userNovel.setIsInterest(true);
+    }
+
+    public UserNovel createUserNovelByInterest(User user, Novel novel) {
+        if (getUserNovelOrNull(user, novel) != null) {
+            throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
+        }
+        return userNovelRepository.save(UserNovel.create(null, 0.0f, null, null, user, novel));
+    }
+
+    public int getRatingCount(Novel novel) {
+        return userNovelRepository.countByNovelAndUserNovelRatingNot(novel, 0.0f);
+    }
+
+    public float getRatingSum(Novel novel) {
+        return userNovelRepository.sumUserNovelRatingByNovel(novel);
+    }
+
+    public int getInterestCount(Novel novel) {
+        return userNovelRepository.countByNovelAndIsInterestTrue(novel);
+    }
+
+    public List<UserNovelKeyword> getKeywords (Novel novel){
+        return userNovelKeywordRepository.findAllByUserNovel_Novel(novel);
+    }
+
+    public int getWatchingCount(Novel novel) {
+        return userNovelRepository.countByNovelAndStatus(novel, WATCHING);
+    }
+    public int getWatchedCount(Novel novel) {
+        return userNovelRepository.countByNovelAndStatus(novel, WATCHED);
+    }
+    public int getQuitCount(Novel novel) {
+        return userNovelRepository.countByNovelAndStatus(novel, QUIT);
+    }
+
+    public int getAttractivePointCount(Novel novel, AttractivePointName point) {
+        return userNovelAttractivePointRepository.countByUserNovel_NovelAndAttractivePoint_AttractivePointName(
+                novel, point.getLabel());
+    }
+
+    public List<Novel> getTasteNovels(List<Genre> preferGenres) {
+        return  userNovelRepository.findTasteNovels(preferGenres);
+    }
+
+    private Boolean isUserNovelOnlyByInterest(UserNovel userNovel) {
+        return userNovel.getStatus() == null;
+    }
+}

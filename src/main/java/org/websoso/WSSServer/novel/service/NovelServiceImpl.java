@@ -9,9 +9,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Genre;
+import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.library.domain.Keyword;
 import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.novel.domain.NovelGenre;
+import org.websoso.WSSServer.novel.repository.NovelGenreRepository;
+import org.websoso.WSSServer.novel.repository.NovelPlatformRepository;
 import org.websoso.WSSServer.novel.repository.NovelRepository;
 
 @Service
@@ -19,11 +23,14 @@ import org.websoso.WSSServer.novel.repository.NovelRepository;
 public class NovelServiceImpl {
 
     private final NovelRepository novelRepository;
+    private final NovelGenreRepository novelGenreRepository;
+    private final NovelPlatformRepository novelPlatformRepository;
 
     @Transactional(readOnly = true)
-    public Novel getNovel(Long novelId) {
-        return novelRepository.findById(novelId).orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
-                "novel with the given id is not found"));
+    public Novel getNovelOrException(Long novelId) {
+        return novelRepository.findById(novelId)
+                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
+                        "novel with the given id is not found"));
     }
 
     public Page<Novel> searchNovels(PageRequest pageRequest, String searchQuery) {
@@ -34,6 +41,16 @@ public class NovelServiceImpl {
                                           Boolean isCompleted, Float novelRating) {
         return novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRating,
                 keywords);
+    }
+
+    public List<NovelGenre> getGenresByNovel(Novel novel) {
+        return novelGenreRepository.findAllByNovel(novel);
+    }
+
+    public List<PlatformGetResponse> getPlatforms(Novel novel) {
+        return novelPlatformRepository.findAllByNovel(novel).stream()
+                .map(PlatformGetResponse::of)
+                .toList();
     }
 
 }

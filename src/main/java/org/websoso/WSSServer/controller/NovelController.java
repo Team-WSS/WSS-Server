@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.controller;
 
-import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import java.util.List;
@@ -8,10 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,6 +50,17 @@ public class NovelController {
                 .body(searchNovelApplication.searchNovels(query, page, size));
     }
 
+    /**
+     * 상세 탐색 API
+     *
+     * @param genres      장르 리스트
+     * @param isCompleted 완결 여부
+     * @param novelRating 소설 평점
+     * @param keywordIds  키워드 리스트
+     * @param page        페이지
+     * @param size        사이즈
+     * @return FilteredNovelsGetResponse
+     */
     @GetMapping("/filtered")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<FilteredNovelsGetResponse> getFilteredNovels(
@@ -68,6 +76,34 @@ public class NovelController {
                         size));
     }
 
+    /**
+     * 작품정보 조회 API (기본)
+     *
+     * @param user    로그인 유저 객체
+     * @param novelId 소설 ID
+     * @return NovelGetResponseBasic
+     */
+    @GetMapping("/{novelId}")
+    public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(@AuthenticationPrincipal User user,
+                                                                   @PathVariable Long novelId) {
+        return ResponseEntity
+                .status(OK)
+                .body(searchNovelApplication.getNovelInfoBasic(user, novelId));
+    }
+
+    /**
+     * 작품정보 조회 API (정보탭)
+     *
+     * @param novelId 소설 ID
+     * @return NovelGetResponseInfoTab
+     */
+    @GetMapping("/{novelId}/info")
+    public ResponseEntity<NovelGetResponseInfoTab> getNovelInfoInfoTab(@PathVariable Long novelId) {
+        return ResponseEntity
+                .status(OK)
+                .body(searchNovelApplication.getNovelInfoInfoTab(novelId));
+    }
+
     @GetMapping("/popular")
     public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(@AuthenticationPrincipal User user) {
         //TODO 차단 관계에 있는 유저의 피드글 처리
@@ -81,24 +117,10 @@ public class NovelController {
     public ResponseEntity<TasteNovelsGetResponse> getTasteNovels(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
-                .body(novelService.getTasteNovels(user));
+                .body(searchNovelApplication.getTasteNovels(user));
     }
 
-    @GetMapping("/{novelId}")
-    public ResponseEntity<NovelGetResponseBasic> getNovelInfoBasic(@AuthenticationPrincipal User user,
-                                                                   @PathVariable Long novelId) {
-        return ResponseEntity
-                .status(OK)
-                .body(novelService.getNovelInfoBasic(user, novelId));
-    }
-
-    @GetMapping("/{novelId}/info")
-    public ResponseEntity<NovelGetResponseInfoTab> getNovelInfoInfoTab(@PathVariable Long novelId) {
-        return ResponseEntity
-                .status(OK)
-                .body(novelService.getNovelInfoInfoTab(novelId));
-    }
-
+    // TODO: Feed Controller로 이동해야함
     @GetMapping("/{novelId}/feeds")
     public ResponseEntity<NovelGetResponseFeedTab> getFeedsByNovel(@AuthenticationPrincipal User user,
                                                                    @PathVariable Long novelId,
@@ -107,25 +129,5 @@ public class NovelController {
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getFeedsByNovel(user, novelId, lastFeedId, size));
-    }
-
-    @PostMapping("/{novelId}/is-interest")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.novel.domain.Novel))")
-    public ResponseEntity<Void> registerAsInterest(@AuthenticationPrincipal User user,
-                                                   @PathVariable("novelId") Long novelId) {
-        novelService.registerAsInterest(user, novelId);
-        return ResponseEntity
-                .status(NO_CONTENT)
-                .build();
-    }
-
-    @DeleteMapping("/{novelId}/is-interest")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.library.domain.UserNovel))")
-    public ResponseEntity<Void> unregisterAsInterest(@AuthenticationPrincipal User user,
-                                                     @PathVariable("novelId") Long novelId) {
-        novelService.unregisterAsInterest(user, novelId);
-        return ResponseEntity
-                .status(NO_CONTENT)
-                .build();
     }
 }
