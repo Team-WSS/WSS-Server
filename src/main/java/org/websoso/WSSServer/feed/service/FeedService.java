@@ -735,6 +735,7 @@ public class FeedService {
         fcmClient.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
     }
 
+    //ToDo : CommentService와 중복되는 부분 추출 필요
     private void sendCommentPushMessageToCommenters(User user, Feed feed) {
         User feedOwner = feed.getUser();
 
