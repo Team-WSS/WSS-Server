@@ -2,10 +2,8 @@ package org.websoso.WSSServer.library.service;
 
 import static org.websoso.WSSServer.domain.common.Gender.M;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_EVALUATED;
-import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
 
 import java.time.LocalDateTime;
@@ -18,7 +16,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.library.domain.AttractivePoint;
@@ -42,12 +39,10 @@ import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponseLegacy;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponseLegacy;
-import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserTasteAttractivePointPreferencesAndKeywordsGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
-import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
@@ -73,8 +68,6 @@ public class UserNovelService {
     private final GenreRepository genreRepository;
     private final FeedRepository feedRepository;
 
-    public static final String SORT_TYPE_OLDEST = "OLDEST";
-
     private static final List<String> priorityGenreNamesOfMale = List.of(
             "fantasy", "modernFantasy", "wuxia", "drama", "mystery", "lightNovel", "romance", "romanceFantasy", "BL"
     );
@@ -95,26 +88,6 @@ public class UserNovelService {
             return null;
         }
         return userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
-    }
-
-    public void createEvaluation(User user, UserNovelCreateRequest request) {
-        Novel novel = novelRepository.findById(request.novelId())
-                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
-
-        try {
-            UserNovel userNovel = userNovelRepository.save(UserNovel.create(
-                    request.status(),
-                    request.userNovelRating(),
-                    request.startDate(),
-                    request.endDate(),
-                    user,
-                    novel));
-
-            createUserNovelAttractivePoints(userNovel, request.attractivePoints());
-            createNovelKeywords(userNovel, request.keywordIds());
-        } catch (DataIntegrityViolationException e) {
-            throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
-        }
     }
 
     public void updateEvaluation(User user, Long novelId, UserNovelUpdateRequest request) {
@@ -208,20 +181,6 @@ public class UserNovelService {
         }
     }
 
-    private void createUserNovelAttractivePoints(UserNovel userNovel, List<String> request) {
-        for (String stringAttractivePoint : request) {
-            AttractivePoint attractivePoint = attractivePointService.getAttractivePointByString(stringAttractivePoint);
-            userNovelAttractivePointRepository.save(UserNovelAttractivePoint.create(userNovel, attractivePoint));
-        }
-    }
-
-    private void createNovelKeywords(UserNovel userNovel, List<Integer> request) {
-        for (Integer keywordId : request) {
-            Keyword keyword = keywordService.getKeywordOrException(keywordId);
-            userNovelKeywordRepository.save(UserNovelKeyword.create(userNovel, keyword));
-        }
-    }
-
     public void deleteEvaluation(User user, Long novelId) {
         UserNovel userNovel = getUserNovelOrException(user, novelId);
 
@@ -236,13 +195,6 @@ public class UserNovelService {
         } else {
             userNovelRepository.delete(userNovel);
         }
-    }
-
-    public UserNovel createUserNovelByInterest(User user, Novel novel) {
-        if (getUserNovelOrNull(user, novel) != null) {
-            throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
-        }
-        return userNovelRepository.save(UserNovel.create(null, 0.0f, null, null, user, novel));
     }
 
     @Transactional(readOnly = true)
@@ -262,13 +214,13 @@ public class UserNovelService {
     private List<String> getStringAttractivePoints(UserNovel userNovel) {
         return userNovel.getUserNovelAttractivePoints().stream()
                 .map(attractivePoint -> attractivePoint.getAttractivePoint().getAttractivePointName())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private List<KeywordGetResponse> getKeywordGetResponses(UserNovel userNovel) {
         return userNovel.getUserNovelKeywords().stream()
                 .map(userNovelKeyword -> KeywordGetResponse.of(userNovelKeyword.getKeyword()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)

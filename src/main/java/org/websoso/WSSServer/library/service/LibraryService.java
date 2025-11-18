@@ -9,6 +9,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_INT
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.AttractivePointName;
+import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
@@ -80,6 +82,18 @@ public class LibraryService {
 
     }
 
+    @Transactional
+    public UserNovel createLibrary(ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,
+                                   User user, Novel novel) {
+        return userNovelRepository.save(UserNovel.create(
+                status,
+                userNovelRating,
+                startDate,
+                endDate,
+                user,
+                novel));
+    }
+
     public void registerAsInterest(User user, Long novelId) {
         Novel novel = novelRepository.findById(novelId)
                 .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
@@ -121,16 +135,18 @@ public class LibraryService {
         return userNovelRepository.countByNovelAndIsInterestTrue(novel);
     }
 
-    public List<UserNovelKeyword> getKeywords (Novel novel){
+    public List<UserNovelKeyword> getKeywords(Novel novel) {
         return userNovelKeywordRepository.findAllByUserNovel_Novel(novel);
     }
 
     public int getWatchingCount(Novel novel) {
         return userNovelRepository.countByNovelAndStatus(novel, WATCHING);
     }
+
     public int getWatchedCount(Novel novel) {
         return userNovelRepository.countByNovelAndStatus(novel, WATCHED);
     }
+
     public int getQuitCount(Novel novel) {
         return userNovelRepository.countByNovelAndStatus(novel, QUIT);
     }
@@ -141,7 +157,7 @@ public class LibraryService {
     }
 
     public List<Novel> getTasteNovels(List<Genre> preferGenres) {
-        return  userNovelRepository.findTasteNovels(preferGenres);
+        return userNovelRepository.findTasteNovels(preferGenres);
     }
 
     private Boolean isUserNovelOnlyByInterest(UserNovel userNovel) {
