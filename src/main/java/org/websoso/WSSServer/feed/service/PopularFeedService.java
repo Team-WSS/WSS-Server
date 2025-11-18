@@ -3,11 +3,11 @@ package org.websoso.WSSServer.feed.service;
 import static java.lang.Boolean.TRUE;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.User;
@@ -107,7 +107,7 @@ public class PopularFeedService {
         return String.format("<%s>", novel.getTitle());
     }
 
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public PopularFeedsGetResponse getPopularFeeds(User user) {
         Long currentUserId = Optional.ofNullable(user)
                 .map(User::getUserId)
