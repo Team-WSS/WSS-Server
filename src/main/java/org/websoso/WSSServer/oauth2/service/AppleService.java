@@ -62,7 +62,7 @@ import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.repository.UserAppleTokenRepository;
 import org.websoso.WSSServer.repository.UserRepository;
-import org.websoso.WSSServer.service.MessageService;
+import org.websoso.WSSServer.service.DiscordMessageClient;
 
 @Transactional
 @Service
@@ -82,7 +82,7 @@ public class AppleService {
     private final UserRepository userRepository;
     private final UserAppleTokenRepository userAppleTokenRepository;
     private final JwtProvider jwtProvider;
-    private final MessageService messageService;
+    private final DiscordMessageClient discordMessageClient;
 
     @Value("${apple.public-keys-url}")
     private String applePublicKeysUrl;
@@ -285,7 +285,8 @@ public class AppleService {
             userAppleTokenRepository.save(UserAppleToken.create(user, appleRefreshToken));
         }
 
-        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null, null);
+        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null,
+                null);
         String accessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
         String refreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
 

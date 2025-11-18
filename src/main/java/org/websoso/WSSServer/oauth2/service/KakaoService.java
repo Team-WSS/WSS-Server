@@ -21,7 +21,7 @@ import org.websoso.WSSServer.exception.exception.CustomKakaoException;
 import org.websoso.WSSServer.oauth2.dto.KakaoUserInfo;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.repository.UserRepository;
-import org.websoso.WSSServer.service.MessageService;
+import org.websoso.WSSServer.service.DiscordMessageClient;
 
 @Service
 @Transactional
@@ -31,7 +31,7 @@ public class KakaoService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
-    private final MessageService messageService;
+    private final DiscordMessageClient discordMessageClient;
 
     @Value("${kakao.user-info-url}")
     private String kakaoUserInfoUrl;
@@ -70,7 +70,8 @@ public class KakaoService {
             user = userRepository.save(User.createBySocial(socialId, defaultNickname, kakaoUserInfo.email()));
         }
 
-        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null, null);
+        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null,
+                null);
         String accessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
         String refreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
 

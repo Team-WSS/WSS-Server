@@ -5,7 +5,11 @@ import static org.websoso.WSSServer.exception.error.CustomImageError.IMAGE_FILE_
 import static org.websoso.WSSServer.exception.error.CustomImageError.INVALID_IMAGE_FILE_NAME;
 import static org.websoso.WSSServer.exception.error.CustomImageError.UPLOAD_FAIL_FILE;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,15 +21,10 @@ import org.websoso.WSSServer.exception.exception.CustomImageException;
 import org.websoso.s3.core.S3FileService;
 import org.websoso.s3.modle.S3UploadResult;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.UUID;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ImageService {
+public class ImageClient {
 
     private static final String FEED_UPLOAD_DIRECTORY = "feed/";
     private static final String SOURCE_DEFAULT = "DEFAULT";
