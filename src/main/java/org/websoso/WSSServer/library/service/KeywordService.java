@@ -17,8 +17,11 @@ import org.websoso.WSSServer.dto.keyword.KeywordByCategoryGetResponse;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomKeywordCategoryException;
 import org.websoso.WSSServer.exception.exception.CustomKeywordException;
+import org.websoso.WSSServer.library.domain.UserNovel;
+import org.websoso.WSSServer.library.domain.UserNovelKeyword;
 import org.websoso.WSSServer.library.repository.KeywordCategoryRepository;
 import org.websoso.WSSServer.library.repository.KeywordRepository;
+import org.websoso.WSSServer.library.repository.UserNovelKeywordRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +30,7 @@ public class KeywordService {
 
     private final KeywordRepository keywordRepository;
     private final KeywordCategoryRepository keywordCategoryRepository;
+    private final UserNovelKeywordRepository userNovelKeywordRepository;
 
     @Transactional(readOnly = true)
     public Keyword getKeywordOrException(Integer keywordId) {
@@ -43,6 +47,13 @@ public class KeywordService {
                         sortByCategory(category, searchedKeywords)))
                 .collect(Collectors.toList());
         return KeywordByCategoryGetResponse.of(categories);
+    }
+
+    public void createNovelKeywords(UserNovel userNovel, List<Integer> request) {
+        for (Integer keywordId : request) {
+            Keyword keyword = getKeywordOrException(keywordId);
+            userNovelKeywordRepository.save(UserNovelKeyword.create(userNovel, keyword));
+        }
     }
 
     private KeywordCategory getKeywordCategory(String keywordCategoryName) {

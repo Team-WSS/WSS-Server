@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.application.LibraryEvaluationApplication;
+import org.websoso.WSSServer.library.service.LibraryService;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
@@ -32,12 +34,13 @@ public class UserNovelController {
 
     private final NovelService novelService;
     private final UserNovelService userNovelService;
+    private final LibraryEvaluationApplication libraryEvaluationApplication;
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> createEvaluation(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody UserNovelCreateRequest request) {
-        userNovelService.createEvaluation(user, request);
+        libraryEvaluationApplication.createEvaluation(user, request);
         return ResponseEntity
                 .status(CREATED)
                 .build();

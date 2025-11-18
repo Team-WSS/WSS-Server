@@ -7,8 +7,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.PopularNovel;
-import org.websoso.WSSServer.repository.PopularNovelRepository;
+import org.websoso.WSSServer.novel.domain.PopularNovel;
+import org.websoso.WSSServer.novel.repository.PopularNovelRepository;
 import org.websoso.WSSServer.library.repository.UserNovelRepository;
 
 @Service

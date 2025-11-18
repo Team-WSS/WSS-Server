@@ -9,7 +9,14 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_INT
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -17,8 +24,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.AttractivePointName;
+import org.websoso.WSSServer.domain.common.ReadStatus;
+import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
+import org.websoso.WSSServer.library.domain.Keyword;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.library.domain.UserNovelKeyword;
 import org.websoso.WSSServer.library.repository.UserNovelAttractivePointRepository;
@@ -30,6 +40,9 @@ import org.websoso.WSSServer.novel.repository.NovelRepository;
 @Service
 @RequiredArgsConstructor
 public class LibraryService {
+
+    private static final int KEYWORD_SIZE = 5;
+    private static final int ATTRACTIVE_POINT_SIZE = 3;
 
     private final NovelRepository novelRepository;
     private final UserNovelRepository userNovelRepository;
@@ -67,6 +80,18 @@ public class LibraryService {
             userNovelRepository.delete(userNovel);
         }
 
+    }
+
+    @Transactional
+    public UserNovel createLibrary(ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,
+                                   User user, Novel novel) {
+        return userNovelRepository.save(UserNovel.create(
+                status,
+                userNovelRating,
+                startDate,
+                endDate,
+                user,
+                novel));
     }
 
     public void registerAsInterest(User user, Long novelId) {
@@ -110,16 +135,18 @@ public class LibraryService {
         return userNovelRepository.countByNovelAndIsInterestTrue(novel);
     }
 
-    public List<UserNovelKeyword> getKeywords (Novel novel){
+    public List<UserNovelKeyword> getKeywords(Novel novel) {
         return userNovelKeywordRepository.findAllByUserNovel_Novel(novel);
     }
 
     public int getWatchingCount(Novel novel) {
         return userNovelRepository.countByNovelAndStatus(novel, WATCHING);
     }
+
     public int getWatchedCount(Novel novel) {
         return userNovelRepository.countByNovelAndStatus(novel, WATCHED);
     }
+
     public int getQuitCount(Novel novel) {
         return userNovelRepository.countByNovelAndStatus(novel, QUIT);
     }
@@ -130,10 +157,85 @@ public class LibraryService {
     }
 
     public List<Novel> getTasteNovels(List<Genre> preferGenres) {
-        return  userNovelRepository.findTasteNovels(preferGenres);
+        return userNovelRepository.findTasteNovels(preferGenres);
     }
 
     private Boolean isUserNovelOnlyByInterest(UserNovel userNovel) {
         return userNovel.getStatus() == null;
+    }
+
+    public List<KeywordCountGetResponse> getKeywordNameAndCount(Novel novel) {
+        List<UserNovelKeyword> userNovelKeywords = getKeywords(novel);
+
+        if (userNovelKeywords.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Keyword, Long> keywordFrequencyMap = userNovelKeywords.stream()
+                .collect(Collectors.groupingBy(UserNovelKeyword::getKeyword, Collectors.counting()));
+
+        return keywordFrequencyMap.entrySet().stream()
+                .sorted(Map.Entry.<Keyword, Long>comparingByValue().reversed())
+                .limit(KEYWORD_SIZE)
+                .map(entry -> KeywordCountGetResponse.of(entry.getKey(), entry.getValue().intValue()))
+                .toList();
+    }
+
+    public List<String> getAttractivePoints(Novel novel) {
+        Map<String, Integer> attractivePointMap = makeAttractivePointMapExcludingZero(novel);
+
+        if (attractivePointMap.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return getTOP3AttractivePoints(attractivePointMap);
+    }
+
+    private Map<String, Integer> makeAttractivePointMapExcludingZero(Novel novel) {
+        Map<String, Integer> attractivePointMap = new HashMap<>();
+
+        for (AttractivePointName point : AttractivePointName.values()) {
+            attractivePointMap.put(point.getLabel(), getAttractivePointCount(novel, point));
+        }
+
+        attractivePointMap.entrySet().removeIf(entry -> entry.getValue() == 0);
+
+        return attractivePointMap;
+    }
+
+    private List<String> getTOP3AttractivePoints(Map<String, Integer> attractivePointMap) {
+        Map<Integer, List<String>> groupedByValue = groupAttractivePointByValue(attractivePointMap);
+
+        List<String> result = new ArrayList<>();
+        List<Integer> sortedKeys = new ArrayList<>(groupedByValue.keySet());
+        sortedKeys.sort(Collections.reverseOrder());
+
+        Random random = new Random();
+
+        for (Integer key : sortedKeys) {
+            List<String> items = groupedByValue.get(key);
+            if (result.size() + items.size() > ATTRACTIVE_POINT_SIZE) {
+                Collections.shuffle(items, random);
+                items = items.subList(0, ATTRACTIVE_POINT_SIZE - result.size());
+            }
+            result.addAll(items);
+            if (result.size() >= ATTRACTIVE_POINT_SIZE) {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    private Map<Integer, List<String>> groupAttractivePointByValue(Map<String, Integer> attractivePointMap) {
+        Map<Integer, List<String>> groupedByValue = new HashMap<>();
+
+        for (Map.Entry<String, Integer> entry : attractivePointMap.entrySet()) {
+            groupedByValue
+                    .computeIfAbsent(entry.getValue(), k -> new ArrayList<>())
+                    .add(entry.getKey());
+        }
+
+        return groupedByValue;
     }
 }

@@ -22,14 +22,12 @@ import org.websoso.WSSServer.dto.novel.SearchedNovelsGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
 import org.websoso.WSSServer.feed.service.FeedService;
-import org.websoso.WSSServer.novel.service.NovelService;
 
 @RestController
 @RequestMapping("/novels")
 @RequiredArgsConstructor
 public class NovelController {
 
-    private final NovelService novelService;
     private final FeedService feedService;
     private final SearchNovelApplication searchNovelApplication;
 
@@ -104,14 +102,26 @@ public class NovelController {
                 .body(searchNovelApplication.getNovelInfoInfoTab(novelId));
     }
 
+    /**
+     * 인기있는 소설 조회 API (오늘의 발견)
+     *
+     * @param user 로그인 유저 객체
+     * @return PopularNovelsGetResponse
+     */
     @GetMapping("/popular")
     public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(@AuthenticationPrincipal User user) {
         //TODO 차단 관계에 있는 유저의 피드글 처리
         return ResponseEntity
                 .status(OK)
-                .body(novelService.getTodayPopularNovels());
+                .body(searchNovelApplication.getTodayPopularNovels());
     }
 
+    /**
+     * 취향에 해당하는 웹소설 조회 API (취향 추천 작품 조회)
+     *
+     * @param user 로그인 유저 객체
+     * @return TasteNovelsGetResponse
+     */
     @GetMapping("/taste")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TasteNovelsGetResponse> getTasteNovels(@AuthenticationPrincipal User user) {
