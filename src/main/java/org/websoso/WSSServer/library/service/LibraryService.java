@@ -49,6 +49,7 @@ public class LibraryService {
     private final UserNovelKeywordRepository userNovelKeywordRepository;
     private final UserNovelAttractivePointRepository userNovelAttractivePointRepository;
 
+    // TODO: novelId로 불러옴
     @Transactional(readOnly = true)
     public UserNovel getUserNovelOrException(User user, Long novelId) {
         return userNovelRepository.findByNovel_NovelIdAndUser(novelId, user)
@@ -56,6 +57,7 @@ public class LibraryService {
                         "user novel with the given user and novel is not found"));
     }
 
+    // TODO: Novel 객체로 불러옴
     @Transactional(readOnly = true)
     public UserNovel getUserNovelOrNull(User user, Novel novel) {
         if (user == null) {

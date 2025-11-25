@@ -56,7 +56,7 @@ public class UserNovelController {
     public ResponseEntity<Void> updateEvaluation(@AuthenticationPrincipal User user,
                                                  @PathVariable Long novelId,
                                                  @Valid @RequestBody UserNovelUpdateRequest request) {
-        userNovelService.updateEvaluation(user, novelId, request);
+        libraryEvaluationApplication.updateEvaluation(user, novelId, request);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
