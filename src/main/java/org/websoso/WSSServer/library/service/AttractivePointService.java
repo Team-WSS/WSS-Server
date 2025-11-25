@@ -33,11 +33,19 @@ public class AttractivePointService {
         return getAttractivePointOrException(lowerCaseRequest);
     }
 
+    public void createUserNovelAttractivePoint(UserNovel userNovel, AttractivePoint attractivePoint) {
+        userNovelAttractivePointRepository.save(UserNovelAttractivePoint.create(userNovel, attractivePoint));
+    }
+
     public void createUserNovelAttractivePoints(UserNovel userNovel, List<String> request) {
         for (String stringAttractivePoint : request) {
             AttractivePoint attractivePoint = getAttractivePointByString(stringAttractivePoint);
             userNovelAttractivePointRepository.save(UserNovelAttractivePoint.create(userNovel, attractivePoint));
         }
+    }
+
+    public void deleteUserNovelAttractivePoints(List<UserNovelAttractivePoint> userNovelAttractivePoints) {
+        userNovelAttractivePointRepository.deleteAll(userNovelAttractivePoints);
     }
 
 }

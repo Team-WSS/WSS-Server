@@ -18,13 +18,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.application.LibraryEvaluationApplication;
-import org.websoso.WSSServer.library.service.LibraryService;
-import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
-import org.websoso.WSSServer.novel.service.NovelService;
 import org.websoso.WSSServer.library.service.UserNovelService;
 
 @RequestMapping("/user-novels")
@@ -32,8 +29,6 @@ import org.websoso.WSSServer.library.service.UserNovelService;
 @RequiredArgsConstructor
 public class UserNovelController {
 
-    private final NovelService novelService;
-    private final UserNovelService userNovelService;
     private final LibraryEvaluationApplication libraryEvaluationApplication;
 
     @PostMapping
@@ -50,10 +45,9 @@ public class UserNovelController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserNovelGetResponse> getEvaluation(@AuthenticationPrincipal User user,
                                                               @PathVariable Long novelId) {
-        Novel novel = novelService.getNovelOrException(novelId);
         return ResponseEntity
                 .status(OK)
-                .body(userNovelService.getEvaluation(user, novel));
+                .body(libraryEvaluationApplication.getEvaluation(user, novelId));
     }
 
     @PutMapping("/{novelId}")
@@ -61,7 +55,7 @@ public class UserNovelController {
     public ResponseEntity<Void> updateEvaluation(@AuthenticationPrincipal User user,
                                                  @PathVariable Long novelId,
                                                  @Valid @RequestBody UserNovelUpdateRequest request) {
-        userNovelService.updateEvaluation(user, novelId, request);
+        libraryEvaluationApplication.updateEvaluation(user, novelId, request);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -71,7 +65,7 @@ public class UserNovelController {
     @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.library.domain.UserNovel))")
     public ResponseEntity<Void> deleteEvaluation(@AuthenticationPrincipal User user,
                                                  @PathVariable Long novelId) {
-        userNovelService.deleteEvaluation(user, novelId);
+        libraryEvaluationApplication.deleteEvaluation(user, novelId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

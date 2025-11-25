@@ -3,10 +3,7 @@ package org.websoso.WSSServer.library.service;
 import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
-import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.CustomUserNovelError.ALREADY_INTERESTED;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_INTERESTED;
-import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
 
 import java.time.LocalDate;
@@ -18,7 +15,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Genre;
@@ -26,7 +22,6 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.common.AttractivePointName;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
-import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.library.domain.Keyword;
 import org.websoso.WSSServer.library.domain.UserNovel;
@@ -35,7 +30,6 @@ import org.websoso.WSSServer.library.repository.UserNovelAttractivePointReposito
 import org.websoso.WSSServer.library.repository.UserNovelKeywordRepository;
 import org.websoso.WSSServer.library.repository.UserNovelRepository;
 import org.websoso.WSSServer.novel.domain.Novel;
-import org.websoso.WSSServer.novel.repository.NovelRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -44,11 +38,11 @@ public class LibraryService {
     private static final int KEYWORD_SIZE = 5;
     private static final int ATTRACTIVE_POINT_SIZE = 3;
 
-    private final NovelRepository novelRepository;
     private final UserNovelRepository userNovelRepository;
     private final UserNovelKeywordRepository userNovelKeywordRepository;
     private final UserNovelAttractivePointRepository userNovelAttractivePointRepository;
 
+    // TODO: novelId로 불러옴
     @Transactional(readOnly = true)
     public UserNovel getUserNovelOrException(User user, Long novelId) {
         return userNovelRepository.findByNovel_NovelIdAndUser(novelId, user)
@@ -56,30 +50,14 @@ public class LibraryService {
                         "user novel with the given user and novel is not found"));
     }
 
+    // TODO: Novel 객체로 불러옴
+    // TODO: 사용자 객체가 Null이면 Null로 반환함 헷갈리수도?
     @Transactional(readOnly = true)
     public UserNovel getUserNovelOrNull(User user, Novel novel) {
         if (user == null) {
             return null;
         }
         return userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
-    }
-
-    @Transactional(readOnly = true)
-    public void unregisterAsInterest(User user, Long novelId) {
-        UserNovel userNovel = userNovelRepository.findByNovel_NovelIdAndUser(novelId, user)
-                .orElseThrow(() -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
-                        "user novel with the given user and novel is not found"));
-
-        if (!userNovel.getIsInterest()) {
-            throw new CustomUserNovelException(NOT_INTERESTED, "not registered as interest");
-        }
-
-        userNovel.setIsInterest(false);
-
-        if (isUserNovelOnlyByInterest(userNovel)) {
-            userNovelRepository.delete(userNovel);
-        }
-
     }
 
     @Transactional
@@ -94,33 +72,8 @@ public class LibraryService {
                 novel));
     }
 
-    public void registerAsInterest(User user, Long novelId) {
-        Novel novel = novelRepository.findById(novelId)
-                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
-                        "novel with the given id is not found"));
-
-        UserNovel userNovel = user == null ? null : userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
-
-        if (userNovel != null && userNovel.getIsInterest()) {
-            throw new CustomUserNovelException(ALREADY_INTERESTED, "already registered as interested");
-        }
-
-        if (userNovel == null) {
-            try {
-                userNovel = createUserNovelByInterest(user, novel);
-            } catch (DataIntegrityViolationException e) {
-                userNovel = getUserNovelOrException(user, novelId);
-            }
-        }
-
-        userNovel.setIsInterest(true);
-    }
-
-    public UserNovel createUserNovelByInterest(User user, Novel novel) {
-        if (getUserNovelOrNull(user, novel) != null) {
-            throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
-        }
-        return userNovelRepository.save(UserNovel.create(null, 0.0f, null, null, user, novel));
+    public void delete(UserNovel library) {
+        userNovelRepository.delete(library);
     }
 
     public int getRatingCount(Novel novel) {
@@ -158,10 +111,6 @@ public class LibraryService {
 
     public List<Novel> getTasteNovels(List<Genre> preferGenres) {
         return userNovelRepository.findTasteNovels(preferGenres);
-    }
-
-    private Boolean isUserNovelOnlyByInterest(UserNovel userNovel) {
-        return userNovel.getStatus() == null;
     }
 
     public List<KeywordCountGetResponse> getKeywordNameAndCount(Novel novel) {

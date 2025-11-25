@@ -49,11 +49,19 @@ public class KeywordService {
         return KeywordByCategoryGetResponse.of(categories);
     }
 
+    public void createNovelKeyword(UserNovel userNovel, Keyword keyword) {
+        userNovelKeywordRepository.save(UserNovelKeyword.create(userNovel, keyword));
+    }
+
     public void createNovelKeywords(UserNovel userNovel, List<Integer> request) {
         for (Integer keywordId : request) {
             Keyword keyword = getKeywordOrException(keywordId);
             userNovelKeywordRepository.save(UserNovelKeyword.create(userNovel, keyword));
         }
+    }
+
+    public void deleteUserNovelKeywords(List<UserNovelKeyword> userNovelKeywords) {
+            userNovelKeywordRepository.deleteAll(userNovelKeywords);
     }
 
     private KeywordCategory getKeywordCategory(String keywordCategoryName) {
