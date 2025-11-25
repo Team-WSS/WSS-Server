@@ -59,8 +59,6 @@ import org.websoso.WSSServer.service.UserService;
 public class UserNovelService {
 
     private final UserNovelRepository userNovelRepository;
-    private final UserNovelAttractivePointRepository userNovelAttractivePointRepository;
-    private final UserNovelKeywordRepository userNovelKeywordRepository;
     private final UserService userService;
     private final GenreRepository genreRepository;
     private final FeedRepository feedRepository;
@@ -71,29 +69,6 @@ public class UserNovelService {
     private static final List<String> priorityGenreNamesOfFemale = List.of(
             "romance", "romanceFantasy", "fantasy", "modernFantasy", "wuxia", "drama", "mystery", "lightNovel", "BL"
     );
-
-    @Transactional(readOnly = true)
-    public UserNovel getUserNovelOrException(User user, Long novelId) {
-        return userNovelRepository.findByNovel_NovelIdAndUser(novelId, user)
-                .orElseThrow(() -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
-                        "user novel with the given user and novel is not found"));
-    }
-
-    public void deleteEvaluation(User user, Long novelId) {
-        UserNovel userNovel = getUserNovelOrException(user, novelId);
-
-        if (userNovel.getStatus() == null) {
-            throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
-        }
-
-        if (userNovel.getIsInterest()) {
-            userNovel.deleteEvaluation();
-            userNovelAttractivePointRepository.deleteAll(userNovel.getUserNovelAttractivePoints());
-            userNovelKeywordRepository.deleteAll(userNovel.getUserNovelKeywords());
-        } else {
-            userNovelRepository.delete(userNovel);
-        }
-    }
 
     @Transactional(readOnly = true)
     public UserNovelCountGetResponse getUserNovelStatistics(Long ownerId) {

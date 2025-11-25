@@ -29,7 +29,6 @@ import org.websoso.WSSServer.library.service.UserNovelService;
 @RequiredArgsConstructor
 public class UserNovelController {
 
-    private final UserNovelService userNovelService;
     private final LibraryEvaluationApplication libraryEvaluationApplication;
 
     @PostMapping
@@ -66,7 +65,7 @@ public class UserNovelController {
     @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.library.domain.UserNovel))")
     public ResponseEntity<Void> deleteEvaluation(@AuthenticationPrincipal User user,
                                                  @PathVariable Long novelId) {
-        userNovelService.deleteEvaluation(user, novelId);
+        libraryEvaluationApplication.deleteEvaluation(user, novelId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

@@ -44,4 +44,8 @@ public class AttractivePointService {
         }
     }
 
+    public void deleteUserNovelAttractivePoints(List<UserNovelAttractivePoint> userNovelAttractivePoints) {
+        userNovelAttractivePointRepository.deleteAll(userNovelAttractivePoints);
+    }
+
 }

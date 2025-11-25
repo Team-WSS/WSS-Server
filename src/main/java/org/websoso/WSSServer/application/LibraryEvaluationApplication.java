@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.application;
 
+import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_EVALUATED;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 
 import jakarta.transaction.Transactional;
@@ -99,6 +100,29 @@ public class LibraryEvaluationApplication {
         updateAttractivePoints(userNovel, request.attractivePoints());
 
         updateKeywords(userNovel, request.keywordIds());
+    }
+
+    /**
+     * 서재 평가를 삭제한다.
+     *
+     * @param user    사용자 객체
+     * @param novelId 소설 ID
+     */
+    public void deleteEvaluation(User user, Long novelId) {
+        UserNovel userNovel = libraryService.getUserNovelOrException(user, novelId);
+
+        if (userNovel.getStatus() == null) {
+            throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
+        }
+
+        if (userNovel.getIsInterest()) {
+            userNovel.deleteEvaluation();
+
+            attractivePointService.deleteUserNovelAttractivePoints(userNovel.getUserNovelAttractivePoints());
+            keywordService.deleteUserNovelKeywords(userNovel.getUserNovelKeywords());
+        } else {
+            libraryService.delete(userNovel);
+        }
     }
 
     // TODO: 리팩토링 대상 Fetch Lazy 수정

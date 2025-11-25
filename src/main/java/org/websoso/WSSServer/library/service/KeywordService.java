@@ -60,6 +60,10 @@ public class KeywordService {
         }
     }
 
+    public void deleteUserNovelKeywords(List<UserNovelKeyword> userNovelKeywords) {
+            userNovelKeywordRepository.deleteAll(userNovelKeywords);
+    }
+
     private KeywordCategory getKeywordCategory(String keywordCategoryName) {
         return keywordCategoryRepository.findByKeywordCategoryName(keywordCategoryName).orElseThrow(
                 () -> new CustomKeywordCategoryException(KEYWORD_CATEGORY_NOT_FOUND,

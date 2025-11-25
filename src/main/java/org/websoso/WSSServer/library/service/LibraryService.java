@@ -96,6 +96,10 @@ public class LibraryService {
                 novel));
     }
 
+    public void delete(UserNovel library) {
+        userNovelRepository.delete(library);
+    }
+
     public void registerAsInterest(User user, Long novelId) {
         Novel novel = novelRepository.findById(novelId)
                 .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
