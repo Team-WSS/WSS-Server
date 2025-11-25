@@ -3,11 +3,15 @@ package org.websoso.WSSServer.application;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 
 import jakarta.transaction.Transactional;
+import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
+import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.library.service.AttractivePointService;
@@ -39,4 +43,33 @@ public class LibraryEvaluationApplication {
             throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
         }
     }
+
+    public UserNovelGetResponse getEvaluation(User user, Long novelId) {
+        Novel novel = novelService.getNovelOrException(novelId);
+        UserNovel userNovel = libraryService.getUserNovelOrNull(user, novel);
+
+        if (userNovel == null) {
+            return UserNovelGetResponse.of(novel, null, Collections.emptyList(), Collections.emptyList());
+        }
+
+        List<String> attractivePoints = getStringAttractivePoints(userNovel);
+        List<KeywordGetResponse> keywords = getKeywordGetResponses(userNovel);
+
+        return UserNovelGetResponse.of(novel, userNovel, attractivePoints, keywords);
+    }
+
+    // TODO: 리팩토링 대상 Fetch Lazy 수정
+    private List<String> getStringAttractivePoints(UserNovel userNovel) {
+        return userNovel.getUserNovelAttractivePoints().stream()
+                .map(attractivePoint -> attractivePoint.getAttractivePoint().getAttractivePointName())
+                .toList();
+    }
+
+    // TODO: 리팩토링 대상 Fetch Lazy 수정
+    private List<KeywordGetResponse> getKeywordGetResponses(UserNovel userNovel) {
+        return userNovel.getUserNovelKeywords().stream()
+                .map(userNovelKeyword -> KeywordGetResponse.of(userNovelKeyword.getKeyword()))
+                .toList();
+    }
+
 }

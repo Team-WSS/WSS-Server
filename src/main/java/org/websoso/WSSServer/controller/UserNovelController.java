@@ -18,13 +18,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.application.LibraryEvaluationApplication;
-import org.websoso.WSSServer.library.service.LibraryService;
-import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
 import org.websoso.WSSServer.dto.userNovel.UserNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelUpdateRequest;
-import org.websoso.WSSServer.novel.service.NovelService;
 import org.websoso.WSSServer.library.service.UserNovelService;
 
 @RequestMapping("/user-novels")
@@ -32,7 +29,6 @@ import org.websoso.WSSServer.library.service.UserNovelService;
 @RequiredArgsConstructor
 public class UserNovelController {
 
-    private final NovelService novelService;
     private final UserNovelService userNovelService;
     private final LibraryEvaluationApplication libraryEvaluationApplication;
 
@@ -50,10 +46,9 @@ public class UserNovelController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserNovelGetResponse> getEvaluation(@AuthenticationPrincipal User user,
                                                               @PathVariable Long novelId) {
-        Novel novel = novelService.getNovelOrException(novelId);
         return ResponseEntity
                 .status(OK)
-                .body(userNovelService.getEvaluation(user, novel));
+                .body(libraryEvaluationApplication.getEvaluation(user, novelId));
     }
 
     @PutMapping("/{novelId}")
