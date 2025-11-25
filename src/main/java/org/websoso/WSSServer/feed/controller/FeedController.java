@@ -3,8 +3,6 @@ package org.websoso.WSSServer.feed.controller;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
-import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
-import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +32,6 @@ import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.feed.service.FeedService;
 import org.websoso.WSSServer.feed.service.PopularFeedService;
-import org.websoso.WSSServer.feed.service.ReportService;
 
 @RequestMapping("/feeds")
 @RestController
@@ -42,7 +39,6 @@ import org.websoso.WSSServer.feed.service.ReportService;
 public class FeedController {
 
     private final FeedService feedService;
-    private final ReportService reportService;
     private final PopularFeedService popularFeedService;
 
     @PostMapping
@@ -129,26 +125,6 @@ public class FeedController {
         return ResponseEntity
                 .status(OK)
                 .body(feedService.getInterestFeeds(user));
-    }
-
-    @PostMapping("/{feedId}/spoiler")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
-    public ResponseEntity<Void> reportFeedSpoiler(@AuthenticationPrincipal User user,
-                                                  @PathVariable("feedId") Long feedId) {
-        reportService.reportFeed(user, feedId, SPOILER);
-        return ResponseEntity
-                .status(CREATED)
-                .build();
-    }
-
-    @PostMapping("/{feedId}/impertinence")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
-    public ResponseEntity<Void> reportedFeedImpertinence(@AuthenticationPrincipal User user,
-                                                         @PathVariable("feedId") Long feedId) {
-        reportService.reportFeed(user, feedId, IMPERTINENCE);
-        return ResponseEntity
-                .status(CREATED)
-                .build();
     }
 
 }
