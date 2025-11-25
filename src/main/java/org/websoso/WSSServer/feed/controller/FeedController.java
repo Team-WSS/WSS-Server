@@ -149,26 +149,4 @@ public class FeedController {
                 .build();
     }
 
-    @PostMapping("/{feedId}/comments/{commentId}/spoiler")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
-    public ResponseEntity<Void> reportCommentSpoiler(@AuthenticationPrincipal User user,
-                                                     @PathVariable("feedId") Long feedId,
-                                                     @PathVariable("commentId") Long commentId) {
-        feedService.reportComment(user, feedId, commentId, SPOILER);
-        return ResponseEntity
-                .status(CREATED)
-                .build();
-    }
-
-    @PostMapping("/{feedId}/comments/{commentId}/impertinence")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> reportCommentImpertinence(@AuthenticationPrincipal User user,
-                                                          @PathVariable("feedId") Long feedId,
-                                                          @PathVariable("commentId") Long commentId) {
-        feedService.reportComment(user, feedId, commentId, IMPERTINENCE);
-        return ResponseEntity
-                .status(CREATED)
-                .build();
-    }
-
 }

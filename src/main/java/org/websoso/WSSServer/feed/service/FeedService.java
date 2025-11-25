@@ -2,13 +2,9 @@ package org.websoso.WSSServer.feed.service;
 
 import static java.lang.Boolean.TRUE;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
-import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
-import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomCategoryError.CATEGORY_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomCategoryError.INVALID_CATEGORY_FORMAT;
-import static org.websoso.WSSServer.exception.error.CustomCommentError.ALREADY_REPORTED_COMMENT;
-import static org.websoso.WSSServer.exception.error.CustomCommentError.COMMENT_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_LIKED;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_REPORTED_FEED;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
@@ -61,10 +57,8 @@ import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
-import org.websoso.WSSServer.exception.error.CustomCommentError;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomCategoryException;
-import org.websoso.WSSServer.exception.exception.CustomCommentException;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
@@ -76,7 +70,6 @@ import org.websoso.WSSServer.feed.domain.FeedCategory;
 import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.feed.domain.Like;
 import org.websoso.WSSServer.feed.domain.PopularFeed;
-import org.websoso.WSSServer.feed.domain.ReportedComment;
 import org.websoso.WSSServer.feed.domain.ReportedFeed;
 import org.websoso.WSSServer.feed.repository.CategoryRepository;
 import org.websoso.WSSServer.feed.repository.CommentRepository;
@@ -376,43 +369,7 @@ public class FeedService {
         discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
                 MessageFormatter.formatFeedReportMessage(user, feed, reportedType, reportedCount, shouldHide), REPORT));
     }
-
-    @Transactional
-    public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
-        Feed feed = getFeedOrException(feedId);
-        Comment comment = commentRepository.findById(commentId).orElseThrow(
-                () -> new CustomCommentException(COMMENT_NOT_FOUND, "comment with the given id was not found"));
-        comment.validateFeedAssociation(feed);
-
-        User commentCreatedUser = userRepository.findById(comment.getUserId())
-                .orElseThrow(() -> new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
-
-        if (commentCreatedUser.equals(user)) {
-            throw new CustomCommentException(CustomCommentError.SELF_REPORT_NOT_ALLOWED, "cannot report own comment");
-        }
-
-        if (reportedCommentRepository.existsByCommentAndUserAndReportedType(comment, user, reportedType)) {
-            throw new CustomCommentException(ALREADY_REPORTED_COMMENT, "comment has already been reported by the user");
-        }
-
-        reportedCommentRepository.save(ReportedComment.create(comment, user, reportedType));
-
-        int reportedCount = reportedCommentRepository.countByCommentAndReportedType(comment, reportedType);
-        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
-
-        if (shouldHide) {
-            if (reportedType.equals(SPOILER)) {
-                comment.spoiler();
-            } else if (reportedType.equals(IMPERTINENCE)) {
-                comment.hideComment();
-            }
-        }
-
-        discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
-                MessageFormatter.formatCommentReportMessage(user, feed, comment, reportedType, commentCreatedUser,
-                        reportedCount, shouldHide), REPORT));
-    }
-
+    
     private Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId)
                 .orElseThrow(() -> new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));

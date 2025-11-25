@@ -1,7 +1,10 @@
 package org.websoso.WSSServer.feed.controller;
 
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
+import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
+import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.feed.service.CommentService;
+import org.websoso.WSSServer.feed.service.ReportedCommentService;
 
 @RequestMapping("/feeds")
 @RestController
@@ -28,6 +32,7 @@ import org.websoso.WSSServer.feed.service.CommentService;
 public class CommentController {
 
     private final CommentService commentService;
+    private final ReportedCommentService reportedCommentService;
 
     @PostMapping("/{feedId}/comments")
     @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
@@ -68,6 +73,28 @@ public class CommentController {
         commentService.deleteComment(user, feedId, commentId);
         return ResponseEntity
                 .status(NO_CONTENT)
+                .build();
+    }
+
+    @PostMapping("/{feedId}/comments/{commentId}/spoiler")
+    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
+    public ResponseEntity<Void> reportCommentSpoiler(@AuthenticationPrincipal User user,
+                                                     @PathVariable("feedId") Long feedId,
+                                                     @PathVariable("commentId") Long commentId) {
+        reportedCommentService.reportComment(user, feedId, commentId, SPOILER);
+        return ResponseEntity
+                .status(CREATED)
+                .build();
+    }
+
+    @PostMapping("/{feedId}/comments/{commentId}/impertinence")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> reportCommentImpertinence(@AuthenticationPrincipal User user,
+                                                          @PathVariable("feedId") Long feedId,
+                                                          @PathVariable("commentId") Long commentId) {
+        reportedCommentService.reportComment(user, feedId, commentId, IMPERTINENCE);
+        return ResponseEntity
+                .status(CREATED)
                 .build();
     }
 }
