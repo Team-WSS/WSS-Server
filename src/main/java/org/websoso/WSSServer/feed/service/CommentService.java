@@ -3,13 +3,9 @@ package org.websoso.WSSServer.feed.service;
 import static java.lang.Boolean.TRUE;
 import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
-import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
-import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
-import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.CustomCommentError.ALREADY_REPORTED_COMMENT;
 import static org.websoso.WSSServer.exception.error.CustomCommentError.COMMENT_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.CustomCommentError.SELF_REPORT_NOT_ALLOWED;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
@@ -22,19 +18,20 @@ import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserDevice;
-import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
-import org.websoso.WSSServer.domain.common.ReportedType;
+import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentGetResponse;
+import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomCommentException;
+import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.domain.Comment;
 import org.websoso.WSSServer.feed.domain.Feed;
-import org.websoso.WSSServer.feed.domain.ReportedComment;
 import org.websoso.WSSServer.feed.repository.CommentRepository;
+import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.feed.repository.ReportedCommentRepository;
 import org.websoso.WSSServer.notification.FCMClient;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
@@ -46,7 +43,6 @@ import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.UserRepository;
 import org.websoso.WSSServer.service.DiscordMessageClient;
-import org.websoso.WSSServer.service.MessageFormatter;
 
 @Service
 @Transactional
@@ -54,6 +50,7 @@ import org.websoso.WSSServer.service.MessageFormatter;
 public class CommentService {
 
     private final CommentRepository commentRepository;
+    private final FeedRepository feedRepository;
     private final NotificationRepository notificationRepository;
     private final NotificationTypeRepository notificationTypeRepository;
     private final BlockRepository blockRepository;
@@ -67,15 +64,22 @@ public class CommentService {
     private static final int NOTIFICATION_TITLE_MAX_LENGTH = 12;
     private static final int NOTIFICATION_TITLE_MIN_LENGTH = 0;
 
-    public void createComment(User user, Feed feed, String commentContent) {
-        commentRepository.save(Comment.create(user.getUserId(), feed, commentContent));
+    @Transactional
+    public void createComment(User user, Long feedId, CommentCreateRequest request) {
+        Feed feed = getFeedOrException(feedId);
+        commentRepository.save(Comment.create(user.getUserId(), feed, request.commentContent()));
         sendCommentPushMessageToFeedOwner(user, feed);
         sendCommentPushMessageToCommenters(user, feed);
     }
 
+    private Feed getFeedOrException(Long feedId) {
+        return feedRepository.findById(feedId)
+                .orElseThrow(() -> new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
+    }
+
     private void sendCommentPushMessageToFeedOwner(User user, Feed feed) {
         User feedOwner = feed.getUser();
-        if (isUserCommentOwner(user, feedOwner) || blockRepository.existsByBlockingIdAndBlockedId(feedOwner.getUserId(),
+        if (user.equals(feedOwner) || blockRepository.existsByBlockingIdAndBlockedId(feedOwner.getUserId(),
                 user.getUserId())) {
             return;
         }
@@ -107,19 +111,7 @@ public class CommentService {
         fcmClient.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
     }
 
-    private String createNotificationTitle(Feed feed) {
-        if (feed.getNovelId() == null) {
-            String feedContent = feed.getFeedContent();
-            feedContent = feedContent.length() <= NOTIFICATION_TITLE_MAX_LENGTH ? feedContent
-                    : feedContent.substring(NOTIFICATION_TITLE_MIN_LENGTH, NOTIFICATION_TITLE_MAX_LENGTH);
-            return "'" + feedContent + "...'";
-        }
-        Novel novel = novelRepository.findById(feed.getNovelId())
-                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
-        return novel.getTitle();
-    }
-
-    //ToDo : FeedService와 중복되는 부분 추출 필요
+    //ToDo : CommentService와 중복되는 부분 추출 필요
     private void sendCommentPushMessageToCommenters(User user, Feed feed) {
         User feedOwner = feed.getUser();
 
@@ -164,22 +156,21 @@ public class CommentService {
         });
     }
 
-    public void updateComment(Long userId, Feed feed, Long commentId, String commentContent) {
-        Comment comment = getCommentOrException(commentId);
-        comment.validateFeedAssociation(feed);
-        comment.validateUserAuthorization(userId, UPDATE);
-        comment.updateContent(commentContent);
-    }
-
-    public void deleteComment(Long userId, Feed feed, Long commentId) {
-        Comment comment = getCommentOrException(commentId);
-        comment.validateFeedAssociation(feed);
-        comment.validateUserAuthorization(userId, DELETE);
-        commentRepository.delete(comment);
+    private String createNotificationTitle(Feed feed) {
+        if (feed.getNovelId() == null) {
+            String feedContent = feed.getFeedContent();
+            feedContent = feedContent.length() <= NOTIFICATION_TITLE_MAX_LENGTH ? feedContent
+                    : feedContent.substring(NOTIFICATION_TITLE_MIN_LENGTH, NOTIFICATION_TITLE_MAX_LENGTH);
+            return "'" + feedContent + "...'";
+        }
+        Novel novel = novelRepository.findById(feed.getNovelId())
+                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
+        return novel.getTitle();
     }
 
     @Transactional(readOnly = true)
-    public CommentsGetResponse getComments(User user, Feed feed) {
+    public CommentsGetResponse getComments(User user, Long feedId) {
+        Feed feed = getFeedOrException(feedId);
         List<CommentGetResponse> responses = feed.getComments().stream()
                 .map(comment -> new AbstractMap.SimpleEntry<>(comment, userRepository.findById(comment.getUserId())
                         .orElseThrow(
@@ -191,58 +182,38 @@ public class CommentService {
         return CommentsGetResponse.of(responses);
     }
 
-    public void createReportedComment(Feed feed, Long commentId, User user, ReportedType reportedType) {
-        Comment comment = getCommentOrException(commentId);
-
-        comment.validateFeedAssociation(feed);
-
-        User commentCreatedUser = userRepository.findById(comment.getUserId())
-                .orElseThrow(() -> new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
-
-        if (isUserCommentOwner(commentCreatedUser, user)) {
-            throw new CustomCommentException(SELF_REPORT_NOT_ALLOWED, "cannot report own comment");
-        }
-
-        if (reportedCommentRepository.existsByCommentAndUserAndReportedType(comment, user, reportedType)) {
-            throw new CustomCommentException(ALREADY_REPORTED_COMMENT, "comment has already been reported by the user");
-        }
-
-        reportedCommentRepository.save(ReportedComment.create(comment, user, reportedType));
-
-        int reportedCount = reportedCommentRepository.countByCommentAndReportedType(comment, reportedType);
-        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
-
-        if (shouldHide) {
-            if (reportedType.equals(SPOILER)) {
-                comment.spoiler();
-            } else if (reportedType.equals(IMPERTINENCE)) {
-                comment.hideComment();
-            }
-        }
-
-        discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
-                MessageFormatter.formatCommentReportMessage(user, feed, comment, reportedType, commentCreatedUser,
-                        reportedCount, shouldHide), REPORT));
-    }
-
-    private Comment getCommentOrException(Long commentId) {
-        return commentRepository.findById(commentId).orElseThrow(
-                () -> new CustomCommentException(COMMENT_NOT_FOUND, "comment with the given id was not found"));
-    }
-
-    private UserBasicInfo getUserBasicInfo(User user) {
-        return user.getUserBasicInfo(
-                avatarRepository.findById(user.getAvatarId()).orElseThrow(() ->
-                                new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"))
-                        .getAvatarImage()
-        );
-    }
-
     private Boolean isUserCommentOwner(User createdUser, User user) {
         return createdUser.equals(user);
     }
 
     private Boolean isBlocked(User user, User createdFeedUser) {
         return blockRepository.existsByBlockingIdAndBlockedId(user.getUserId(), createdFeedUser.getUserId());
+    }
+
+    private UserBasicInfo getUserBasicInfo(User user) {
+        return user.getUserBasicInfo(
+                avatarRepository.findById(user.getAvatarId()).orElseThrow(() ->
+                                new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"))
+                        .getAvatarImage());
+    }
+
+    @Transactional
+    public void updateComment(User user, Long feedId, Long commentId, CommentUpdateRequest request) {
+        Feed feed = getFeedOrException(feedId);
+        Comment comment = commentRepository.findById(commentId).orElseThrow(
+                () -> new CustomCommentException(COMMENT_NOT_FOUND, "comment with the given id was not found"));
+        comment.validateFeedAssociation(feed);
+        comment.validateUserAuthorization(user.getUserId(), UPDATE);
+        comment.updateContent(request.commentContent());
+    }
+
+    @Transactional
+    public void deleteComment(User user, Long feedId, Long commentId) {
+        Feed feed = getFeedOrException(feedId);
+        Comment comment = commentRepository.findById(commentId).orElseThrow(
+                () -> new CustomCommentException(COMMENT_NOT_FOUND, "comment with the given id was not found"));
+        comment.validateFeedAssociation(feed);
+        comment.validateUserAuthorization(user.getUserId(), DELETE);
+        commentRepository.delete(comment);
     }
 }

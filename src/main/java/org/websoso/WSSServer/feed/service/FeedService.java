@@ -1,27 +1,17 @@
 package org.websoso.WSSServer.feed.service;
 
 import static java.lang.Boolean.TRUE;
-import static org.websoso.WSSServer.domain.common.Action.DELETE;
-import static org.websoso.WSSServer.domain.common.Action.UPDATE;
-import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
-import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
-import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomCategoryError.CATEGORY_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomCategoryError.INVALID_CATEGORY_FORMAT;
-import static org.websoso.WSSServer.exception.error.CustomCommentError.ALREADY_REPORTED_COMMENT;
-import static org.websoso.WSSServer.exception.error.CustomCommentError.COMMENT_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_LIKED;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_REPORTED_FEED;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.NOT_LIKED;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_NOT_ALLOWED;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,14 +35,8 @@ import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.CategoryName;
-import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
-import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.domain.common.SortCriteria;
-import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
-import org.websoso.WSSServer.dto.comment.CommentGetResponse;
-import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
-import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedCreateResponse;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
@@ -68,10 +52,8 @@ import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
-import org.websoso.WSSServer.exception.error.CustomCommentError;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomCategoryException;
-import org.websoso.WSSServer.exception.exception.CustomCommentException;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
@@ -83,8 +65,6 @@ import org.websoso.WSSServer.feed.domain.FeedCategory;
 import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.feed.domain.Like;
 import org.websoso.WSSServer.feed.domain.PopularFeed;
-import org.websoso.WSSServer.feed.domain.ReportedComment;
-import org.websoso.WSSServer.feed.domain.ReportedFeed;
 import org.websoso.WSSServer.feed.repository.CategoryRepository;
 import org.websoso.WSSServer.feed.repository.CommentRepository;
 import org.websoso.WSSServer.feed.repository.FeedCategoryRepository;
@@ -94,7 +74,6 @@ import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.feed.repository.LikeRepository;
 import org.websoso.WSSServer.feed.repository.PopularFeedRepository;
 import org.websoso.WSSServer.feed.repository.ReportedCommentRepository;
-import org.websoso.WSSServer.feed.repository.ReportedFeedRepository;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.library.repository.UserNovelRepository;
 import org.websoso.WSSServer.notification.FCMClient;
@@ -108,9 +87,7 @@ import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.UserRepository;
-import org.websoso.WSSServer.service.DiscordMessageClient;
 import org.websoso.WSSServer.service.ImageClient;
-import org.websoso.WSSServer.service.MessageFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -135,14 +112,12 @@ public class FeedService {
     private final NotificationTypeRepository notificationTypeRepository;
     private final BlockRepository blockRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
-    private final ReportedFeedRepository reportedFeedRepository;
     private final UserRepository userRepository;
     private final AvatarRepository avatarRepository;
     private final FeedImageRepository feedImageRepository;
     private final FeedImageCustomRepository feedImageCustomRepository;
     private final UserNovelRepository userNovelRepository;
     private final GenreRepository genreRepository;
-    private final DiscordMessageClient discordMessageClient;
     private final ImageClient imageClient;
     private final FCMClient fcmClient;
 
@@ -357,110 +332,6 @@ public class FeedService {
 
     private static String getChosenCategoryOrDefault(String category) {
         return Optional.ofNullable(category).orElse(DEFAULT_CATEGORY);
-    }
-
-    // ToDO: FeedController -> FeedService를 통해 Comment를 생성하는 로직에서 FeedController -> CommentService를 통해 Comment를 생성하는 로직으로 수정필요
-    @Transactional
-    public void createComment(User user, Long feedId, CommentCreateRequest request) {
-        Feed feed = getFeedOrException(feedId);
-        commentRepository.save(Comment.create(user.getUserId(), feed, request.commentContent()));
-        sendCommentPushMessageToFeedOwner(user, feed);
-        sendCommentPushMessageToCommenters(user, feed);
-    }
-
-    @Transactional
-    public void updateComment(User user, Long feedId, Long commentId, CommentUpdateRequest request) {
-        Feed feed = getFeedOrException(feedId);
-        Comment comment = commentRepository.findById(commentId).orElseThrow(
-                () -> new CustomCommentException(COMMENT_NOT_FOUND, "comment with the given id was not found"));
-        comment.validateFeedAssociation(feed);
-        comment.validateUserAuthorization(user.getUserId(), UPDATE);
-        comment.updateContent(request.commentContent());
-    }
-
-    @Transactional
-    public void deleteComment(User user, Long feedId, Long commentId) {
-        Feed feed = getFeedOrException(feedId);
-        Comment comment = commentRepository.findById(commentId).orElseThrow(
-                () -> new CustomCommentException(COMMENT_NOT_FOUND, "comment with the given id was not found"));
-        comment.validateFeedAssociation(feed);
-        comment.validateUserAuthorization(user.getUserId(), DELETE);
-        commentRepository.delete(comment);
-    }
-
-    @Transactional(readOnly = true)
-    public CommentsGetResponse getComments(User user, Long feedId) {
-        Feed feed = getFeedOrException(feedId);
-        List<CommentGetResponse> responses = feed.getComments().stream()
-                .map(comment -> new AbstractMap.SimpleEntry<>(comment, userRepository.findById(comment.getUserId())
-                        .orElseThrow(
-                                () -> new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"))))
-                .map(entry -> CommentGetResponse.of(getUserBasicInfo(entry.getValue()), entry.getKey(),
-                        isUserCommentOwner(entry.getValue(), user), entry.getKey().getIsSpoiler(),
-                        isBlocked(user, entry.getValue()), entry.getKey().getIsHidden())).toList();
-
-        return CommentsGetResponse.of(responses);
-    }
-
-    @Transactional
-    public void reportFeed(User user, Long feedId, ReportedType reportedType) {
-        Feed feed = getFeedOrException(feedId);
-
-        if (isUserFeedOwner(feed.getUser(), user)) {
-            throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
-        }
-
-        if (reportedFeedRepository.existsByFeedAndUserAndReportedType(feed, user, reportedType)) {
-            throw new CustomFeedException(ALREADY_REPORTED_FEED, "feed has already been reported by the user");
-        }
-
-        reportedFeedRepository.save(ReportedFeed.create(feed, user, reportedType));
-
-        int reportedCount = reportedFeedRepository.countByFeedAndReportedType(feed, reportedType);
-        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
-
-        if (shouldHide) {
-            feed.hideFeed();
-        }
-
-        discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
-                MessageFormatter.formatFeedReportMessage(user, feed, reportedType, reportedCount, shouldHide), REPORT));
-    }
-
-    @Transactional
-    public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
-        Feed feed = getFeedOrException(feedId);
-        Comment comment = commentRepository.findById(commentId).orElseThrow(
-                () -> new CustomCommentException(COMMENT_NOT_FOUND, "comment with the given id was not found"));
-        comment.validateFeedAssociation(feed);
-
-        User commentCreatedUser = userRepository.findById(comment.getUserId())
-                .orElseThrow(() -> new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
-
-        if (commentCreatedUser.equals(user)) {
-            throw new CustomCommentException(CustomCommentError.SELF_REPORT_NOT_ALLOWED, "cannot report own comment");
-        }
-
-        if (reportedCommentRepository.existsByCommentAndUserAndReportedType(comment, user, reportedType)) {
-            throw new CustomCommentException(ALREADY_REPORTED_COMMENT, "comment has already been reported by the user");
-        }
-
-        reportedCommentRepository.save(ReportedComment.create(comment, user, reportedType));
-
-        int reportedCount = reportedCommentRepository.countByCommentAndReportedType(comment, reportedType);
-        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
-
-        if (shouldHide) {
-            if (reportedType.equals(SPOILER)) {
-                comment.spoiler();
-            } else if (reportedType.equals(IMPERTINENCE)) {
-                comment.hideComment();
-            }
-        }
-
-        discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
-                MessageFormatter.formatCommentReportMessage(user, feed, comment, reportedType, commentCreatedUser,
-                        reportedCount, shouldHide), REPORT));
     }
 
     private Feed getFeedOrException(Long feedId) {
@@ -698,94 +569,6 @@ public class FeedService {
                 .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
                         "novel with the given id is not found"));
         return String.format("<%s>", novel.getTitle());
-    }
-
-    //CommentService 내용
-    private void sendCommentPushMessageToFeedOwner(User user, Feed feed) {
-        User feedOwner = feed.getUser();
-        if (user.equals(feedOwner) || blockRepository.existsByBlockingIdAndBlockedId(feedOwner.getUserId(),
-                user.getUserId())) {
-            return;
-        }
-
-        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("댓글");
-
-        String notificationTitle = createNotificationTitle(feed);
-        String notificationBody = String.format("%s님이 내 글에 댓글을 남겼어요.", user.getNickname());
-        Long feedId = feed.getFeedId();
-
-        Notification notification = Notification.create(notificationTitle, notificationBody, null,
-                feedOwner.getUserId(), feedId, notificationTypeComment);
-        notificationRepository.save(notification);
-
-        if (!TRUE.equals(feedOwner.getIsPushEnabled())) {
-            return;
-        }
-
-        List<UserDevice> feedOwnerDevices = feedOwner.getUserDevices();
-        if (feedOwnerDevices.isEmpty()) {
-            return;
-        }
-
-        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(notificationTitle, notificationBody,
-                String.valueOf(feedId), "feedDetail", String.valueOf(notification.getNotificationId()));
-
-        List<String> targetFCMTokens = feedOwnerDevices.stream().map(UserDevice::getFcmToken).toList();
-
-        fcmClient.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
-    }
-
-    //ToDo : CommentService와 중복되는 부분 추출 필요
-    private void sendCommentPushMessageToCommenters(User user, Feed feed) {
-        User feedOwner = feed.getUser();
-
-        List<User> commenters = feed.getComments().stream().map(Comment::getUserId)
-                .filter(userId -> !userId.equals(user.getUserId()))
-                .filter(userId -> !userId.equals(feedOwner.getUserId()))
-                .filter(userId -> !blockRepository.existsByBlockingIdAndBlockedId(userId, user.getUserId())
-                        && !blockRepository.existsByBlockingIdAndBlockedId(userId, feed.getUser().getUserId()))
-                .distinct().map(userId -> userRepository.findById(userId).orElseThrow(
-                        () -> new CustomUserException(USER_NOT_FOUND, "user with the given id was not found")))
-                .toList();
-
-        if (commenters.isEmpty()) {
-            return;
-        }
-
-        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("댓글");
-
-        String notificationTitle = createNotificationTitle(feed);
-        String notificationBody = "내가 댓글 단 글에 또 다른 댓글이 달렸어요.";
-        Long feedId = feed.getFeedId();
-
-        commenters.forEach(commenter -> {
-            Notification notification = Notification.create(notificationTitle, notificationBody, null,
-                    commenter.getUserId(), feedId, notificationTypeComment);
-            notificationRepository.save(notification);
-
-            if (!TRUE.equals(commenter.getIsPushEnabled())) {
-                return;
-            }
-
-            List<UserDevice> commenterDevices = commenter.getUserDevices();
-            if (commenterDevices.isEmpty()) {
-                return;
-            }
-
-            List<String> targetFCMTokens = commenterDevices.stream().map(UserDevice::getFcmToken).distinct().toList();
-
-            FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(notificationTitle, notificationBody,
-                    String.valueOf(feedId), "feedDetail", String.valueOf(notification.getNotificationId()));
-            fcmClient.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
-        });
-    }
-
-    private Boolean isUserCommentOwner(User createdUser, User user) {
-        return createdUser.equals(user);
-    }
-
-    private Boolean isBlocked(User user, User createdFeedUser) {
-        return blockRepository.existsByBlockingIdAndBlockedId(user.getUserId(), createdFeedUser.getUserId());
     }
 
 }
