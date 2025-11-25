@@ -34,6 +34,7 @@ import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.feed.service.FeedService;
 import org.websoso.WSSServer.feed.service.PopularFeedService;
+import org.websoso.WSSServer.feed.service.ReportService;
 
 @RequestMapping("/feeds")
 @RestController
@@ -41,6 +42,7 @@ import org.websoso.WSSServer.feed.service.PopularFeedService;
 public class FeedController {
 
     private final FeedService feedService;
+    private final ReportService reportService;
     private final PopularFeedService popularFeedService;
 
     @PostMapping
@@ -133,7 +135,7 @@ public class FeedController {
     @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
     public ResponseEntity<Void> reportFeedSpoiler(@AuthenticationPrincipal User user,
                                                   @PathVariable("feedId") Long feedId) {
-        feedService.reportFeed(user, feedId, SPOILER);
+        reportService.reportFeed(user, feedId, SPOILER);
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -143,7 +145,7 @@ public class FeedController {
     @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
     public ResponseEntity<Void> reportedFeedImpertinence(@AuthenticationPrincipal User user,
                                                          @PathVariable("feedId") Long feedId) {
-        feedService.reportFeed(user, feedId, IMPERTINENCE);
+        reportService.reportFeed(user, feedId, IMPERTINENCE);
         return ResponseEntity
                 .status(CREATED)
                 .build();

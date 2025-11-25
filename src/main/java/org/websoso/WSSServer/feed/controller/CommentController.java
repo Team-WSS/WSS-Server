@@ -24,7 +24,7 @@ import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.feed.service.CommentService;
-import org.websoso.WSSServer.feed.service.ReportedCommentService;
+import org.websoso.WSSServer.feed.service.ReportService;
 
 @RequestMapping("/feeds")
 @RestController
@@ -32,7 +32,7 @@ import org.websoso.WSSServer.feed.service.ReportedCommentService;
 public class CommentController {
 
     private final CommentService commentService;
-    private final ReportedCommentService reportedCommentService;
+    private final ReportService reportService;
 
     @PostMapping("/{feedId}/comments")
     @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
@@ -81,7 +81,7 @@ public class CommentController {
     public ResponseEntity<Void> reportCommentSpoiler(@AuthenticationPrincipal User user,
                                                      @PathVariable("feedId") Long feedId,
                                                      @PathVariable("commentId") Long commentId) {
-        reportedCommentService.reportComment(user, feedId, commentId, SPOILER);
+        reportService.reportComment(user, feedId, commentId, SPOILER);
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -92,7 +92,7 @@ public class CommentController {
     public ResponseEntity<Void> reportCommentImpertinence(@AuthenticationPrincipal User user,
                                                           @PathVariable("feedId") Long feedId,
                                                           @PathVariable("commentId") Long commentId) {
-        reportedCommentService.reportComment(user, feedId, commentId, IMPERTINENCE);
+        reportService.reportComment(user, feedId, commentId, IMPERTINENCE);
         return ResponseEntity
                 .status(CREATED)
                 .build();

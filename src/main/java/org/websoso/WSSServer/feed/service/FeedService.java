@@ -1,15 +1,12 @@
 package org.websoso.WSSServer.feed.service;
 
 import static java.lang.Boolean.TRUE;
-import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomCategoryError.CATEGORY_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomCategoryError.INVALID_CATEGORY_FORMAT;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_LIKED;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_REPORTED_FEED;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.NOT_LIKED;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_NOT_ALLOWED;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
@@ -38,9 +35,7 @@ import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.CategoryName;
-import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
-import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedCreateResponse;
@@ -70,7 +65,6 @@ import org.websoso.WSSServer.feed.domain.FeedCategory;
 import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.feed.domain.Like;
 import org.websoso.WSSServer.feed.domain.PopularFeed;
-import org.websoso.WSSServer.feed.domain.ReportedFeed;
 import org.websoso.WSSServer.feed.repository.CategoryRepository;
 import org.websoso.WSSServer.feed.repository.CommentRepository;
 import org.websoso.WSSServer.feed.repository.FeedCategoryRepository;
@@ -80,7 +74,6 @@ import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.feed.repository.LikeRepository;
 import org.websoso.WSSServer.feed.repository.PopularFeedRepository;
 import org.websoso.WSSServer.feed.repository.ReportedCommentRepository;
-import org.websoso.WSSServer.feed.repository.ReportedFeedRepository;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.library.repository.UserNovelRepository;
 import org.websoso.WSSServer.notification.FCMClient;
@@ -94,9 +87,7 @@ import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.UserRepository;
-import org.websoso.WSSServer.service.DiscordMessageClient;
 import org.websoso.WSSServer.service.ImageClient;
-import org.websoso.WSSServer.service.MessageFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -121,14 +112,12 @@ public class FeedService {
     private final NotificationTypeRepository notificationTypeRepository;
     private final BlockRepository blockRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
-    private final ReportedFeedRepository reportedFeedRepository;
     private final UserRepository userRepository;
     private final AvatarRepository avatarRepository;
     private final FeedImageRepository feedImageRepository;
     private final FeedImageCustomRepository feedImageCustomRepository;
     private final UserNovelRepository userNovelRepository;
     private final GenreRepository genreRepository;
-    private final DiscordMessageClient discordMessageClient;
     private final ImageClient imageClient;
     private final FCMClient fcmClient;
 
@@ -345,31 +334,6 @@ public class FeedService {
         return Optional.ofNullable(category).orElse(DEFAULT_CATEGORY);
     }
 
-    @Transactional
-    public void reportFeed(User user, Long feedId, ReportedType reportedType) {
-        Feed feed = getFeedOrException(feedId);
-
-        if (isUserFeedOwner(feed.getUser(), user)) {
-            throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
-        }
-
-        if (reportedFeedRepository.existsByFeedAndUserAndReportedType(feed, user, reportedType)) {
-            throw new CustomFeedException(ALREADY_REPORTED_FEED, "feed has already been reported by the user");
-        }
-
-        reportedFeedRepository.save(ReportedFeed.create(feed, user, reportedType));
-
-        int reportedCount = reportedFeedRepository.countByFeedAndReportedType(feed, reportedType);
-        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
-
-        if (shouldHide) {
-            feed.hideFeed();
-        }
-
-        discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
-                MessageFormatter.formatFeedReportMessage(user, feed, reportedType, reportedCount, shouldHide), REPORT));
-    }
-    
     private Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId)
                 .orElseThrow(() -> new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
