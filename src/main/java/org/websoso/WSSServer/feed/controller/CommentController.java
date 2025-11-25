@@ -20,20 +20,20 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
-import org.websoso.WSSServer.feed.service.FeedService;
+import org.websoso.WSSServer.feed.service.CommentService;
 
 @RequestMapping("/feeds")
 @RestController
 @RequiredArgsConstructor
 public class CommentController {
 
-    private final FeedService feedService;
+    private final CommentService commentService;
 
     @PostMapping("/{feedId}/comments")
     @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
     public ResponseEntity<Void> createComment(@AuthenticationPrincipal User user, @PathVariable("feedId") Long feedId,
                                               @Valid @RequestBody CommentCreateRequest request) {
-        feedService.createComment(user, feedId, request);
+        commentService.createComment(user, feedId, request);
         return ResponseEntity.status(NO_CONTENT).build();
     }
 
@@ -43,7 +43,7 @@ public class CommentController {
                                                            @PathVariable("feedId") Long feedId) {
         return ResponseEntity
                 .status(OK)
-                .body(feedService.getComments(user, feedId));
+                .body(commentService.getComments(user, feedId));
     }
 
     @PutMapping("/{feedId}/comments/{commentId}")
@@ -53,7 +53,7 @@ public class CommentController {
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId,
                                               @Valid @RequestBody CommentUpdateRequest request) {
-        feedService.updateComment(user, feedId, commentId, request);
+        commentService.updateComment(user, feedId, commentId, request);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -65,7 +65,7 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId) {
-        feedService.deleteComment(user, feedId, commentId);
+        commentService.deleteComment(user, feedId, commentId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
