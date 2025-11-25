@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.application.LibraryInterestApplication;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.library.service.LibraryService;
 
@@ -19,7 +20,7 @@ import org.websoso.WSSServer.library.service.LibraryService;
 @RequiredArgsConstructor
 public class LibraryController {
 
-    private final LibraryService libraryService;
+    private final LibraryInterestApplication libraryInterestApplication;
 
     /**
      * 관심있어요 등록
@@ -32,7 +33,7 @@ public class LibraryController {
     @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.novel.domain.Novel))")
     public ResponseEntity<Void> registerAsInterest(@AuthenticationPrincipal User user,
                                                    @PathVariable("novelId") Long novelId) {
-        libraryService.registerAsInterest(user, novelId);
+        libraryInterestApplication.registerAsInterest(user, novelId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -49,7 +50,7 @@ public class LibraryController {
     @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.library.domain.UserNovel))")
     public ResponseEntity<Void> unregisterAsInterest(@AuthenticationPrincipal User user,
                                                      @PathVariable("novelId") Long novelId) {
-        libraryService.unregisterAsInterest(user, novelId);
+        libraryInterestApplication.unregisterAsInterest(user, novelId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
