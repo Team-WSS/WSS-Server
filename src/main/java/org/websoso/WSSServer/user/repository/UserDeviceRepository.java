@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.repository;
+package org.websoso.WSSServer.user.repository;
 
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

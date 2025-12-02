@@ -56,9 +56,9 @@ import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
-import org.websoso.WSSServer.repository.UserDeviceRepository;
-import org.websoso.WSSServer.repository.UserRepository;
-import org.websoso.WSSServer.repository.WithdrawalReasonRepository;
+import org.websoso.WSSServer.user.repository.UserDeviceRepository;
+import org.websoso.WSSServer.user.repository.UserRepository;
+import org.websoso.WSSServer.user.repository.WithdrawalReasonRepository;
 
 @Service
 @RequiredArgsConstructor

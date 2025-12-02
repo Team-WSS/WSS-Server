@@ -60,8 +60,8 @@ import org.websoso.WSSServer.dto.auth.AppleTokenResponse;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
-import org.websoso.WSSServer.repository.UserAppleTokenRepository;
-import org.websoso.WSSServer.repository.UserRepository;
+import org.websoso.WSSServer.user.repository.UserAppleTokenRepository;
+import org.websoso.WSSServer.user.repository.UserRepository;
 import org.websoso.WSSServer.service.DiscordMessageClient;
 
 @Transactional

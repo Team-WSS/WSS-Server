@@ -28,7 +28,7 @@ import org.websoso.WSSServer.feed.repository.CommentRepository;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.feed.repository.ReportedCommentRepository;
 import org.websoso.WSSServer.feed.repository.ReportedFeedRepository;
-import org.websoso.WSSServer.repository.UserRepository;
+import org.websoso.WSSServer.user.repository.UserRepository;
 import org.websoso.WSSServer.service.DiscordMessageClient;
 import org.websoso.WSSServer.service.MessageFormatter;
 
