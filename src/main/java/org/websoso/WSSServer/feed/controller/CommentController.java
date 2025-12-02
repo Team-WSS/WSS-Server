@@ -67,7 +67,7 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId) {
-        commentService.deleteComment(user, feedId, commentId);
+        commentManagementApplication.deleteComment(user, feedId, commentId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

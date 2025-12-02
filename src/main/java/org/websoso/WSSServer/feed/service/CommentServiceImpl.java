@@ -34,4 +34,9 @@ public class CommentServiceImpl {
     public void updateComment(Comment comment, CommentUpdateRequest request) {
         comment.updateContent(request.commentContent());
     }
+
+    @Transactional
+    public void deleteComment(Comment comment) {
+        commentRepository.delete(comment);
+    }
 }

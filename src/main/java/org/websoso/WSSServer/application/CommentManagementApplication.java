@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.application;
 
 import static java.lang.Boolean.TRUE;
+import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
@@ -156,5 +157,14 @@ public class CommentManagementApplication {
         comment.validateFeedAssociation(feed);
         comment.validateUserAuthorization(user.getUserId(), UPDATE);
         commentServiceImpl.updateComment(comment, request);
+    }
+
+    @Transactional
+    public void deleteComment(User user, Long feedId, Long commentId) {
+        Feed feed = feedServiceImpl.getFeedOrException(feedId);
+        Comment comment = commentServiceImpl.findComment(commentId);
+        comment.validateFeedAssociation(feed);
+        comment.validateUserAuthorization(user.getUserId(), DELETE);
+        commentServiceImpl.deleteComment(comment);
     }
 }
