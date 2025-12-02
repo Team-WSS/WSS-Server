@@ -12,7 +12,6 @@ import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.websoso.WSSServer.domain.Platform;
 
 @Entity
 @Getter
