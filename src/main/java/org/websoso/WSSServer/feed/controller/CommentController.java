@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.application.CommentManagementApplication;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
@@ -28,12 +29,13 @@ import org.websoso.WSSServer.feed.service.CommentService;
 public class CommentController {
 
     private final CommentService commentService;
+    private final CommentManagementApplication commentManagementApplication;
 
     @PostMapping("/{feedId}/comments")
     @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
     public ResponseEntity<Void> createComment(@AuthenticationPrincipal User user, @PathVariable("feedId") Long feedId,
                                               @Valid @RequestBody CommentCreateRequest request) {
-        commentService.createComment(user, feedId, request);
+        commentManagementApplication.createComment(user, feedId, request);
         return ResponseEntity.status(NO_CONTENT).build();
     }
 
