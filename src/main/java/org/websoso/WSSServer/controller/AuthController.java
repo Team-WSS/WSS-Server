@@ -21,8 +21,8 @@ import org.websoso.WSSServer.dto.auth.ReissueResponse;
 import org.websoso.WSSServer.dto.user.WithdrawalRequest;
 import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
-import org.websoso.WSSServer.service.AuthService;
-import org.websoso.WSSServer.service.UserService;
+import org.websoso.WSSServer.user.service.AuthService;
+import org.websoso.WSSServer.user.service.UserService;
 
 @RestController
 @RequiredArgsConstructor

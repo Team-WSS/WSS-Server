@@ -39,7 +39,7 @@ import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.library.repository.UserNovelRepository;
-import org.websoso.WSSServer.service.UserService;
+import org.websoso.WSSServer.user.service.UserService;
 
 @Service
 @RequiredArgsConstructor

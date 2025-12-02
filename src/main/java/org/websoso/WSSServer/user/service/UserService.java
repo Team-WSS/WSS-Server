@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.service;
+package org.websoso.WSSServer.user.service;
 
 import static java.lang.Boolean.FALSE;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.JOIN;
@@ -23,6 +23,8 @@ import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
+import org.websoso.WSSServer.service.DiscordMessageClient;
+import org.websoso.WSSServer.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.domain.UserDevice;
 import org.websoso.WSSServer.user.domain.WithdrawalReason;

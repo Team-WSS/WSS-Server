@@ -12,7 +12,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.service.UserService;
+import org.websoso.WSSServer.user.service.UserService;
 
 @Component
 @RequiredArgsConstructor

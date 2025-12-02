@@ -35,6 +35,7 @@ import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.ReadNotificationRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
+import org.websoso.WSSServer.user.service.UserService;
 
 @Service
 @RequiredArgsConstructor
