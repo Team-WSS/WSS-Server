@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.application.LibraryInterestApplication;
-import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.library.service.LibraryService;
+import org.websoso.WSSServer.user.domain.User;
 
 @RestController
 @RequestMapping

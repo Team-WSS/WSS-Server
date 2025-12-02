@@ -4,7 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.novel.domain.Novel;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 

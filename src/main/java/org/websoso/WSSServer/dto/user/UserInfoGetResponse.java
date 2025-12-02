@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.dto.user;
 
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 
 public record UserInfoGetResponse(
          String email,

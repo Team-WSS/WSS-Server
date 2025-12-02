@@ -5,7 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.domain.Genre;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 
 public interface FeedCustomRepository {

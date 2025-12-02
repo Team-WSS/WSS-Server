@@ -7,7 +7,7 @@ import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTI
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.domain.Notification;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
 import org.websoso.WSSServer.repository.NotificationRepository;
 

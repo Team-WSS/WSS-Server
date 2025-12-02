@@ -9,7 +9,7 @@ import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 
 import org.websoso.WSSServer.feed.domain.Comment;
 import org.websoso.WSSServer.feed.domain.Feed;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.DiscordMessageTemplate;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.domain.common.SocialLoginType;

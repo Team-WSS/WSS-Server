@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.ReadNotification;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 
 @Repository
 public interface ReadNotificationRepository extends JpaRepository<ReadNotification, Long> {

@@ -9,7 +9,7 @@ import org.websoso.WSSServer.config.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.config.jwt.JWTUtil;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.JwtValidationType;
-import org.websoso.WSSServer.domain.RefreshToken;
+import org.websoso.WSSServer.user.domain.RefreshToken;
 import org.websoso.WSSServer.dto.auth.ReissueResponse;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;

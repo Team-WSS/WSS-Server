@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.feed.domain.Comment;
 import org.websoso.WSSServer.feed.domain.ReportedComment;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.ReportedType;
 
 @Repository
