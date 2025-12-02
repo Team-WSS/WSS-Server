@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.application;
 
 import static java.lang.Boolean.TRUE;
+import static org.websoso.WSSServer.domain.common.Action.UPDATE;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
@@ -13,6 +14,7 @@ import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
+import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.domain.Comment;
@@ -143,5 +145,14 @@ public class CommentManagementApplication {
         Novel novel = novelRepository.findById(feed.getNovelId())
                 .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
         return novel.getTitle();
+    }
+
+    @Transactional
+    public void updateComment(User user, Long feedId, Long commentId, CommentUpdateRequest request) {
+        Feed feed = feedServiceImpl.getFeedOrException(feedId);
+        Comment comment = commentServiceImpl.findComment(commentId);
+        comment.validateFeedAssociation(feed);
+        comment.validateUserAuthorization(user.getUserId(), UPDATE);
+        commentServiceImpl.updateComment(comment, request);
     }
 }

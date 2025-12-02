@@ -55,7 +55,7 @@ public class CommentController {
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId,
                                               @Valid @RequestBody CommentUpdateRequest request) {
-        commentService.updateComment(user, feedId, commentId, request);
+        commentManagementApplication.updateComment(user, feedId, commentId, request);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
