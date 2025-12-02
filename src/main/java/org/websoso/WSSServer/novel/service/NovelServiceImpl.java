@@ -29,7 +29,6 @@ public class NovelServiceImpl {
     private final NovelRepository novelRepository;
     private final NovelGenreRepository novelGenreRepository;
     private final NovelPlatformRepository novelPlatformRepository;
-    private final PopularNovelRepository popularNovelRepository;
 
     @Transactional(readOnly = true)
     public Novel getNovelOrException(Long novelId) {
@@ -56,13 +55,6 @@ public class NovelServiceImpl {
         return novelPlatformRepository.findAllByNovel(novel).stream()
                 .map(PlatformGetResponse::of)
                 .toList();
-    }
-
-    public List<Long> getNovelIdsFromPopularNovel() {
-        return new ArrayList<>(popularNovelRepository.findAll()
-                .stream()
-                .map(PopularNovel::getNovelId)
-                .toList());
     }
 
     public List<Novel> getSelectedPopularNovels(List<Long> selectedPopularNovelIds) {

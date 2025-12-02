@@ -39,6 +39,7 @@ import org.websoso.WSSServer.novel.domain.NovelGenre;
 import org.websoso.WSSServer.novel.service.GenreServiceImpl;
 import org.websoso.WSSServer.novel.service.KeywordServiceImpl;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;
+import org.websoso.WSSServer.novel.service.PopularNovelService;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 
@@ -47,6 +48,7 @@ import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 public class SearchNovelApplication {
 
     private final NovelServiceImpl novelService;
+    private final PopularNovelService popularNovelService;
     private final GenreServiceImpl genreService;
     private final KeywordServiceImpl keywordService;
     private final LibraryService libraryService;
@@ -155,7 +157,7 @@ public class SearchNovelApplication {
 
     @Transactional(readOnly = true)
     public PopularNovelsGetResponse getTodayPopularNovels() {
-        List<Long> novelIdsFromPopularNovel = novelService.getNovelIdsFromPopularNovel();
+        List<Long> novelIdsFromPopularNovel = popularNovelService.getNovelIdsFromPopularNovel();
         List<Long> selectedNovelIdsFromPopularNovel = getSelectedNovelIdsFromPopularNovel(novelIdsFromPopularNovel);
         List<Novel> popularNovels = novelService.getSelectedPopularNovels(selectedNovelIdsFromPopularNovel);
         List<Feed> popularFeedsFromPopularNovels = feedRepository.findPopularFeedsByNovelIds(selectedNovelIdsFromPopularNovel);
