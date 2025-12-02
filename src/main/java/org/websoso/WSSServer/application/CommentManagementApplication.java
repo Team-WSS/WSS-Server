@@ -3,7 +3,6 @@ package org.websoso.WSSServer.application;
 import static java.lang.Boolean.TRUE;
 import static org.websoso.WSSServer.domain.common.Action.DELETE;
 import static org.websoso.WSSServer.domain.common.Action.UPDATE;
-import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import java.util.List;
@@ -16,7 +15,6 @@ import org.websoso.WSSServer.domain.User;
 import org.websoso.WSSServer.domain.UserDevice;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
-import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.domain.Comment;
 import org.websoso.WSSServer.feed.domain.Feed;
@@ -25,7 +23,7 @@ import org.websoso.WSSServer.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.notification.FCMClient;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.novel.domain.Novel;
-import org.websoso.WSSServer.novel.repository.NovelRepository;
+import org.websoso.WSSServer.novel.service.NovelServiceImpl;
 import org.websoso.WSSServer.repository.BlockRepository;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
@@ -37,6 +35,7 @@ public class CommentManagementApplication {
 
     private final CommentServiceImpl commentServiceImpl;
     private final FeedServiceImpl feedServiceImpl;
+    private final NovelServiceImpl novelServiceImpl;
     private final FCMClient fcmClient;
 
     private static final int NOTIFICATION_TITLE_MAX_LENGTH = 12;
@@ -46,7 +45,6 @@ public class CommentManagementApplication {
     private final BlockRepository blockRepository;
     private final NotificationRepository notificationRepository;
     private final NotificationTypeRepository notificationTypeRepository;
-    private final NovelRepository novelRepository;
     private final UserRepository userRepository;
 
     @Transactional
@@ -145,8 +143,7 @@ public class CommentManagementApplication {
                     : feedContent.substring(NOTIFICATION_TITLE_MIN_LENGTH, NOTIFICATION_TITLE_MAX_LENGTH);
             return "'" + feedContent + "...'";
         }
-        Novel novel = novelRepository.findById(feed.getNovelId())
-                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
+        Novel novel = novelServiceImpl.getNovelOrException(feed.getNovelId());
         return novel.getTitle();
     }
 
