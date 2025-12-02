@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.scheduler;
+package org.websoso.WSSServer.application;
 
 import java.util.List;
 import java.util.stream.Collectors;
