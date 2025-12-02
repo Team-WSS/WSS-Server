@@ -63,6 +63,7 @@ public class CommentManagementApplication {
             return;
         }
 
+        // ToDo : 해당 로직 NotificationSerivce에서 처리하도록 수정
         NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("댓글");
 
         String notificationTitle = createNotificationTitle(feed);
@@ -106,6 +107,7 @@ public class CommentManagementApplication {
             return;
         }
 
+        // ToDo : 해당 로직 NotificationSerivce에서 처리하도록 수정
         NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("댓글");
 
         String notificationTitle = createNotificationTitle(feed);
