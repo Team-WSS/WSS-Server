@@ -41,6 +41,7 @@ import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.library.repository.UserNovelRepository;
 import org.websoso.WSSServer.user.service.UserService;
 
+// TODO: 남아있는 코드는 User Controller에서 사용중이라 일단 유지
 @Service
 @RequiredArgsConstructor
 @Transactional

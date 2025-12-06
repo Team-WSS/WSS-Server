@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Genre;
@@ -137,6 +138,10 @@ public class LibraryService {
         }
 
         return getTOP3AttractivePoints(attractivePointMap);
+    }
+
+    public List<Long> getTodayPopularNovelIds(PageRequest pageRequest) {
+        return userNovelRepository.findTodayPopularNovelsId(pageRequest);
     }
 
     private Map<String, Integer> makeAttractivePointMapExcludingZero(Novel novel) {
