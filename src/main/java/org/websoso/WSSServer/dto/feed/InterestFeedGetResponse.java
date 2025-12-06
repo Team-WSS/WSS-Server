@@ -3,7 +3,7 @@ package org.websoso.WSSServer.dto.feed;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.novel.domain.Novel;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.library.domain.UserNovel;
 
 public record InterestFeedGetResponse(

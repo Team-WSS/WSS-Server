@@ -5,7 +5,7 @@ import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_F
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.novel.domain.Novel;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.novel.repository.NovelRepository;
 

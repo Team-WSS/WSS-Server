@@ -19,8 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.ReadNotification;
-import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.domain.UserDevice;
+import org.websoso.WSSServer.user.domain.User;
+import org.websoso.WSSServer.user.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.NotificationTypeGroup;
 import org.websoso.WSSServer.dto.notification.NotificationCreateRequest;
 import org.websoso.WSSServer.dto.notification.NotificationGetResponse;
@@ -34,7 +34,8 @@ import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.ReadNotificationRepository;
-import org.websoso.WSSServer.repository.UserRepository;
+import org.websoso.WSSServer.user.repository.UserRepository;
+import org.websoso.WSSServer.user.service.UserService;
 
 @Service
 @RequiredArgsConstructor

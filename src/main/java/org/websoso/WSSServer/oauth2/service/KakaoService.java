@@ -14,13 +14,13 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.websoso.WSSServer.config.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
-import org.websoso.WSSServer.domain.RefreshToken;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.RefreshToken;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.exception.exception.CustomKakaoException;
 import org.websoso.WSSServer.oauth2.dto.KakaoUserInfo;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
-import org.websoso.WSSServer.repository.UserRepository;
+import org.websoso.WSSServer.user.repository.UserRepository;
 import org.websoso.WSSServer.service.DiscordMessageClient;
 
 @Service

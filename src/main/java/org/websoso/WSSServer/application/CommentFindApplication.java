@@ -8,7 +8,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentGetResponse;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
@@ -18,7 +18,7 @@ import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.BlockRepository;
-import org.websoso.WSSServer.repository.UserRepository;
+import org.websoso.WSSServer.user.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor

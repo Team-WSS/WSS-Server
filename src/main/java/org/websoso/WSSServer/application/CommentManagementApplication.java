@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
-import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.domain.UserDevice;
+import org.websoso.WSSServer.user.domain.User;
+import org.websoso.WSSServer.user.domain.UserDevice;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
@@ -27,7 +27,7 @@ import org.websoso.WSSServer.novel.service.NovelServiceImpl;
 import org.websoso.WSSServer.repository.BlockRepository;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
-import org.websoso.WSSServer.repository.UserRepository;
+import org.websoso.WSSServer.user.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor

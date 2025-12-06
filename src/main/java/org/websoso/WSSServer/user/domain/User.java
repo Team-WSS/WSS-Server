@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.domain;
+package org.websoso.WSSServer.user.domain;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static org.websoso.WSSServer.domain.common.Gender.M;
@@ -21,6 +21,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.websoso.WSSServer.domain.GenrePreference;
+import org.websoso.WSSServer.domain.ReadNotification;
 import org.websoso.WSSServer.feed.domain.ReportedComment;
 import org.websoso.WSSServer.feed.domain.ReportedFeed;
 import org.websoso.WSSServer.library.domain.UserNovel;

@@ -13,7 +13,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOU
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.exception.error.CustomCommentError;
@@ -28,7 +28,7 @@ import org.websoso.WSSServer.feed.repository.CommentRepository;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.feed.repository.ReportedCommentRepository;
 import org.websoso.WSSServer.feed.repository.ReportedFeedRepository;
-import org.websoso.WSSServer.repository.UserRepository;
+import org.websoso.WSSServer.user.repository.UserRepository;
 import org.websoso.WSSServer.service.DiscordMessageClient;
 import org.websoso.WSSServer.service.MessageFormatter;
 

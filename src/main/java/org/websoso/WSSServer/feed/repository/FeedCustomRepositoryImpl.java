@@ -26,7 +26,7 @@ import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.domain.Genre;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.FeedImageType;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 

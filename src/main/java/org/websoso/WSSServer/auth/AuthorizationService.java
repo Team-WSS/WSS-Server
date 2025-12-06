@@ -2,7 +2,7 @@ package org.websoso.WSSServer.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 
 @Service
 @RequiredArgsConstructor

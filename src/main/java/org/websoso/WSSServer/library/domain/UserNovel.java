@@ -22,7 +22,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.common.entity.BaseEntity;
 import org.websoso.WSSServer.domain.common.ReadStatus;

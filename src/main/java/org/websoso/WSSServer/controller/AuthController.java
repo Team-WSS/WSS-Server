@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.auth.AppleLoginRequest;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.dto.auth.LogoutRequest;
@@ -21,8 +21,8 @@ import org.websoso.WSSServer.dto.auth.ReissueResponse;
 import org.websoso.WSSServer.dto.user.WithdrawalRequest;
 import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
-import org.websoso.WSSServer.service.AuthService;
-import org.websoso.WSSServer.service.UserService;
+import org.websoso.WSSServer.user.service.AuthService;
+import org.websoso.WSSServer.user.service.UserService;
 
 @RestController
 @RequiredArgsConstructor

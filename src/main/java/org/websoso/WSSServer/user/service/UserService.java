@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.service;
+package org.websoso.WSSServer.user.service;
 
 import static java.lang.Boolean.FALSE;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.JOIN;
@@ -23,9 +23,11 @@ import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
-import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.domain.UserDevice;
-import org.websoso.WSSServer.domain.WithdrawalReason;
+import org.websoso.WSSServer.service.DiscordMessageClient;
+import org.websoso.WSSServer.service.MessageFormatter;
+import org.websoso.WSSServer.user.domain.User;
+import org.websoso.WSSServer.user.domain.UserDevice;
+import org.websoso.WSSServer.user.domain.WithdrawalReason;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
 import org.websoso.WSSServer.dto.auth.LogoutRequest;
@@ -56,9 +58,9 @@ import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
-import org.websoso.WSSServer.repository.UserDeviceRepository;
-import org.websoso.WSSServer.repository.UserRepository;
-import org.websoso.WSSServer.repository.WithdrawalReasonRepository;
+import org.websoso.WSSServer.user.repository.UserDeviceRepository;
+import org.websoso.WSSServer.user.repository.UserRepository;
+import org.websoso.WSSServer.user.repository.WithdrawalReasonRepository;
 
 @Service
 @RequiredArgsConstructor
