@@ -72,7 +72,7 @@ public class LibraryEvaluationApplication {
      */
     public UserNovelGetResponse getEvaluation(User user, Long novelId) {
         Novel novel = novelService.getNovelOrException(novelId);
-        UserNovel userNovel = libraryService.getUserNovelOrNull(user, novel);
+        UserNovel userNovel = libraryService.getLibraryOrNull(user, novel);
 
         if (userNovel == null) {
             return UserNovelGetResponse.of(novel, null, Collections.emptyList(), Collections.emptyList());
@@ -93,7 +93,7 @@ public class LibraryEvaluationApplication {
      */
     @Transactional
     public void updateEvaluation(User user, Long novelId, UserNovelUpdateRequest request) {
-        UserNovel userNovel = libraryService.getUserNovelOrException(user, novelId);
+        UserNovel userNovel = libraryService.getLibraryOrException(user, novelId);
 
         userNovel.updateUserNovel(request.userNovelRating(), request.status(), request.startDate(), request.endDate());
 
@@ -109,7 +109,7 @@ public class LibraryEvaluationApplication {
      * @param novelId 소설 ID
      */
     public void deleteEvaluation(User user, Long novelId) {
-        UserNovel userNovel = libraryService.getUserNovelOrException(user, novelId);
+        UserNovel userNovel = libraryService.getLibraryOrException(user, novelId);
 
         if (userNovel.getStatus() == null) {
             throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");

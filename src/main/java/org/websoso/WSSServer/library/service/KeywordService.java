@@ -4,11 +4,14 @@ import static org.websoso.WSSServer.exception.error.CustomKeywordCategoryError.K
 import static org.websoso.WSSServer.exception.error.CustomKeywordError.KEYWORD_NOT_FOUND;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.library.domain.Keyword;
 import org.websoso.WSSServer.library.domain.KeywordCategory;
 import org.websoso.WSSServer.domain.common.KeywordCategoryName;
@@ -22,11 +25,14 @@ import org.websoso.WSSServer.library.domain.UserNovelKeyword;
 import org.websoso.WSSServer.library.repository.KeywordCategoryRepository;
 import org.websoso.WSSServer.library.repository.KeywordRepository;
 import org.websoso.WSSServer.library.repository.UserNovelKeywordRepository;
+import org.websoso.WSSServer.novel.domain.Novel;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class KeywordService {
+
+    private static final int KEYWORD_SIZE = 5;
 
     private final KeywordRepository keywordRepository;
     private final KeywordCategoryRepository keywordCategoryRepository;
@@ -45,7 +51,7 @@ public class KeywordService {
         List<CategoryGetResponse> categories = Arrays.stream(KeywordCategoryName.values())
                 .map(category -> CategoryGetResponse.of(getKeywordCategory(category.getLabel()),
                         sortByCategory(category, searchedKeywords)))
-                .collect(Collectors.toList());
+                .toList();
         return KeywordByCategoryGetResponse.of(categories);
     }
 
@@ -75,7 +81,7 @@ public class KeywordService {
         return searchedKeyword.stream()
                 .filter(keyword -> keyword.getKeywordCategory().getKeywordCategoryName()
                         .equals(keywordCategoryName.getLabel()))
-                .map(KeywordGetResponse::of).collect(Collectors.toList());
+                .map(KeywordGetResponse::of).toList();
     }
 
     private List<Keyword> searchKeyword(String query) {
@@ -84,16 +90,29 @@ public class KeywordService {
         }
         String[] words = query.split(" ");
         return keywordRepository.findAll().stream()
-                .filter(keyword -> containsAllWords(keyword.getKeywordName(), words)).toList();
+                .filter(keyword -> keyword.containsAllWords(words)).toList();
     }
 
-    private boolean containsAllWords(String keywordName, String[] words) {
-        for (String word : words) {
-            if (!keywordName.contains(word)) {
-                return false;
-            }
+    public List<KeywordCountGetResponse> getKeywordNameAndCount(Novel novel) {
+        List<UserNovelKeyword> userNovelKeywords = getKeywords(novel);
+
+        if (userNovelKeywords.isEmpty()) {
+            return Collections.emptyList();
         }
-        return true;
+
+        Map<Keyword, Long> keywordFrequencyMap = userNovelKeywords.stream()
+                .collect(Collectors.groupingBy(UserNovelKeyword::getKeyword, Collectors.counting()));
+
+        return keywordFrequencyMap.entrySet().stream()
+                .sorted(Map.Entry.<Keyword, Long>comparingByValue().reversed())
+                .limit(KEYWORD_SIZE)
+                .map(entry -> KeywordCountGetResponse.of(entry.getKey(), entry.getValue().intValue()))
+                .toList();
     }
+
+    public List<UserNovelKeyword> getKeywords(Novel novel) {
+        return userNovelKeywordRepository.findAllByUserNovel_Novel(novel);
+    }
+
 
 }

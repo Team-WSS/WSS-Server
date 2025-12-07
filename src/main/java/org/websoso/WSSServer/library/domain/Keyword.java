@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.io.Serializable;
+import java.util.Arrays;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,4 +32,8 @@ public class Keyword implements Serializable {
     @JoinColumn(name = "keyword_category_id", nullable = false)
     private KeywordCategory keywordCategory;
 
+    public boolean containsAllWords(String[] words) {
+        return Arrays.stream(words)
+                .allMatch(keywordName::contains);
+    }
 }
