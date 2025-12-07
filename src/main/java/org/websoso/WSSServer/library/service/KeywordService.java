@@ -5,7 +5,6 @@ import static org.websoso.WSSServer.exception.error.CustomKeywordError.KEYWORD_N
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +44,7 @@ public class KeywordService {
         List<CategoryGetResponse> categories = Arrays.stream(KeywordCategoryName.values())
                 .map(category -> CategoryGetResponse.of(getKeywordCategory(category.getLabel()),
                         sortByCategory(category, searchedKeywords)))
-                .collect(Collectors.toList());
+                .toList();
         return KeywordByCategoryGetResponse.of(categories);
     }
 
@@ -75,7 +74,7 @@ public class KeywordService {
         return searchedKeyword.stream()
                 .filter(keyword -> keyword.getKeywordCategory().getKeywordCategoryName()
                         .equals(keywordCategoryName.getLabel()))
-                .map(KeywordGetResponse::of).collect(Collectors.toList());
+                .map(KeywordGetResponse::of).toList();
     }
 
     private List<Keyword> searchKeyword(String query) {
@@ -84,16 +83,7 @@ public class KeywordService {
         }
         String[] words = query.split(" ");
         return keywordRepository.findAll().stream()
-                .filter(keyword -> containsAllWords(keyword.getKeywordName(), words)).toList();
-    }
-
-    private boolean containsAllWords(String keywordName, String[] words) {
-        for (String word : words) {
-            if (!keywordName.contains(word)) {
-                return false;
-            }
-        }
-        return true;
+                .filter(keyword -> keyword.containsAllWords(words)).toList();
     }
 
 }
