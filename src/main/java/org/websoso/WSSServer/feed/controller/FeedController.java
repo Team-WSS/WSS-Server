@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.user.domain.User;
+import org.websoso.WSSServer.application.FeedFindApplication;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedCreateResponse;
@@ -31,7 +31,7 @@ import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.feed.service.FeedService;
-import org.websoso.WSSServer.feed.service.PopularFeedService;
+import org.websoso.WSSServer.user.domain.User;
 
 @RequestMapping("/feeds")
 @RestController
@@ -39,7 +39,7 @@ import org.websoso.WSSServer.feed.service.PopularFeedService;
 public class FeedController {
 
     private final FeedService feedService;
-    private final PopularFeedService popularFeedService;
+    private final FeedFindApplication feedFindApplication;
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
@@ -57,7 +57,7 @@ public class FeedController {
                                                    @PathVariable("feedId") Long feedId) {
         return ResponseEntity
                 .status(OK)
-                .body(feedService.getFeedById(user, feedId));
+                .body(feedFindApplication.getFeedById(user, feedId));
     }
 
     @GetMapping
@@ -68,7 +68,7 @@ public class FeedController {
                                                      @RequestParam(value = "feedsOption", required = false) FeedGetOption feedGetOption) {
         return ResponseEntity
                 .status(OK)
-                .body(feedService.getFeeds(user, category, lastFeedId, size, feedGetOption));
+                .body(feedFindApplication.getFeeds(user, category, lastFeedId, size, feedGetOption));
     }
 
     @PutMapping("/{feedId}")
@@ -116,7 +116,7 @@ public class FeedController {
     public ResponseEntity<PopularFeedsGetResponse> getPopularFeeds(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
-                .body(popularFeedService.getPopularFeeds(user));
+                .body(feedFindApplication.getPopularFeeds(user));
     }
 
     @GetMapping("/interest")
@@ -124,7 +124,7 @@ public class FeedController {
     public ResponseEntity<InterestFeedsGetResponse> getInterestFeeds(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
-                .body(feedService.getInterestFeeds(user));
+                .body(feedFindApplication.getInterestFeeds(user));
     }
 
 }
