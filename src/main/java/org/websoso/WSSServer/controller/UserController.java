@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.application.AuthApplication;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
@@ -58,11 +59,12 @@ public class UserController {
 
     private final UserService userService;
     private final UserNovelService userNovelService;
+    private final AuthApplication authApplication;
     private final FeedService feedService;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody String userId) {
-        LoginResponse response = userService.login(Long.valueOf(userId));
+        LoginResponse response = authApplication.login(Long.valueOf(userId));
         return ResponseEntity
                 .status(OK)
                 .body(response);

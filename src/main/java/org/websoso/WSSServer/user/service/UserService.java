@@ -68,20 +68,13 @@ import org.websoso.WSSServer.user.repository.WithdrawalReasonRepository;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final JwtProvider jwtProvider;
     private final AvatarRepository avatarRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final GenreRepository genreRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final KakaoService kakaoService;
-    private final AppleService appleService;
-    private final FeedRepository feedRepository;
-    private final CommentRepository commentRepository;
-    private final DiscordMessageClient discordMessageClient;
-    private final WithdrawalReasonRepository withdrawalReasonRepository;
     private final UserDeviceRepository userDeviceRepository;
-    private static final String KAKAO_PREFIX = "kakao";
-    private static final String APPLE_PREFIX = "apple";
+
+    // TODO: 상위 레이어에서 분리 예정
+    private final DiscordMessageClient discordMessageClient;
 
     @Transactional(readOnly = true)
     public NicknameValidation isNicknameAvailable(User user, String nickname) {
@@ -92,17 +85,6 @@ public class UserService {
         }
 
         return NicknameValidation.of(true);
-    }
-
-    @Transactional(readOnly = true)
-    public LoginResponse login(Long userId) {
-        User user = getUserOrException(userId);
-
-        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null,
-                null);
-        String token = jwtProvider.generateAccessToken(customAuthenticationToken);
-
-        return LoginResponse.of(token);
     }
 
     @Transactional(readOnly = true)
@@ -155,6 +137,16 @@ public class UserService {
         user.updateUserProfile(updateMyProfileRequest);
     }
 
+    public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
+        checkNicknameIfAlreadyExist(registerUserInfoRequest.nickname());
+        user.updateUserInfo(registerUserInfoRequest);
+        List<GenrePreference> preferGenres = createGenrePreferences(user, registerUserInfoRequest.genrePreferences());
+        genrePreferenceRepository.saveAll(preferGenres);
+
+        discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
+                MessageFormatter.formatUserJoinMessage(user, SocialLoginType.fromSocialId(user.getSocialId())), JOIN));
+    }
+
     @Transactional(readOnly = true)
     public ProfileGetResponse getProfileInfo(User visitor, Long ownerId) {
         if (ownerId == -1L) {
@@ -174,41 +166,6 @@ public class UserService {
         return avatarRepository.findById(avatarId)
                 .orElseThrow(
                         () -> new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
-    }
-
-    public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
-        checkNicknameIfAlreadyExist(registerUserInfoRequest.nickname());
-        user.updateUserInfo(registerUserInfoRequest);
-        List<GenrePreference> preferGenres = createGenrePreferences(user, registerUserInfoRequest.genrePreferences());
-        genrePreferenceRepository.saveAll(preferGenres);
-
-        discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
-                MessageFormatter.formatUserJoinMessage(user, SocialLoginType.fromSocialId(user.getSocialId())), JOIN));
-    }
-
-    public void logout(User user, LogoutRequest request) {
-        refreshTokenRepository.findByRefreshToken(request.refreshToken())
-                .ifPresent(refreshTokenRepository::delete);
-
-        userDeviceRepository.deleteByUserAndDeviceIdentifier(user, request.deviceIdentifier());
-
-        if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
-            kakaoService.kakaoLogout(user);
-        }
-    }
-
-    public void withdrawUser(User user, WithdrawalRequest withdrawalRequest) {
-        unlinkSocialAccount(user);
-
-        String messageContent = MessageFormatter.formatUserWithdrawMessage(user.getUserId(), user.getNickname(),
-                withdrawalRequest.reason());
-
-        cleanupUserData(user.getUserId());
-
-        discordMessageClient.sendDiscordWebhookMessage(
-                DiscordWebhookMessage.of(messageContent, WITHDRAW));
-
-        withdrawalReasonRepository.save(WithdrawalReason.create(withdrawalRequest.reason()));
     }
 
     private void checkNicknameIfAlreadyExist(String nickname) {
@@ -236,21 +193,6 @@ public class UserService {
         return genreRepository.findByGenreName(genreName)
                 .orElseThrow(() ->
                         new CustomGenreException(GENRE_NOT_FOUND, "genre with the given genreName is not found"));
-    }
-
-    private void unlinkSocialAccount(User user) {
-        if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
-            kakaoService.unlinkFromKakao(user);
-        } else if (user.getSocialId().startsWith(APPLE_PREFIX)) {
-            appleService.unlinkFromApple(user);
-        }
-    }
-
-    private void cleanupUserData(Long userId) {
-        refreshTokenRepository.deleteAll(refreshTokenRepository.findAllByUserId(userId));
-        feedRepository.updateUserToUnknown(userId);
-        commentRepository.updateUserToUnknown(userId);
-        userRepository.deleteById(userId);
     }
 
     public void editMyInfo(User user, EditMyInfoRequest editMyInfoRequest) {
