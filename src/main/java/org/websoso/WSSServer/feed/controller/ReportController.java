@@ -12,21 +12,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.application.ReportApplication;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.feed.service.ReportService;
 
 @RequestMapping("/feeds")
 @RestController
 @RequiredArgsConstructor
 public class ReportController {
 
-    private final ReportService reportService;
+    private final ReportApplication reportApplication;
 
     @PostMapping("/{feedId}/spoiler")
     @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
     public ResponseEntity<Void> reportFeedSpoiler(@AuthenticationPrincipal User user,
                                                   @PathVariable("feedId") Long feedId) {
-        reportService.reportFeed(user, feedId, SPOILER);
+        reportApplication.reportFeed(user, feedId, SPOILER);
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -36,7 +36,7 @@ public class ReportController {
     @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
     public ResponseEntity<Void> reportedFeedImpertinence(@AuthenticationPrincipal User user,
                                                          @PathVariable("feedId") Long feedId) {
-        reportService.reportFeed(user, feedId, IMPERTINENCE);
+        reportApplication.reportFeed(user, feedId, IMPERTINENCE);
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -47,7 +47,7 @@ public class ReportController {
     public ResponseEntity<Void> reportCommentSpoiler(@AuthenticationPrincipal User user,
                                                      @PathVariable("feedId") Long feedId,
                                                      @PathVariable("commentId") Long commentId) {
-        reportService.reportComment(user, feedId, commentId, SPOILER);
+        reportApplication.reportComment(user, feedId, commentId, SPOILER);
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -58,7 +58,7 @@ public class ReportController {
     public ResponseEntity<Void> reportCommentImpertinence(@AuthenticationPrincipal User user,
                                                           @PathVariable("feedId") Long feedId,
                                                           @PathVariable("commentId") Long commentId) {
-        reportService.reportComment(user, feedId, commentId, IMPERTINENCE);
+        reportApplication.reportComment(user, feedId, commentId, IMPERTINENCE);
         return ResponseEntity
                 .status(CREATED)
                 .build();
