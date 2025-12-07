@@ -30,7 +30,7 @@ public class LibraryInterestApplication {
     public void registerAsInterest(User user, Long novelId) {
         Novel novel = novelService.getNovelOrException(novelId);
 
-        UserNovel userNovel = user == null ? null : libraryService.getUserNovelOrNull(user, novel);
+        UserNovel userNovel = user == null ? null : libraryService.getLibraryOrNull(user, novel);
 
         if (userNovel != null && userNovel.getIsInterest()) {
             throw new CustomUserNovelException(ALREADY_INTERESTED, "already registered as interested");
@@ -40,7 +40,7 @@ public class LibraryInterestApplication {
             try {
                 userNovel = createUserNovelByInterest(user, novel);
             } catch (DataIntegrityViolationException e) {
-                userNovel = libraryService.getUserNovelOrException(user, novelId);
+                userNovel = libraryService.getLibraryOrException(user, novelId);
             }
         }
 
@@ -54,7 +54,7 @@ public class LibraryInterestApplication {
      * @param novelId 소설 ID
      */
     public void unregisterAsInterest(User user, Long novelId) {
-        UserNovel userNovel = libraryService.getUserNovelOrException(user, novelId);
+        UserNovel userNovel = libraryService.getLibraryOrException(user, novelId);
 
         if (!userNovel.getIsInterest()) {
             throw new CustomUserNovelException(NOT_INTERESTED, "not registered as interest");
@@ -69,7 +69,7 @@ public class LibraryInterestApplication {
     }
 
     private UserNovel createUserNovelByInterest(User user, Novel novel) {
-        if (libraryService.getUserNovelOrNull(user, novel) != null) {
+        if (libraryService.getLibraryOrNull(user, novel) != null) {
             throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
         }
 

@@ -44,7 +44,7 @@ public class LibraryService {
 
     // TODO: novelId로 불러옴
     @Transactional(readOnly = true)
-    public UserNovel getUserNovelOrException(User user, Long novelId) {
+    public UserNovel getLibraryOrException(User user, Long novelId) {
         return userNovelRepository.findByNovel_NovelIdAndUser(novelId, user)
                 .orElseThrow(() -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
                         "user novel with the given user and novel is not found"));
@@ -53,11 +53,12 @@ public class LibraryService {
     // TODO: Novel 객체로 불러옴
     // TODO: 사용자 객체가 Null이면 Null로 반환함 헷갈리수도?
     @Transactional(readOnly = true)
-    public UserNovel getUserNovelOrNull(User user, Novel novel) {
+    public UserNovel getLibraryOrNull(User user, Novel novel) {
         if (user == null) {
             return null;
         }
-        return userNovelRepository.findByNovelAndUser(novel, user).orElse(null);
+
+        return userNovelRepository.findByNovel_NovelIdAndUser(novel.getNovelId(), user).orElse(null);
     }
 
     @Transactional

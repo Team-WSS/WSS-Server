@@ -113,7 +113,7 @@ public class SearchNovelApplication {
                 : Math.round(libraryService.getRatingSum(novel) / novelRatingCount * 10.0f) / 10.0f;
         return NovelGetResponseBasic.of(
                 novel,
-                libraryService.getUserNovelOrNull(user, novel),
+                libraryService.getLibraryOrNull(user, novel),
                 getNovelGenreNames(novelGenres),
                 getRandomNovelGenreImage(novelGenres),
                 libraryService.getInterestCount(novel),
