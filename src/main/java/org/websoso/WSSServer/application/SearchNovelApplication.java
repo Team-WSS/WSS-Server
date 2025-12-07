@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
+import org.websoso.WSSServer.library.service.AttractivePointService;
+import org.websoso.WSSServer.library.service.KeywordService;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.GenreName;
 import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
@@ -50,6 +52,8 @@ public class SearchNovelApplication {
     private final NovelServiceImpl novelService;
     private final PopularNovelService popularNovelService;
     private final GenreServiceImpl genreService;
+    private final AttractivePointService libraryAttractivePointService;
+    private final KeywordService libraryKeywordService;
     private final KeywordServiceImpl keywordService;
     private final LibraryService libraryService;
 
@@ -130,8 +134,8 @@ public class SearchNovelApplication {
         return NovelGetResponseInfoTab.of(
                 novel,
                 novelService.getPlatforms(novel),
-                libraryService.getAttractivePoints(novel),
-                libraryService.getKeywordNameAndCount(novel),
+                libraryAttractivePointService.getAttractivePoints(novel),
+                libraryKeywordService.getKeywordNameAndCount(novel),
                 libraryService.getWatchingCount(novel),
                 libraryService.getWatchedCount(novel),
                 libraryService.getQuitCount(novel)

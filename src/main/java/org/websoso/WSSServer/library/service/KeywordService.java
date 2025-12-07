@@ -4,10 +4,14 @@ import static org.websoso.WSSServer.exception.error.CustomKeywordCategoryError.K
 import static org.websoso.WSSServer.exception.error.CustomKeywordError.KEYWORD_NOT_FOUND;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.library.domain.Keyword;
 import org.websoso.WSSServer.library.domain.KeywordCategory;
 import org.websoso.WSSServer.domain.common.KeywordCategoryName;
@@ -21,11 +25,14 @@ import org.websoso.WSSServer.library.domain.UserNovelKeyword;
 import org.websoso.WSSServer.library.repository.KeywordCategoryRepository;
 import org.websoso.WSSServer.library.repository.KeywordRepository;
 import org.websoso.WSSServer.library.repository.UserNovelKeywordRepository;
+import org.websoso.WSSServer.novel.domain.Novel;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class KeywordService {
+
+    private static final int KEYWORD_SIZE = 5;
 
     private final KeywordRepository keywordRepository;
     private final KeywordCategoryRepository keywordCategoryRepository;
@@ -85,5 +92,27 @@ public class KeywordService {
         return keywordRepository.findAll().stream()
                 .filter(keyword -> keyword.containsAllWords(words)).toList();
     }
+
+    public List<KeywordCountGetResponse> getKeywordNameAndCount(Novel novel) {
+        List<UserNovelKeyword> userNovelKeywords = getKeywords(novel);
+
+        if (userNovelKeywords.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Keyword, Long> keywordFrequencyMap = userNovelKeywords.stream()
+                .collect(Collectors.groupingBy(UserNovelKeyword::getKeyword, Collectors.counting()));
+
+        return keywordFrequencyMap.entrySet().stream()
+                .sorted(Map.Entry.<Keyword, Long>comparingByValue().reversed())
+                .limit(KEYWORD_SIZE)
+                .map(entry -> KeywordCountGetResponse.of(entry.getKey(), entry.getValue().intValue()))
+                .toList();
+    }
+
+    public List<UserNovelKeyword> getKeywords(Novel novel) {
+        return userNovelKeywordRepository.findAllByUserNovel_Novel(novel);
+    }
+
 
 }
