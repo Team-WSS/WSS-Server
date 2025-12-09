@@ -1,8 +1,8 @@
 package org.websoso.WSSServer.domain;
 
-import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,24 +17,23 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Avatar {
+public class AvatarProfile {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)
+    private Long avatarProfileId;
+
     private Byte avatarId;
 
-    @Column(columnDefinition = "varchar(10)", nullable = false)
-    private String avatarName;
+    private String avatarProfileName;
 
-    @Column(columnDefinition = "varchar(100)", nullable = false)
-    private String avatarImage;
+    private String avatarProfileImage;
 
-    @OneToMany(mappedBy = "avatar", cascade = ALL, orphanRemoval = true)
-    private List<AvatarLine> avatarLines;
+    private String avatarProfileBackgroundImage;
 
-    @OneToMany(cascade = ALL, orphanRemoval = true)
-    @JoinColumn(name = "avatar_id")
-    private List<AvatarProfile> avatarProfiles;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "avatar_profile_id")
+    private List<AvatarProfileLine> avatarLines;
 
 }
