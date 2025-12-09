@@ -24,8 +24,6 @@ public class AvatarProfile {
     @Column(nullable = false)
     private Long avatarProfileId;
 
-    private Byte avatarId;
-
     private String avatarProfileName;
 
     private String avatarProfileImage;
@@ -36,4 +34,7 @@ public class AvatarProfile {
     @JoinColumn(name = "avatar_profile_id")
     private List<AvatarProfileLine> avatarLines;
 
+    public boolean isSameAvatarProfile(Long avatarProfileId) {
+        return this.avatarProfileId.equals(avatarProfileId);
+    }
 }
