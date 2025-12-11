@@ -8,7 +8,7 @@ public record AvatarProfileGetResponse(
         String avatarProfileName,
         String avatarProfileLine,
         String avatarProfileImage,
-        String avatarProfileBackgroundImage,
+        String avatarCharacterImage,
         Boolean isRepresentative
 ) {
     public static AvatarProfileGetResponse of(AvatarProfile avatarProfile,
@@ -19,7 +19,7 @@ public record AvatarProfileGetResponse(
                 avatarProfile.getAvatarProfileName(),
                 avatarProfileLine.getAvatarLine(),
                 avatarProfile.getAvatarProfileImage(),
-                avatarProfile.getAvatarProfileBackgroundImage(),
+                avatarProfile.getAvatarCharacterImage(),
                 avatarProfile.isSameAvatarProfile(representativeAvatarProfileId)
 
         );

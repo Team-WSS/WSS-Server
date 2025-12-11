@@ -77,7 +77,7 @@ public class User extends BaseEntity {
     private Byte avatarId;
 
     // TODO: 우선 연관 관계를 직접 맺지 않게 수정
-    @Column(nullable = true)
+    @Column(nullable = false)
     private Long avatarProfileId;
 
     @Column(columnDefinition = "Boolean default true", nullable = false)

@@ -24,11 +24,14 @@ public class AvatarProfile {
     @Column(nullable = false)
     private Long avatarProfileId;
 
+    @Column(columnDefinition = "varchar(30)", nullable = false)
     private String avatarProfileName;
 
+    @Column(columnDefinition = "varchar(100)", nullable = false)
     private String avatarProfileImage;
 
-    private String avatarProfileBackgroundImage;
+    @Column(columnDefinition = "varchar(100)", nullable = false)
+    private String avatarCharacterImage;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "avatar_profile_id")
