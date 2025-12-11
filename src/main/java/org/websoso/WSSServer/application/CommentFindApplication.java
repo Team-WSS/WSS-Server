@@ -8,6 +8,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentGetResponse;
 import org.websoso.WSSServer.dto.comment.CommentsGetResponse;
@@ -16,7 +17,6 @@ import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.service.FeedServiceImpl;
-import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.BlockRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
 
@@ -29,7 +29,7 @@ public class CommentFindApplication {
     //ToDo : 의존성 제거 필요 부분
     private final UserRepository userRepository;
     private final BlockRepository blockRepository;
-    private final AvatarRepository avatarRepository;
+    private final AvatarProfileRepository avatarProfileRepository;
 
     @Transactional(readOnly = true)
     public CommentsGetResponse getComments(User user, Long feedId) {
@@ -55,8 +55,8 @@ public class CommentFindApplication {
 
     private UserBasicInfo getUserBasicInfo(User user) {
         return user.getUserBasicInfo(
-                avatarRepository.findById(user.getAvatarId()).orElseThrow(() ->
+                avatarProfileRepository.findById(user.getAvatarProfileId()).orElseThrow(() ->
                                 new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"))
-                        .getAvatarImage());
+                        .getAvatarProfileImage());
     }
 }
