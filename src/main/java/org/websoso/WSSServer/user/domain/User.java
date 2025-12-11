@@ -144,11 +144,15 @@ public class User extends BaseEntity {
         return UserBasicInfo.of(this.getUserId(), this.getNickname(), avatarImage);
     }
 
+    // TODO: 유저 객체 생성시, 기본 값이 바로 박혀있으면 확장성에서 불리하다고 생각 (기중)
+    // DEFAULT 값이 하드코딩되어 있음 -> private static final로 분리하는게 좋지 않을까 생각
+    // 컬럼 매핑에 DEFAULT가 선언되어 있어서 중복이라고 생각할 수 있지만, 2차 적으로 어플리케이션에도 있는게 컨텍스트 파악하는데 유리하다고 생각
     private User(String socialId, String nickname, String email) {
         this.intro = "안녕하세요";
         this.gender = M;
         this.birth = Year.now();
         this.avatarId = 1;
+        this.avatarProfileId = 1L;
         this.isProfilePublic = true;
         this.isPushEnabled = true;
         this.serviceAgreed = false;
@@ -160,6 +164,7 @@ public class User extends BaseEntity {
         this.email = email;
     }
 
+    // TODO: 소셜 로그인 가입 처럼 이러한 메서드에서 기본 값 설정하는게 더 유리할 것으로 판단 (기중)
     public static User createBySocial(String socialId, String nickname, String email) {
         return new User(socialId, nickname, email);
     }
