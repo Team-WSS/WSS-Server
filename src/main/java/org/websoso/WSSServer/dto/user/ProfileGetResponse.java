@@ -2,7 +2,7 @@ package org.websoso.WSSServer.dto.user;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.websoso.WSSServer.domain.Avatar;
+import org.websoso.WSSServer.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.user.domain.User;
 
@@ -14,7 +14,7 @@ public record ProfileGetResponse(
         List<String> genrePreferences
 ) {
 
-    public static ProfileGetResponse of(boolean isMyProfile, User user, Avatar avatar,
+    public static ProfileGetResponse of(boolean isMyProfile, User user, AvatarProfile avatar,
                                         List<GenrePreference> genrePreferences) {
         boolean isProfilePublic = isMyProfile
                 ? true
@@ -22,7 +22,7 @@ public record ProfileGetResponse(
         return new ProfileGetResponse(
                 user.getNickname(),
                 user.getIntro(),
-                avatar.getAvatarImage(),
+                avatar.getAvatarProfileImage(),
                 isProfilePublic,
                 genrePreferences.stream()
                         .map(gp -> gp.getGenre().getGenreName())

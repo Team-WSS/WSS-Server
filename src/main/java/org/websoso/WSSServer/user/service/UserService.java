@@ -2,7 +2,6 @@ package org.websoso.WSSServer.user.service;
 
 import static java.lang.Boolean.FALSE;
 import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.JOIN;
-import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.WITHDRAW;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_AVATAR;
@@ -18,9 +17,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.config.jwt.CustomAuthenticationToken;
-import org.websoso.WSSServer.config.jwt.JwtProvider;
-import org.websoso.WSSServer.domain.Avatar;
 import org.websoso.WSSServer.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
@@ -29,15 +25,12 @@ import org.websoso.WSSServer.service.DiscordMessageClient;
 import org.websoso.WSSServer.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.domain.UserDevice;
-import org.websoso.WSSServer.user.domain.WithdrawalReason;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
-import org.websoso.WSSServer.dto.auth.LogoutRequest;
 import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.FCMTokenRequest;
-import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileGetResponse;
@@ -47,22 +40,14 @@ import org.websoso.WSSServer.dto.user.TermsSettingGetResponse;
 import org.websoso.WSSServer.dto.user.UpdateMyProfileRequest;
 import org.websoso.WSSServer.dto.user.UserIdAndNicknameResponse;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
-import org.websoso.WSSServer.dto.user.WithdrawalRequest;
 import org.websoso.WSSServer.exception.error.CustomUserError;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
-import org.websoso.WSSServer.feed.repository.CommentRepository;
-import org.websoso.WSSServer.feed.repository.FeedRepository;
-import org.websoso.WSSServer.oauth2.service.AppleService;
-import org.websoso.WSSServer.oauth2.service.KakaoService;
-import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
-import org.websoso.WSSServer.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.user.repository.UserDeviceRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
-import org.websoso.WSSServer.user.repository.WithdrawalReasonRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -70,7 +55,6 @@ import org.websoso.WSSServer.user.repository.WithdrawalReasonRepository;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final AvatarRepository avatarRepository;
     private final AvatarProfileRepository avatarProfileRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final GenreRepository genreRepository;
@@ -162,18 +146,12 @@ public class UserService {
                     "The profile for this user is inaccessible: unknown");
         }
         User owner = getUserOrException(ownerId);
-        Byte avatarId = owner.getAvatarId();
-        Avatar avatar = findAvatarByIdOrThrow(avatarId);
+        Long avatarId = owner.getAvatarProfileId();
+        AvatarProfile avatar = findAvatarProfileByIdOrThrow(avatarId);
         List<GenrePreference> genrePreferences = genrePreferenceRepository.findByUser(owner);
 
         boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
         return ProfileGetResponse.of(isOwner, owner, avatar, genrePreferences);
-    }
-
-    private Avatar findAvatarByIdOrThrow(Byte avatarId) {
-        return avatarRepository.findById(avatarId)
-                .orElseThrow(
-                        () -> new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
     }
 
     private AvatarProfile findAvatarProfileByIdOrThrow(Long avatarId) {
