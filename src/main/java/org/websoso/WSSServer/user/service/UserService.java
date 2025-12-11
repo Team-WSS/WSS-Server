@@ -118,6 +118,7 @@ public class UserService {
         return MyProfileResponse.of(user, avatar, genrePreferences);
     }
 
+    // TODO: 멱등성을 보장하는데, Exception이 발생하는게 맞나? (기중)
     public void updateMyProfileInfo(User user, UpdateMyProfileRequest updateMyProfileRequest) {
         checkIfAlreadySetOrThrow(user.getAvatarId(), updateMyProfileRequest.avatarId(),
                 ALREADY_SET_AVATAR, "avatarId with given is already set");
@@ -129,6 +130,7 @@ public class UserService {
         checkIfAlreadySetOrThrow(user.getIntro(), updateMyProfileRequest.intro(),
                 ALREADY_SET_INTRO, "intro with given is already set");
 
+        // TODO: 선호 장르만 기존 값을 받고 있음 (기중)
         genrePreferenceRepository.deleteAllByUser(user);
 
         List<GenrePreference> newPreferGenres = createGenrePreferences(user, updateMyProfileRequest.genrePreferences());

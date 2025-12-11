@@ -124,7 +124,7 @@ public class User extends BaseEntity {
 
     public void updateUserProfile(UpdateMyProfileRequest updateMyProfileRequest) {
         if (updateMyProfileRequest.avatarId() != null) {
-            this.avatarId = updateMyProfileRequest.avatarId();
+            this.avatarProfileId = updateMyProfileRequest.avatarId();
         }
         if (updateMyProfileRequest.nickname() != null) {
             this.nickname = updateMyProfileRequest.nickname();

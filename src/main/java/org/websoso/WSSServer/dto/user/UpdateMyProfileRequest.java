@@ -6,7 +6,7 @@ import java.util.List;
 import org.websoso.WSSServer.validation.NullAllowedNicknameConstraint;
 
 public record UpdateMyProfileRequest(
-        Byte avatarId,
+        Long avatarId,
 
         @NullAllowedNicknameConstraint
         String nickname,
