@@ -39,6 +39,13 @@ public class AvatarService {
     }
 
     @Transactional(readOnly = true)
+    public AvatarProfile getAvatarProfileOrException(Long avatarProfileId) {
+        return avatarProfileRepository.findById(avatarProfileId).orElseThrow(() ->
+                new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
+    }
+
+
+    @Transactional(readOnly = true)
     public AvatarsGetResponse getAvatarList(User user) {
         Byte representativeAvatarId = user.getAvatarId();
         List<Avatar> avatars = avatarRepository.findAll();
