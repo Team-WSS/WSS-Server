@@ -15,11 +15,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.Avatar;
+import org.websoso.WSSServer.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.library.service.AttractivePointService;
 import org.websoso.WSSServer.library.service.KeywordService;
+import org.websoso.WSSServer.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.GenreName;
 import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
@@ -42,7 +43,6 @@ import org.websoso.WSSServer.novel.service.GenreServiceImpl;
 import org.websoso.WSSServer.novel.service.KeywordServiceImpl;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;
 import org.websoso.WSSServer.novel.service.PopularNovelService;
-import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 
 @Service
@@ -60,7 +60,7 @@ public class SearchNovelApplication {
     // TODO: 삭제될 레포지토리 의존성
     private final FeedRepository feedRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
-    private final AvatarRepository avatarRepository;
+    private final AvatarProfileRepository avatarProfileRepository;
 
     /**
      * 검색어(소셜명, 작가명)에 해당하는 소설 찾기
@@ -167,7 +167,7 @@ public class SearchNovelApplication {
         List<Feed> popularFeedsFromPopularNovels = feedRepository.findPopularFeedsByNovelIds(selectedNovelIdsFromPopularNovel);
 
         Map<Long, Feed> feedMap = createFeedMap(popularFeedsFromPopularNovels);
-        Map<Byte, Avatar> avatarMap = createAvatarMap(feedMap);
+        Map<Long, AvatarProfile> avatarMap = createAvatarMap(feedMap);
 
         return PopularNovelsGetResponse.create(popularNovels, feedMap, avatarMap);
     }
@@ -264,15 +264,15 @@ public class SearchNovelApplication {
                 .collect(Collectors.toMap(Feed::getNovelId, feed -> feed));
     }
 
-    private Map<Byte, Avatar> createAvatarMap(Map<Long, Feed> feedMap) {
-        Set<Byte> avatarIds = feedMap.values()
+    private Map<Long, AvatarProfile> createAvatarMap(Map<Long, Feed> feedMap) {
+        Set<Long> avatarIds = feedMap.values()
                 .stream()
-                .map(feed -> feed.getUser().getAvatarId())
+                .map(feed -> feed.getUser().getAvatarProfileId())
                 .collect(Collectors.toSet());
 
-        List<Avatar> avatars = avatarRepository.findAllById(avatarIds);
+        List<AvatarProfile> avatars = avatarProfileRepository.findAllById(avatarIds);
         return avatars.stream()
-                .collect(Collectors.toMap(Avatar::getAvatarId, avatar -> avatar));
+                .collect(Collectors.toMap(AvatarProfile::getAvatarProfileId, avatar -> avatar));
     }
 
 }
