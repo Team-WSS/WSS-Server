@@ -21,8 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.config.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.domain.Avatar;
+import org.websoso.WSSServer.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
+import org.websoso.WSSServer.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.service.DiscordMessageClient;
 import org.websoso.WSSServer.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
@@ -69,6 +71,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final AvatarRepository avatarRepository;
+    private final AvatarProfileRepository avatarProfileRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final GenreRepository genreRepository;
     private final UserDeviceRepository userDeviceRepository;
@@ -112,10 +115,13 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public MyProfileResponse getMyProfileInfo(User user) {
-        Byte avatarId = user.getAvatarId();
-        Avatar avatar = findAvatarByIdOrThrow(avatarId);
+        Long avatarProfileId = user.getAvatarProfileId();
+
+        AvatarProfile avatarProfile = findAvatarProfileByIdOrThrow(avatarProfileId);
+
         List<GenrePreference> genrePreferences = genrePreferenceRepository.findByUser(user);
-        return MyProfileResponse.of(user, avatar, genrePreferences);
+
+        return MyProfileResponse.of(user, avatarProfile, genrePreferences);
     }
 
     // TODO: 멱등성을 보장하는데, Exception이 발생하는게 맞나? (기중)
@@ -166,6 +172,12 @@ public class UserService {
 
     private Avatar findAvatarByIdOrThrow(Byte avatarId) {
         return avatarRepository.findById(avatarId)
+                .orElseThrow(
+                        () -> new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
+    }
+
+    private AvatarProfile findAvatarProfileByIdOrThrow(Long avatarId) {
+        return avatarProfileRepository.findById(avatarId)
                 .orElseThrow(
                         () -> new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
     }
