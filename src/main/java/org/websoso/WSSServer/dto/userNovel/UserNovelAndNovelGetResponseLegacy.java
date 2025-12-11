@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.dto.userNovel;
 
-import org.websoso.WSSServer.domain.UserNovel;
+import org.websoso.WSSServer.library.domain.UserNovel;
 
 public record UserNovelAndNovelGetResponseLegacy(
         Long userNovelId,

@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.auth.validator;
 
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 
 public interface ResourceAuthorizationValidator {
 

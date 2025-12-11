@@ -19,8 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.ReadNotification;
-import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.domain.UserDevice;
+import org.websoso.WSSServer.user.domain.User;
+import org.websoso.WSSServer.user.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.NotificationTypeGroup;
 import org.websoso.WSSServer.dto.notification.NotificationCreateRequest;
 import org.websoso.WSSServer.dto.notification.NotificationGetResponse;
@@ -29,12 +29,13 @@ import org.websoso.WSSServer.dto.notification.NotificationsGetResponse;
 import org.websoso.WSSServer.dto.notification.NotificationsReadStatusGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
 import org.websoso.WSSServer.exception.exception.CustomNotificationTypeException;
-import org.websoso.WSSServer.notification.FCMService;
+import org.websoso.WSSServer.notification.FCMClient;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.repository.NotificationRepository;
 import org.websoso.WSSServer.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.repository.ReadNotificationRepository;
-import org.websoso.WSSServer.repository.UserRepository;
+import org.websoso.WSSServer.user.repository.UserRepository;
+import org.websoso.WSSServer.user.service.UserService;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +47,7 @@ public class NotificationService {
     private final ReadNotificationRepository readNotificationRepository;
     private final NotificationTypeRepository notificationTypeRepository;
     private final UserRepository userRepository;
-    private final FCMService fcmService;
+    private final FCMClient fcmClient;
     private final UserService userService;
 
     @Transactional(readOnly = true)
@@ -153,7 +154,7 @@ public class NotificationService {
 
         List<String> targetFCMTokens = getTargetFCMTokens(userId);
 
-        fcmService.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
+        fcmClient.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
     }
 
     private List<String> getTargetFCMTokens(Long userId) {

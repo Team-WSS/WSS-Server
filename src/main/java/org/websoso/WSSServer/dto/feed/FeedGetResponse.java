@@ -2,10 +2,10 @@ package org.websoso.WSSServer.dto.feed;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import org.websoso.WSSServer.domain.Feed;
-import org.websoso.WSSServer.domain.FeedImage;
-import org.websoso.WSSServer.domain.Novel;
-import org.websoso.WSSServer.domain.UserNovel;
+import org.websoso.WSSServer.feed.domain.Feed;
+import org.websoso.WSSServer.feed.domain.FeedImage;
+import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 
 public record FeedGetResponse(

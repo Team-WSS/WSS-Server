@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.dto.feed;
 
-import org.websoso.WSSServer.domain.FeedImage;
+import org.websoso.WSSServer.feed.domain.FeedImage;
 
 import java.util.Comparator;
 import java.util.List;

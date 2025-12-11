@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.dto.sosoPick.SosoPickGetResponse;
 import org.websoso.WSSServer.dto.sosoPick.SosoPickNovelGetResponse;
-import org.websoso.WSSServer.repository.NovelRepository;
+import org.websoso.WSSServer.novel.repository.NovelRepository;
 
 @Service
 @RequiredArgsConstructor

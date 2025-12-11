@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.dto.popularFeed;
 
-import org.websoso.WSSServer.domain.PopularFeed;
+import org.websoso.WSSServer.feed.domain.PopularFeed;
 
 public record PopularFeedGetResponse(
         Long feedId,

@@ -50,9 +50,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.websoso.WSSServer.config.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
-import org.websoso.WSSServer.domain.RefreshToken;
-import org.websoso.WSSServer.domain.User;
-import org.websoso.WSSServer.domain.UserAppleToken;
+import org.websoso.WSSServer.user.domain.RefreshToken;
+import org.websoso.WSSServer.user.domain.User;
+import org.websoso.WSSServer.user.domain.UserAppleToken;
 import org.websoso.WSSServer.dto.auth.AppleLoginRequest;
 import org.websoso.WSSServer.dto.auth.ApplePublicKey;
 import org.websoso.WSSServer.dto.auth.ApplePublicKeys;
@@ -60,9 +60,9 @@ import org.websoso.WSSServer.dto.auth.AppleTokenResponse;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
 import org.websoso.WSSServer.repository.RefreshTokenRepository;
-import org.websoso.WSSServer.repository.UserAppleTokenRepository;
-import org.websoso.WSSServer.repository.UserRepository;
-import org.websoso.WSSServer.service.MessageService;
+import org.websoso.WSSServer.user.repository.UserAppleTokenRepository;
+import org.websoso.WSSServer.user.repository.UserRepository;
+import org.websoso.WSSServer.service.DiscordMessageClient;
 
 @Transactional
 @Service
@@ -82,7 +82,7 @@ public class AppleService {
     private final UserRepository userRepository;
     private final UserAppleTokenRepository userAppleTokenRepository;
     private final JwtProvider jwtProvider;
-    private final MessageService messageService;
+    private final DiscordMessageClient discordMessageClient;
 
     @Value("${apple.public-keys-url}")
     private String applePublicKeysUrl;
@@ -285,7 +285,8 @@ public class AppleService {
             userAppleTokenRepository.save(UserAppleToken.create(user, appleRefreshToken));
         }
 
-        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null, null);
+        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null,
+                null);
         String accessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
         String refreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
 

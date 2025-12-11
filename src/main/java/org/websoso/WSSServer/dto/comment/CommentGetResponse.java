@@ -2,7 +2,7 @@ package org.websoso.WSSServer.dto.comment;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
-import org.websoso.WSSServer.domain.Comment;
+import org.websoso.WSSServer.feed.domain.Comment;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 
 public record CommentGetResponse(

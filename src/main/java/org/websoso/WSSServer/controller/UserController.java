@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.application.AuthApplication;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
@@ -45,9 +46,9 @@ import org.websoso.WSSServer.dto.userNovel.UserGenrePreferencesGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponseLegacy;
 import org.websoso.WSSServer.dto.userNovel.UserTasteAttractivePointPreferencesAndKeywordsGetResponse;
-import org.websoso.WSSServer.service.FeedService;
-import org.websoso.WSSServer.service.UserNovelService;
-import org.websoso.WSSServer.service.UserService;
+import org.websoso.WSSServer.feed.service.FeedService;
+import org.websoso.WSSServer.library.service.UserNovelService;
+import org.websoso.WSSServer.user.service.UserService;
 import org.websoso.WSSServer.validation.NicknameConstraint;
 
 @RestController
@@ -58,11 +59,12 @@ public class UserController {
 
     private final UserService userService;
     private final UserNovelService userNovelService;
+    private final AuthApplication authApplication;
     private final FeedService feedService;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody String userId) {
-        LoginResponse response = userService.login(Long.valueOf(userId));
+        LoginResponse response = authApplication.login(Long.valueOf(userId));
         return ResponseEntity
                 .status(OK)
                 .body(response);
