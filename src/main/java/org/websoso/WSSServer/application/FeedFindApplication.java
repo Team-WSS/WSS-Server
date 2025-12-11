@@ -14,7 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.Avatar;
+import org.websoso.WSSServer.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
@@ -36,7 +36,7 @@ import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.library.repository.UserNovelRepository;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;
-import org.websoso.WSSServer.repository.AvatarRepository;
+import org.websoso.WSSServer.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.user.domain.User;
 
@@ -51,7 +51,7 @@ public class FeedFindApplication {
     private static final int DEFAULT_PAGE_NUMBER = 0;
 
     //ToDo : 의존성 제거 필요 부분
-    private final AvatarRepository avatarRepository;
+    private final AvatarProfileRepository avatarRepository;
     private final LikeRepository likeRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final UserNovelRepository userNovelRepository;
@@ -72,9 +72,9 @@ public class FeedFindApplication {
 
     private UserBasicInfo getUserBasicInfo(User user) {
         return user.getUserBasicInfo(
-                avatarRepository.findById(user.getAvatarId()).orElseThrow(() ->
+                avatarRepository.findById(user.getAvatarProfileId()).orElseThrow(() ->
                                 new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"))
-                        .getAvatarImage());
+                        .getAvatarProfileImage());
     }
 
     private Novel getLinkedNovelOrNull(Long linkedNovelId) {
@@ -187,15 +187,15 @@ public class FeedFindApplication {
             return InterestFeedsGetResponse.of(Collections.emptyList(), "NO_ASSOCIATED_FEEDS");
         }
 
-        Set<Byte> avatarIds = interestFeeds.stream().map(feed -> feed.getUser().getAvatarId())
+        Set<Long> avatarProfileIds = interestFeeds.stream().map(feed -> feed.getUser().getAvatarProfileId())
                 .collect(Collectors.toSet());
-        Map<Byte, Avatar> avatarMap = avatarRepository.findAllById(avatarIds).stream()
-                .collect(Collectors.toMap(Avatar::getAvatarId, avatar -> avatar));
+        Map<Long, AvatarProfile> avatarMap = avatarRepository.findAllById(avatarProfileIds).stream()
+                .collect(Collectors.toMap(AvatarProfile::getAvatarProfileId, avatar -> avatar));
 
         List<InterestFeedGetResponse> interestFeedGetResponses = interestFeeds.stream()
                 .filter(feed -> feed.isVisibleTo(user.getUserId())).map(feed -> {
                     Novel novel = novelMap.get(feed.getNovelId());
-                    Avatar avatar = avatarMap.get(feed.getUser().getAvatarId());
+                    AvatarProfile avatar = avatarMap.get(feed.getUser().getAvatarProfileId());
                     return InterestFeedGetResponse.of(novel, feed.getUser(), feed, avatar);
                 }).toList();
         return InterestFeedsGetResponse.of(interestFeedGetResponses, "");

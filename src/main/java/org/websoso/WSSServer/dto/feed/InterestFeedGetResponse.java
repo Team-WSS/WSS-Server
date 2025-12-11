@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.dto.feed;
 
 import org.websoso.WSSServer.domain.Avatar;
+import org.websoso.WSSServer.domain.AvatarProfile;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.user.domain.User;
@@ -18,7 +19,7 @@ public record InterestFeedGetResponse(
         String feedContent
 ) {
 
-    public static InterestFeedGetResponse of(Novel novel, User user, Feed feed, Avatar avatar) {
+    public static InterestFeedGetResponse of(Novel novel, User user, Feed feed, AvatarProfile avatarProfile) {
         Long novelRatingCount = getNovelRatingCount(novel);
         Float novelRating = getNovelRating(novel, novelRatingCount);
 
@@ -30,7 +31,7 @@ public record InterestFeedGetResponse(
                 novelRatingCount,
                 feed.getIsPublic(),
                 user.getNickname(),
-                avatar.getAvatarImage(),
+                avatarProfile.getAvatarProfileImage(),
                 feed.getFeedContent()
         );
     }
