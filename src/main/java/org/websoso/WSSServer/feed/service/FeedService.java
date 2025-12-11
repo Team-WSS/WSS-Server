@@ -28,10 +28,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.websoso.WSSServer.domain.Avatar;
+import org.websoso.WSSServer.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
+import org.websoso.WSSServer.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.CategoryName;
@@ -113,7 +115,7 @@ public class FeedService {
     private final BlockRepository blockRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final UserRepository userRepository;
-    private final AvatarRepository avatarRepository;
+    private final AvatarProfileRepository avatarProfileRepository;
     private final FeedImageRepository feedImageRepository;
     private final FeedImageCustomRepository feedImageCustomRepository;
     private final UserNovelRepository userNovelRepository;
@@ -341,9 +343,9 @@ public class FeedService {
 
     private UserBasicInfo getUserBasicInfo(User user) {
         return user.getUserBasicInfo(
-                avatarRepository.findById(user.getAvatarId()).orElseThrow(() ->
+                avatarProfileRepository.findById(user.getAvatarProfileId()).orElseThrow(() ->
                                 new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"))
-                        .getAvatarImage());
+                        .getAvatarProfileImage());
     }
 
     private Novel getLinkedNovelOrNull(Long linkedNovelId) {
@@ -418,15 +420,15 @@ public class FeedService {
             return InterestFeedsGetResponse.of(Collections.emptyList(), "NO_ASSOCIATED_FEEDS");
         }
 
-        Set<Byte> avatarIds = interestFeeds.stream().map(feed -> feed.getUser().getAvatarId())
+        Set<Long> avatarIds = interestFeeds.stream().map(feed -> feed.getUser().getAvatarProfileId())
                 .collect(Collectors.toSet());
-        Map<Byte, Avatar> avatarMap = avatarRepository.findAllById(avatarIds).stream()
-                .collect(Collectors.toMap(Avatar::getAvatarId, avatar -> avatar));
+        Map<Long, AvatarProfile> avatarMap = avatarProfileRepository.findAllById(avatarIds).stream()
+                .collect(Collectors.toMap(AvatarProfile::getAvatarProfileId, avatar -> avatar));
 
         List<InterestFeedGetResponse> interestFeedGetResponses = interestFeeds.stream()
                 .filter(feed -> feed.isVisibleTo(user.getUserId())).map(feed -> {
                     Novel novel = novelMap.get(feed.getNovelId());
-                    Avatar avatar = avatarMap.get(feed.getUser().getAvatarId());
+                    AvatarProfile avatar = avatarMap.get(feed.getUser().getAvatarProfileId());
                     return InterestFeedGetResponse.of(novel, feed.getUser(), feed, avatar);
                 }).toList();
         return InterestFeedsGetResponse.of(interestFeedGetResponses, "");
