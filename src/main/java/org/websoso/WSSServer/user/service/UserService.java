@@ -110,7 +110,7 @@ public class UserService {
 
     // TODO: 멱등성을 보장하는데, Exception이 발생하는게 맞나? (기중)
     public void updateMyProfileInfo(User user, UpdateMyProfileRequest updateMyProfileRequest) {
-        checkIfAlreadySetOrThrow(user.getAvatarId(), updateMyProfileRequest.avatarId(),
+        checkIfAlreadySetOrThrow(user.getAvatarProfileId(), updateMyProfileRequest.avatarId(),
                 ALREADY_SET_AVATAR, "avatarId with given is already set");
 
         checkIfAlreadySetOrThrow(user.getNickname(), updateMyProfileRequest.nickname(),
