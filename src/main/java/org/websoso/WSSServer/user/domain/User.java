@@ -122,15 +122,30 @@ public class User extends BaseEntity {
         this.isProfilePublic = profileStatus;
     }
 
+    // TODO: DTO에 의존적인 DDD 로직 (기중)
+    @Deprecated
     public void updateUserProfile(UpdateMyProfileRequest updateMyProfileRequest) {
         if (updateMyProfileRequest.avatarId() != null) {
-            this.avatarProfileId = updateMyProfileRequest.avatarId();
+            this.avatarId = updateMyProfileRequest.avatarId().byteValue();
+            this.avatarProfileId = updateMyProfileRequest.getMappedAvatarId();
         }
         if (updateMyProfileRequest.nickname() != null) {
             this.nickname = updateMyProfileRequest.nickname();
         }
         if (updateMyProfileRequest.intro() != null) {
             this.intro = updateMyProfileRequest.intro();
+        }
+    }
+
+    public void updateUserProfile(Long avatarProfileId, String nickname, String intro) {
+        if (avatarProfileId != null) {
+            this.avatarProfileId = avatarProfileId;
+        }
+        if (nickname != null) {
+            this.nickname = nickname;
+        }
+        if (intro != null) {
+            this.intro = intro;
         }
     }
 

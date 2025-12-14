@@ -106,6 +106,7 @@ public class UserController {
                 .body(userService.getProfileInfo(user, userId));
     }
 
+    @Deprecated
     @GetMapping("/my-profile")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MyProfileResponse> getMyProfileInfo(@AuthenticationPrincipal User user) {
@@ -114,11 +115,32 @@ public class UserController {
                 .body(userService.getMyProfileInfo(user));
     }
 
+    @GetMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<MyProfileResponse> getProfileInfo(@AuthenticationPrincipal User user) {
+        return ResponseEntity
+                .status(OK)
+                .body(userService.getMyProfileInfo(user));
+    }
+
+
+    @Deprecated
     @PatchMapping("/my-profile")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> updateMyProfileInfo(@AuthenticationPrincipal User user,
                                                     @RequestBody @Valid UpdateMyProfileRequest updateMyProfileRequest) {
         userService.updateMyProfileInfo(user, updateMyProfileRequest);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @PatchMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
+    @Deprecated
+    public ResponseEntity<Void> updateProfileInfo(@AuthenticationPrincipal User user,
+                                                    @RequestBody @Valid UpdateMyProfileRequest updateMyProfileRequest) {
+        userService.updateProfileInfo(user, updateMyProfileRequest);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
