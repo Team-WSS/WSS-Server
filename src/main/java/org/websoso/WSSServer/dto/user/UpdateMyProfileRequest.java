@@ -17,4 +17,18 @@ public record UpdateMyProfileRequest(
         @NotNull(message = "선호 장르는 null일 수 없습니다.")
         List<String> genrePreferences
 ) {
+    @Deprecated
+    public Long getMappedAvatarId() {
+        if (this.avatarId == null) {
+            return null;
+        }
+
+        return switch (this.avatarId.intValue()) {
+            case 1 -> 1L;
+            case 2 -> 4L;
+            case 3 -> 5L;
+
+            default -> null;
+        };
+    }
 }

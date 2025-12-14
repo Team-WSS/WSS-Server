@@ -109,8 +109,9 @@ public class UserService {
     }
 
     // TODO: 멱등성을 보장하는데, Exception이 발생하는게 맞나? (기중)
+    @Deprecated
     public void updateMyProfileInfo(User user, UpdateMyProfileRequest updateMyProfileRequest) {
-        checkIfAlreadySetOrThrow(user.getAvatarProfileId(), updateMyProfileRequest.avatarId(),
+        checkIfAlreadySetOrThrow(user.getAvatarId(), updateMyProfileRequest.avatarId(),
                 ALREADY_SET_AVATAR, "avatarId with given is already set");
 
         checkIfAlreadySetOrThrow(user.getNickname(), updateMyProfileRequest.nickname(),
@@ -127,6 +128,26 @@ public class UserService {
         genrePreferenceRepository.saveAll(newPreferGenres);
 
         user.updateUserProfile(updateMyProfileRequest);
+    }
+
+    public void updateProfileInfo(User user, UpdateMyProfileRequest updateMyProfileRequest) {
+        checkIfAlreadySetOrThrow(user.getAvatarProfileId(), updateMyProfileRequest.avatarId(),
+                ALREADY_SET_AVATAR, "avatarId with given is already set");
+
+        checkIfAlreadySetOrThrow(user.getNickname(), updateMyProfileRequest.nickname(),
+                ALREADY_SET_NICKNAME, "nickname with given is already set");
+        checkNicknameIfAlreadyExist(updateMyProfileRequest.nickname());
+
+        checkIfAlreadySetOrThrow(user.getIntro(), updateMyProfileRequest.intro(),
+                ALREADY_SET_INTRO, "intro with given is already set");
+
+        genrePreferenceRepository.deleteAllByUser(user);
+
+        List<GenrePreference> newPreferGenres = createGenrePreferences(user, updateMyProfileRequest.genrePreferences());
+        genrePreferenceRepository.saveAll(newPreferGenres);
+
+        user.updateUserProfile(updateMyProfileRequest.avatarId(), updateMyProfileRequest.nickname(),
+                updateMyProfileRequest.intro());
     }
 
     public void registerUserInfo(User user, RegisterUserInfoRequest registerUserInfoRequest) {
