@@ -3,7 +3,6 @@ package org.websoso.WSSServer.application;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_EVALUATED;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 
-import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,6 +12,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelCreateRequest;
@@ -108,6 +108,7 @@ public class LibraryEvaluationApplication {
      * @param user    사용자 객체
      * @param novelId 소설 ID
      */
+    @Transactional
     public void deleteEvaluation(User user, Long novelId) {
         UserNovel userNovel = libraryService.getLibraryOrException(user, novelId);
 

@@ -7,6 +7,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NO
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.library.domain.UserNovel;
@@ -27,6 +28,7 @@ public class LibraryInterestApplication {
      * @param user    사용자 객체
      * @param novelId 소설 ID
      */
+    @Transactional
     public void registerAsInterest(User user, Long novelId) {
         Novel novel = novelService.getNovelOrException(novelId);
 
@@ -53,6 +55,7 @@ public class LibraryInterestApplication {
      * @param user    사용자 객체
      * @param novelId 소설 ID
      */
+    @Transactional
     public void unregisterAsInterest(User user, Long novelId) {
         UserNovel userNovel = libraryService.getLibraryOrException(user, novelId);
 
