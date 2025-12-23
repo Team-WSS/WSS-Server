@@ -18,16 +18,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
+import org.websoso.WSSServer.dto.novel.FilteredNovelsResponse;
+import org.websoso.WSSServer.dto.novel.NovelSummaryResponse;
+import org.websoso.WSSServer.dto.novel.SearchedNovelsResponse;
 import org.websoso.WSSServer.library.service.AttractivePointService;
 import org.websoso.WSSServer.library.service.KeywordService;
 import org.websoso.WSSServer.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.GenreName;
-import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.novel.NovelGetResponsePreview;
-import org.websoso.WSSServer.dto.novel.SearchedNovelsGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
@@ -71,37 +72,38 @@ public class SearchNovelApplication {
      * @return SearchedNovelsGetResponse
      */
     @Transactional(readOnly = true)
-    public SearchedNovelsGetResponse searchNovels(String query, int page, int size) {
+    public SearchedNovelsResponse searchNovels(String query, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        String searchQuery = query.replaceAll("\\s+", "").replaceAll("[^a-zA-Z0-9가-힣]", "");
+        String searchQuery = sanitizeQuery(query);
 
         if (searchQuery.isBlank()) {
-            return SearchedNovelsGetResponse.of(0L, false, Collections.emptyList());
+            return SearchedNovelsResponse.empty();
         }
 
         Page<Novel> novels = novelService.searchNovels(pageRequest, searchQuery);
 
-        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream()
-                .map(this::convertToDTO)
+        List<NovelSummaryResponse> novelGetResponsePreviews = novels.stream()
+                .map(this::convertToDTO2)
                 .toList();
 
-        return SearchedNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
+        return SearchedNovelsResponse.of(novelGetResponsePreviews, novels.getTotalElements(), novels.hasNext());
     }
 
     @Transactional(readOnly = true)
-    public FilteredNovelsGetResponse getFilteredNovels(List<String> genreNames, Boolean isCompleted, Float novelRating,
-                                                       List<Integer> keywordIds, int page, int size) {
+    public FilteredNovelsResponse getFilteredNovels(List<String> genreNames, List<Integer> keywordIds, Boolean isCompleted, Float novelRating, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        List<Genre> genres = getGenres(genreNames);
-        List<Keyword> keywords = getKeywords(keywordIds);
+
+        List<Genre> genres = genreService.getGenresOrException(genreNames);
+
+        List<Keyword> keywords = keywordService.getKeywordsOrException(keywordIds);
 
         Page<Novel> novels = novelService.findFilteredNovels(pageRequest, genres, keywords, isCompleted, novelRating);
 
-        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream()
-                .map(this::convertToDTO)
+        List<NovelSummaryResponse> novelGetResponsePreviews = novels.stream()
+                .map(this::convertToDTO2)
                 .toList();
 
-        return FilteredNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
+        return FilteredNovelsResponse.of(novelGetResponsePreviews, novels.getTotalElements(), novels.hasNext());
     }
 
     @Transactional(readOnly = true)
@@ -164,7 +166,8 @@ public class SearchNovelApplication {
         List<Long> novelIdsFromPopularNovel = popularNovelService.getNovelIdsFromPopularNovel();
         List<Long> selectedNovelIdsFromPopularNovel = getSelectedNovelIdsFromPopularNovel(novelIdsFromPopularNovel);
         List<Novel> popularNovels = novelService.getSelectedPopularNovels(selectedNovelIdsFromPopularNovel);
-        List<Feed> popularFeedsFromPopularNovels = feedRepository.findPopularFeedsByNovelIds(selectedNovelIdsFromPopularNovel);
+        List<Feed> popularFeedsFromPopularNovels = feedRepository.findPopularFeedsByNovelIds(
+                selectedNovelIdsFromPopularNovel);
 
         Map<Long, Feed> feedMap = createFeedMap(popularFeedsFromPopularNovels);
         Map<Long, AvatarProfile> avatarMap = createAvatarMap(feedMap);
@@ -172,9 +175,23 @@ public class SearchNovelApplication {
         return PopularNovelsGetResponse.create(popularNovels, feedMap, avatarMap);
     }
 
-    // TODO: DTO로 이전할 명분이 충분한 메서드
-    private NovelGetResponsePreview convertToDTO(Novel novel) {
-        // TODO: UserNovel 리스트 개수를 세는것이 아닌, 개수를 세는 쿼리가 필요
+    /**
+     * 검색어 정제 메서 공백 제거 및 특수문자 필터링
+     *
+     * @param query 검색어
+     * @return 필터링된 검색어
+     */
+    private String sanitizeQuery(String query) {
+        if (query == null) {
+            return "";
+        }
+
+        return query.replaceAll("\\s+", "")
+                .replaceAll("[^a-zA-Z0-9가-힣]", "");
+    }
+
+    private NovelSummaryResponse convertToDTO2(Novel novel) {
+        // TODO: Repository에서 NovelSummaryResponse에 맞게 데이터를 불러오는게 좋을듯
         List<UserNovel> userNovels = novel.getUserNovels();
 
         long interestCount = userNovels.stream()
@@ -188,48 +205,16 @@ public class SearchNovelApplication {
                 .mapToDouble(UserNovel::getUserNovelRating)
                 .sum();
 
-        Float novelRatingAverage = novelRatingCount == 0
+        float novelRatingAverage = novelRatingCount == 0
                 ? 0.0f
                 : Math.round((float) (novelRatingSum / novelRatingCount) * 10.0f) / 10.0f;
 
-        return NovelGetResponsePreview.of(
+        return NovelSummaryResponse.of(
                 novel,
                 interestCount,
                 novelRatingAverage,
                 novelRatingCount
         );
-    }
-
-    // TODO: for 문으로 장르를 데이터베이스에서 읽어오는 부분 개선해야함
-    private List<Genre> getGenres(List<String> genreNames) {
-        genreNames = genreNames == null
-                ? Collections.emptyList()
-                : genreNames;
-
-        List<Genre> genres = new ArrayList<>();
-        if (!genreNames.isEmpty()) {
-            for (String genreName : genreNames) {
-                genres.add(genreService.getGenreOrException(genreName));
-            }
-        }
-
-        return genres;
-    }
-
-    // TODO: for 문으로 키워드를 데이터베이스에서 읽어오는 부분 개선해야함
-    private List<Keyword> getKeywords(List<Integer> keywordIds) {
-        keywordIds = keywordIds == null
-                ? Collections.emptyList()
-                : keywordIds;
-
-        List<Keyword> keywords = new ArrayList<>();
-        if (!keywordIds.isEmpty()) {
-            for (Integer keywordId : keywordIds) {
-                keywords.add(keywordService.getKeywordOrException(keywordId));
-            }
-        }
-
-        return keywords;
     }
 
     private String getNovelGenreNames(List<NovelGenre> novelGenres) {

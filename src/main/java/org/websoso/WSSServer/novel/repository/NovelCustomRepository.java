@@ -9,8 +9,8 @@ import org.websoso.WSSServer.novel.domain.Novel;
 
 public interface NovelCustomRepository {
 
-    Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRating,
-                                   List<Keyword> keywords);
-
     Page<Novel> findSearchedNovels(Pageable pageable, String query);
+
+    Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRating, List<Keyword> keywords);
+
 }

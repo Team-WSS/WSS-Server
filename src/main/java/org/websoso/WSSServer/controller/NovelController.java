@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.application.SearchNovelApplication;
+import org.websoso.WSSServer.dto.novel.FilteredNovelsResponse;
+import org.websoso.WSSServer.dto.novel.SearchedNovelsResponse;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
-import org.websoso.WSSServer.dto.novel.SearchedNovelsGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
 import org.websoso.WSSServer.feed.service.FeedService;
@@ -37,12 +37,12 @@ public class NovelController {
      * @param query 검색할 작품명 or 작가명
      * @param page  페이지 네이션 페이지
      * @param size  페이지 네이션 사이즈
-     * @return SearchedNovelsGetResponse
+     * @return SearchedNovelsResponse
      */
     @GetMapping
-    public ResponseEntity<SearchedNovelsGetResponse> searchNovels(@RequestParam(required = false) String query,
-                                                                  @RequestParam int page,
-                                                                  @RequestParam int size) {
+    public ResponseEntity<SearchedNovelsResponse> searchNovels(@RequestParam(required = false) String query,
+                                                               @RequestParam int page,
+                                                               @RequestParam int size) {
         return ResponseEntity
                 .status(OK)
                 .body(searchNovelApplication.searchNovels(query, page, size));
@@ -61,7 +61,7 @@ public class NovelController {
      */
     @GetMapping("/filtered")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<FilteredNovelsGetResponse> getFilteredNovels(
+    public ResponseEntity<FilteredNovelsResponse> getFilteredNovels(
             @RequestParam(required = false) List<String> genres,
             @RequestParam(required = false) Boolean isCompleted,
             @RequestParam(required = false) Float novelRating,
@@ -70,8 +70,7 @@ public class NovelController {
             @RequestParam int size) {
         return ResponseEntity
                 .status(OK)
-                .body(searchNovelApplication.getFilteredNovels(genres, isCompleted, novelRating, keywordIds, page,
-                        size));
+                .body(searchNovelApplication.getFilteredNovels(genres, keywordIds, isCompleted, novelRating, page, size));
     }
 
     /**
