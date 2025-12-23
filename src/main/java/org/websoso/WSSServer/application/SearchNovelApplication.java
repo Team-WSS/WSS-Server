@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
+import org.websoso.WSSServer.dto.novel.NovelSummaryResponse;
+import org.websoso.WSSServer.dto.novel.SearchedNovelsResponse;
 import org.websoso.WSSServer.library.service.AttractivePointService;
 import org.websoso.WSSServer.library.service.KeywordService;
 import org.websoso.WSSServer.repository.AvatarProfileRepository;
@@ -27,7 +29,6 @@ import org.websoso.WSSServer.dto.novel.FilteredNovelsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.novel.NovelGetResponsePreview;
-import org.websoso.WSSServer.dto.novel.SearchedNovelsGetResponse;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
@@ -71,21 +72,21 @@ public class SearchNovelApplication {
      * @return SearchedNovelsGetResponse
      */
     @Transactional(readOnly = true)
-    public SearchedNovelsGetResponse searchNovels(String query, int page, int size) {
+    public SearchedNovelsResponse searchNovels(String query, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         String searchQuery = sanitizeQuery(query);
 
         if (searchQuery.isBlank()) {
-            return SearchedNovelsGetResponse.of(0L, false, Collections.emptyList());
+            return SearchedNovelsResponse.empty();
         }
 
         Page<Novel> novels = novelService.searchNovels(pageRequest, searchQuery);
 
-        List<NovelGetResponsePreview> novelGetResponsePreviews = novels.stream()
-                .map(this::convertToDTO)
+        List<NovelSummaryResponse> novelGetResponsePreviews = novels.stream()
+                .map(this::convertToDTO2)
                 .toList();
 
-        return SearchedNovelsGetResponse.of(novels.getTotalElements(), novels.hasNext(), novelGetResponsePreviews);
+        return SearchedNovelsResponse.of(novelGetResponsePreviews, novels.getTotalElements(), novels.hasNext());
     }
 
     @Transactional(readOnly = true)
@@ -188,9 +189,8 @@ public class SearchNovelApplication {
                 .replaceAll("[^a-zA-Z0-9가-힣]", "");
     }
 
-    // TODO: DTO로 이전할 명분이 충분한 메서드
     private NovelGetResponsePreview convertToDTO(Novel novel) {
-        // TODO: UserNovel 리스트 개수를 세는것이 아닌, 개수를 세는 쿼리가 필요
+        // TODO: Repository에서 NovelSummaryResponse에 맞게 데이터를 불러오는게 좋을듯
         List<UserNovel> userNovels = novel.getUserNovels();
 
         long interestCount = userNovels.stream()
@@ -209,6 +209,33 @@ public class SearchNovelApplication {
                 : Math.round((float) (novelRatingSum / novelRatingCount) * 10.0f) / 10.0f;
 
         return NovelGetResponsePreview.of(
+                novel,
+                interestCount,
+                novelRatingAverage,
+                novelRatingCount
+        );
+    }
+
+    private NovelSummaryResponse convertToDTO2(Novel novel) {
+        // TODO: Repository에서 NovelSummaryResponse에 맞게 데이터를 불러오는게 좋을듯
+        List<UserNovel> userNovels = novel.getUserNovels();
+
+        long interestCount = userNovels.stream()
+                .filter(UserNovel::getIsInterest)
+                .count();
+        long novelRatingCount = userNovels.stream()
+                .filter(un -> un.getUserNovelRating() != 0.0f)
+                .count();
+        double novelRatingSum = userNovels.stream()
+                .filter(un -> un.getUserNovelRating() != 0.0f)
+                .mapToDouble(UserNovel::getUserNovelRating)
+                .sum();
+
+        float novelRatingAverage = novelRatingCount == 0
+                ? 0.0f
+                : Math.round((float) (novelRatingSum / novelRatingCount) * 10.0f) / 10.0f;
+
+        return NovelSummaryResponse.of(
                 novel,
                 interestCount,
                 novelRatingAverage,
