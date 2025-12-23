@@ -73,7 +73,7 @@ public class SearchNovelApplication {
     @Transactional(readOnly = true)
     public SearchedNovelsGetResponse searchNovels(String query, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        String searchQuery = query.replaceAll("\\s+", "").replaceAll("[^a-zA-Z0-9가-힣]", "");
+        String searchQuery = sanitizeQuery(query);
 
         if (searchQuery.isBlank()) {
             return SearchedNovelsGetResponse.of(0L, false, Collections.emptyList());
@@ -170,6 +170,22 @@ public class SearchNovelApplication {
         Map<Long, AvatarProfile> avatarMap = createAvatarMap(feedMap);
 
         return PopularNovelsGetResponse.create(popularNovels, feedMap, avatarMap);
+    }
+
+    /**
+     * 검색어 정제 메서
+     * 공백 제거 및 특수문자 필터링
+     *
+     * @param query 검색어
+     * @return 필터링된 검색어
+     */
+    private String sanitizeQuery(String query) {
+        if (query == null) {
+            return "";
+        }
+
+        return query.replaceAll("\\s+", "")
+                .replaceAll("[^a-zA-Z0-9가-힣]", "");
     }
 
     // TODO: DTO로 이전할 명분이 충분한 메서드
