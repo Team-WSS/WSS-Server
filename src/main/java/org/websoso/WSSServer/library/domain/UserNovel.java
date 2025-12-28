@@ -91,6 +91,20 @@ public class UserNovel extends BaseEntity {
         this.isInterest = isInterest;
     }
 
+    /**
+     * 관심 상태 지정
+     */
+    public void markAsInterested() {
+        this.isInterest = true;
+    }
+
+    /**
+     * 관심 상태 해제
+     */
+    public void unmarkAsInterested() {
+        this.isInterest = false;
+    }
+
     public void updateUserNovel(Float userNovelRating, ReadStatus status, LocalDate startDate, LocalDate endDate) {
         this.userNovelRating = userNovelRating;
         this.status = status;
