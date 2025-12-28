@@ -11,5 +11,5 @@ public interface GenreRepository extends JpaRepository<Genre, Byte> {
 
     Optional<Genre> findByGenreName(String name);
 
-    List<Genre> findByNameIn(List<String> names);
+    List<Genre> findByGenreNameIn(List<String> genreNames);
 }
