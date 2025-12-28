@@ -36,6 +36,9 @@ import org.websoso.WSSServer.domain.common.ReadStatus;
 })
 public class UserNovel extends BaseEntity {
 
+    public static final Float DEFAULT_RATING = 0.0f;
+    public static final ReadStatus DEFAULT_STATUS = null;
+
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)

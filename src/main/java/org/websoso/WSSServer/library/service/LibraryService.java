@@ -56,6 +56,17 @@ public class LibraryService {
                 novel));
     }
 
+    @Transactional
+    public void registerInterest(User user, Novel novel) {
+        userNovelRepository.upsertInterest(
+                user.getUserId(),
+                novel.getNovelId(),
+                UserNovel.DEFAULT_RATING,
+                UserNovel.DEFAULT_STATUS
+        );
+    }
+
+    @Transactional
     public void delete(UserNovel library) {
         userNovelRepository.delete(library);
     }

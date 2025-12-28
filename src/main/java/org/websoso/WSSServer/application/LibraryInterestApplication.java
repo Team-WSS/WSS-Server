@@ -1,11 +1,8 @@
 package org.websoso.WSSServer.application;
 
-import static org.websoso.WSSServer.exception.error.CustomUserNovelError.ALREADY_INTERESTED;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_INTERESTED;
-import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_ALREADY_EXISTS;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.user.domain.User;
@@ -32,21 +29,7 @@ public class LibraryInterestApplication {
     public void registerAsInterest(User user, Long novelId) {
         Novel novel = novelService.getNovelOrException(novelId);
 
-        UserNovel userNovel = user == null ? null : libraryService.getLibraryOrNull(user, novel);
-
-        if (userNovel != null && userNovel.getIsInterest()) {
-            throw new CustomUserNovelException(ALREADY_INTERESTED, "already registered as interested");
-        }
-
-        if (userNovel == null) {
-            try {
-                userNovel = createUserNovelByInterest(user, novel);
-            } catch (DataIntegrityViolationException e) {
-                userNovel = libraryService.getLibraryOrException(user, novelId);
-            }
-        }
-
-        userNovel.setIsInterest(true);
+        libraryService.registerInterest(user, novel);
     }
 
     /**
@@ -71,11 +54,4 @@ public class LibraryInterestApplication {
 
     }
 
-    private UserNovel createUserNovelByInterest(User user, Novel novel) {
-        if (libraryService.getLibraryOrNull(user, novel) != null) {
-            throw new CustomUserNovelException(USER_NOVEL_ALREADY_EXISTS, "this novel is already registered");
-        }
-
-        return libraryService.createLibrary(null, 0.0f, null, null, user, novel);
-    }
 }
