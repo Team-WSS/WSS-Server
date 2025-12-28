@@ -32,7 +32,7 @@ public class GenreServiceImpl {
 
         List<String> uniqueNames = names.stream().distinct().toList();
 
-        List<Genre> genres = genreRepository.findByNameIn(uniqueNames);
+        List<Genre> genres = genreRepository.findByGenreNameIn(uniqueNames);
 
         if (genres.size() != uniqueNames.size()) {
             throw new CustomGenreException(GENRE_NOT_FOUND,
