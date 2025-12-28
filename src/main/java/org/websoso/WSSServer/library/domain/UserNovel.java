@@ -90,10 +90,6 @@ public class UserNovel extends BaseEntity {
         return new UserNovel(status, userNovelRating, startDate, endDate, user, novel);
     }
 
-    public void setIsInterest(Boolean isInterest) {
-        this.isInterest = isInterest;
-    }
-
     /**
      * 관심 상태 지정
      */
@@ -106,6 +102,11 @@ public class UserNovel extends BaseEntity {
      */
     public void unmarkAsInterested() {
         this.isInterest = false;
+    }
+
+    public boolean isSafeToDelete() {
+        return !this.isInterest
+                && this.status == null;
     }
 
     public void updateUserNovel(Float userNovelRating, ReadStatus status, LocalDate startDate, LocalDate endDate) {

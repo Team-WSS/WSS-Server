@@ -40,18 +40,13 @@ public class LibraryInterestApplication {
      */
     @Transactional
     public void unregisterAsInterest(User user, Long novelId) {
-        UserNovel userNovel = libraryService.getLibraryOrException(user, novelId);
+        UserNovel library = libraryService.getLibraryOrNull(user, novelId);
 
-        if (!userNovel.getIsInterest()) {
-            throw new CustomUserNovelException(NOT_INTERESTED, "not registered as interest");
+        if (library == null) {
+            return;
         }
 
-        userNovel.setIsInterest(false);
-
-        if (userNovel.getStatus() == null) {
-            libraryService.delete(userNovel);
-        }
-
+        libraryService.unregisterInterest(library);
     }
 
 }

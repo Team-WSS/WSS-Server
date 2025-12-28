@@ -44,6 +44,15 @@ public class LibraryService {
         return userNovelRepository.findByNovel_NovelIdAndUser(novel.getNovelId(), user).orElse(null);
     }
 
+    @Transactional(readOnly = true)
+    public UserNovel getLibraryOrNull(User user, long novelId) {
+        if (user == null) {
+            return null;
+        }
+
+        return userNovelRepository.findByNovel_NovelIdAndUser(novelId, user).orElse(null);
+    }
+
     @Transactional
     public UserNovel createLibrary(ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,
                                    User user, Novel novel) {
@@ -56,6 +65,13 @@ public class LibraryService {
                 novel));
     }
 
+    /**
+     * <p>관심있어요를 등록한다.</p>
+     * 서재 내역이 없다면, 서재 내역을 생성하면서 등록한다.
+     *
+     * @param user  사용자 Entity
+     * @param novel 서재 Entity
+     */
     @Transactional
     public void registerInterest(User user, Novel novel) {
         userNovelRepository.upsertInterest(
@@ -64,6 +80,25 @@ public class LibraryService {
                 UserNovel.DEFAULT_RATING,
                 UserNovel.DEFAULT_STATUS
         );
+    }
+
+    /**
+     * <p>관심있어요를 해제한다.</p>
+     * 만약, 서재 정보가 없다면 삭제한다.
+     *
+     * @param library 서재 Entity
+     */
+    @Transactional
+    public void unregisterInterest(UserNovel library) {
+        if (Boolean.FALSE.equals(library.getIsInterest())) {
+            return;
+        }
+
+        library.unmarkAsInterested();
+
+        if (library.isSafeToDelete()) {
+            userNovelRepository.delete(library);
+        }
     }
 
     @Transactional
