@@ -8,10 +8,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.dto.auth.AppleIdUpdateRequest;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.auth.AppleLoginRequest;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
@@ -53,6 +55,21 @@ public class AuthController {
                 .status(OK)
                 .body(appleService.getUserInfoFromApple(request));
     }
+
+    @PatchMapping("/auth/apple/sync")
+    public ResponseEntity<Void> updateAppleSocialId(
+            @AuthenticationPrincipal User user,
+            @Valid @RequestBody AppleIdUpdateRequest request
+    ) {
+        if (!request.authorizationCode().isBlank() && !request.idToken().isBlank()) {
+            appleService.syncSocialId(user, request);
+        }
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
 
     @PostMapping("/auth/logout")
     @PreAuthorize("isAuthenticated()")

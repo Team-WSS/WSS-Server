@@ -36,6 +36,9 @@ import org.websoso.WSSServer.domain.common.ReadStatus;
 })
 public class UserNovel extends BaseEntity {
 
+    public static final Float DEFAULT_RATING = 0.0f;
+    public static final ReadStatus DEFAULT_STATUS = null;
+
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)
@@ -87,8 +90,23 @@ public class UserNovel extends BaseEntity {
         return new UserNovel(status, userNovelRating, startDate, endDate, user, novel);
     }
 
-    public void setIsInterest(Boolean isInterest) {
-        this.isInterest = isInterest;
+    /**
+     * 관심 상태 지정
+     */
+    public void markAsInterested() {
+        this.isInterest = true;
+    }
+
+    /**
+     * 관심 상태 해제
+     */
+    public void unmarkAsInterested() {
+        this.isInterest = false;
+    }
+
+    public boolean isSafeToDelete() {
+        return !this.isInterest
+                && this.status == null;
     }
 
     public void updateUserNovel(Float userNovelRating, ReadStatus status, LocalDate startDate, LocalDate endDate) {
