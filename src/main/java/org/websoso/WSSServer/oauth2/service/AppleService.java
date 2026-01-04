@@ -50,6 +50,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.websoso.WSSServer.config.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
+import org.websoso.WSSServer.dto.auth.AppleIdUpdateRequest;
 import org.websoso.WSSServer.user.domain.RefreshToken;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.domain.UserAppleToken;
@@ -139,6 +140,36 @@ public class AppleService {
                 .body(String.class);
 
         userAppleTokenRepository.delete(userAppleToken);
+    }
+
+    /**
+     * 애플 로그인시, 기존 SocialId와 Refresh Token을 업데이트함
+     *
+     * @param user    User
+     * @param request AppleIdUpdateRequest
+     */
+    public void syncSocialId(User user, AppleIdUpdateRequest request) {
+
+        UserAppleToken userAppleToken = userAppleTokenRepository.findByUser(user)
+                .orElse(null);
+
+        if (userAppleToken == null) {
+            return;
+        }
+
+        String appleToken = request.idToken();
+        Map<String, String> appleTokenHeader = parseAppleTokenHeader(appleToken);
+        ApplePublicKeys applePublicKeys = getApplePublicKeys();
+        PublicKey publicKey = generatePublicKeyFromHeaders(appleTokenHeader, applePublicKeys);
+        Claims claims = extractClaims(appleToken, publicKey);
+
+        AppleTokenResponse appleTokenResponse = requestAppleToken(request.authorizationCode(), createClientSecret());
+
+        String userIdentifier = claims.get(CLAIM_SUB, String.class);
+        String customSocialId = APPLE_PREFIX + "_" + userIdentifier;
+
+        user.syncSocialId(customSocialId);
+        userAppleToken.syncRefreshToken(appleTokenResponse.getRefreshToken());
     }
 
     private Map<String, String> parseAppleTokenHeader(String appleToken) {

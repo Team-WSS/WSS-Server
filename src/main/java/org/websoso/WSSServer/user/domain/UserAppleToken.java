@@ -35,6 +35,10 @@ public class UserAppleToken {
         this.appleRefreshToken = appleRefreshToken;
     }
 
+    public void syncRefreshToken(String appleRefreshToken) {
+        this.appleRefreshToken = appleRefreshToken;
+    }
+
     public static UserAppleToken create(User user, String appleRefreshToken) {
         return new UserAppleToken(user, appleRefreshToken);
     }

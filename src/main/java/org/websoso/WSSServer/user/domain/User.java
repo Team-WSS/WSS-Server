@@ -159,6 +159,10 @@ public class User extends BaseEntity {
         return UserBasicInfo.of(this.getUserId(), this.getNickname(), avatarImage);
     }
 
+    public void syncSocialId(String socialId) {
+        this.socialId = socialId;
+    }
+
     // TODO: 유저 객체 생성시, 기본 값이 바로 박혀있으면 확장성에서 불리하다고 생각 (기중)
     // DEFAULT 값이 하드코딩되어 있음 -> private static final로 분리하는게 좋지 않을까 생각
     // 컬럼 매핑에 DEFAULT가 선언되어 있어서 중복이라고 생각할 수 있지만, 2차 적으로 어플리케이션에도 있는게 컨텍스트 파악하는데 유리하다고 생각
