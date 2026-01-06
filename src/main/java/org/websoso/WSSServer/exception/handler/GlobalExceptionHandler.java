@@ -15,9 +15,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import org.websoso.WSSServer.exception.common.AbstractCustomException;
-import org.websoso.WSSServer.exception.common.ErrorResult;
-import org.websoso.WSSServer.exception.common.ICustomError;
+import org.websoso.common.exception.AbstractCustomException;
+import org.websoso.common.exception.ErrorResult;
+import org.websoso.common.exception.ICustomError;
 
 @Slf4j
 @RestControllerAdvice

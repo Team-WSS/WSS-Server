@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.dto.keyword;
 
 import java.util.List;
-import org.websoso.WSSServer.domain.KeywordCategory;
+import org.websoso.WSSServer.library.domain.KeywordCategory;
 
 public record CategoryGetResponse(
         String categoryName,

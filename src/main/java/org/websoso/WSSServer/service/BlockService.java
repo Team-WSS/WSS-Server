@@ -10,12 +10,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Avatar;
+import org.websoso.WSSServer.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Block;
-import org.websoso.WSSServer.domain.User;
+import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.block.BlockGetResponse;
 import org.websoso.WSSServer.dto.block.BlocksGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomBlockException;
 import org.websoso.WSSServer.repository.BlockRepository;
+import org.websoso.WSSServer.user.service.UserService;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +52,7 @@ public class BlockService {
         List<BlockGetResponse> blockGetResponses = blocks.stream()
                 .map(block -> {
                     User blockedUser = userService.getUserOrException(block.getBlockedId());
-                    Avatar avatarOfBlockedUser = avatarService.getAvatarOrException(blockedUser.getAvatarId());
+                    AvatarProfile avatarOfBlockedUser = avatarService.getAvatarProfileOrException(blockedUser.getAvatarProfileId());
                     return BlockGetResponse.of(block, blockedUser, avatarOfBlockedUser);
                 }).toList();
         return new BlocksGetResponse(blockGetResponses);

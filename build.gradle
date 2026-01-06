@@ -1,14 +1,24 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.2.5'
-    id 'io.spring.dependency-management' version '1.1.4'
+    id 'java-library'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
 }
 
-group = 'org.websoso'
-version = '0.0.1-SNAPSHOT'
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+    }
+}
 
-java {
-    sourceCompatibility = '17'
+allprojects {
+    group = "${projectGroup}"
+    version = "${applicationVersion}"
+    sourceCompatibility = project.javaVersion
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
 }
 
 configurations {
@@ -17,66 +27,78 @@ configurations {
     }
 }
 
-repositories {
-    mavenCentral()
-    maven { url 'https://jitpack.io' }
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    bootJar.enabled = false
+    jar.enabled = true
+
+    dependencies {
+        // ============== Utils & Libraries ==============
+        // Lombok
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
 }
 
 dependencies {
-    //spring boot starter
+    // ============== Spring Boot Starters ==============
     implementation 'org.springframework.boot:spring-boot-starter-web'
-
-    //spring actuator
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-    //spring data jpa
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-    //lombok
+    // ============== Database & Persistence ==============
+    // MySQL
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // QueryDSL
+    implementation 'com.querydsl:querydsl-jpa::jakarta'
+    annotationProcessor 'com.querydsl:querydsl-apt::jakarta'
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+
+    // QueryDSL BaseEntity
+    annotationProcessor project(':wss-common')
+
+    // ============== Security & JWT ==============
+    // JWT
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: "${jjwtVersion}"
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-impl', version: "${jjwtVersion}"
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: "${jjwtVersion}"
+
+    // Apple Login
+    implementation 'com.nimbusds:nimbus-jose-jwt:3.10'
+
+    // ============== Utils & Libraries ==============
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    //mysql
-    runtimeOnly 'com.mysql:mysql-connector-j'
+    // JSON
+    implementation "com.googlecode.json-simple:json-simple:${jsonSimpleVersion}"
 
-    //spring boot starter for testing
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
-    // spring boot bean validation
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-    // jwt
-    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
-    implementation group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
-    implementation group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
-
-    // security
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    testImplementation 'org.springframework.security:spring-security-test'
-
-    //QueryDsl
-    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
-    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-
-    // Lettuce for Java Redis client
-    implementation 'io.lettuce:lettuce-core:6.3.2.RELEASE'
-
-    // spring data redis
-    implementation 'org.springframework.data:spring-data-redis:3.3.2'
-
-    //Json
-    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
-
-    //Apple Login
-    implementation 'com.nimbusds:nimbus-jose-jwt:3.10'
-
-    // FCM
-    implementation 'com.google.firebase:firebase-admin:9.4.3'
+    // ============== External Services ==============
+    // FCM (Firebase Cloud Messaging)
+    implementation "com.google.firebase:firebase-admin:${firebaseAdminVersion}"
 
     // S3 Mapping Library
-    implementation 'com.github.Team-WSS:WSS-Server-S3:0.0.3'
+    implementation "com.github.Team-WSS:WSS-Server-S3:${wssS3Version}"
+
+    // ============== Project Modules ==============
+    implementation project(':wss-service-support')
+    implementation project(':wss-common')
+
+    // ============== Test ==============
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.named('test') {

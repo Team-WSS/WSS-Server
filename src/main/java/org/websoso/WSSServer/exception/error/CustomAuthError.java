@@ -6,7 +6,7 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
-import org.websoso.WSSServer.exception.common.ICustomError;
+import org.websoso.common.exception.ICustomError;
 
 @Getter
 @AllArgsConstructor

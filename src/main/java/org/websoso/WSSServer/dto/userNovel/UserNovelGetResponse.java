@@ -2,8 +2,8 @@ package org.websoso.WSSServer.dto.userNovel;
 
 import java.time.LocalDate;
 import java.util.List;
-import org.websoso.WSSServer.domain.Novel;
-import org.websoso.WSSServer.domain.UserNovel;
+import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 
 public record UserNovelGetResponse(

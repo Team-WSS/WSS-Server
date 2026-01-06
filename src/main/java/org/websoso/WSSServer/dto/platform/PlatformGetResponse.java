@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.dto.platform;
 
-import org.websoso.WSSServer.domain.NovelPlatform;
-import org.websoso.WSSServer.domain.Platform;
+import org.websoso.WSSServer.novel.domain.NovelPlatform;
+import org.websoso.WSSServer.novel.domain.Platform;
 
 public record PlatformGetResponse(
         String platformName,

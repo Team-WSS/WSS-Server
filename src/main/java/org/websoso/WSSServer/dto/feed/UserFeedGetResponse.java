@@ -2,12 +2,12 @@ package org.websoso.WSSServer.dto.feed;
 
 import java.time.LocalDate;
 import java.util.List;
-import org.websoso.WSSServer.domain.Category;
-import org.websoso.WSSServer.domain.Feed;
-import org.websoso.WSSServer.domain.FeedCategory;
-import org.websoso.WSSServer.domain.Like;
-import org.websoso.WSSServer.domain.Novel;
-import org.websoso.WSSServer.domain.UserNovel;
+import org.websoso.WSSServer.feed.domain.Category;
+import org.websoso.WSSServer.feed.domain.Feed;
+import org.websoso.WSSServer.feed.domain.FeedCategory;
+import org.websoso.WSSServer.feed.domain.Like;
+import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.library.domain.UserNovel;
 
 public record UserFeedGetResponse(
         Long feedId,

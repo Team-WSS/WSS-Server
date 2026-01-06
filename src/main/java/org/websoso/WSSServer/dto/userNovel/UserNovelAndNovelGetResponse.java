@@ -2,12 +2,12 @@ package org.websoso.WSSServer.dto.userNovel;
 
 import java.time.LocalDate;
 import java.util.List;
-import org.websoso.WSSServer.domain.AttractivePoint;
-import org.websoso.WSSServer.domain.Keyword;
-import org.websoso.WSSServer.domain.Novel;
-import org.websoso.WSSServer.domain.UserNovel;
-import org.websoso.WSSServer.domain.UserNovelAttractivePoint;
-import org.websoso.WSSServer.domain.UserNovelKeyword;
+import org.websoso.WSSServer.library.domain.AttractivePoint;
+import org.websoso.WSSServer.library.domain.Keyword;
+import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.library.domain.UserNovel;
+import org.websoso.WSSServer.library.domain.UserNovelAttractivePoint;
+import org.websoso.WSSServer.library.domain.UserNovelKeyword;
 
 public record UserNovelAndNovelGetResponse(
         Long userNovelId,

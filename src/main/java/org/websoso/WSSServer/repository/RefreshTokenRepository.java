@@ -3,7 +3,7 @@ package org.websoso.WSSServer.repository;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.repository.CrudRepository;
-import org.websoso.WSSServer.domain.RefreshToken;
+import org.websoso.WSSServer.user.domain.RefreshToken;
 
 public interface RefreshTokenRepository extends CrudRepository<RefreshToken, String> {
 

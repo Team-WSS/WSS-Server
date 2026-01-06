@@ -1,8 +1,9 @@
 package org.websoso.WSSServer.dto.popularNovel;
 
 import org.websoso.WSSServer.domain.Avatar;
-import org.websoso.WSSServer.domain.Feed;
-import org.websoso.WSSServer.domain.Novel;
+import org.websoso.WSSServer.domain.AvatarProfile;
+import org.websoso.WSSServer.feed.domain.Feed;
+import org.websoso.WSSServer.novel.domain.Novel;
 
 public record PopularNovelGetResponse(
         Long novelId,
@@ -13,8 +14,8 @@ public record PopularNovelGetResponse(
         String feedContent
 ) {
 
-    public static PopularNovelGetResponse of(Novel novel, Avatar avatar, Feed feed) {
-        if (avatar == null && feed == null) {
+    public static PopularNovelGetResponse of(Novel novel, AvatarProfile avatarProfile, Feed feed) {
+        if (avatarProfile == null && feed == null) {
             return new PopularNovelGetResponse(
                     novel.getNovelId(),
                     novel.getTitle(),
@@ -28,7 +29,7 @@ public record PopularNovelGetResponse(
                 novel.getNovelId(),
                 novel.getTitle(),
                 novel.getNovelImage(),
-                avatar.getAvatarImage(),
+                avatarProfile.getAvatarProfileImage(),
                 feed.getUser().getNickname(),
                 feed.getFeedContent()
         );
