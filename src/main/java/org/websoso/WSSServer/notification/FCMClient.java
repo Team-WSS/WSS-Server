@@ -66,6 +66,7 @@ public class FCMClient {
                 } else {
                     log.error("[FCM 전송 실패] Token: {} - Error: {}", targetFCMTokens.get(i),
                             responses.get(i).getException().getMessage());
+                    log.error("FCM 전송 Exception: ", responses.get(i).getException());
                 }
             }
         } catch (Exception e) {
