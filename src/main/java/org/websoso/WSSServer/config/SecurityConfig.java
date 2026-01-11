@@ -44,6 +44,7 @@ public class SecurityConfig {
             "/login/apple",
             "/auth/login/kakao",
             "/auth/login/apple",
+            "/auth/apple/sync",
             "/minimum-version"
     };
 

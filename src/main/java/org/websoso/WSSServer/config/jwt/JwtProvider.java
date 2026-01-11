@@ -51,6 +51,35 @@ public class JwtProvider {
                 .compact();
     }
 
+    public Long getUserIdFromToken(String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            return extractUserId(claims);
+
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return extractUserId(e.getClaims());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Long extractUserId(Claims claims) {
+        Object userId = claims.get(CLAIM_USER_ID);
+        if (userId instanceof Integer) {
+            return ((Integer) userId).longValue();
+        }
+        return (Long) userId;
+    }
+
     private Claims generateClaims(Authentication authentication, Long expirationTime, String tokenType) {
         long now = System.currentTimeMillis();
         final Claims claims = Jwts.claims()
