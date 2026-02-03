@@ -1,7 +1,5 @@
 package org.websoso.WSSServer.application;
 
-import static org.websoso.WSSServer.domain.common.Role.ADMIN;
-import static org.websoso.WSSServer.exception.error.CustomBlockError.ALREADY_BLOCKED;
 import static org.websoso.WSSServer.exception.error.CustomBlockError.CANNOT_ADMIN_BLOCK;
 import static org.websoso.WSSServer.exception.error.CustomBlockError.SELF_BLOCKED;
 
@@ -17,7 +15,6 @@ import org.websoso.WSSServer.exception.exception.CustomBlockException;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.user.domain.Block;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.user.repository.BlockRepository;
 import org.websoso.WSSServer.user.service.AvatarService;
 import org.websoso.WSSServer.user.service.BlockService;
 import org.websoso.WSSServer.user.service.UserService;
@@ -46,6 +43,15 @@ public class UserBlockApplication {
 
         // 3. 차단
         blockService.createBlock(blocker, blockedUser);
+    }
+
+    public void deleteBlock(Long blockId) {
+        blockService.unblock(blockId);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isBlocked(Long blockingId, Long blockedId) {
+        return blockService.exists(blockingId, blockedId);
     }
 
     @Transactional(readOnly = true)
@@ -87,12 +93,4 @@ public class UserBlockApplication {
         return new BlocksGetResponse(responses);
     }
 
-//    public void deleteBlock(Long blockId) {
-//        blockRepository.deleteById(blockId);
-//    }
-//
-//    @Transactional(readOnly = true)
-//    public boolean isBlocked(Long blockingId, Long blockedId) {
-//        return blockRepository.existsByBlockingIdAndBlockedId(blockingId, blockedId);
-//    }
 }

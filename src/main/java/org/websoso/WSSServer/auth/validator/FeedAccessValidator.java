@@ -30,7 +30,7 @@ public class FeedAccessValidator {
             throw new CustomFeedException(HIDDEN_FEED_ACCESS, "Cannot access hidden feed.");
         }
 
-        if (blockService.isBlocked(user.getUserId(), feed.getWriterId())) {
+        if (blockService.exists(user.getUserId(), feed.getWriterId())) {
             throw new CustomFeedException(BLOCKED_USER_ACCESS,
                     "cannot access this feed because either you or the feed author has blocked the other.");
         }

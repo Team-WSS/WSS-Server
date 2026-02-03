@@ -50,7 +50,7 @@ public class BlockController {
     @PreAuthorize("isAuthenticated() and @authorizationService.validate(#blockId, #user, T(org.websoso.WSSServer.user.domain.Block))")
     public ResponseEntity<Void> deleteBlock(@AuthenticationPrincipal User user,
                                             @PathVariable("blockId") @BlockIdConstraint Long blockId) {
-        blockService.deleteBlock(blockId);
+        blockService.unblock(blockId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

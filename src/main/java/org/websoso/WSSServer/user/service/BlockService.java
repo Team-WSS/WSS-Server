@@ -54,10 +54,6 @@ public class BlockService {
         }
     }
 
-    public List<Block> findByBlockerId(Long blockingId) {
-        return blockRepository.findByBlockingId(blockingId);
-    }
-
     @Transactional(readOnly = true)
     public BlocksGetResponse getBlockList(User user) {
         List<Block> blocks = blockRepository.findByBlockingId(user.getUserId());
@@ -70,12 +66,17 @@ public class BlockService {
         return new BlocksGetResponse(blockGetResponses);
     }
 
-    public void deleteBlock(Long blockId) {
+    public void unblock(Long blockId) {
         blockRepository.deleteById(blockId);
     }
 
     @Transactional(readOnly = true)
-    public boolean isBlocked(Long blockingId, Long blockedId) {
+    public boolean exists(Long blockingId, Long blockedId) {
         return blockRepository.existsByBlockingIdAndBlockedId(blockingId, blockedId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Block> findByBlockerId(Long blockingId) {
+        return blockRepository.findByBlockingId(blockingId);
     }
 }
