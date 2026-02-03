@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.service;
+package org.websoso.WSSServer.notification.service;
 
 import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.FEED;
 import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.NOTICE;
@@ -31,9 +31,9 @@ import org.websoso.WSSServer.exception.exception.CustomNotificationException;
 import org.websoso.WSSServer.exception.exception.CustomNotificationTypeException;
 import org.websoso.WSSServer.notification.FCMClient;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
-import org.websoso.WSSServer.repository.NotificationRepository;
-import org.websoso.WSSServer.repository.NotificationTypeRepository;
-import org.websoso.WSSServer.repository.ReadNotificationRepository;
+import org.websoso.WSSServer.notification.repository.NotificationRepository;
+import org.websoso.WSSServer.notification.repository.NotificationTypeRepository;
+import org.websoso.WSSServer.notification.repository.ReadNotificationRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
 import org.websoso.WSSServer.user.service.UserService;
 

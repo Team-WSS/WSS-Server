@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.repository;
+package org.websoso.WSSServer.notification.repository;
 
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;

@@ -21,7 +21,7 @@ import org.websoso.WSSServer.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.repository.AvatarProfileRepository;
-import org.websoso.WSSServer.service.DiscordMessageClient;
+import org.websoso.WSSServer.notification.service.DiscordMessageClient;
 import org.websoso.WSSServer.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;

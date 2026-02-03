@@ -39,10 +39,10 @@ import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.novel.repository.NovelRepository;
 import org.websoso.WSSServer.repository.AvatarRepository;
 import org.websoso.WSSServer.repository.BlockRepository;
-import org.websoso.WSSServer.repository.NotificationRepository;
-import org.websoso.WSSServer.repository.NotificationTypeRepository;
+import org.websoso.WSSServer.notification.repository.NotificationRepository;
+import org.websoso.WSSServer.notification.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
-import org.websoso.WSSServer.service.DiscordMessageClient;
+import org.websoso.WSSServer.notification.service.DiscordMessageClient;
 
 @Service
 @Transactional

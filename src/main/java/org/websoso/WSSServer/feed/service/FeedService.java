@@ -84,8 +84,8 @@ import org.websoso.WSSServer.novel.repository.NovelRepository;
 import org.websoso.WSSServer.repository.BlockRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
-import org.websoso.WSSServer.repository.NotificationRepository;
-import org.websoso.WSSServer.repository.NotificationTypeRepository;
+import org.websoso.WSSServer.notification.repository.NotificationRepository;
+import org.websoso.WSSServer.notification.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
 import org.websoso.WSSServer.service.ImageClient;
 
