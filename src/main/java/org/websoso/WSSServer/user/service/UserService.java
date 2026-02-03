@@ -46,7 +46,6 @@ import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
-import org.websoso.WSSServer.oauth2.repository.UserDeviceRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
 
 @Service
@@ -58,7 +57,6 @@ public class UserService {
     private final AvatarProfileRepository avatarProfileRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final GenreRepository genreRepository;
-    private final UserDeviceRepository userDeviceRepository;
 
     // TODO: 상위 레이어에서 분리 예정
     private final DiscordMessageClient discordMessageClient;
@@ -215,23 +213,6 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserIdAndNicknameResponse getUserIdAndNicknameAndGender(User user) {
         return UserIdAndNicknameResponse.of(user);
-    }
-
-    public boolean registerFCMToken(User user, FCMTokenRequest fcmTokenRequest) {
-        return userDeviceRepository.findByDeviceIdentifierAndUser(fcmTokenRequest.deviceIdentifier(), user)
-                .map(userDevice -> {
-                    userDevice.updateFcmToken(fcmTokenRequest.fcmToken());
-                    return false;
-                })
-                .orElseGet(() -> {
-                    UserDevice userDevice = UserDevice.create(
-                            fcmTokenRequest.fcmToken(),
-                            fcmTokenRequest.deviceIdentifier(),
-                            user
-                    );
-                    userDeviceRepository.save(userDevice);
-                    return true;
-                });
     }
 
     public void registerPushSetting(User user, Boolean isPushEnabled) {
