@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.controller;
+package org.websoso.WSSServer.user.controller;
 
 import static org.springframework.http.HttpStatus.OK;
 

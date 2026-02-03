@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.user.domain;
+package org.websoso.WSSServer.oauth2.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -46,7 +46,7 @@ import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
-import org.websoso.WSSServer.user.repository.UserDeviceRepository;
+import org.websoso.WSSServer.oauth2.repository.UserDeviceRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
 
 @Service
