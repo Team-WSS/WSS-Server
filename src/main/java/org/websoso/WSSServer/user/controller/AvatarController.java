@@ -21,14 +21,6 @@ public class AvatarController {
 
     private final AvatarService avatarService;
 
-    @GetMapping("/avatars")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<AvatarsGetResponse> getAvatarList(@AuthenticationPrincipal User user) {
-        return ResponseEntity
-                .status(OK)
-                .body(avatarService.getAvatarList(user));
-    }
-
     @GetMapping("/avatar-profiles")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AvatarProfilesGetResponse> getAvatarProfileList(@AuthenticationPrincipal User user) {
