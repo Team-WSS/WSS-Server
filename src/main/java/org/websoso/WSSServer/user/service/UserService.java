@@ -236,4 +236,9 @@ public class UserService {
         }
         user.updateTermsSetting(serviceAgreed, privacyAgreed, marketingAgreed);
     }
+
+    @Transactional(readOnly = true)
+    public List<User> findAllByIds(List<Long> blockUserIds) {
+        return userRepository.findAllById(blockUserIds);
+    }
 }

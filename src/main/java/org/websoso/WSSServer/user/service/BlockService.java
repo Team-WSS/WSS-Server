@@ -54,6 +54,10 @@ public class BlockService {
         }
     }
 
+    public List<Block> findByBlockerId(Long blockingId) {
+        return blockRepository.findByBlockingId(blockingId);
+    }
+
     @Transactional(readOnly = true)
     public BlocksGetResponse getBlockList(User user) {
         List<Block> blocks = blockRepository.findByBlockingId(user.getUserId());

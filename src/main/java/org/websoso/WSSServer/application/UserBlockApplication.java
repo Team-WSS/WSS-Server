@@ -6,6 +6,8 @@ import static org.websoso.WSSServer.exception.error.CustomBlockError.CANNOT_ADMI
 import static org.websoso.WSSServer.exception.error.CustomBlockError.SELF_BLOCKED;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,18 +48,45 @@ public class UserBlockApplication {
         blockService.createBlock(blocker, blockedUser);
     }
 
-//    @Transactional(readOnly = true)
-//    public BlocksGetResponse getBlockList(User user) {
-//        List<Block> blocks = blockRepository.findByBlockingId(user.getUserId());
-//        List<BlockGetResponse> blockGetResponses = blocks.stream()
-//                .map(block -> {
-//                    User blockedUser = userService.getUserOrException(block.getBlockedId());
-//                    AvatarProfile avatarOfBlockedUser = avatarService.getAvatarProfileOrException(blockedUser.getAvatarProfileId());
-//                    return BlockGetResponse.of(block, blockedUser, avatarOfBlockedUser);
-//                }).toList();
-//        return new BlocksGetResponse(blockGetResponses);
-//    }
-//
+    @Transactional(readOnly = true)
+    public BlocksGetResponse getBlockList(User user) {
+
+        // 1. 차단 목록 조회
+        List<Block> blocks = blockService.findByBlockerId(user.getUserId());
+
+        // 2. 차단된 사람들의 ID 목록 추출
+        List<Long> blockedUserIds = blocks.stream()
+                .map(Block::getBlockedId)
+                .toList();
+
+        // 3. 유저 정보를 한 번에 조회
+        List<User> blockedUsers = userService.findAllByIds(blockedUserIds);
+
+        // 4. 유저 정보를 Map으로 변환
+        Map<Long, User> userMap = blockedUsers.stream()
+                .collect(Collectors.toMap(User::getUserId, u -> u));
+
+        // 5. 아바타 프로필 ID 추출 및 조회
+        List<Long> avatarProfileIds = blockedUsers.stream()
+                .map(User::getAvatarProfileId)
+                .distinct()
+                .toList();
+
+        Map<Long, AvatarProfile> avatarMap = avatarService.findAllByIds(avatarProfileIds).stream()
+                .collect(Collectors.toMap(AvatarProfile::getAvatarProfileId, a -> a));
+
+        // 6. 메모리 상에서 매핑
+        List<BlockGetResponse> responses = blocks.stream()
+                .map(block -> {
+                    User blockedUser = userMap.get(block.getBlockedId());
+                    AvatarProfile avatar = avatarMap.get(blockedUser.getAvatarProfileId());
+                    return BlockGetResponse.of(block, blockedUser, avatar);
+                })
+                .toList();
+
+        return new BlocksGetResponse(responses);
+    }
+
 //    public void deleteBlock(Long blockId) {
 //        blockRepository.deleteById(blockId);
 //    }
