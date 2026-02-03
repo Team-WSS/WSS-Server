@@ -7,6 +7,7 @@ import static org.websoso.WSSServer.exception.error.CustomBlockError.SELF_BLOCKE
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
@@ -42,6 +43,15 @@ public class BlockService {
         }
 
         blockRepository.save(Block.create(blockingId, blockedId));
+    }
+
+    public void createBlock(User blocker, User blocked) {
+        try {
+            Block block = Block.create(blocker.getUserId(), blocked.getUserId());
+            blockRepository.save(block);
+        } catch (DataIntegrityViolationException e) {
+            return;
+        }
     }
 
     @Transactional(readOnly = true)
