@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.dto.avatar.AvatarProfilesGetResponse;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.avatar.AvatarsGetResponse;
-import org.websoso.WSSServer.service.AvatarService;
+import org.websoso.WSSServer.user.service.AvatarService;
 
 @RequestMapping
 @RestController

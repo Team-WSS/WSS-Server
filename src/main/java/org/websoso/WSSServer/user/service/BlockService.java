@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.service;
+package org.websoso.WSSServer.user.service;
 
 import static org.websoso.WSSServer.domain.common.Role.ADMIN;
 import static org.websoso.WSSServer.exception.error.CustomBlockError.ALREADY_BLOCKED;
@@ -16,7 +16,6 @@ import org.websoso.WSSServer.dto.block.BlockGetResponse;
 import org.websoso.WSSServer.dto.block.BlocksGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomBlockException;
 import org.websoso.WSSServer.repository.BlockRepository;
-import org.websoso.WSSServer.user.service.UserService;
 
 @Service
 @RequiredArgsConstructor

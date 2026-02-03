@@ -10,7 +10,7 @@ import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
-import org.websoso.WSSServer.service.BlockService;
+import org.websoso.WSSServer.user.service.BlockService;
 
 @Component
 @RequiredArgsConstructor
