@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.user.domain;
+package org.websoso.WSSServer.oauth2.domain;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -12,6 +12,7 @@ import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.websoso.WSSServer.user.domain.User;
 
 @Entity
 @Getter
