@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.controller;
+package org.websoso.WSSServer.oauth2.controller;
 
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
