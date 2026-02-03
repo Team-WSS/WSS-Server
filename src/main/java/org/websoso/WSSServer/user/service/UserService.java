@@ -21,16 +21,14 @@ import org.websoso.WSSServer.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.repository.AvatarProfileRepository;
-import org.websoso.WSSServer.service.DiscordMessageClient;
+import org.websoso.WSSServer.notification.service.DiscordMessageClient;
 import org.websoso.WSSServer.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.user.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
 import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
-import org.websoso.WSSServer.dto.user.FCMTokenRequest;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileGetResponse;
@@ -46,7 +44,6 @@ import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
-import org.websoso.WSSServer.oauth2.repository.UserDeviceRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
 
 @Service
@@ -58,7 +55,6 @@ public class UserService {
     private final AvatarProfileRepository avatarProfileRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final GenreRepository genreRepository;
-    private final UserDeviceRepository userDeviceRepository;
 
     // TODO: 상위 레이어에서 분리 예정
     private final DiscordMessageClient discordMessageClient;
@@ -215,23 +211,6 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserIdAndNicknameResponse getUserIdAndNicknameAndGender(User user) {
         return UserIdAndNicknameResponse.of(user);
-    }
-
-    public boolean registerFCMToken(User user, FCMTokenRequest fcmTokenRequest) {
-        return userDeviceRepository.findByDeviceIdentifierAndUser(fcmTokenRequest.deviceIdentifier(), user)
-                .map(userDevice -> {
-                    userDevice.updateFcmToken(fcmTokenRequest.fcmToken());
-                    return false;
-                })
-                .orElseGet(() -> {
-                    UserDevice userDevice = UserDevice.create(
-                            fcmTokenRequest.fcmToken(),
-                            fcmTokenRequest.deviceIdentifier(),
-                            user
-                    );
-                    userDeviceRepository.save(userDevice);
-                    return true;
-                });
     }
 
     public void registerPushSetting(User user, Boolean isPushEnabled) {

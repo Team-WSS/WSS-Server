@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.repository;
+package org.websoso.WSSServer.notification.repository;
 
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;

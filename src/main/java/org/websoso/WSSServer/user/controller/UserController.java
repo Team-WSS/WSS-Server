@@ -70,15 +70,6 @@ public class UserController {
                 .body(response);
     }
 
-    @PostMapping("/fcm-token")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> registerFCMToken(@AuthenticationPrincipal User user,
-                                                 @Valid @RequestBody FCMTokenRequest fcmTokenRequest) {
-        return userService.registerFCMToken(user, fcmTokenRequest)
-                ? ResponseEntity.status(CREATED).build()
-                : ResponseEntity.status(NO_CONTENT).build();
-    }
-
     @GetMapping("/nickname/check")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NicknameValidation> checkNicknameAvailability(@AuthenticationPrincipal User user,

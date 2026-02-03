@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.user.domain;
+package org.websoso.WSSServer.notification.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.websoso.WSSServer.user.domain.User;
 
 @Entity
 @Getter

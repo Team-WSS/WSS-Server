@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.service;
+package org.websoso.WSSServer.notification.service;
 
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
