@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.websoso.WSSServer.dto.user.FCMTokenRequest;
 import org.websoso.WSSServer.notification.repository.UserDeviceRepository;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.user.domain.UserDevice;
+import org.websoso.WSSServer.notification.domain.UserDevice;
 
 @Service
 @RequiredArgsConstructor

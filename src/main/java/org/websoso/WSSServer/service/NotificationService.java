@@ -20,7 +20,7 @@ import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.domain.ReadNotification;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.user.domain.UserDevice;
+import org.websoso.WSSServer.notification.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.NotificationTypeGroup;
 import org.websoso.WSSServer.dto.notification.NotificationCreateRequest;
 import org.websoso.WSSServer.dto.notification.NotificationGetResponse;

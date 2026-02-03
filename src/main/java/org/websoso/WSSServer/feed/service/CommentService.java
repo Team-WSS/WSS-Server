@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.domain.NotificationType;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.user.domain.UserDevice;
+import org.websoso.WSSServer.notification.domain.UserDevice;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentGetResponse;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;

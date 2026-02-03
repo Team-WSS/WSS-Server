@@ -26,6 +26,7 @@ import org.websoso.WSSServer.domain.ReadNotification;
 import org.websoso.WSSServer.feed.domain.ReportedComment;
 import org.websoso.WSSServer.feed.domain.ReportedFeed;
 import org.websoso.WSSServer.library.domain.UserNovel;
+import org.websoso.WSSServer.notification.domain.UserDevice;
 import org.websoso.common.entity.BaseEntity;
 import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.domain.common.Role;

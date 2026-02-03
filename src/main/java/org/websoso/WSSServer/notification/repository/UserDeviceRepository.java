@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.user.domain.UserDevice;
+import org.websoso.WSSServer.notification.domain.UserDevice;
 
 @Repository
 public interface UserDeviceRepository extends JpaRepository<UserDevice, Long> {
