@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
-import org.websoso.WSSServer.repository.AvatarProfileRepository;
+import org.websoso.WSSServer.user.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.notification.service.DiscordMessageClient;
 import org.websoso.WSSServer.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;

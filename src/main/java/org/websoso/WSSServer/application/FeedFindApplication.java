@@ -36,7 +36,7 @@ import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.library.repository.UserNovelRepository;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;
-import org.websoso.WSSServer.repository.AvatarProfileRepository;
+import org.websoso.WSSServer.user.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.user.domain.User;
 

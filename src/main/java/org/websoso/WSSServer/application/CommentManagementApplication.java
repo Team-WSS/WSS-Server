@@ -24,7 +24,7 @@ import org.websoso.WSSServer.notification.FCMClient;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;
-import org.websoso.WSSServer.repository.BlockRepository;
+import org.websoso.WSSServer.user.repository.BlockRepository;
 import org.websoso.WSSServer.notification.repository.NotificationRepository;
 import org.websoso.WSSServer.notification.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;

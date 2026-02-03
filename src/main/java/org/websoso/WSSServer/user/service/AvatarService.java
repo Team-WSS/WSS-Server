@@ -13,12 +13,12 @@ import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.user.domain.AvatarProfileLine;
 import org.websoso.WSSServer.dto.avatar.AvatarProfileGetResponse;
 import org.websoso.WSSServer.dto.avatar.AvatarProfilesGetResponse;
-import org.websoso.WSSServer.repository.AvatarProfileRepository;
+import org.websoso.WSSServer.user.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.avatar.AvatarGetResponse;
 import org.websoso.WSSServer.dto.avatar.AvatarsGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
-import org.websoso.WSSServer.repository.AvatarRepository;
+import org.websoso.WSSServer.user.repository.AvatarRepository;
 
 @Service
 @RequiredArgsConstructor

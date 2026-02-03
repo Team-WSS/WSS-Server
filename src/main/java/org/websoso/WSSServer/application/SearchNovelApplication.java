@@ -22,7 +22,7 @@ import org.websoso.WSSServer.dto.novel.NovelSummaryResponse;
 import org.websoso.WSSServer.dto.novel.SearchedNovelsResponse;
 import org.websoso.WSSServer.library.service.AttractivePointService;
 import org.websoso.WSSServer.library.service.KeywordService;
-import org.websoso.WSSServer.repository.AvatarProfileRepository;
+import org.websoso.WSSServer.user.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.GenreName;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;

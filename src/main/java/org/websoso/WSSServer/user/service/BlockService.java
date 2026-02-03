@@ -15,7 +15,7 @@ import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.block.BlockGetResponse;
 import org.websoso.WSSServer.dto.block.BlocksGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomBlockException;
-import org.websoso.WSSServer.repository.BlockRepository;
+import org.websoso.WSSServer.user.repository.BlockRepository;
 
 @Service
 @RequiredArgsConstructor
