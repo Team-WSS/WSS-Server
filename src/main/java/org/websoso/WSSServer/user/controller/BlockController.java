@@ -47,7 +47,7 @@ public class BlockController {
     }
 
     @DeleteMapping("/{blockId}")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#blockId, #user, T(org.websoso.WSSServer.domain.Block))")
+    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#blockId, #user, T(org.websoso.WSSServer.user.domain.Block))")
     public ResponseEntity<Void> deleteBlock(@AuthenticationPrincipal User user,
                                             @PathVariable("blockId") @BlockIdConstraint Long blockId) {
         blockService.deleteBlock(blockId);

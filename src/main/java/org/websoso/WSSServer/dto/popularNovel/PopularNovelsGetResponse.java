@@ -2,8 +2,7 @@ package org.websoso.WSSServer.dto.popularNovel;
 
 import java.util.List;
 import java.util.Map;
-import org.websoso.WSSServer.domain.Avatar;
-import org.websoso.WSSServer.domain.AvatarProfile;
+import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.novel.domain.Novel;
 
