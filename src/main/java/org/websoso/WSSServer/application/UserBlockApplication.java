@@ -50,11 +50,6 @@ public class UserBlockApplication {
     }
 
     @Transactional(readOnly = true)
-    public boolean isBlocked(Long blockingId, Long blockedId) {
-        return blockService.exists(blockingId, blockedId);
-    }
-
-    @Transactional(readOnly = true)
     public BlocksGetResponse getBlockList(User user) {
 
         // 1. 차단 목록 조회

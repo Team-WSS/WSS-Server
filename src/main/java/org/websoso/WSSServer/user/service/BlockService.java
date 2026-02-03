@@ -1,21 +1,12 @@
 package org.websoso.WSSServer.user.service;
 
-import static org.websoso.WSSServer.domain.common.Role.ADMIN;
-import static org.websoso.WSSServer.exception.error.CustomBlockError.ALREADY_BLOCKED;
-import static org.websoso.WSSServer.exception.error.CustomBlockError.CANNOT_ADMIN_BLOCK;
-import static org.websoso.WSSServer.exception.error.CustomBlockError.SELF_BLOCKED;
-
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.user.domain.Block;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.dto.block.BlockGetResponse;
-import org.websoso.WSSServer.dto.block.BlocksGetResponse;
-import org.websoso.WSSServer.exception.exception.CustomBlockException;
 import org.websoso.WSSServer.user.repository.BlockRepository;
 
 @Service
@@ -23,27 +14,7 @@ import org.websoso.WSSServer.user.repository.BlockRepository;
 @Transactional
 public class BlockService {
 
-    private final UserService userService;
-    private final AvatarService avatarService;
     private final BlockRepository blockRepository;
-
-    public void block(User blocker, Long blockedId) {
-        User blockedUser = userService.getUserOrException(blockedId);
-        if (blockedUser.getRole() == ADMIN) {
-            throw new CustomBlockException(CANNOT_ADMIN_BLOCK, "user requested to be blocked is ADMIN");
-        }
-
-        Long blockingId = blocker.getUserId();
-        if (blockingId.equals(blockedId)) {
-            throw new CustomBlockException(SELF_BLOCKED, "cannot block yourself");
-        }
-
-        if (blockRepository.existsByBlockingIdAndBlockedId(blockingId, blockedId)) {
-            throw new CustomBlockException(ALREADY_BLOCKED, "account has already been blocked");
-        }
-
-        blockRepository.save(Block.create(blockingId, blockedId));
-    }
 
     public void createBlock(User blocker, User blocked) {
         try {
@@ -52,18 +23,6 @@ public class BlockService {
         } catch (DataIntegrityViolationException e) {
             return;
         }
-    }
-
-    @Transactional(readOnly = true)
-    public BlocksGetResponse getBlockList(User user) {
-        List<Block> blocks = blockRepository.findByBlockingId(user.getUserId());
-        List<BlockGetResponse> blockGetResponses = blocks.stream()
-                .map(block -> {
-                    User blockedUser = userService.getUserOrException(block.getBlockedId());
-                    AvatarProfile avatarOfBlockedUser = avatarService.getAvatarProfileOrException(blockedUser.getAvatarProfileId());
-                    return BlockGetResponse.of(block, blockedUser, avatarOfBlockedUser);
-                }).toList();
-        return new BlocksGetResponse(blockGetResponses);
     }
 
     public void unblock(Long blockId) {

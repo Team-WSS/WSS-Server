@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.application.UserBlockApplication;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.block.BlocksGetResponse;
-import org.websoso.WSSServer.user.service.BlockService;
 import org.websoso.WSSServer.validation.BlockIdConstraint;
 import org.websoso.WSSServer.validation.UserIdConstraint;
 
@@ -26,13 +26,13 @@ import org.websoso.WSSServer.validation.UserIdConstraint;
 @RequiredArgsConstructor
 public class BlockController {
 
-    private final BlockService blockService;
+    private final UserBlockApplication userBlockApplication;
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> block(@AuthenticationPrincipal User blocker,
                                       @RequestParam("userId") @UserIdConstraint Long blockedId) {
-        blockService.block(blocker, blockedId);
+        userBlockApplication.block(blocker, blockedId);
         return ResponseEntity
                 .status(CREATED)
                 .build();
@@ -43,14 +43,14 @@ public class BlockController {
     public ResponseEntity<BlocksGetResponse> getBlockList(@AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
-                .body(blockService.getBlockList(user));
+                .body(userBlockApplication.getBlockList(user));
     }
 
     @DeleteMapping("/{blockId}")
     @PreAuthorize("isAuthenticated() and @authorizationService.validate(#blockId, #user, T(org.websoso.WSSServer.user.domain.Block))")
     public ResponseEntity<Void> deleteBlock(@AuthenticationPrincipal User user,
                                             @PathVariable("blockId") @BlockIdConstraint Long blockId) {
-        blockService.unblock(blockId);
+        userBlockApplication.deleteBlock(blockId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
