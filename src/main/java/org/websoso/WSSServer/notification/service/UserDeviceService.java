@@ -13,7 +13,8 @@ public class UserDeviceService {
 
     private final UserDeviceRepository userDeviceRepository;
 
-    // 사용자 디바이스 식별자와 FCM Token 정보 저장
+    // 사용자 디바이스 식별자와 FCM Token 정보 저장 (Deprecated)
+    @Deprecated
     public boolean registerFCMToken(User user, FCMTokenRequest fcmTokenRequest) {
         return userDeviceRepository.findByDeviceIdentifierAndUser(fcmTokenRequest.deviceIdentifier(), user)
                 .map(userDevice -> {
@@ -29,6 +30,11 @@ public class UserDeviceService {
                     userDeviceRepository.save(userDevice);
                     return true;
                 });
+    }
+
+    // 사용자 디바이스 식별자와 FCM Token 정보 저장
+    public void registerFcmToken(Long userId, String deviceIdentifier, String fcmToken) {
+        userDeviceRepository.upsertFcmToken(userId, deviceIdentifier, fcmToken);
     }
 
     // 사용자 디바이스 식별자와 FCM Token 정보 물리 삭제
