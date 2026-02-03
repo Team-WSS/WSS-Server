@@ -33,29 +33,9 @@ public class AvatarService {
     private static final Random random = new Random();      //TODO thread-safe하지 않아서 multi-thread 환경에서는 사용X
 
     @Transactional(readOnly = true)
-    public Avatar getAvatarOrException(Byte avatarId) {
-        return avatarRepository.findById(avatarId).orElseThrow(() ->
-                new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
-    }
-
-    @Transactional(readOnly = true)
     public AvatarProfile getAvatarProfileOrException(Long avatarProfileId) {
         return avatarProfileRepository.findById(avatarProfileId).orElseThrow(() ->
                 new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
-    }
-
-
-    @Transactional(readOnly = true)
-    public AvatarsGetResponse getAvatarList(User user) {
-        Byte representativeAvatarId = user.getAvatarId();
-        List<Avatar> avatars = avatarRepository.findAll();
-        List<AvatarGetResponse> avatarGetResponses = avatars.stream()
-                .filter(avatar -> 0 <= avatar.getAvatarId() && avatar.getAvatarId() <= 3)
-                .map(avatar -> {
-                    List<AvatarLine> avatarLines = avatar.getAvatarLines();
-                    return AvatarGetResponse.of(avatar, getRandomAvatarLine(avatarLines), representativeAvatarId);
-                }).toList();
-        return new AvatarsGetResponse(avatarGetResponses);
     }
 
     public AvatarProfilesGetResponse getAvatarProfileList(User user) {
@@ -77,11 +57,6 @@ public class AvatarService {
 
     public List<AvatarProfile> findAllByIds(List<Long> avatarProfileIds) {
         return avatarProfileRepository.findAllById(avatarProfileIds);
-    }
-
-    private static AvatarLine getRandomAvatarLine(List<AvatarLine> avatarLines) {
-        final int avatarLineSize = avatarLines.size();
-        return avatarLines.get(random.nextInt(avatarLineSize));
     }
 
     private static AvatarProfileLine getRandomAvatarProfileLine(List<AvatarProfileLine> avatarLines) {
