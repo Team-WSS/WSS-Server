@@ -16,6 +16,7 @@ import org.websoso.WSSServer.exception.exception.CustomAuthException;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.oauth2.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.oauth2.domain.RefreshToken;
+import org.websoso.WSSServer.oauth2.service.TokenService;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.notification.repository.UserDeviceRepository;
 import org.websoso.WSSServer.user.service.UserService;
@@ -23,6 +24,8 @@ import org.websoso.WSSServer.user.service.UserService;
 @Service
 @RequiredArgsConstructor
 public class AuthApplication {
+
+    private final TokenService tokenService;
     private final JwtProvider jwtProvider;
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -32,21 +35,25 @@ public class AuthApplication {
     private static final String KAKAO_PREFIX = "kakao";
     private static final String APPLE_PREFIX = "apple";
 
+    @Transactional
     public ReissueResponse reissue(String refreshToken) {
-        RefreshToken storedRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken)
-                .orElseThrow(() -> new CustomAuthException(INVALID_TOKEN, "given token is invalid token for reissue"));
-
+        // 1. 토큰 유효성 검증
         if (jwtUtil.validateJWT(refreshToken) != JwtValidationType.VALID_REFRESH) {
             throw new CustomAuthException(INVALID_TOKEN, "given token is invalid token for reissue");
         }
 
+        // 2. 저장된 토큰 조회
+        RefreshToken storedRefreshToken = tokenService.findRefreshTokenOrThrow(refreshToken);
+
+        // 3. 새로운 토큰 생성
         Long userId = jwtUtil.getUserIdFromJwt(refreshToken);
         CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(userId, null, null);
+
         String newAccessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
         String newRefreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
 
-        refreshTokenRepository.delete(storedRefreshToken);
-        refreshTokenRepository.save(new RefreshToken(newRefreshToken, userId));
+        // 4. 리프레시 토큰 교체
+        tokenService.rotateRefreshToken(storedRefreshToken, newRefreshToken, userId);
 
         return ReissueResponse.of(newAccessToken, newRefreshToken);
     }
