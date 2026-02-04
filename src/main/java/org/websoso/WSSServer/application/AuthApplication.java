@@ -9,10 +9,12 @@ import org.websoso.WSSServer.config.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.config.jwt.JWTUtil;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.JwtValidationType;
+import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.dto.auth.LogoutRequest;
 import org.websoso.WSSServer.dto.auth.ReissueResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
+import org.websoso.WSSServer.oauth2.dto.KakaoUserInfo;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.oauth2.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.oauth2.domain.RefreshToken;
@@ -56,6 +58,26 @@ public class AuthApplication {
         tokenService.rotateRefreshToken(storedRefreshToken, newRefreshToken, userId);
 
         return ReissueResponse.of(newAccessToken, newRefreshToken);
+    }
+
+    @Transactional
+    public AuthResponse loginKakao(String kakaoAccessToken) {
+        // 1. 카카오 로그인 인증
+        KakaoUserInfo kakaoUserInfo = kakaoService.getUserInfo(kakaoAccessToken);
+
+        // 2. 사용자 정보 불러오기 / 생성
+        User user = userService.getOrCreateKakaoUser(kakaoUserInfo);
+
+        // 3. Access / Refresh Token 생성
+        CustomAuthenticationToken customAuthenticationToken = CustomAuthenticationToken.create(user.getUserId());
+        String accessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
+        String refreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
+
+        // 4. Refresh Token 저장
+        tokenService.saveRefreshToken(user, refreshToken);
+
+        boolean isRegister = !user.isTemporaryNickname();
+        return AuthResponse.of(accessToken, refreshToken, isRegister);
     }
 
     // TODO: getUserOrException -> existUserOrException 변경

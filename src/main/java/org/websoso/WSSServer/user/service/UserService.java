@@ -17,6 +17,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.oauth2.dto.KakaoUserInfo;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
@@ -169,6 +170,18 @@ public class UserService {
 
         boolean isOwner = visitor != null && visitor.getUserId().equals(ownerId);
         return ProfileGetResponse.of(isOwner, owner, avatar, genrePreferences);
+    }
+
+    public User getOrCreateKakaoUser(KakaoUserInfo kakaoInfo) {
+        String socialId = "kakao_" + kakaoInfo.id();
+        String defaultNickname = "k*" + kakaoInfo.id().toString().substring(2, 10);
+
+        User user = userRepository.findBySocialId(socialId);
+        if (user == null) {
+            user = userRepository.save(User.createBySocial(socialId, defaultNickname, kakaoInfo.email()));
+        }
+
+        return user;
     }
 
     private AvatarProfile findAvatarProfileByIdOrThrow(Long avatarId) {

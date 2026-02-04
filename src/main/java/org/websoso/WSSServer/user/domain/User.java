@@ -212,4 +212,8 @@ public class User extends BaseEntity {
     public boolean isSameUserId(Long userId) {
         return this.userId.equals(userId);
     }
+
+    public boolean isTemporaryNickname() {
+        return this.nickname.contains("*");
+    }
 }

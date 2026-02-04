@@ -34,7 +34,6 @@ import org.websoso.WSSServer.user.repository.UserRepository;
 public class AuthController {
 
     private final AuthApplication authApplication;
-    private final KakaoService kakaoService;
     private final AppleService appleService;
     private final AccountApplication accountApplication;
 
@@ -54,7 +53,7 @@ public class AuthController {
     public ResponseEntity<AuthResponse> loginByKakao(@RequestHeader("Kakao-Access-Token") String kakaoAccessToken) {
         return ResponseEntity
                 .status(OK)
-                .body(kakaoService.getUserInfoFromKakao(kakaoAccessToken));
+                .body(authApplication.loginKakao(kakaoAccessToken));
     }
 
     @PostMapping("/auth/login/apple")

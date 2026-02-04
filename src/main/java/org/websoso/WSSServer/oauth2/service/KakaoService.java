@@ -45,41 +45,19 @@ public class KakaoService {
     @Value("${kakao.unlink-url}")
     private String kakaoUnlinkUrl;
 
-    public AuthResponse getUserInfoFromKakao(String kakaoAccessToken) {
-        RestClient restClient = RestClient.create();
-
-        KakaoUserInfo kakaoUserInfo = restClient.get()
+    public KakaoUserInfo getUserInfo(String accessToken) {
+        return RestClient.create()
+                .get()
                 .uri(kakaoUserInfoUrl)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + kakaoAccessToken)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (request, response) -> {
-                    throw new CustomKakaoException(INVALID_KAKAO_ACCESS_TOKEN,
-                            "given access token from kakao is invalid");
+                    throw new CustomKakaoException(INVALID_KAKAO_ACCESS_TOKEN, "invalid kakao access token");
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, (request, response) -> {
-                    throw new CustomKakaoException(KAKAO_SERVER_ERROR,
-                            "kakao server error");
+                    throw new CustomKakaoException(KAKAO_SERVER_ERROR, "kakao server error");
                 })
                 .body(KakaoUserInfo.class);
-
-        String socialId = "kakao_" + kakaoUserInfo.id();
-        String defaultNickname = "k*" + kakaoUserInfo.id().toString().substring(2, 10);
-
-        User user = userRepository.findBySocialId(socialId);
-        if (user == null) {
-            user = userRepository.save(User.createBySocial(socialId, defaultNickname, kakaoUserInfo.email()));
-        }
-
-        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null,
-                null);
-        String accessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
-        String refreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
-
-        RefreshToken redisRefreshToken = new RefreshToken(refreshToken, user.getUserId());
-        refreshTokenRepository.save(redisRefreshToken);
-
-        boolean isRegister = !user.getNickname().contains("*");
-        return AuthResponse.of(accessToken, refreshToken, isRegister);
     }
 
     public void kakaoLogout(User user) {

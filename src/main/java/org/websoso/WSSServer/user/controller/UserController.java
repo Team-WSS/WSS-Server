@@ -62,6 +62,7 @@ public class UserController {
     private final AuthApplication authApplication;
     private final FeedService feedService;
 
+    // TODO: AUTH 패키지로 이동해야 함, 그리고 가장 위험한 보안 취약점
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody String userId) {
         LoginResponse response = authApplication.login(Long.valueOf(userId));
@@ -70,6 +71,7 @@ public class UserController {
                 .body(response);
     }
 
+    // TODO: 닉네임 중복체크를 로그인했을때만 가능하다는게 좀 이상한 것 같기도?
     @GetMapping("/nickname/check")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NicknameValidation> checkNicknameAvailability(@AuthenticationPrincipal User user,
