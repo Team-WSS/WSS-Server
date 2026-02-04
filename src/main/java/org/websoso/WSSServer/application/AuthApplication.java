@@ -14,7 +14,7 @@ import org.websoso.WSSServer.dto.auth.ReissueResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
-import org.websoso.WSSServer.repository.RefreshTokenRepository;
+import org.websoso.WSSServer.oauth2.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.oauth2.domain.RefreshToken;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.notification.repository.UserDeviceRepository;

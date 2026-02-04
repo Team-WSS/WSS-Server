@@ -42,6 +42,7 @@ public class AuthController {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
 
+    // Access Token 재발급
     @PostMapping("/reissue")
     public ResponseEntity<ReissueResponse> reissue(@RequestBody ReissueRequest reissueRequest) {
         return ResponseEntity

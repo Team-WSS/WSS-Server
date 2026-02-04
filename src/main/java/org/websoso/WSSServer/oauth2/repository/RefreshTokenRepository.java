@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.repository;
+package org.websoso.WSSServer.oauth2.repository;
 
 import java.util.List;
 import java.util.Optional;
