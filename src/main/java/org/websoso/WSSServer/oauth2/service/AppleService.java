@@ -109,21 +109,12 @@ public class AppleService {
     @Value("${apple.iss}")
     private String appleAuthUrl;
 
-    public AuthResponse getUserInfoFromApple(AppleLoginRequest request) {
-        String appleToken = request.idToken();
-        Map<String, String> appleTokenHeader = parseAppleTokenHeader(appleToken);
-        ApplePublicKeys applePublicKeys = getApplePublicKeys();
-        PublicKey publicKey = generatePublicKeyFromHeaders(appleTokenHeader, applePublicKeys);
-        Claims claims = extractClaims(appleToken, publicKey);
-
-        AppleTokenResponse appleTokenResponse = requestAppleToken(request.authorizationCode(), createClientSecret());
-
-        String email = claims.get(CLAIM_EMAIL, String.class);
-        String userIdentifier = claims.get(CLAIM_SUB, String.class);
-        String customSocialId = APPLE_PREFIX + "_" + userIdentifier;
-        String defaultNickname = APPLE_PREFIX.charAt(0) + "*" + userIdentifier.substring(7, 15);
-
-        return authenticate(customSocialId, email, defaultNickname, appleTokenResponse.getRefreshToken());
+    public void upsertRefreshToken(User user, String appleRefreshToken) {
+        userAppleTokenRepository.findByUser(user)
+                .ifPresentOrElse(
+                        token -> token.updateRefreshToken(appleRefreshToken),
+                        () -> userAppleTokenRepository.save(UserAppleToken.create(user, appleRefreshToken))
+                );
     }
 
     public void unlinkFromApple(User user) {
@@ -307,25 +298,6 @@ public class AppleService {
         params.add("code", authorizationCode);
         params.add("redirect_uri", appleRedirectUrl);
         return params;
-    }
-
-    private AuthResponse authenticate(String socialId, String email, String nickname, String appleRefreshToken) {
-        User user = userRepository.findBySocialId(socialId);
-        if (user == null) {
-            user = userRepository.save(User.createBySocial(socialId, nickname, email));
-            userAppleTokenRepository.save(UserAppleToken.create(user, appleRefreshToken));
-        }
-
-        CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(user.getUserId(), null,
-                null);
-        String accessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
-        String refreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
-
-        refreshTokenRepository.save(new RefreshToken(refreshToken, user.getUserId()));
-
-        boolean isRegister = !user.getNickname().contains("*");
-
-        return AuthResponse.of(accessToken, refreshToken, isRegister);
     }
 
     private MultiValueMap<String, String> createUserRevokeParams(String clientSecret, String appleRefreshToken) {

@@ -43,4 +43,8 @@ public class UserAppleToken {
     public static UserAppleToken create(User user, String appleRefreshToken) {
         return new UserAppleToken(user, appleRefreshToken);
     }
+
+    public void updateRefreshToken(String appleRefreshToken) {
+        this.appleRefreshToken = appleRefreshToken;
+    }
 }

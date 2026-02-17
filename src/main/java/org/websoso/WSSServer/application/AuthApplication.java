@@ -2,6 +2,9 @@ package org.websoso.WSSServer.application;
 
 import static org.websoso.WSSServer.exception.error.CustomAuthError.INVALID_TOKEN;
 
+import io.jsonwebtoken.Claims;
+import java.security.PublicKey;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,12 +12,18 @@ import org.websoso.WSSServer.config.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.config.jwt.JWTUtil;
 import org.websoso.WSSServer.config.jwt.JwtProvider;
 import org.websoso.WSSServer.config.jwt.JwtValidationType;
+import org.websoso.WSSServer.dto.auth.ApplePublicKeys;
+import org.websoso.WSSServer.dto.auth.AppleTokenResponse;
 import org.websoso.WSSServer.dto.auth.AuthResponse;
 import org.websoso.WSSServer.dto.auth.LogoutRequest;
 import org.websoso.WSSServer.dto.auth.ReissueResponse;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
+import org.websoso.WSSServer.oauth2.domain.UserAppleToken;
 import org.websoso.WSSServer.oauth2.dto.KakaoUserInfo;
+import org.websoso.WSSServer.oauth2.service.AppleClient;
+import org.websoso.WSSServer.oauth2.service.AppleKeyGenerator;
+import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.oauth2.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.oauth2.domain.RefreshToken;
@@ -34,8 +43,11 @@ public class AuthApplication {
     private final UserDeviceRepository userDeviceRepository;
     private final UserService userService;
     private final KakaoService kakaoService;
+    private final AppleService appleService;
+    private final AppleClient appleClient;
     private static final String KAKAO_PREFIX = "kakao";
     private static final String APPLE_PREFIX = "apple";
+    private final AppleKeyGenerator appleKeyGenerator;
 
     @Transactional
     public ReissueResponse reissue(String refreshToken) {
@@ -77,6 +89,45 @@ public class AuthApplication {
         tokenService.saveRefreshToken(user, refreshToken);
 
         boolean isRegister = !user.isTemporaryNickname();
+        return AuthResponse.of(accessToken, refreshToken, isRegister);
+    }
+
+    @Transactional
+    public AuthResponse loginApple(String authorizationCode, String appleToken) {
+        // 1. 공개키 가져오기 & 헤더 파싱
+        ApplePublicKeys applePublicKeys = appleClient.getApplePublicKeys();
+        Map<String, String> headers = jwtProvider.parseAppleTokenHeader(appleToken);
+
+        // 2. 공개키 생성 및 검증 (서명 확인)
+        PublicKey publicKey = appleKeyGenerator.generatePublicKey(headers, applePublicKeys);
+        Claims claims = jwtProvider.extractClaims(appleToken, publicKey);
+
+        // 3. 애플 서버에서 Refresh Token 받아오기
+        String clientSecret = appleKeyGenerator.createClientSecret();
+        AppleTokenResponse appleTokenResponse = appleClient.requestAppleToken(authorizationCode, clientSecret);
+
+        // 4. 유저 정보 추출
+        String email = claims.get("email", String.class);
+        String userIdentifier = claims.get("sub", String.class);
+        String customSocialId = APPLE_PREFIX + "_" + userIdentifier;
+        String defaultNickname = APPLE_PREFIX.charAt(0) + "*" + userIdentifier.substring(7, 15);
+
+        // 5. 유저 처리
+        User user = userService.getOrCreateAppleUser(customSocialId, email, defaultNickname);
+
+        // 6. 애플 Refresh Token 저장
+        appleService.upsertRefreshToken(user, appleTokenResponse.getRefreshToken());
+
+        // 7. Access / Refresh Token 생성
+        CustomAuthenticationToken customAuthenticationToken = CustomAuthenticationToken.create(user.getUserId());
+        String accessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
+        String refreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
+
+        // 8. Refresh Token 저장
+        tokenService.saveRefreshToken(user, refreshToken);
+
+        boolean isRegister = !user.isTemporaryNickname();
+
         return AuthResponse.of(accessToken, refreshToken, isRegister);
     }
 

@@ -17,6 +17,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.oauth2.domain.UserAppleToken;
 import org.websoso.WSSServer.oauth2.dto.KakaoUserInfo;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
@@ -179,6 +180,15 @@ public class UserService {
         User user = userRepository.findBySocialId(socialId);
         if (user == null) {
             user = userRepository.save(User.createBySocial(socialId, defaultNickname, kakaoInfo.email()));
+        }
+
+        return user;
+    }
+
+    public User getOrCreateAppleUser(String socialId, String email, String nickname) {
+        User user = userRepository.findBySocialId(socialId);
+        if (user == null) {
+            user = userRepository.save(User.createBySocial(socialId, nickname, email));
         }
 
         return user;
