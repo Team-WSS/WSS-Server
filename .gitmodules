@@ -1,3 +1,4 @@
 [submodule "config-repo"]
 	path = config-repo
 	url = https://github.com/Team-WSS/WSS-Server-Submodule.git
+    branch = main
