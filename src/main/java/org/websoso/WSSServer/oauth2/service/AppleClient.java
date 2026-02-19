@@ -26,7 +26,7 @@ public class AppleClient {
     private String appleRedirectUrl;
 
 
-    @Value("${apple.auth-token-url}")
+    @Value("${apple.iss}")
     private String appleAuthUrl;
 
     // 애플 공개키 목록 가져오기
