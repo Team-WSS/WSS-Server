@@ -23,17 +23,18 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
-import org.bouncycastle.util.io.pem.PemObject;
+import lombok.RequiredArgsConstructor;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.dto.auth.ApplePublicKey;
 import org.websoso.WSSServer.dto.auth.ApplePublicKeys;
 import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
 
 @Component
+@RequiredArgsConstructor
 public class AppleKeyGenerator {
 
     private static final int POSITIVE_SIGN_NUMBER = 1;
@@ -55,6 +56,8 @@ public class AppleKeyGenerator {
 
     @Value("${apple.iss}")
     private String appleAuthUrl;
+
+    private final ResourceLoader resourceLoader;
 
     // 헤더의 kid, alg와 매칭되는 공개키를 찾아 RSA PublicKey 객체로 변환
     public PublicKey generatePublicKey(Map<String, String> headers, ApplePublicKeys publicKeys) {
@@ -121,10 +124,9 @@ public class AppleKeyGenerator {
     }
 
     private byte[] readPrivateKey(String keyPath) {
-        Resource resource = new ClassPathResource(keyPath);
+        Resource resource = resourceLoader.getResource("file:" + keyPath);
         try (PemReader pemReader = new PemReader(new InputStreamReader(resource.getInputStream()))) {
-            PemObject pemObject = pemReader.readPemObject();
-            return pemObject.getContent();
+            return pemReader.readPemObject().getContent();
         } catch (IOException e) {
             throw new CustomAppleLoginException(PRIVATE_KEY_READ_FAILED, "failed to read private key");
         }
