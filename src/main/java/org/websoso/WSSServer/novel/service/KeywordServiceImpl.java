@@ -15,7 +15,7 @@ import org.websoso.WSSServer.library.repository.KeywordRepository;
 @RequiredArgsConstructor
 public class KeywordServiceImpl {
 
-    private KeywordRepository keywordRepository;
+    private final KeywordRepository keywordRepository;
 
     @Transactional(readOnly = true)
     public Keyword getKeywordOrException(Integer keywordId) {
