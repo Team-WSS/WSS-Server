@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.service;
+package org.websoso.WSSServer.user.service;
 
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 
@@ -7,18 +7,18 @@ import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.Avatar;
-import org.websoso.WSSServer.domain.AvatarLine;
-import org.websoso.WSSServer.domain.AvatarProfile;
-import org.websoso.WSSServer.domain.AvatarProfileLine;
+import org.websoso.WSSServer.user.domain.Avatar;
+import org.websoso.WSSServer.user.domain.AvatarLine;
+import org.websoso.WSSServer.user.domain.AvatarProfile;
+import org.websoso.WSSServer.user.domain.AvatarProfileLine;
 import org.websoso.WSSServer.dto.avatar.AvatarProfileGetResponse;
 import org.websoso.WSSServer.dto.avatar.AvatarProfilesGetResponse;
-import org.websoso.WSSServer.repository.AvatarProfileRepository;
+import org.websoso.WSSServer.user.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.avatar.AvatarGetResponse;
 import org.websoso.WSSServer.dto.avatar.AvatarsGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
-import org.websoso.WSSServer.repository.AvatarRepository;
+import org.websoso.WSSServer.user.repository.AvatarRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -33,29 +33,9 @@ public class AvatarService {
     private static final Random random = new Random();      //TODO thread-safe하지 않아서 multi-thread 환경에서는 사용X
 
     @Transactional(readOnly = true)
-    public Avatar getAvatarOrException(Byte avatarId) {
-        return avatarRepository.findById(avatarId).orElseThrow(() ->
-                new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
-    }
-
-    @Transactional(readOnly = true)
     public AvatarProfile getAvatarProfileOrException(Long avatarProfileId) {
         return avatarProfileRepository.findById(avatarProfileId).orElseThrow(() ->
                 new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
-    }
-
-
-    @Transactional(readOnly = true)
-    public AvatarsGetResponse getAvatarList(User user) {
-        Byte representativeAvatarId = user.getAvatarId();
-        List<Avatar> avatars = avatarRepository.findAll();
-        List<AvatarGetResponse> avatarGetResponses = avatars.stream()
-                .filter(avatar -> 0 <= avatar.getAvatarId() && avatar.getAvatarId() <= 3)
-                .map(avatar -> {
-                    List<AvatarLine> avatarLines = avatar.getAvatarLines();
-                    return AvatarGetResponse.of(avatar, getRandomAvatarLine(avatarLines), representativeAvatarId);
-                }).toList();
-        return new AvatarsGetResponse(avatarGetResponses);
     }
 
     public AvatarProfilesGetResponse getAvatarProfileList(User user) {
@@ -75,9 +55,8 @@ public class AvatarService {
 
     }
 
-    private static AvatarLine getRandomAvatarLine(List<AvatarLine> avatarLines) {
-        final int avatarLineSize = avatarLines.size();
-        return avatarLines.get(random.nextInt(avatarLineSize));
+    public List<AvatarProfile> findAllByIds(List<Long> avatarProfileIds) {
+        return avatarProfileRepository.findAllById(avatarProfileIds);
     }
 
     private static AvatarProfileLine getRandomAvatarProfileLine(List<AvatarProfileLine> avatarLines) {

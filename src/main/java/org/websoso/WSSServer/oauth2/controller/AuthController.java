@@ -24,7 +24,6 @@ import org.websoso.WSSServer.dto.auth.ReissueRequest;
 import org.websoso.WSSServer.dto.auth.ReissueResponse;
 import org.websoso.WSSServer.dto.user.WithdrawalRequest;
 import org.websoso.WSSServer.oauth2.service.AppleService;
-import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.application.AccountApplication;
 import org.websoso.WSSServer.application.AuthApplication;
 import org.websoso.WSSServer.user.repository.UserRepository;
@@ -34,7 +33,6 @@ import org.websoso.WSSServer.user.repository.UserRepository;
 public class AuthController {
 
     private final AuthApplication authApplication;
-    private final KakaoService kakaoService;
     private final AppleService appleService;
     private final AccountApplication accountApplication;
 
@@ -42,6 +40,7 @@ public class AuthController {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
 
+    // Access Token 재발급
     @PostMapping("/reissue")
     public ResponseEntity<ReissueResponse> reissue(@RequestBody ReissueRequest reissueRequest) {
         return ResponseEntity
@@ -53,14 +52,14 @@ public class AuthController {
     public ResponseEntity<AuthResponse> loginByKakao(@RequestHeader("Kakao-Access-Token") String kakaoAccessToken) {
         return ResponseEntity
                 .status(OK)
-                .body(kakaoService.getUserInfoFromKakao(kakaoAccessToken));
+                .body(authApplication.loginKakao(kakaoAccessToken));
     }
 
     @PostMapping("/auth/login/apple")
     public ResponseEntity<AuthResponse> loginByApple(@Valid @RequestBody AppleLoginRequest request) {
         return ResponseEntity
                 .status(OK)
-                .body(appleService.getUserInfoFromApple(request));
+                .body(authApplication.loginApple(request.authorizationCode(), request.idToken()));
     }
 
     @PatchMapping("/auth/apple/sync")

@@ -17,10 +17,12 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.AvatarProfile;
+import org.websoso.WSSServer.oauth2.domain.UserAppleToken;
+import org.websoso.WSSServer.oauth2.dto.KakaoUserInfo;
+import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
-import org.websoso.WSSServer.repository.AvatarProfileRepository;
+import org.websoso.WSSServer.user.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.notification.service.DiscordMessageClient;
 import org.websoso.WSSServer.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
@@ -171,6 +173,27 @@ public class UserService {
         return ProfileGetResponse.of(isOwner, owner, avatar, genrePreferences);
     }
 
+    public User getOrCreateKakaoUser(KakaoUserInfo kakaoInfo) {
+        String socialId = "kakao_" + kakaoInfo.id();
+        String defaultNickname = "k*" + kakaoInfo.id().toString().substring(2, 10);
+
+        User user = userRepository.findBySocialId(socialId);
+        if (user == null) {
+            user = userRepository.save(User.createBySocial(socialId, defaultNickname, kakaoInfo.email()));
+        }
+
+        return user;
+    }
+
+    public User getOrCreateAppleUser(String socialId, String email, String nickname) {
+        User user = userRepository.findBySocialId(socialId);
+        if (user == null) {
+            user = userRepository.save(User.createBySocial(socialId, nickname, email));
+        }
+
+        return user;
+    }
+
     private AvatarProfile findAvatarProfileByIdOrThrow(Long avatarId) {
         return avatarProfileRepository.findById(avatarId)
                 .orElseThrow(
@@ -235,5 +258,10 @@ public class UserService {
                     "service terms and personal information consent are mandatory");
         }
         user.updateTermsSetting(serviceAgreed, privacyAgreed, marketingAgreed);
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> findAllByIds(List<Long> blockUserIds) {
+        return userRepository.findAllById(blockUserIds);
     }
 }

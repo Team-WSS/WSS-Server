@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.dto.avatar.AvatarProfilesGetResponse;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.avatar.AvatarsGetResponse;
-import org.websoso.WSSServer.service.AvatarService;
+import org.websoso.WSSServer.user.service.AvatarService;
 
 @RequestMapping
 @RestController
@@ -20,14 +20,6 @@ import org.websoso.WSSServer.service.AvatarService;
 public class AvatarController {
 
     private final AvatarService avatarService;
-
-    @GetMapping("/avatars")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<AvatarsGetResponse> getAvatarList(@AuthenticationPrincipal User user) {
-        return ResponseEntity
-                .status(OK)
-                .body(avatarService.getAvatarList(user));
-    }
 
     @GetMapping("/avatar-profiles")
     @PreAuthorize("isAuthenticated()")

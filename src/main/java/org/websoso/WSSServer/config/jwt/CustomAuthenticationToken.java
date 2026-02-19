@@ -11,4 +11,8 @@ public class CustomAuthenticationToken extends UsernamePasswordAuthenticationTok
                                      Collection<? extends GrantedAuthority> authorities) {
         super(principal, credentials, authorities);
     }
+
+    public static CustomAuthenticationToken create(Long userId) {
+        return new CustomAuthenticationToken(userId, null, null);
+    }
 }
