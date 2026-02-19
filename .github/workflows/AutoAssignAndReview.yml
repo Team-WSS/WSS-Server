@@ -9,4 +9,4 @@ jobs:
       - uses: hkusu/review-assign-action@v1
         with:
           assignees: ${{ github.actor }}
-          reviewers: sansan20535, GiJungPark, EunjeongHeo
+          reviewers: sansan20535, GiJungPark, ljy1348

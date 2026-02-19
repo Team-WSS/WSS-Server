@@ -1,5 +1,5 @@
 # workflow 이름: CI-develop
-name: CI-devleop
+name: CI-develop
 
 # trigger: dev 브랜치에 PR 발생할 때
 on:
@@ -8,45 +8,27 @@ on:
 
 # workflow의 세부 작업 단위 job 정의
 jobs:
-  build-develop:  # job 이름: build-develop
-    runs-on: ubuntu-22.04  # VM의 OS 지정 (EC2와 동일 버전)
+  build-develop:
+    runs-on: ubuntu-22.04
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACTION_TOKEN }}
+          submodules: true
+          fetch-depth: 0
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'corretto'
-        java-version: '17'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '17'
 
-    - name: Create application.yml and application-prod.yml and websoso-fcm.json
-      run: | 
-          mkdir src/main/resources
-          cd src/main/resources
-          echo "${{ secrets.APPLICATION }}" > ./application.yml
-          echo "${{ secrets.APPLICATION_PROD_DEVELOP }}" > ./application-prod.yml
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        shell: bash
 
-    - name: create-json
-      id: create-json
-      uses: jsdaniell/create-json@1.1.2
-      with:
-        name: "websoso-fcm.json"
-        json: ${{ secrets.WEBSOSOFCM_JSON }}
-        dir: 'src/main/resources/'
-
-    - name: Create apple login key file
-      env:
-        API_KEY: ${{ secrets.APPSTORE_API_KEY_ID_DEV }}
-      run: |
-        mkdir -p src/main/resources/static/apple
-        echo "${{ secrets.APPLE_AUTH_KEY_DEV }}" > src/main/resources/static/apple/AuthKey_$API_KEY.p8
-
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-      shell: bash
-
-    - name: Build with Gradle
-      run: ./gradlew build -x test
-      shell: bash
+      - name: Build with Gradle
+        run: ./gradlew build -Dspring.profiles.active=dev
+        shell: bash
