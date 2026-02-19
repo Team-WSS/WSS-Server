@@ -19,7 +19,7 @@ import org.websoso.WSSServer.user.domain.User;
 @RestController
 @Validated
 @RequiredArgsConstructor
-public class NotificationController {
+public class UserDeviceController {
 
     private final UserDeviceService userDeviceService;
 
