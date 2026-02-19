@@ -10,7 +10,7 @@ import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
-import org.websoso.WSSServer.service.BlockService;
+import org.websoso.WSSServer.user.service.BlockService;
 
 @Component
 @RequiredArgsConstructor
@@ -30,7 +30,7 @@ public class FeedAccessValidator {
             throw new CustomFeedException(HIDDEN_FEED_ACCESS, "Cannot access hidden feed.");
         }
 
-        if (blockService.isBlocked(user.getUserId(), feed.getWriterId())) {
+        if (blockService.exists(user.getUserId(), feed.getWriterId())) {
             throw new CustomFeedException(BLOCKED_USER_ACCESS,
                     "cannot access this feed because either you or the feed author has blocked the other.");
         }

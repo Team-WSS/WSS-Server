@@ -5,10 +5,10 @@ import static org.websoso.WSSServer.exception.error.CustomBlockError.INVALID_AUT
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.domain.Block;
+import org.websoso.WSSServer.user.domain.Block;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.exception.exception.CustomBlockException;
-import org.websoso.WSSServer.repository.BlockRepository;
+import org.websoso.WSSServer.user.repository.BlockRepository;
 
 @Component
 @RequiredArgsConstructor

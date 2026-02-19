@@ -17,20 +17,20 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.AvatarProfile;
+import org.websoso.WSSServer.oauth2.domain.UserAppleToken;
+import org.websoso.WSSServer.oauth2.dto.KakaoUserInfo;
+import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
-import org.websoso.WSSServer.repository.AvatarProfileRepository;
-import org.websoso.WSSServer.service.DiscordMessageClient;
+import org.websoso.WSSServer.user.repository.AvatarProfileRepository;
+import org.websoso.WSSServer.notification.service.DiscordMessageClient;
 import org.websoso.WSSServer.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.user.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
 import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
-import org.websoso.WSSServer.dto.user.FCMTokenRequest;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileGetResponse;
@@ -46,7 +46,6 @@ import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
-import org.websoso.WSSServer.user.repository.UserDeviceRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
 
 @Service
@@ -58,7 +57,6 @@ public class UserService {
     private final AvatarProfileRepository avatarProfileRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final GenreRepository genreRepository;
-    private final UserDeviceRepository userDeviceRepository;
 
     // TODO: 상위 레이어에서 분리 예정
     private final DiscordMessageClient discordMessageClient;
@@ -175,6 +173,27 @@ public class UserService {
         return ProfileGetResponse.of(isOwner, owner, avatar, genrePreferences);
     }
 
+    public User getOrCreateKakaoUser(KakaoUserInfo kakaoInfo) {
+        String socialId = "kakao_" + kakaoInfo.id();
+        String defaultNickname = "k*" + kakaoInfo.id().toString().substring(2, 10);
+
+        User user = userRepository.findBySocialId(socialId);
+        if (user == null) {
+            user = userRepository.save(User.createBySocial(socialId, defaultNickname, kakaoInfo.email()));
+        }
+
+        return user;
+    }
+
+    public User getOrCreateAppleUser(String socialId, String email, String nickname) {
+        User user = userRepository.findBySocialId(socialId);
+        if (user == null) {
+            user = userRepository.save(User.createBySocial(socialId, nickname, email));
+        }
+
+        return user;
+    }
+
     private AvatarProfile findAvatarProfileByIdOrThrow(Long avatarId) {
         return avatarProfileRepository.findById(avatarId)
                 .orElseThrow(
@@ -217,23 +236,6 @@ public class UserService {
         return UserIdAndNicknameResponse.of(user);
     }
 
-    public boolean registerFCMToken(User user, FCMTokenRequest fcmTokenRequest) {
-        return userDeviceRepository.findByDeviceIdentifierAndUser(fcmTokenRequest.deviceIdentifier(), user)
-                .map(userDevice -> {
-                    userDevice.updateFcmToken(fcmTokenRequest.fcmToken());
-                    return false;
-                })
-                .orElseGet(() -> {
-                    UserDevice userDevice = UserDevice.create(
-                            fcmTokenRequest.fcmToken(),
-                            fcmTokenRequest.deviceIdentifier(),
-                            user
-                    );
-                    userDeviceRepository.save(userDevice);
-                    return true;
-                });
-    }
-
     public void registerPushSetting(User user, Boolean isPushEnabled) {
         user.updatePushSetting(isPushEnabled);
     }
@@ -256,5 +258,10 @@ public class UserService {
                     "service terms and personal information consent are mandatory");
         }
         user.updateTermsSetting(serviceAgreed, privacyAgreed, marketingAgreed);
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> findAllByIds(List<Long> blockUserIds) {
+        return userRepository.findAllById(blockUserIds);
     }
 }

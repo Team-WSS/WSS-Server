@@ -38,6 +38,7 @@ out/
 
 ## application.yml ##
 *.yml
+!application.yml
 
 ## QClass ##
 **/generated/

@@ -2,8 +2,7 @@ package org.websoso.WSSServer.dto.user;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.websoso.WSSServer.domain.Avatar;
-import org.websoso.WSSServer.domain.AvatarProfile;
+import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.user.domain.User;
 

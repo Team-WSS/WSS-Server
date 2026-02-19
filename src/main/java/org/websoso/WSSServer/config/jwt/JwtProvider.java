@@ -1,25 +1,44 @@
 package org.websoso.WSSServer.config.jwt;
 
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.EMPTY_JWT;
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.HEADER_PARSING_FAILED;
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.INVALID_APPLE_TOKEN_FORMAT;
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.JWT_VERIFICATION_FAILED;
+import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.UNSUPPORTED_JWT_TYPE;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Map;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
 
 @Component
 @RequiredArgsConstructor
 public class JwtProvider {
 
     protected static final String CLAIM_USER_ID = "userId";
+
+    private static final String IDENTITY_TOKEN_VALUE_DELIMITER = "\\.";
+    private static final int HEADER_INDEX = 0;
+
+    private final ObjectMapper objectMapper;
 
     @Value("${jwt.secret}")
     private String JWT_SECRET_KEY;
@@ -69,6 +88,36 @@ public class JwtProvider {
             return extractUserId(e.getClaims());
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    public Claims extractClaims(String appleToken, PublicKey publicKey) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(publicKey)
+                    .build()
+                    .parseClaimsJws(appleToken)
+                    .getBody();
+        } catch (UnsupportedJwtException e) {
+            throw new CustomAppleLoginException(UNSUPPORTED_JWT_TYPE, "unsupported JWT types");
+        } catch (IllegalArgumentException e) {
+            throw new CustomAppleLoginException(EMPTY_JWT, "empty jwt");
+        } catch (JwtException e) {
+            throw new CustomAppleLoginException(JWT_VERIFICATION_FAILED, "jwt validation or analysis failed");
+        }
+    }
+
+    public Map<String, String> parseAppleTokenHeader(String appleToken) {
+        try {
+            String encodedHeader = appleToken.split(IDENTITY_TOKEN_VALUE_DELIMITER)[HEADER_INDEX];
+            String decodedHeader = new String(Base64.getUrlDecoder().decode(encodedHeader));
+            return objectMapper.readValue(decodedHeader, Map.class);
+        } catch (JsonMappingException e) {
+            throw new CustomAppleLoginException(INVALID_APPLE_TOKEN_FORMAT,
+                    "make sure the idToken value is in jwt format and that the value is valid");
+        } catch (JsonProcessingException e) {
+            throw new CustomAppleLoginException(HEADER_PARSING_FAILED,
+                    "the decoded header cannot be classified as a Map, please check the header");
         }
     }
 
