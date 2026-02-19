@@ -90,7 +90,7 @@ dependencies {
     implementation "com.google.firebase:firebase-admin:${firebaseAdminVersion}"
 
     // S3 Mapping Library
-    implementation "com.github.Team-WSS:WSS-Server-S3:${wssS3Version}"
+    api "com.github.Team-WSS:WSS-Server-S3:${wssS3Version}"
 
     // ============== Project Modules ==============
     implementation project(':wss-service-support')

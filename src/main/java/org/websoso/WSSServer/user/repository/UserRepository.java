@@ -10,6 +10,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByNickname(String nickname);
 
+    // TODO: Optional로 변경해야함
     User findBySocialId(String socialId);
 
     List<User> findAllByIsPushEnabledTrue();

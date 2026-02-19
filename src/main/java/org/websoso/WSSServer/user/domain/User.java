@@ -17,6 +17,7 @@ import jakarta.persistence.UniqueConstraint;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,7 @@ import org.websoso.WSSServer.domain.ReadNotification;
 import org.websoso.WSSServer.feed.domain.ReportedComment;
 import org.websoso.WSSServer.feed.domain.ReportedFeed;
 import org.websoso.WSSServer.library.domain.UserNovel;
+import org.websoso.WSSServer.notification.domain.UserDevice;
 import org.websoso.common.entity.BaseEntity;
 import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.domain.common.Role;
@@ -201,5 +203,17 @@ public class User extends BaseEntity {
         this.serviceAgreed = serviceAgreed;
         this.privacyAgreed = privacyAgreed;
         this.marketingAgreed = marketingAgreed;
+    }
+
+    public boolean isAdmin() {
+        return Role.ADMIN.equals(role);
+    }
+
+    public boolean isSameUserId(Long userId) {
+        return this.userId.equals(userId);
+    }
+
+    public boolean isTemporaryNickname() {
+        return this.nickname.contains("*");
     }
 }
