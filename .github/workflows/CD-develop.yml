@@ -27,7 +27,7 @@ jobs:
         shell: bash
 
       - name: Build with Gradle
-        run: ./gradlew build -x test -Dspring.profiles.active=dev
+        run: ./gradlew build -x test
         shell: bash
 
       - name: Docker build Setting
