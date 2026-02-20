@@ -123,4 +123,8 @@ public class UserNovel extends BaseEntity {
         this.endDate = null;
     }
 
+    public boolean isOnlyInterested() {
+        return this.status == DEFAULT_STATUS;
+    }
+
 }
