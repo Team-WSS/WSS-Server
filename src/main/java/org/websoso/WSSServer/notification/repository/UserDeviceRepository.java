@@ -12,7 +12,7 @@ import org.websoso.WSSServer.notification.domain.UserDevice;
 @Repository
 public interface UserDeviceRepository extends JpaRepository<UserDevice, Long> {
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """
             INSERT INTO user_device (user_id, device_identifier, fcm_token)
             VALUES (:userId, :deviceIdentifier, :fcmToken)
