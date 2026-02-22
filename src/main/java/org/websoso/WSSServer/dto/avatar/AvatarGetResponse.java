@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.dto.avatar;
 
-import org.websoso.WSSServer.domain.Avatar;
-import org.websoso.WSSServer.domain.AvatarLine;
+import org.websoso.WSSServer.user.domain.Avatar;
+import org.websoso.WSSServer.user.domain.AvatarLine;
 
 public record AvatarGetResponse(
         Byte avatarId,

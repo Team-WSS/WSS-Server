@@ -20,7 +20,7 @@ import org.websoso.WSSServer.dto.notification.NotificationCreateRequest;
 import org.websoso.WSSServer.dto.notification.NotificationGetResponse;
 import org.websoso.WSSServer.dto.notification.NotificationsGetResponse;
 import org.websoso.WSSServer.dto.notification.NotificationsReadStatusGetResponse;
-import org.websoso.WSSServer.service.NotificationService;
+import org.websoso.WSSServer.notification.service.NotificationService;
 
 @RestController
 @RequestMapping("/notifications")

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.domain.Notification;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
-import org.websoso.WSSServer.repository.NotificationRepository;
+import org.websoso.WSSServer.notification.repository.NotificationRepository;
 
 @Component
 @RequiredArgsConstructor

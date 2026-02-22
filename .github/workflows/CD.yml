@@ -11,41 +11,26 @@ jobs:
     steps: 
     - name: Checkout
       uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.ACTION_TOKEN }}
+        submodules: true
+        fetch-depth: 0
+
+    - name: Update Submodule
+      run: git submodule update --init --recursive --remote
 
     - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
         distribution: 'corretto'
         java-version: '17'
-        
-    - name: Create application.yml and application-prod.yml
-      run: | 
-          mkdir src/main/resources
-          cd src/main/resources
-          echo "${{ secrets.APPLICATION }}" > ./application.yml
-          echo "${{ secrets.APPLICATION_PROD }}" > ./application-prod.yml
-
-    - name: create-json
-      id: create-json
-      uses: jsdaniell/create-json@1.1.2
-      with:
-        name: "websoso-fcm.json"
-        json: ${{ secrets.WEBSOSOFCM_JSON }}
-        dir: 'src/main/resources/'
-
-    - name: Create apple login key file
-      env:
-        API_KEY: ${{ secrets.APPSTORE_API_KEY_ID }}
-      run: |
-        mkdir -p src/main/resources/static/apple
-        echo "${{ secrets.APPLE_AUTH_KEY }}" > src/main/resources/static/apple/AuthKey_$API_KEY.p8
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
       shell: bash
 
     - name: Build with Gradle
-      run: ./gradlew build -x test
+      run: ./gradlew build -x test -Dspring.profiles.active=prod
       shell: bash
 
     - name: Docker build Setting

@@ -1,0 +1,13 @@
+package org.websoso.WSSServer.oauth2.repository;
+
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.repository.CrudRepository;
+import org.websoso.WSSServer.oauth2.domain.RefreshToken;
+
+public interface RefreshTokenRepository extends CrudRepository<RefreshToken, String> {
+
+    Optional<RefreshToken> findByRefreshToken(String refreshToken);
+
+    List<RefreshToken> findAllByUserId(Long userId);
+}

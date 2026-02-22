@@ -120,7 +120,7 @@ public record FeedInfo(
                 .stream()
                 .filter(userNovel -> userNovel.getUser().getUserId().equals(feedWriterId))
                 .findFirst()
-                .map(UserNovel::getUserNovelRating)
+                .map(userNovel -> userNovel.isOnlyInterested() ? null : userNovel.getUserNovelRating())
                 .orElse(null);
     }
 
