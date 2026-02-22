@@ -143,6 +143,7 @@ public class AuthApplication {
         return LoginResponse.of(token);
     }
 
+    @Transactional
     public void logout(User user, LogoutRequest request) {
         refreshTokenRepository.findByRefreshToken(request.refreshToken())
                 .ifPresent(refreshTokenRepository::delete);
