@@ -13,7 +13,7 @@ import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.oauth2.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.notification.service.DiscordMessageClient;
-import org.websoso.WSSServer.service.MessageFormatter;
+import org.websoso.WSSServer.notification.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.domain.WithdrawalReason;
 import org.websoso.WSSServer.user.repository.UserRepository;

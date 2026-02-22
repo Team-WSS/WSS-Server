@@ -6,7 +6,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.notification.domain.Notification;
 import org.websoso.WSSServer.user.domain.User;
 
 @Repository

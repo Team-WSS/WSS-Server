@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.dto.notification;
 
 import java.time.format.DateTimeFormatter;
-import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.notification.domain.Notification;
 
 public record NotificationGetResponse(
         String notificationTitle,

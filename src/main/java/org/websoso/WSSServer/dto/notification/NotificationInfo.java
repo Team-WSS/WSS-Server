@@ -5,7 +5,7 @@ import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.NOTICE;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.notification.domain.Notification;
 import org.websoso.WSSServer.domain.common.NotificationTypeGroup;
 
 public record NotificationInfo(
