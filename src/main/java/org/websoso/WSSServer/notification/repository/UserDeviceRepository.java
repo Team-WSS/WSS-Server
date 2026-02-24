@@ -22,7 +22,5 @@ public interface UserDeviceRepository extends JpaRepository<UserDevice, Long> {
                         @Param("deviceIdentifier") String deviceIdentifier,
                         @Param("fcmToken") String fcmToken);
 
-    Optional<UserDevice> findByDeviceIdentifierAndUser(String deviceIdentifier, User user);
-
     void deleteByUserAndDeviceIdentifier(User user, String deviceIdentifier);
 }

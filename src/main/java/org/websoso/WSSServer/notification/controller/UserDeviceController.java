@@ -1,7 +1,6 @@
 package org.websoso.WSSServer.notification.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +27,10 @@ public class UserDeviceController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> registerFCMToken(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody FCMTokenRequest fcmTokenRequest) {
-        return this.userDeviceService.registerFCMToken(user, fcmTokenRequest)
-                ? ResponseEntity.status(CREATED).build()
-                : ResponseEntity.status(NO_CONTENT).build();
+        this.userDeviceService.registerFcmToken(user.getUserId(), fcmTokenRequest.deviceIdentifier(),
+                fcmTokenRequest.fcmToken());
+
+        return ResponseEntity.status(CREATED).build();
     }
 
 }
