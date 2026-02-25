@@ -27,7 +27,7 @@ import org.websoso.WSSServer.notification.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
-import org.websoso.WSSServer.dto.notification.PushSettingGetResponse;
+import org.websoso.WSSServer.notification.dto.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;

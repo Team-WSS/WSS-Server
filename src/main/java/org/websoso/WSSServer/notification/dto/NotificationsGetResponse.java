@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.dto.notification;
+package org.websoso.WSSServer.notification.dto;
 
 import java.util.List;
 

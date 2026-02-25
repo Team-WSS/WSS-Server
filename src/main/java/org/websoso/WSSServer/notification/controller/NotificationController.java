@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.controller;
+package org.websoso.WSSServer.notification.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.dto.notification.NotificationCreateRequest;
-import org.websoso.WSSServer.dto.notification.NotificationGetResponse;
-import org.websoso.WSSServer.dto.notification.NotificationsGetResponse;
-import org.websoso.WSSServer.dto.notification.NotificationsReadStatusGetResponse;
+import org.websoso.WSSServer.notification.dto.NotificationCreateRequest;
+import org.websoso.WSSServer.notification.dto.NotificationGetResponse;
+import org.websoso.WSSServer.notification.dto.NotificationsGetResponse;
+import org.websoso.WSSServer.notification.dto.NotificationsReadStatusGetResponse;
 import org.websoso.WSSServer.notification.service.NotificationService;
 
 @RestController

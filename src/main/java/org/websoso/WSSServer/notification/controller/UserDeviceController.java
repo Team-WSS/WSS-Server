@@ -12,7 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.dto.user.FCMTokenRequest;
+import org.websoso.WSSServer.notification.dto.FCMTokenRequest;
 import org.websoso.WSSServer.notification.service.UserDeviceService;
 import org.websoso.WSSServer.user.domain.User;
 
