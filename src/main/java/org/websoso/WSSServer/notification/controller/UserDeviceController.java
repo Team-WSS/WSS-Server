@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.notification.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static software.amazon.awssdk.http.HttpStatusCode.NO_CONTENT;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +26,25 @@ public class UserDeviceController {
     // 사용자의 FCM 토큰을 저장한다.
     @PostMapping("/users/fcm-token")
     @PreAuthorize("isAuthenticated()")
+    @Deprecated(since = "/user/me/devices로 이전되면 삭제될 예정")
     public ResponseEntity<Void> registerFCMToken(@AuthenticationPrincipal User user,
                                                  @Valid @RequestBody FCMTokenRequest fcmTokenRequest) {
         this.userDeviceService.registerFcmToken(user.getUserId(), fcmTokenRequest.deviceIdentifier(),
                 fcmTokenRequest.fcmToken());
 
         return ResponseEntity.status(CREATED).build();
+    }
+
+    @PostMapping("/users/me/devices")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> registerFcmToken(
+            @AuthenticationPrincipal User user,
+            @Valid @RequestBody FCMTokenRequest fcmTokenRequest
+    ) {
+        this.userDeviceService.registerFcmToken(
+                user.getUserId(), fcmTokenRequest.deviceIdentifier(), fcmTokenRequest.fcmToken());
+
+        return ResponseEntity.status(NO_CONTENT).build();
     }
 
 }
