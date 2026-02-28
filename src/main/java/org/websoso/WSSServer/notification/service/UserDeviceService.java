@@ -2,11 +2,13 @@ package org.websoso.WSSServer.notification.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.notification.repository.UserDeviceRepository;
 import org.websoso.WSSServer.user.domain.User;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserDeviceService {
 
     private final UserDeviceRepository userDeviceRepository;
