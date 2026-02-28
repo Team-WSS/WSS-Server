@@ -9,8 +9,6 @@ import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTI
 import static org.websoso.WSSServer.exception.error.CustomNotificationTypeError.NOTIFICATION_TYPE_NOT_FOUND;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -19,12 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.notification.domain.Notification;
 import org.websoso.WSSServer.notification.domain.NotificationType;
 import org.websoso.WSSServer.notification.domain.ReadNotification;
+import org.websoso.WSSServer.notification.dto.ReadNotificationDto;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.notification.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.NotificationTypeGroup;
 import org.websoso.WSSServer.notification.dto.NotificationCreateRequest;
-import org.websoso.WSSServer.notification.dto.NotificationGetResponse;
-import org.websoso.WSSServer.notification.dto.NotificationInfo;
 import org.websoso.WSSServer.notification.dto.NotificationsGetResponse;
 import org.websoso.WSSServer.notification.dto.NotificationsReadStatusGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
@@ -43,6 +40,7 @@ import org.websoso.WSSServer.user.service.UserService;
 public class NotificationService {
 
     private static final int DEFAULT_PAGE_NUMBER = 0;
+
     private final NotificationRepository notificationRepository;
     private final ReadNotificationRepository readNotificationRepository;
     private final NotificationTypeRepository notificationTypeRepository;
@@ -52,33 +50,38 @@ public class NotificationService {
 
     @Transactional(readOnly = true)
     public NotificationsReadStatusGetResponse checkNotificationsReadStatus(User user) {
-        Boolean hasUnreadNotifications = notificationRepository.existsUnreadNotifications(
-                Set.of(0L, user.getUserId()), user);
+        Boolean hasUnreadNotifications = notificationRepository.existsUnreadNotifications(user.getUserId());
+
         return NotificationsReadStatusGetResponse.of(hasUnreadNotifications);
     }
 
     @Transactional(readOnly = true)
-    public NotificationsGetResponse getNotifications(Long lastNotificationId, int size, User user) {
-        Slice<Notification> notifications = notificationRepository.findNotifications(lastNotificationId,
-                user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
-
-        Set<Notification> readNotifications = readNotificationRepository.findAllByUser(user).stream()
-                .map(ReadNotification::getNotification)
-                .collect(Collectors.toSet());
-
-        List<NotificationInfo> notificationInfos = notifications.getContent().stream()
-                .map(n -> NotificationInfo.of(n, readNotifications.contains(n)))
-                .toList();
-
-        return NotificationsGetResponse.of(notifications.hasNext(), notificationInfos);
+    public boolean hasUnreadNotifications(User user) {
+        return notificationRepository.existsUnreadNotifications(user.getUserId());
     }
 
-    public NotificationGetResponse getNotification(User user, Long notificationId) {
-        Notification notification = getAndValidateNotification(user, notificationId, NOTICE);
-        if (!readNotificationRepository.existsByUserAndNotification(user, notification)) {
-            readNotificationRepository.save(ReadNotification.create(notification, user));
-        }
-        return NotificationGetResponse.of(notification);
+    @Transactional(readOnly = true)
+    public NotificationsGetResponse getNotifications(User user, Long lastNotificationId, int size) {
+
+        Slice<ReadNotificationDto> sliceResult = notificationRepository.findNotifications(
+                lastNotificationId,
+                user.getUserId(),
+                PageRequest.of(DEFAULT_PAGE_NUMBER, size)
+        );
+
+        return NotificationsGetResponse.from(sliceResult);
+    }
+
+    @Transactional(readOnly = true)
+    public Notification getNotification(User user, Long notificationId) {
+        return getAndValidateNotification(user, notificationId, NOTICE);
+    }
+
+    public void markAsRead(User user, Notification notification) {
+        readNotificationRepository.insertIgnoreReadNotification(
+                notification.getNotificationId(),
+                user.getUserId()
+        );
     }
 
     public void createNotificationAsRead(User user, Long notificationId) {

@@ -24,7 +24,7 @@ public record NotificationInfo(
     private static final String HOUR_UNIT = "시간 전";
     private static final String DATE_PATTERN = "yyyy.MM.dd";
 
-    static public NotificationInfo of(Notification notification, Boolean isRead) {
+    public static NotificationInfo of(Notification notification, Boolean isRead) {
         return new NotificationInfo(
                 notification.getNotificationId(),
                 notification.getNotificationType().getNotificationTypeImage(),
@@ -32,6 +32,22 @@ public record NotificationInfo(
                 notification.getNotificationBody(),
                 formatCreatedDate(notification.getCreatedDate()),
                 isRead,
+                NotificationTypeGroup.isTypeInGroup(notification.getNotificationType().getNotificationTypeName(),
+                        NOTICE),
+                notification.getFeedId()
+        );
+    }
+
+    public static NotificationInfo from(ReadNotificationDto dto) {
+        Notification notification = dto.notification();
+
+        return new NotificationInfo(
+                notification.getNotificationId(),
+                notification.getNotificationType().getNotificationTypeImage(),
+                notification.getNotificationTitle(),
+                notification.getNotificationBody(),
+                formatCreatedDate(notification.getCreatedDate()),
+                dto.isRead(),
                 NotificationTypeGroup.isTypeInGroup(notification.getNotificationType().getNotificationTypeName(),
                         NOTICE),
                 notification.getFeedId()

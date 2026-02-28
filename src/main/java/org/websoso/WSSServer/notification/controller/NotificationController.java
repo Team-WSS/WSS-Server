@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.application.NotificationApplication;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.notification.dto.NotificationCreateRequest;
 import org.websoso.WSSServer.notification.dto.NotificationGetResponse;
@@ -28,6 +29,7 @@ import org.websoso.WSSServer.notification.service.NotificationService;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final NotificationApplication notificationApplication;
 
     @PostMapping
     @PreAuthorize("isAuthenticated() and @authorizationService.validate(null, #user, T(org.websoso.WSSServer.notification.domain.Notification))")
@@ -46,7 +48,7 @@ public class NotificationController {
                                                                      @RequestParam("size") int size) {
         return ResponseEntity
                 .status(OK)
-                .body(notificationService.getNotifications(lastNotificationId, size, user));
+                .body(notificationApplication.getNotifications(user, lastNotificationId, size));
     }
 
     @GetMapping("/{notificationId}")
@@ -55,7 +57,7 @@ public class NotificationController {
                                                                    @PathVariable("notificationId") Long notificationId) {
         return ResponseEntity
                 .status(OK)
-                .body(notificationService.getNotification(user, notificationId));
+                .body(notificationApplication.getNotificationDetail(user, notificationId));
     }
 
     @GetMapping("/unread")
@@ -64,7 +66,7 @@ public class NotificationController {
             @AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
-                .body(notificationService.checkNotificationsReadStatus(user));
+                .body(notificationApplication.getNotificationStatus(user));
     }
 
     @PostMapping("/{notificationId}/read")
