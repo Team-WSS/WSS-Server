@@ -6,9 +6,7 @@ import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTI
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_READ_FORBIDDEN;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_TYPE_INVALID;
-import static org.websoso.WSSServer.exception.error.CustomNotificationTypeError.NOTIFICATION_TYPE_NOT_FOUND;
 
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -19,15 +17,11 @@ import org.websoso.WSSServer.notification.domain.NotificationType;
 import org.websoso.WSSServer.notification.domain.ReadNotification;
 import org.websoso.WSSServer.notification.dto.ReadNotificationDto;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.notification.domain.UserDevice;
 import org.websoso.WSSServer.domain.common.NotificationTypeGroup;
-import org.websoso.WSSServer.notification.dto.NotificationCreateRequest;
 import org.websoso.WSSServer.notification.dto.NotificationsGetResponse;
 import org.websoso.WSSServer.notification.dto.NotificationsReadStatusGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
-import org.websoso.WSSServer.exception.exception.CustomNotificationTypeException;
 import org.websoso.WSSServer.notification.FCMClient;
-import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.notification.repository.NotificationRepository;
 import org.websoso.WSSServer.notification.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.notification.repository.ReadNotificationRepository;
@@ -126,54 +120,4 @@ public class NotificationService {
         }
     }
 
-    public void createNoticeNotification(User user, NotificationCreateRequest request) {
-        Notification notification = notificationRepository.save(Notification.create(
-                request.notificationTitle(),
-                request.notificationBody(),
-                request.notificationDetail(),
-                request.userId(),
-                null,
-                getNotificationTypeOrException(request.notificationTypeName()))
-        );
-
-        sendNoticePushMessage(request.userId(), notification);
-    }
-
-    private NotificationType getNotificationTypeOrException(String notificationTypeName) {
-        return notificationTypeRepository
-                .findOptionalByNotificationTypeName(notificationTypeName)
-                .orElseThrow(() -> new CustomNotificationTypeException(NOTIFICATION_TYPE_NOT_FOUND,
-                        "notification type with the given name is not found"));
-    }
-
-    private void sendNoticePushMessage(Long userId, Notification notification) {
-        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
-                notification.getNotificationTitle(),
-                notification.getNotificationBody(),
-                "",
-                "notificationDetail",
-                String.valueOf(notification.getNotificationId())
-        );
-
-        List<String> targetFCMTokens = getTargetFCMTokens(userId);
-
-        fcmClient.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
-    }
-
-    private List<String> getTargetFCMTokens(Long userId) {
-        if (userId.equals(0L)) {
-            return userRepository.findAllByIsPushEnabledTrue()
-                    .stream()
-                    .flatMap(user -> user.getUserDevices().stream())
-                    .map(UserDevice::getFcmToken)
-                    .distinct()
-                    .toList();
-        }
-        return userService.getUserOrException(userId)
-                .getUserDevices()
-                .stream()
-                .map(UserDevice::getFcmToken)
-                .distinct()
-                .toList();
-    }
 }

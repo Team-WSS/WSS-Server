@@ -3,7 +3,6 @@ package org.websoso.WSSServer.notification.controller;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,13 +10,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.application.NotificationApplication;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.notification.dto.NotificationCreateRequest;
 import org.websoso.WSSServer.notification.dto.NotificationGetResponse;
 import org.websoso.WSSServer.notification.dto.NotificationsGetResponse;
 import org.websoso.WSSServer.notification.dto.NotificationsReadStatusGetResponse;
@@ -30,16 +27,6 @@ public class NotificationController {
 
     private final NotificationService notificationService;
     private final NotificationApplication notificationApplication;
-
-    @PostMapping
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(null, #user, T(org.websoso.WSSServer.notification.domain.Notification))")
-    public ResponseEntity<Void> createNoticeNotification(@AuthenticationPrincipal User user,
-                                                         @Valid @RequestBody NotificationCreateRequest notificationCreateRequest) {
-        notificationService.createNoticeNotification(user, notificationCreateRequest);
-        return ResponseEntity
-                .status(CREATED)
-                .build();
-    }
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
