@@ -37,17 +37,6 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final ReadNotificationRepository readNotificationRepository;
-    private final NotificationTypeRepository notificationTypeRepository;
-    private final UserRepository userRepository;
-    private final FCMClient fcmClient;
-    private final UserService userService;
-
-    @Transactional(readOnly = true)
-    public NotificationsReadStatusGetResponse checkNotificationsReadStatus(User user) {
-        Boolean hasUnreadNotifications = notificationRepository.existsUnreadNotifications(user.getUserId());
-
-        return NotificationsReadStatusGetResponse.of(hasUnreadNotifications);
-    }
 
     @Transactional(readOnly = true)
     public boolean hasUnreadNotifications(User user) {

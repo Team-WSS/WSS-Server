@@ -1,9 +1,9 @@
 package org.websoso.WSSServer.notification.dto;
 
 public record NotificationsReadStatusGetResponse(
-        Boolean hasUnreadNotifications
+        boolean hasUnreadNotifications
 ) {
-    static public NotificationsReadStatusGetResponse of(Boolean hasUnreadNotifications) {
+    public static NotificationsReadStatusGetResponse of(boolean hasUnreadNotifications) {
         return new NotificationsReadStatusGetResponse(hasUnreadNotifications);
     }
 }

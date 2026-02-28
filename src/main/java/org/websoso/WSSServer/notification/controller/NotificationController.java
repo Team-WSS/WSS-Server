@@ -49,6 +49,15 @@ public class NotificationController {
 
     @GetMapping("/unread")
     @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<NotificationsReadStatusGetResponse> checkNotificationsReadStatusDeprecated(
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity
+                .status(OK)
+                .body(notificationApplication.getNotificationStatus(user));
+    }
+
+    @GetMapping("/status")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NotificationsReadStatusGetResponse> checkNotificationsReadStatus(
             @AuthenticationPrincipal User user) {
         return ResponseEntity
