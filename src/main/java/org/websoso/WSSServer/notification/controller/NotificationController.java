@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.notification.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,14 +20,12 @@ import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.notification.dto.NotificationGetResponse;
 import org.websoso.WSSServer.notification.dto.NotificationsGetResponse;
 import org.websoso.WSSServer.notification.dto.NotificationsReadStatusGetResponse;
-import org.websoso.WSSServer.notification.service.NotificationService;
 
 @RestController
 @RequestMapping("/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
 
-    private final NotificationService notificationService;
     private final NotificationApplication notificationApplication;
 
     @GetMapping
@@ -47,31 +47,46 @@ public class NotificationController {
                 .body(notificationApplication.getNotificationDetail(user, notificationId));
     }
 
+    @GetMapping("/status")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<NotificationsReadStatusGetResponse> getNotificationStatus(
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity
+                .status(OK)
+                .body(notificationApplication.getReadStatus(user));
+    }
+
+    @PatchMapping("/{notificationId}/read-status")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> createNotificationAsReadStatus(@AuthenticationPrincipal User user,
+                                                         @PathVariable("notificationId") Long notificationId) {
+        notificationApplication.updateNotificationReadStatus(user, notificationId);
+
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @Deprecated(since = "/status 전환 이후")
     @GetMapping("/unread")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NotificationsReadStatusGetResponse> checkNotificationsReadStatusDeprecated(
             @AuthenticationPrincipal User user) {
         return ResponseEntity
                 .status(OK)
-                .body(notificationApplication.getNotificationStatus(user));
+                .body(notificationApplication.getReadStatus(user));
     }
 
-    @GetMapping("/status")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<NotificationsReadStatusGetResponse> checkNotificationsReadStatus(
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity
-                .status(OK)
-                .body(notificationApplication.getNotificationStatus(user));
-    }
-
+    @Deprecated(since = "/{notificationId}/read-status 전환 이후")
     @PostMapping("/{notificationId}/read")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> createNotificationAsRead(@AuthenticationPrincipal User user,
                                                          @PathVariable("notificationId") Long notificationId) {
-        notificationService.createNotificationAsRead(user, notificationId);
+        notificationApplication.updateNotificationReadStatus(user, notificationId);
+
         return ResponseEntity
                 .status(CREATED)
                 .build();
     }
+
 }

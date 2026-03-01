@@ -1,5 +1,7 @@
 package org.websoso.WSSServer.application;
 
+import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.NOTICE;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,13 +14,13 @@ import org.websoso.WSSServer.user.domain.User;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class NotificationApplication {
 
     private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
-    public NotificationsReadStatusGetResponse getNotificationStatus(User user) {
+    public NotificationsReadStatusGetResponse getReadStatus(User user) {
+
         boolean hasUnreadNotifications = notificationService.hasUnreadNotifications(user);
 
         return NotificationsReadStatusGetResponse.of(hasUnreadNotifications);
@@ -32,10 +34,19 @@ public class NotificationApplication {
     @Transactional
     public NotificationGetResponse getNotificationDetail(User user, Long notificationId) {
 
-        Notification notification = notificationService.getNotification(user, notificationId);
+        Notification notification = notificationService.getNoticeNotification(user, notificationId);
 
         notificationService.markAsRead(user, notification);
 
         return NotificationGetResponse.of(notification);
     }
+
+    @Transactional
+    public void updateNotificationReadStatus(User user, Long notificationId) {
+
+        Notification notification = notificationService.getNotification(user, notificationId);
+
+        notificationService.markAsRead(user, notification);
+    }
+
 }
