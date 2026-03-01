@@ -1,7 +1,5 @@
 package org.websoso.WSSServer.application;
 
-import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.NOTICE;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,22 +19,22 @@ public class NotificationApplication {
     @Transactional(readOnly = true)
     public NotificationsReadStatusGetResponse getReadStatus(User user) {
 
-        boolean hasUnreadNotifications = notificationService.hasUnreadNotifications(user);
+        boolean hasUnreadNotifications = notificationService.hasUnreadNotifications(user.getUserId());
 
         return NotificationsReadStatusGetResponse.of(hasUnreadNotifications);
     }
 
     @Transactional(readOnly = true)
     public NotificationsGetResponse getNotifications(User user, Long lastNotificationId, int size) {
-        return notificationService.getNotifications(user, lastNotificationId, size);
+        return notificationService.getNotifications(user.getUserId(), lastNotificationId, size);
     }
 
     @Transactional
     public NotificationGetResponse getNotificationDetail(User user, Long notificationId) {
 
-        Notification notification = notificationService.getNoticeNotification(user, notificationId);
+        Notification notification = notificationService.getNoticeNotification(notificationId);
 
-        notificationService.markAsRead(user, notification);
+        notificationService.markAsRead(user.getUserId(), notification.getNotificationId());
 
         return NotificationGetResponse.of(notification);
     }
@@ -44,9 +42,11 @@ public class NotificationApplication {
     @Transactional
     public void updateNotificationReadStatus(User user, Long notificationId) {
 
-        Notification notification = notificationService.getNotification(user, notificationId);
+        Long userId = user.getUserId();
 
-        notificationService.markAsRead(user, notification);
+        Notification notification = notificationService.getNotification(userId, notificationId);
+
+        notificationService.markAsRead(userId, notification.getNotificationId());
     }
 
 }
