@@ -10,11 +10,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.notification.controller.response.NotificationPageResponse;
 import org.websoso.WSSServer.notification.domain.Notification;
 import org.websoso.WSSServer.notification.domain.NotificationType;
 import org.websoso.WSSServer.notification.dto.ReadNotificationDto;
 import org.websoso.WSSServer.domain.common.NotificationTypeGroup;
-import org.websoso.WSSServer.notification.dto.NotificationsGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
 import org.websoso.WSSServer.notification.repository.NotificationRepository;
 import org.websoso.WSSServer.notification.repository.ReadNotificationRepository;
@@ -48,7 +48,7 @@ public class NotificationService {
      * @return 알림 목록 (읽기 여부 포함)
      */
     @Transactional(readOnly = true)
-    public NotificationsGetResponse getNotifications(Long userId, Long lastNotificationId, int size) {
+    public NotificationPageResponse getNotifications(Long userId, Long lastNotificationId, int size) {
 
         Slice<ReadNotificationDto> sliceResult = notificationRepository.findNotifications(
                 lastNotificationId,
@@ -56,7 +56,7 @@ public class NotificationService {
                 PageRequest.of(DEFAULT_PAGE_NUMBER, size)
         );
 
-        return NotificationsGetResponse.from(sliceResult);
+        return NotificationPageResponse.from(sliceResult);
     }
 
     /**

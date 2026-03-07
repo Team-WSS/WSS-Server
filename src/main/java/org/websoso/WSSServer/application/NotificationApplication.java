@@ -3,10 +3,10 @@ package org.websoso.WSSServer.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.notification.controller.response.NotificationDetailResponse;
+import org.websoso.WSSServer.notification.controller.response.NotificationPageResponse;
+import org.websoso.WSSServer.notification.controller.response.NotificationReadStatusResponse;
 import org.websoso.WSSServer.notification.domain.Notification;
-import org.websoso.WSSServer.notification.dto.NotificationGetResponse;
-import org.websoso.WSSServer.notification.dto.NotificationsGetResponse;
-import org.websoso.WSSServer.notification.dto.NotificationsReadStatusGetResponse;
 import org.websoso.WSSServer.notification.service.NotificationService;
 import org.websoso.WSSServer.user.domain.User;
 
@@ -17,26 +17,26 @@ public class NotificationApplication {
     private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
-    public NotificationsReadStatusGetResponse getReadStatus(User user) {
+    public NotificationReadStatusResponse getReadStatus(User user) {
 
         boolean hasUnreadNotifications = notificationService.hasUnreadNotifications(user.getUserId());
 
-        return NotificationsReadStatusGetResponse.of(hasUnreadNotifications);
+        return NotificationReadStatusResponse.of(hasUnreadNotifications);
     }
 
     @Transactional(readOnly = true)
-    public NotificationsGetResponse getNotifications(User user, Long lastNotificationId, int size) {
+    public NotificationPageResponse getNotifications(User user, Long lastNotificationId, int size) {
         return notificationService.getNotifications(user.getUserId(), lastNotificationId, size);
     }
 
     @Transactional
-    public NotificationGetResponse getNotificationDetail(User user, Long notificationId) {
+    public NotificationDetailResponse getNotificationDetail(User user, Long notificationId) {
 
         Notification notification = notificationService.getNoticeNotification(notificationId);
 
         notificationService.markAsRead(user.getUserId(), notification.getNotificationId());
 
-        return NotificationGetResponse.of(notification);
+        return NotificationDetailResponse.of(notification);
     }
 
     @Transactional

@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.notification.repository;
 
-import static org.websoso.WSSServer.domain.QNotification.notification;
-import static org.websoso.WSSServer.domain.QReadNotification.readNotification;
+import static org.websoso.WSSServer.notification.domain.QNotification.notification;
+import static org.websoso.WSSServer.notification.domain.QReadNotification.readNotification;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
