@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.domain;
+package org.websoso.WSSServer.notification.domain;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 import org.websoso.common.entity.BaseEntity;
 
 @Entity
@@ -36,6 +37,7 @@ public class Notification extends BaseEntity {
     @Column(nullable = false)
     private Long userId;
 
+    @Column
     private Long feedId;
 
     @ManyToOne(fetch = FetchType.LAZY)

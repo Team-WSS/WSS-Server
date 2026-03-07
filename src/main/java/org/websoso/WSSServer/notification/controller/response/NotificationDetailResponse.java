@@ -1,17 +1,17 @@
-package org.websoso.WSSServer.dto.notification;
+package org.websoso.WSSServer.notification.controller.response;
 
 import java.time.format.DateTimeFormatter;
-import org.websoso.WSSServer.domain.Notification;
+import org.websoso.WSSServer.notification.domain.Notification;
 
-public record NotificationGetResponse(
+public record NotificationDetailResponse(
         String notificationTitle,
         String notificationCreatedDate,
         String notificationDetail
 ) {
     private static final String DATE_PATTERN = "yyyy.MM.dd";
 
-    static public NotificationGetResponse of(Notification notification) {
-        return new NotificationGetResponse(
+    public static NotificationDetailResponse of(Notification notification) {
+        return new NotificationDetailResponse(
                 notification.getNotificationTitle(),
                 notification.getCreatedDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN)),
                 notification.getNotificationDetail()
