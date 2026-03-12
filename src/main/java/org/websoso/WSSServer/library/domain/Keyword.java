@@ -28,6 +28,9 @@ public class Keyword implements Serializable {
     @Column(columnDefinition = "varchar(10)", nullable = false)
     private String keywordName;
 
+    @Column(nullable = false)
+    private Integer sortOrder;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "keyword_category_id", nullable = false)
     private KeywordCategory keywordCategory;
