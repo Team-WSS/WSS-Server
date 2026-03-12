@@ -5,6 +5,7 @@ import static org.websoso.WSSServer.exception.error.CustomKeywordError.KEYWORD_N
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,8 +50,10 @@ public class KeywordService {
     public KeywordByCategoryGetResponse searchKeywordByCategory(String query) {
         List<Keyword> searchedKeywords = searchKeyword(query);
         List<CategoryGetResponse> categories = Arrays.stream(KeywordCategoryName.values())
-                .map(category -> CategoryGetResponse.of(getKeywordCategory(category.getLabel()),
-                        sortByCategory(category, searchedKeywords)))
+                .map(category -> CategoryGetResponse.of(
+                        getKeywordCategory(category.getLabel()),
+                        sortByCategoryAndOrder(category, searchedKeywords)
+                ))
                 .toList();
         return KeywordByCategoryGetResponse.of(categories);
     }
@@ -67,7 +70,7 @@ public class KeywordService {
     }
 
     public void deleteUserNovelKeywords(List<UserNovelKeyword> userNovelKeywords) {
-            userNovelKeywordRepository.deleteAll(userNovelKeywords);
+        userNovelKeywordRepository.deleteAll(userNovelKeywords);
     }
 
     private KeywordCategory getKeywordCategory(String keywordCategoryName) {
@@ -76,21 +79,26 @@ public class KeywordService {
                         "keyword category with the given name is not found"));
     }
 
-    private List<KeywordGetResponse> sortByCategory(KeywordCategoryName keywordCategoryName,
-                                                    List<Keyword> searchedKeyword) {
-        return searchedKeyword.stream()
-                .filter(keyword -> keyword.getKeywordCategory().getKeywordCategoryName()
-                        .equals(keywordCategoryName.getLabel()))
-                .map(KeywordGetResponse::of).toList();
+    private List<KeywordGetResponse> sortByCategoryAndOrder(KeywordCategoryName categoryName,
+                                                            List<Keyword> searchedKeywords) {
+        return searchedKeywords.stream()
+                .filter(k -> k.getKeywordCategory().getKeywordCategoryName().equals(categoryName.getLabel()))
+                .sorted(Comparator.comparing(Keyword::getSortOrder))
+                .map(KeywordGetResponse::of)
+                .toList();
     }
 
     private List<Keyword> searchKeyword(String query) {
+        List<Keyword> allKeywords = keywordRepository.findAllByOrderBySortOrderAsc();
+
         if (query == null || query.isBlank()) {
-            return keywordRepository.findAll().stream().toList();
+            return allKeywords;
         }
+
         String[] words = query.split(" ");
-        return keywordRepository.findAll().stream()
-                .filter(keyword -> keyword.containsAllWords(words)).toList();
+        return allKeywords.stream()
+                .filter(keyword -> keyword.containsAllWords(words))
+                .toList();
     }
 
     public List<KeywordCountGetResponse> getKeywordNameAndCount(Novel novel) {

@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.domain;
+package org.websoso.WSSServer.notification.domain;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 

@@ -1,98 +1,107 @@
 package org.websoso.WSSServer.notification.service;
 
-import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.FEED;
 import static org.websoso.WSSServer.domain.common.NotificationTypeGroup.NOTICE;
-import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_ALREADY_READ;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_READ_FORBIDDEN;
 import static org.websoso.WSSServer.exception.error.CustomNotificationError.NOTIFICATION_TYPE_INVALID;
-import static org.websoso.WSSServer.exception.error.CustomNotificationTypeError.NOTIFICATION_TYPE_NOT_FOUND;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.Notification;
-import org.websoso.WSSServer.domain.NotificationType;
-import org.websoso.WSSServer.domain.ReadNotification;
-import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.notification.domain.UserDevice;
+import org.websoso.WSSServer.notification.controller.response.NotificationPageResponse;
+import org.websoso.WSSServer.notification.domain.Notification;
+import org.websoso.WSSServer.notification.domain.NotificationType;
+import org.websoso.WSSServer.notification.dto.ReadNotificationDto;
 import org.websoso.WSSServer.domain.common.NotificationTypeGroup;
-import org.websoso.WSSServer.dto.notification.NotificationCreateRequest;
-import org.websoso.WSSServer.dto.notification.NotificationGetResponse;
-import org.websoso.WSSServer.dto.notification.NotificationInfo;
-import org.websoso.WSSServer.dto.notification.NotificationsGetResponse;
-import org.websoso.WSSServer.dto.notification.NotificationsReadStatusGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
-import org.websoso.WSSServer.exception.exception.CustomNotificationTypeException;
-import org.websoso.WSSServer.notification.FCMClient;
-import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.notification.repository.NotificationRepository;
-import org.websoso.WSSServer.notification.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.notification.repository.ReadNotificationRepository;
-import org.websoso.WSSServer.user.repository.UserRepository;
-import org.websoso.WSSServer.user.service.UserService;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class NotificationService {
 
     private static final int DEFAULT_PAGE_NUMBER = 0;
+
     private final NotificationRepository notificationRepository;
     private final ReadNotificationRepository readNotificationRepository;
-    private final NotificationTypeRepository notificationTypeRepository;
-    private final UserRepository userRepository;
-    private final FCMClient fcmClient;
-    private final UserService userService;
 
+    /**
+     * 읽지 않은 알림이 존재하는지 확인한다.
+     *
+     * @param userId 사용자 ID
+     * @return 읽지 않은 알림 여부
+     */
     @Transactional(readOnly = true)
-    public NotificationsReadStatusGetResponse checkNotificationsReadStatus(User user) {
-        Boolean hasUnreadNotifications = notificationRepository.existsUnreadNotifications(
-                Set.of(0L, user.getUserId()), user);
-        return NotificationsReadStatusGetResponse.of(hasUnreadNotifications);
+    public boolean hasUnreadNotifications(Long userId) {
+        return notificationRepository.existsUnreadNotifications(userId);
     }
 
+    /**
+     * 알림 목록을 조회한다.
+     *
+     * @param userId 사용자 ID
+     * @param lastNotificationId 마지막으로 조회한 알림 ID
+     * @param size 조회 사이즈
+     * @return 알림 목록 (읽기 여부 포함)
+     */
     @Transactional(readOnly = true)
-    public NotificationsGetResponse getNotifications(Long lastNotificationId, int size, User user) {
-        Slice<Notification> notifications = notificationRepository.findNotifications(lastNotificationId,
-                user.getUserId(), PageRequest.of(DEFAULT_PAGE_NUMBER, size));
+    public NotificationPageResponse getNotifications(Long userId, Long lastNotificationId, int size) {
 
-        Set<Notification> readNotifications = readNotificationRepository.findAllByUser(user).stream()
-                .map(ReadNotification::getNotification)
-                .collect(Collectors.toSet());
+        Slice<ReadNotificationDto> sliceResult = notificationRepository.findNotifications(
+                lastNotificationId,
+                userId,
+                PageRequest.of(DEFAULT_PAGE_NUMBER, size)
+        );
 
-        List<NotificationInfo> notificationInfos = notifications.getContent().stream()
-                .map(n -> NotificationInfo.of(n, readNotifications.contains(n)))
-                .toList();
-
-        return NotificationsGetResponse.of(notifications.hasNext(), notificationInfos);
+        return NotificationPageResponse.from(sliceResult);
     }
 
-    public NotificationGetResponse getNotification(User user, Long notificationId) {
-        Notification notification = getAndValidateNotification(user, notificationId, NOTICE);
-        if (!readNotificationRepository.existsByUserAndNotification(user, notification)) {
-            readNotificationRepository.save(ReadNotification.create(notification, user));
-        }
-        return NotificationGetResponse.of(notification);
-    }
-
-    public void createNotificationAsRead(User user, Long notificationId) {
-        Notification notification = getAndValidateNotification(user, notificationId, FEED);
-        checkIfNotificationAlreadyRead(user, notification);
-        readNotificationRepository.save(ReadNotification.create(notification, user));
-    }
-
-    private Notification getAndValidateNotification(User user, Long notificationId,
-                                                    NotificationTypeGroup notificationTypeGroup) {
+    /**
+     * 알림 객체를 조회한다.
+     *
+     * @param userId 사용자 ID
+     * @param notificationId 알림 ID
+     * @return 알림 객체
+     */
+    @Transactional(readOnly = true)
+    public Notification getNotification(Long userId, Long notificationId) {
         Notification notification = getNotificationOrException(notificationId);
-        validateNotification(notification.getNotificationType(), notificationTypeGroup);
-        validateNotificationRecipient(user.getUserId(), notification.getUserId());
+
+        validateNotificationRecipient(userId, notification.getUserId());
+
         return notification;
+    }
+
+    /**
+     * 상세 내역이 존재하는 공지 알림을 조회한다.
+     *
+     * @param notificationId 알림 ID
+     * @return 알림 객체
+     */
+    @Transactional(readOnly = true)
+    public Notification getNoticeNotification(Long notificationId) {
+        Notification notification = getNotificationOrException(notificationId);
+
+        validateNotificationType(notification.getNotificationType(), NOTICE);
+
+        return notification;
+    }
+
+    /**
+     * 알림을 읽기 상태로 전환한다.
+     *
+     * @param userId 사용자 ID
+     * @param notificationId 알림 ID
+     */
+    @Transactional
+    public void markAsRead(Long userId, Long notificationId) {
+        readNotificationRepository.insertIgnoreReadNotification(
+                notificationId,
+                userId
+        );
     }
 
     private Notification getNotificationOrException(Long notificationId) {
@@ -101,10 +110,11 @@ public class NotificationService {
                         "notification with the given id is not found"));
     }
 
-    private void validateNotification(NotificationType notificationType, NotificationTypeGroup notificationTypeGroup) {
+    private void validateNotificationType(NotificationType notificationType, NotificationTypeGroup notificationTypeGroup) {
         if (NotificationTypeGroup.isTypeInGroup(notificationType.getNotificationTypeName(), notificationTypeGroup)) {
             return;
         }
+
         throw new CustomNotificationException(NOTIFICATION_TYPE_INVALID, "notification type is incorrect");
     }
 
@@ -112,65 +122,9 @@ public class NotificationService {
         if (recipientUserId == 0 || recipientUserId.equals(userId)) {
             return;
         }
+
         throw new CustomNotificationException(NOTIFICATION_READ_FORBIDDEN,
                 "User does not have permission to access this notification.");
     }
 
-    private void checkIfNotificationAlreadyRead(User user, Notification notification) {
-        if (readNotificationRepository.existsByUserAndNotification(user, notification)) {
-            throw new CustomNotificationException(NOTIFICATION_ALREADY_READ,
-                    "notifications that the user has already read");
-        }
-    }
-
-    public void createNoticeNotification(User user, NotificationCreateRequest request) {
-        Notification notification = notificationRepository.save(Notification.create(
-                request.notificationTitle(),
-                request.notificationBody(),
-                request.notificationDetail(),
-                request.userId(),
-                null,
-                getNotificationTypeOrException(request.notificationTypeName()))
-        );
-
-        sendNoticePushMessage(request.userId(), notification);
-    }
-
-    private NotificationType getNotificationTypeOrException(String notificationTypeName) {
-        return notificationTypeRepository
-                .findOptionalByNotificationTypeName(notificationTypeName)
-                .orElseThrow(() -> new CustomNotificationTypeException(NOTIFICATION_TYPE_NOT_FOUND,
-                        "notification type with the given name is not found"));
-    }
-
-    private void sendNoticePushMessage(Long userId, Notification notification) {
-        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
-                notification.getNotificationTitle(),
-                notification.getNotificationBody(),
-                "",
-                "notificationDetail",
-                String.valueOf(notification.getNotificationId())
-        );
-
-        List<String> targetFCMTokens = getTargetFCMTokens(userId);
-
-        fcmClient.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
-    }
-
-    private List<String> getTargetFCMTokens(Long userId) {
-        if (userId.equals(0L)) {
-            return userRepository.findAllByIsPushEnabledTrue()
-                    .stream()
-                    .flatMap(user -> user.getUserDevices().stream())
-                    .map(UserDevice::getFcmToken)
-                    .distinct()
-                    .toList();
-        }
-        return userService.getUserOrException(userId)
-                .getUserDevices()
-                .stream()
-                .map(UserDevice::getFcmToken)
-                .distinct()
-                .toList();
-    }
 }
