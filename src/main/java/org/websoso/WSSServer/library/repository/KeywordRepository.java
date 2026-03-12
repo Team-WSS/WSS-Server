@@ -10,4 +10,6 @@ public interface KeywordRepository extends JpaRepository<Keyword, Integer> {
 
     List<Keyword> findByKeywordIdIn(List<Integer> keywordIds);
 
+    List<Keyword> findAllByOrderBySortOrderAsc();
+
 }
