@@ -59,6 +59,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                                                     List<Genre> genres, Long visitorId) {
         return jpaQueryFactory
                 .selectFrom(feed)
+                .distinct()
                 .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
                 .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
                 .leftJoin(genre).on(novelGenre.genre.eq(genre))
@@ -94,7 +95,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                                   Boolean isUnVisible, List<Genre> genres,
                                   Long visitorId) {
         return jpaQueryFactory
-                .select(feed.count())
+                .select(feed.feedId.countDistinct())
                 .from(feed)
                 .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
                 .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
