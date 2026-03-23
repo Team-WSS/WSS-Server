@@ -236,6 +236,7 @@ public class AppleService {
 
             return jwt.serialize();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "failed to generate client secret");
         }
     }
