@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.dto.feed;
 
-import java.time.LocalDate;
 import java.util.List;
 import org.websoso.WSSServer.feed.domain.Category;
 import org.websoso.WSSServer.feed.domain.Feed;
@@ -8,11 +7,12 @@ import org.websoso.WSSServer.feed.domain.FeedCategory;
 import org.websoso.WSSServer.feed.domain.Like;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.library.domain.UserNovel;
+import org.websoso.WSSServer.util.TimeFormatUtil;
 
 public record UserFeedGetResponse(
         Long feedId,
         String feedContent,
-        LocalDate createdDate,
+        String createdDate,
         Boolean isSpoiler,
         Boolean isModified,
         List<Long> likerUsers,
@@ -47,7 +47,7 @@ public record UserFeedGetResponse(
         return new UserFeedGetResponse(
                 feed.getFeedId(),
                 feed.getFeedContent(),
-                feed.getCreatedDate().toLocalDate(),
+                TimeFormatUtil.formatRelativeTime(feed.getCreatedDate()),
                 feed.getIsSpoiler(),
                 isModified,
                 likeUsers,
