@@ -43,6 +43,7 @@ import org.bouncycastle.util.io.pem.PemReader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -108,6 +109,8 @@ public class AppleService {
 
     @Value("${apple.iss}")
     private String appleAuthUrl;
+
+    private final ResourceLoader resourceLoader;
 
     public void upsertRefreshToken(User user, String appleRefreshToken) {
         userAppleTokenRepository.findByUser(user)
@@ -267,10 +270,9 @@ public class AppleService {
     }
 
     private byte[] readPrivateKey(String keyPath) {
-        Resource resource = new ClassPathResource(keyPath);
+        Resource resource = resourceLoader.getResource("file:" + keyPath);
         try (PemReader pemReader = new PemReader(new InputStreamReader(resource.getInputStream()))) {
-            PemObject pemObject = pemReader.readPemObject();
-            return pemObject.getContent();
+            return pemReader.readPemObject().getContent();
         } catch (IOException e) {
             throw new CustomAppleLoginException(PRIVATE_KEY_READ_FAILED, "failed to read private key");
         }
