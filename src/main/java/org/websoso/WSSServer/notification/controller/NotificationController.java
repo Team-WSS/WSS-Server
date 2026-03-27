@@ -7,6 +7,7 @@ import static org.springframework.http.HttpStatus.OK;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,7 +38,7 @@ public class NotificationController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NotificationPageResponse> getNotifications(
             @AuthenticationPrincipal User user,
-            @RequestParam(value = "lastNotificationId", required = false) @Positive Long lastNotificationId,
+            @RequestParam(value = "lastNotificationId", required = false) @PositiveOrZero Long lastNotificationId,
             @RequestParam(value = "size", defaultValue = "10") @Min(1) @Max(50) int size
     ) {
         return ResponseEntity
