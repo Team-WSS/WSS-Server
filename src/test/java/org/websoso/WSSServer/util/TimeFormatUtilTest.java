@@ -80,6 +80,62 @@ class TimeFormatUtilTest {
         assertThat(TimeFormatUtil.formatRelativeTime(future, clock)).isEqualTo("방금 전");
     }
 
+    @Test
+    void 알림_방금_전() {
+        Clock clock = fixedClock("2024-01-15T12:00:00");
+        assertThat(formatNotification(clock, 30)).isEqualTo("방금 전");
+    }
+
+    @Test
+    void 알림_방금_전_경계값_59초() {
+        Clock clock = fixedClock("2024-01-15T12:00:00");
+        assertThat(formatNotification(clock, 59)).isEqualTo("방금 전");
+    }
+
+    @Test
+    void 알림_분_전() {
+        Clock clock = fixedClock("2024-01-15T12:00:00");
+        assertThat(formatNotification(clock, 60)).isEqualTo("1분 전");
+    }
+
+    @Test
+    void 알림_분_전_경계값_59분() {
+        Clock clock = fixedClock("2024-01-15T12:00:00");
+        assertThat(formatNotification(clock, 59 * 60)).isEqualTo("59분 전");
+    }
+
+    @Test
+    void 알림_시간_전() {
+        Clock clock = fixedClock("2024-01-15T12:00:00");
+        assertThat(formatNotification(clock, 3600)).isEqualTo("1시간 전");
+    }
+
+    @Test
+    void 알림_시간_전_경계값_23시간() {
+        Clock clock = fixedClock("2024-01-15T12:00:00");
+        assertThat(formatNotification(clock, 23 * 3600)).isEqualTo("23시간 전");
+    }
+
+    @Test
+    void 알림_날짜_포맷() {
+        Clock clock = fixedClock("2024-01-15T12:00:00");
+        assertThat(formatNotification(clock, 24 * 3600)).isEqualTo("2024.01.14");
+    }
+
+    @Test
+    void 알림_날짜_포맷_연도_넘어감() {
+        Clock clock = fixedClock("2024-01-01T00:00:00");
+        LocalDateTime createdAt = LocalDateTime.parse("2023-12-31T00:00:00");
+        assertThat(TimeFormatUtil.formatNotificationDate(createdAt, clock)).isEqualTo("2023.12.31");
+    }
+
+    @Test
+    void 알림_미래_시각은_방금_전() {
+        Clock clock = fixedClock("2024-01-15T12:00:00");
+        LocalDateTime future = LocalDateTime.now(clock).plusHours(1);
+        assertThat(TimeFormatUtil.formatNotificationDate(future, clock)).isEqualTo("방금 전");
+    }
+
     private Clock fixedClock(String isoDateTime) {
         return Clock.fixed(
                 LocalDateTime.parse(isoDateTime)
@@ -92,6 +148,11 @@ class TimeFormatUtilTest {
     private String format(Clock clock, long secondsBefore) {
         LocalDateTime createdAt = LocalDateTime.now(clock).minusSeconds(secondsBefore);
         return TimeFormatUtil.formatRelativeTime(createdAt, clock);
+    }
+
+    private String formatNotification(Clock clock, long secondsBefore) {
+        LocalDateTime createdAt = LocalDateTime.now(clock).minusSeconds(secondsBefore);
+        return TimeFormatUtil.formatNotificationDate(createdAt, clock);
     }
 
 }
