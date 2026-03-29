@@ -13,6 +13,7 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 import org.websoso.WSSServer.user.domain.User;
 
 @Entity
@@ -26,19 +27,22 @@ import org.websoso.WSSServer.user.domain.User;
 })
 public class UserDevice {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
+    @Comment("사용자 기기 관리 고유 ID")
     private Long userDeviceId;
 
     @Column
+    @Comment("FCM 푸시 알림 발송용 토큰")
     private String fcmToken;
 
     @Column(nullable = false)
+    @Comment("기기 고유 식별값")
     private String deviceIdentifier;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @Comment("기기 소유 사용자 ID (FK)")
     private User user;
 
     private UserDevice(String fcmToken, String deviceIdentifier, User user) {
