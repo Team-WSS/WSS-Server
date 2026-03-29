@@ -16,8 +16,8 @@ public interface ReadNotificationRepository extends JpaRepository<ReadNotificati
 
     @Modifying
     @Query(value = """
-            INSERT IGNORE INTO read_notification (notification_id, user_id, created_at, updated_at)
-            VALUES (:notificationId, :userId, NOW(), NOW())
+            INSERT IGNORE INTO read_notification (notification_id, user_id)
+            VALUES (:notificationId, :userId)
             """, nativeQuery = true)
     void insertIgnoreReadNotification(
             @Param("notificationId") Long notificationId,
