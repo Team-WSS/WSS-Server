@@ -47,7 +47,7 @@ public record UserFeedGetResponse(
         return new UserFeedGetResponse(
                 feed.getFeedId(),
                 feed.getFeedContent(),
-                TimeFormatUtil.formatRelativeTime(feed.getCreatedDate()),
+                TimeFormatUtil.formatFeedDate(feed.getCreatedDate()),
                 feed.getIsSpoiler(),
                 isModified,
                 likeUsers,
