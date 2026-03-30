@@ -62,12 +62,9 @@ public class FeedFindApplication {
         UserBasicInfo feedUserBasicInfo = getUserBasicInfo(feed.getUser());
         Novel novel = getLinkedNovelOrNull(feed.getNovelId());
         Boolean isLiked = isUserLikedFeed(user, feed);
-        List<String> relevantCategories = feed.getFeedCategories().stream()
-                .map(feedCategory -> feedCategory.getCategory().getCategoryName().getLabel())
-                .collect(Collectors.toList());
         Boolean isMyFeed = isUserFeedOwner(feed.getUser(), user);
 
-        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, relevantCategories, isMyFeed);
+        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, isMyFeed);
     }
 
     private UserBasicInfo getUserBasicInfo(User user) {
@@ -129,16 +126,12 @@ public class FeedFindApplication {
         UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
         Novel novel = getLinkedNovelOrNull(feed.getNovelId());
         Boolean isLiked = user != null && isUserLikedFeed(user, feed);
-        List<String> relevantCategories = feed.getFeedCategories().stream()
-                .map(feedCategory -> feedCategory.getCategory().getCategoryName().getLabel())
-                .collect(Collectors.toList());
         Boolean isMyFeed = user != null && isUserFeedOwner(feed.getUser(), user);
         Integer imageCount = feedServiceImpl.countByFeedId(feed.getFeedId());
         Optional<FeedImage> thumbnailImage = feedServiceImpl.findThumbnailFeedImageByFeedId(feed.getFeedId());
         String thumbnailUrl = thumbnailImage.map(FeedImage::getUrl).orElse(null);
 
-        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed, thumbnailUrl, imageCount,
-                user);
+        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, isMyFeed, thumbnailUrl, imageCount, user);
     }
 
     @Transactional(readOnly = true)
