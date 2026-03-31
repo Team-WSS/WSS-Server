@@ -275,13 +275,13 @@ public class FeedService {
 
         List<Genre> genres = getPreferenceGenres(user);
 
-        Slice<Feed> feeds = findFeedsByCategoryLabel(getChosenCategoryOrDefault(category), lastFeedId, userIdOrNull,
+        Slice<Feed> feeds = findFeedsByCategoryLabel(lastFeedId, userIdOrNull,
                 PageRequest.of(DEFAULT_PAGE_NUMBER, size), feedGetOption, genres);
 
         List<FeedInfo> feedGetResponses = feeds.getContent().stream().filter(feed -> feed.isVisibleTo(userIdOrNull))
                 .map(feed -> createFeedInfo(feed, user)).toList();
 
-        return FeedsGetResponse.of(getChosenCategoryOrDefault(category), feeds.hasNext(), feedGetResponses);
+        return FeedsGetResponse.of(feeds.hasNext(), feedGetResponses);
     }
 
     private List<Genre> getPreferenceGenres(User user) {
@@ -336,24 +336,13 @@ public class FeedService {
         return FeedInfo.of(feed, userBasicInfo, novel, isLiked, isMyFeed, thumbnailUrl, imageCount, user);
     }
 
-    private Slice<Feed> findFeedsByCategoryLabel(String category, Long lastFeedId, Long userId, PageRequest pageRequest,
+    private Slice<Feed> findFeedsByCategoryLabel(Long lastFeedId, Long userId, PageRequest pageRequest,
                                                  FeedGetOption feedGetOption, List<Genre> preferenceGenres) {
-        if (DEFAULT_CATEGORY.equals(category)) {
             if (FeedGetOption.isAll(feedGetOption)) {
                 return feedRepository.findFeeds(lastFeedId, userId, pageRequest);
-            } else {
-                return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres);
             }
-        }
+            return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres);
 
-        boolean includeEtc = "etc".equals(category);
-        List<Genre> filterGenres = includeEtc ? null : List.of(findGenreByName(category));
-
-        if (FeedGetOption.isAll(feedGetOption)) {
-            return feedRepository.findFeedsByGenres(filterGenres, includeEtc, lastFeedId, userId, pageRequest);
-        } else {
-            return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, filterGenres);
-        }
     }
 
     private Genre findGenreByName(String genreName) {

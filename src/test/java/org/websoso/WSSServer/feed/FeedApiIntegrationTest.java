@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.oauth2.repository.RefreshTokenRepository;
 
 @SpringBootTest
@@ -108,7 +109,6 @@ class FeedApiIntegrationTest {
         MvcResult result = mockMvc.perform(
                         MockMvcRequestBuilders.get("/feeds")
                                 .header("Authorization", "Bearer " + token)
-                                .param("category", "all")
                                 .param("lastFeedId", "0")
                                 .param("size", "100"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -120,68 +120,8 @@ class FeedApiIntegrationTest {
         assertThat(feedCount).isGreaterThanOrEqualTo(3);
     }
 
-    // ============================================================
-    // GET /feeds - category=etc
-    // ============================================================
 
-    @Test
-    void category_etc_요청시_novelId가_null인_피드만_반환된다() throws Exception {
-        String token = getAccessToken();
 
-        MvcResult result = mockMvc.perform(
-                        MockMvcRequestBuilders.get("/feeds")
-                                .header("Authorization", "Bearer " + token)
-                                .param("category", "etc")
-                                .param("lastFeedId", "0")
-                                .param("size", "10"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        String body = result.getResponse().getContentAsString();
-        System.out.println(body);
-        var feeds = objectMapper.readTree(body).get("feeds");
-        feeds.forEach(feed -> assertThat(feed.get("novelId").isNull()).isTrue());
-    }
-
-    // ============================================================
-    // GET /feeds - category=장르명
-    // ============================================================
-
-    @Test
-    void category_장르명_요청시_해당_장르의_소설이_연결된_피드만_반환된다() throws Exception {
-        String token = getAccessToken();
-
-        MvcResult result = mockMvc.perform(
-                        MockMvcRequestBuilders.get("/feeds")
-                                .header("Authorization", "Bearer " + token)
-                                .param("category", TEST_GENRE_NAME)
-                                .param("lastFeedId", "0")
-                                .param("size", "10"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        String body = result.getResponse().getContentAsString();
-        var feeds = objectMapper.readTree(body).get("feeds");
-        assertThat(feeds.size()).isGreaterThanOrEqualTo(1);
-        feeds.forEach(feed -> assertThat(feed.get("novelId").isNull()).isFalse());
-    }
-
-    // ============================================================
-    // GET /feeds - 존재하지 않는 장르명
-    // ============================================================
-
-    @Test
-    void 존재하지_않는_장르명으로_요청시_에러가_반환된다() throws Exception {
-        String token = getAccessToken();
-
-        mockMvc.perform(
-                        MockMvcRequestBuilders.get("/feeds")
-                                .header("Authorization", "Bearer " + token)
-                                .param("category", "없는장르xyz")
-                                .param("lastFeedId", "0")
-                                .param("size", "10"))
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
-    }
 
     // ============================================================
     // GET /feeds - 비로그인(anonymous)
@@ -191,7 +131,6 @@ class FeedApiIntegrationTest {
     void 비로그인_상태로_category_all_요청시_200_응답이_반환된다() throws Exception {
         MvcResult result = mockMvc.perform(
                         MockMvcRequestBuilders.get("/feeds")
-                                .param("category", "all")
                                 .param("lastFeedId", "0")
                                 .param("size", "10"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -201,24 +140,7 @@ class FeedApiIntegrationTest {
         assertThat(objectMapper.readTree(body).get("feeds")).isNotNull();
     }
 
-    @Test
-    void 비로그인_상태로_category_etc_요청시_200_응답이_반환된다() throws Exception {
-        MvcResult result = mockMvc.perform(
-                        MockMvcRequestBuilders.get("/feeds")
-                                .param("category", "etc")
-                                .param("lastFeedId", "0")
-                                .param("size", "10"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
 
-        String body = result.getResponse().getContentAsString();
-        var feeds = objectMapper.readTree(body).get("feeds");
-        feeds.forEach(feed -> assertThat(feed.get("novelId").isNull()).isTrue());
-    }
-
-    // ============================================================
-    // POST /feeds - FeedCreateRequest (relevantCategories 없이 정상 동작)
-    // ============================================================
 
     private MockMultipartFile feedPart(String json) {
         return new MockMultipartFile("feed", null, "application/json",
@@ -284,10 +206,6 @@ class FeedApiIntegrationTest {
         assertThat(responseNode.has("relevantCategories")).isFalse();
     }
 
-    // ============================================================
-    // GET /users/{userId}/feeds - UserFeedGetResponse에 relevantCategories 없음
-    // ============================================================
-
     @Test
     void 유저_피드_목록_조회시_응답에_relevantCategories_필드가_없다() throws Exception {
         MvcResult result = mockMvc.perform(
@@ -317,51 +235,84 @@ class FeedApiIntegrationTest {
         feeds.forEach(feed -> assertThat(feed.get("novelId").isNull()).isTrue());
     }
 
-    // ============================================================
-    // GET /users/{userId}/feeds - genreNames에 선호 장르만 포함 시 etc 피드 미포함
-    // ============================================================
-
     @Test
-    void 유저_피드_목록_조회시_선호_장르로만_검색하면_etc_피드가_포함되지_않는다() throws Exception {
-        // etc 피드(novelId=null)는 소설과 연결이 없으므로 장르 기반 검색 대상이 아님
-        // 선호 장르(소설 연결 필요)로만 검색하면 etc 피드는 결과에 나오지 않아야 함
+    void 피드_목록_조회시_선호_장르로만_검색하면_etc_피드가_포함되지_않는다() throws Exception {
+        String token = getAccessToken();
         MvcResult result = mockMvc.perform(
-                        MockMvcRequestBuilders.get("/users/{userId}/feeds", USER_ID)
+                        MockMvcRequestBuilders.get("/feeds")
+                                .header("Authorization", "Bearer " + token)
                                 .param("lastFeedId", "0")
                                 .param("size", "100")
-                                .param("genreNames", TEST_GENRE_NAME))
+                                .param("feedsOption", "RECOMMENDED"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
 
         var feeds = objectMapper.readTree(result.getResponse().getContentAsString()).get("feeds");
-        // 모든 결과 피드는 소설이 연결된 피드여야 함 (etc 피드 제외)
+
         feeds.forEach(feed -> {assertThat(feed.get("novelId").isNull()).isFalse();
         });
     }
 
     @Test
-    void 유저_피드_목록_조회시_etc_피드만_있는_상태에서_선호_장르로_검색하면_빈_목록이_반환된다() throws Exception {
-        // etc 전용 유저 피드 셋업: 소설 연결 피드(피드1)를 제외하고 etc 피드(피드2, 피드3)만 남긴다
-        Long novelFeedId = insertedFeedIds.get(0);
-        transactionTemplate.execute(status -> {
-            em.createNativeQuery("DELETE FROM feed WHERE feed_id = ?")
-                    .setParameter(1, novelFeedId)
-                    .executeUpdate();
-            return null;
-        });
-        insertedFeedIds.remove(novelFeedId);
-
-        // 이 시점에서 USER_ID의 피드는 novelId=null인 etc 피드 2개만 남음
-        // TEST_GENRE_NAME(선호 장르)으로 검색하면 소설이 연결된 피드가 없으므로 빈 목록 반환
+    void 유저_피드_목록_조회시_장르가_etc이면_작품_없는_피드만_조회되야_한다() throws Exception {
+        String token = getAccessToken();
         MvcResult result = mockMvc.perform(
                         MockMvcRequestBuilders.get("/users/{userId}/feeds", USER_ID)
+                                .header("Authorization", "Bearer " + token)
                                 .param("lastFeedId", "0")
-                                .param("size", "100")
-                                .param("genreNames", TEST_GENRE_NAME))
+                                .param("size", "10")
+                                .param("genreNames", "etc"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
 
         var feeds = objectMapper.readTree(result.getResponse().getContentAsString()).get("feeds");
-        assertThat(feeds.size()).isZero();
+        assertThat(feeds.size()).isGreaterThanOrEqualTo(1);
+        feeds.forEach(feed -> assertThat(feed.get("genre").isNull()).isTrue());
+    }
+
+    @Test
+    void 유저_피드_목록_조회시_장르가_여러개일때_여러_장르의_작품이_조회되야_한다() throws Exception {
+        String token = getAccessToken();
+        MvcResult result = mockMvc.perform(
+                        MockMvcRequestBuilders.get("/users/{userId}/feeds", USER_ID)
+                                .header("Authorization", "Bearer " + token)
+                                .param("lastFeedId", "0")
+                                .param("size", "10")
+                                .param("genreNames", "etc")
+                                .param("genreNames", "romance"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        var feeds = objectMapper.readTree(result.getResponse().getContentAsString()).get("feeds");
+        assertThat(feeds.size()).isGreaterThanOrEqualTo(2);
+        feeds.forEach(feed -> {
+            var genreNode = feed.get("genre");
+            boolean isNullOrRomance = genreNode.isNull() || "romance".equals(genreNode.asText());
+
+            assertThat(isNullOrRomance).isTrue();
+        });
+    }
+
+    @Test
+    void 유저_피드_목록_조회시_장르에_etc_없으면_작품이_조회되야_한다() throws Exception {
+        String token = getAccessToken();
+        MvcResult result = mockMvc.perform(
+                        MockMvcRequestBuilders.get("/users/{userId}/feeds", USER_ID)
+                                .header("Authorization", "Bearer " + token)
+                                .param("lastFeedId", "0")
+                                .param("size", "10")
+                                .param("genreNames", "etc")
+                                .param("genreNames", "romance"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        var feeds = objectMapper.readTree(result.getResponse().getContentAsString()).get("feeds");
+        assertThat(feeds.size()).isGreaterThanOrEqualTo(2);
+        feeds.forEach(feed -> {
+            var genreNode = feed.get("genre");
+            boolean isNullOrRomance = genreNode.isNull() || "romance".equals(genreNode.asText());
+
+            assertThat(isNullOrRomance).isTrue();
+        });
     }
 }
