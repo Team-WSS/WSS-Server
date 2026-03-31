@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.feed.service;
 
-import static org.websoso.WSSServer.exception.error.CustomCategoryError.INVALID_CATEGORY_FORMAT;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,31 +11,27 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Genre;
-import org.websoso.WSSServer.domain.common.CategoryName;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
-import org.websoso.WSSServer.exception.exception.CustomCategoryException;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
-import org.websoso.WSSServer.feed.domain.Category;
+import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.feed.domain.PopularFeed;
-import org.websoso.WSSServer.feed.repository.CategoryRepository;
-import org.websoso.WSSServer.feed.repository.FeedCategoryRepository;
 import org.websoso.WSSServer.feed.repository.FeedImageCustomRepository;
 import org.websoso.WSSServer.feed.repository.FeedImageRepository;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.feed.repository.PopularFeedRepository;
+import org.websoso.WSSServer.repository.GenreRepository;
 
 @Service
 @RequiredArgsConstructor
 public class FeedServiceImpl {
 
     private final FeedRepository feedRepository;
-    private final FeedCategoryRepository feedCategoryRepository;
-    private final CategoryRepository categoryRepository;
     private final FeedImageRepository feedImageRepository;
     private final FeedImageCustomRepository feedImageCustomRepository;
     private final PopularFeedRepository popularFeedRepository;
+    private final GenreRepository genreRepository;
 
     private static final String DEFAULT_CATEGORY = "all";
 
@@ -46,30 +42,21 @@ public class FeedServiceImpl {
     }
 
     @Transactional(readOnly = true)
-    public Slice<Feed> findFeedsByCategoryLabel(String category, Long lastFeedId, Long userId, PageRequest pageRequest,
-                                                FeedGetOption feedGetOption, List<Genre> genres) {
-        if (DEFAULT_CATEGORY.equals(category)) {
+    public Slice<Feed> findFeedsByCategoryLabel(Long lastFeedId, Long userId, PageRequest pageRequest,
+                                                FeedGetOption feedGetOption, List<Genre> preferenceGenres) {
+
             if (FeedGetOption.isAll(feedGetOption)) {
                 return feedRepository.findFeeds(lastFeedId, userId, pageRequest);
             } else {
-                return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, genres);
+                return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres);
             }
-        } else {
-            if (FeedGetOption.isAll(feedGetOption)) {
-                return feedCategoryRepository.findFeedsByCategory(findCategoryByName(category), lastFeedId, userId,
-                        pageRequest);
-            } else {
-                return feedCategoryRepository.findRecommendedFeedsByCategoryLabel(findCategoryByName(category),
-                        lastFeedId, userId, pageRequest, genres);
-            }
-        }
+
     }
 
-    // 이 부분 private으로 두는 게 맞을지 아니면 public으로 두는 게 나을지 고민
-    private Category findCategoryByName(String categoryName) {
-        return categoryRepository.findByCategoryName(CategoryName.valueOf(categoryName)).orElseThrow(
-                () -> new CustomCategoryException(INVALID_CATEGORY_FORMAT,
-                        "Category for the given feed was not found"));
+    private Genre findGenreByName(String genreName) {
+        return genreRepository.findByGenreName(genreName)
+                .orElseThrow(() -> new CustomGenreException(GENRE_NOT_FOUND,
+                        "genre with the given name is not found"));
     }
 
     @Transactional(readOnly = true)

@@ -62,13 +62,12 @@ public class FeedController {
 
     @GetMapping
     public ResponseEntity<FeedsGetResponse> getFeeds(@AuthenticationPrincipal User user,
-                                                     @RequestParam(value = "category", required = false) String category,
                                                      @RequestParam("lastFeedId") Long lastFeedId,
                                                      @RequestParam("size") int size,
                                                      @RequestParam(value = "feedsOption", required = false) FeedGetOption feedGetOption) {
         return ResponseEntity
                 .status(OK)
-                .body(feedFindApplication.getFeeds(user, category, lastFeedId, size, feedGetOption));
+                .body(feedFindApplication.getFeeds(user, lastFeedId, size, feedGetOption));
     }
 
     @PutMapping("/{feedId}")
