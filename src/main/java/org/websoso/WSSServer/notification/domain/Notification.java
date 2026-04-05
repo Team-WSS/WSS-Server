@@ -20,6 +20,8 @@ import org.websoso.common.entity.BaseEntity;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification extends BaseEntity {
 
+    public static final long GLOBAL_USER_ID = 0L;
+
     @Id @GeneratedValue(strategy = IDENTITY)
     @Comment("알림 고유 ID")
     private Long notificationId;
