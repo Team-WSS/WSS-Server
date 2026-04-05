@@ -45,7 +45,11 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .map(novelId -> jpaQueryFactory
                         .selectFrom(feed)
                         .leftJoin(feed.likes, like)
-                        .where(feed.novelId.eq(novelId))
+                        .where(
+                                feed.novelId.eq(novelId),
+                                feed.isPublic.isTrue(),
+                                feed.isSpoiler.isFalse()
+                        )
                         .groupBy(feed.feedId)
                         .orderBy(like.count().desc())
                         .fetchFirst())
