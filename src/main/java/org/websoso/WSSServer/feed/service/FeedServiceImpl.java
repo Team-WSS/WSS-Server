@@ -43,12 +43,12 @@ public class FeedServiceImpl {
 
     @Transactional(readOnly = true)
     public Slice<Feed> findFeedsByCategoryLabel(Long lastFeedId, Long userId, PageRequest pageRequest,
-                                                FeedGetOption feedGetOption, List<Genre> preferenceGenres) {
+                                                FeedGetOption feedGetOption) {
 
             if (FeedGetOption.isAll(feedGetOption)) {
                 return feedRepository.findFeeds(lastFeedId, userId, pageRequest);
             } else {
-                return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres);
+                return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest);
             }
 
     }

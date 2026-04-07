@@ -94,10 +94,8 @@ public class FeedFindApplication {
                                      FeedGetOption feedGetOption) {
         Long userIdOrNull = Optional.ofNullable(user).map(User::getUserId).orElse(null);
 
-        List<Genre> genres = getPreferenceGenres(user);
-
         Slice<Feed> feeds = findFeedsByCategoryLabel(lastFeedId, userIdOrNull,
-                PageRequest.of(DEFAULT_PAGE_NUMBER, size), feedGetOption, genres);
+                PageRequest.of(DEFAULT_PAGE_NUMBER, size), feedGetOption);
 
         List<FeedInfo> feedGetResponses = feeds.getContent().stream().filter(feed -> feed.isVisibleTo(userIdOrNull))
                 .map(feed -> createFeedInfo(feed, user)).toList();
@@ -117,9 +115,8 @@ public class FeedFindApplication {
     }
 
     private Slice<Feed> findFeedsByCategoryLabel(Long lastFeedId, Long userId, PageRequest pageRequest,
-                                                 FeedGetOption feedGetOption, List<Genre> genres) {
-        return feedServiceImpl.findFeedsByCategoryLabel(lastFeedId, userId, pageRequest, feedGetOption,
-                genres);
+                                                 FeedGetOption feedGetOption) {
+        return feedServiceImpl.findFeedsByCategoryLabel(lastFeedId, userId, pageRequest, feedGetOption);
     }
 
     private FeedInfo createFeedInfo(Feed feed, User user) {

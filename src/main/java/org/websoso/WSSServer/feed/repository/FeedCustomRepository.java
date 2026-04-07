@@ -16,7 +16,7 @@ public interface FeedCustomRepository {
                                              Boolean isUnVisible, SortCriteria sortCriteria, List<Genre> genres,
                                              Long visitorId, boolean includeEtc);
 
-    Slice<Feed> findRecommendedFeeds(Long lastFeedId, Long userId, PageRequest pageRequest, List<Genre> genres);
+    Slice<Feed> findRecommendedFeeds(Long lastFeedId, Long userId, PageRequest pageRequest);
 
     Slice<Feed> findFeedsByGenres(List<Genre> genres, boolean includeEtc, Long lastFeedId, Long userId,
                                   PageRequest pageRequest);

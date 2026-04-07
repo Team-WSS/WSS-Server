@@ -60,20 +60,8 @@ class FeedServiceImplTest {
         feedServiceImpl.findFeedsByCategoryLabel(LAST_FEED_ID, USER_ID, pageRequest, FeedGetOption.ALL, null);
 
         verify(feedRepository).findFeeds(LAST_FEED_ID, USER_ID, pageRequest);
-        verify(feedRepository, never()).findRecommendedFeeds(any(), any(), any(), any());
+        verify(feedRepository, never()).findRecommendedFeeds(any(), any(), any());
         verify(feedRepository, never()).findFeedsByGenres(any(), anyBoolean(), any(), any(), any());
-    }
-
-    @Test
-    void RECOMMENDED_옵션이면_findRecommendedFeeds를_유저_선호장르로_호출한다() {
-        Genre prefGenre = mock(Genre.class);
-        List<Genre> preferenceGenres = List.of(prefGenre);
-
-        feedServiceImpl.findFeedsByCategoryLabel(LAST_FEED_ID, USER_ID, pageRequest,
-                FeedGetOption.RECOMMENDED, preferenceGenres);
-
-        verify(feedRepository).findRecommendedFeeds(LAST_FEED_ID, USER_ID, pageRequest, preferenceGenres);
-        verify(feedRepository, never()).findFeeds(any(), any(), any());
     }
 
     @Test

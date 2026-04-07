@@ -341,7 +341,7 @@ public class FeedService {
             if (FeedGetOption.isAll(feedGetOption)) {
                 return feedRepository.findFeeds(lastFeedId, userId, pageRequest);
             }
-            return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres);
+            return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest);
 
     }
 
