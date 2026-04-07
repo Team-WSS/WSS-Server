@@ -153,7 +153,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .where(
                         ltFeedId(lastFeedId),
                         checkPopularFeed(),
-                        checkGenres(genres, false),
+                        checkGenres(genres, true),
                         checkBlocking(userId),
                         checkHidden()
                 )
