@@ -60,9 +60,6 @@ public class Feed {
     private User user;
 
     @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
-    private List<FeedCategory> feedCategories = new ArrayList<>();
-
-    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
     private List<Like> likes = new ArrayList<>();
 
     @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)

@@ -22,7 +22,6 @@ public record FeedGetResponse(
         String title,
         Integer novelRatingCount,
         Float novelRating,
-        List<String> relevantCategories,
         Boolean isSpoiler,
         Boolean isModified,
         Boolean isMyFeed,
@@ -35,7 +34,7 @@ public record FeedGetResponse(
         String novelDescription
 ) {
     public static FeedGetResponse of(Feed feed, UserBasicInfo feedUserBasicInfo, Novel novel, Boolean isLiked,
-                                     List<String> relevantCategories, Boolean isMyFeed) {
+                                     Boolean isMyFeed) {
         String title = null;
         Integer novelRatingCount = null;
         Float novelRating = null;
@@ -81,7 +80,6 @@ public record FeedGetResponse(
                 title,
                 novelRatingCount,
                 novelRating,
-                relevantCategories,
                 feed.getIsSpoiler(),
                 !feed.getCreatedDate().equals(feed.getModifiedDate()),
                 isMyFeed,

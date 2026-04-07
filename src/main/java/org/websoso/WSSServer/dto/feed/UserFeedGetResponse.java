@@ -1,9 +1,7 @@
 package org.websoso.WSSServer.dto.feed;
 
 import java.util.List;
-import org.websoso.WSSServer.feed.domain.Category;
 import org.websoso.WSSServer.feed.domain.Feed;
-import org.websoso.WSSServer.feed.domain.FeedCategory;
 import org.websoso.WSSServer.feed.domain.Like;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.library.domain.UserNovel;
@@ -23,7 +21,6 @@ public record UserFeedGetResponse(
         String title,
         Float novelRating,
         Long novelRatingCount,
-        List<String> relevantCategories,
         Boolean isPublic,
         String genre,
         Float userNovelRating,
@@ -39,7 +36,6 @@ public record UserFeedGetResponse(
         Float novelRating = getNovelRating(novel, novelRatingCount);
         List<Long> likeUsers = getLikeUsers(feed);
         boolean isLiked = likeUsers.contains(visitorId);
-        List<String> relevantCategories = getFeedCategories(feed);
         String genreName = getNovelGenreName(novel);
         Float userNovelRating = getUserNovelRating(novel, visitorId);
         Float feedWriterNovelRating = getFeedWriterNovelRating(novel, feed.getUser().getUserId());
@@ -60,7 +56,6 @@ public record UserFeedGetResponse(
                         null : novel.getTitle(),
                 novelRating,
                 novelRatingCount,
-                relevantCategories,
                 feed.getIsPublic(),
                 genreName,
                 userNovelRating,
@@ -68,15 +63,6 @@ public record UserFeedGetResponse(
                 imageCount,
                 feedWriterNovelRating
         );
-    }
-
-    private static List<String> getFeedCategories(Feed feed) {
-        return feed.getFeedCategories()
-                .stream()
-                .map(FeedCategory::getCategory)
-                .map(Category::getCategoryName)
-                .map(Enum::name)
-                .toList();
     }
 
     private static List<Long> getLikeUsers(Feed feed) {
