@@ -57,7 +57,7 @@ class FeedServiceImplTest {
 
     @Test
     void ALL_옵션이면_findFeeds를_호출한다() {
-        feedServiceImpl.findFeedsByCategoryLabel(LAST_FEED_ID, USER_ID, pageRequest, FeedGetOption.ALL, null);
+        feedServiceImpl.findFeedsByCategoryLabel(LAST_FEED_ID, USER_ID, pageRequest, FeedGetOption.ALL);
 
         verify(feedRepository).findFeeds(LAST_FEED_ID, USER_ID, pageRequest);
         verify(feedRepository, never()).findRecommendedFeeds(any(), any(), any());
@@ -66,7 +66,7 @@ class FeedServiceImplTest {
 
     @Test
     void feedGetOption이_null이면_ALL로_동작한다() {
-        feedServiceImpl.findFeedsByCategoryLabel(LAST_FEED_ID, USER_ID, pageRequest, null, null);
+        feedServiceImpl.findFeedsByCategoryLabel(LAST_FEED_ID, USER_ID, pageRequest, null);
 
         verify(feedRepository).findFeeds(LAST_FEED_ID, USER_ID, pageRequest);
     }
