@@ -179,12 +179,12 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     }
 
     private BooleanExpression checkGenres(List<Genre> genres, boolean includeEtc) {
-        BooleanExpression etcCondition = includeEtc ? feed.novelId.isNull() : null;
         if (genres != null && !genres.isEmpty()) {
             BooleanExpression genreCondition = genre.in(genres);
+            BooleanExpression etcCondition = includeEtc ? feed.novelId.isNull() : null;
             return etcCondition != null ? genreCondition.or(etcCondition) : genreCondition;
         }
-        return etcCondition;
+        return null;
     }
 
     @Override
