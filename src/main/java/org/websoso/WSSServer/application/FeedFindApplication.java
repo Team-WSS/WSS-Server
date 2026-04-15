@@ -62,12 +62,9 @@ public class FeedFindApplication {
         UserBasicInfo feedUserBasicInfo = getUserBasicInfo(feed.getUser());
         Novel novel = getLinkedNovelOrNull(feed.getNovelId());
         Boolean isLiked = isUserLikedFeed(user, feed);
-        List<String> relevantCategories = feed.getFeedCategories().stream()
-                .map(feedCategory -> feedCategory.getCategory().getCategoryName().getLabel())
-                .collect(Collectors.toList());
         Boolean isMyFeed = isUserFeedOwner(feed.getUser(), user);
 
-        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, relevantCategories, isMyFeed);
+        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, isMyFeed);
     }
 
     private UserBasicInfo getUserBasicInfo(User user) {
@@ -93,19 +90,19 @@ public class FeedFindApplication {
     }
 
     @Transactional(readOnly = true)
-    public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size,
+    public FeedsGetResponse getFeeds(User user, Long lastFeedId, int size,
                                      FeedGetOption feedGetOption) {
         Long userIdOrNull = Optional.ofNullable(user).map(User::getUserId).orElse(null);
 
         List<Genre> genres = getPreferenceGenres(user);
 
-        Slice<Feed> feeds = findFeedsByCategoryLabel(getChosenCategoryOrDefault(category), lastFeedId, userIdOrNull,
+        Slice<Feed> feeds = findFeedsByCategoryLabel(lastFeedId, userIdOrNull,
                 PageRequest.of(DEFAULT_PAGE_NUMBER, size), feedGetOption, genres);
 
         List<FeedInfo> feedGetResponses = feeds.getContent().stream().filter(feed -> feed.isVisibleTo(userIdOrNull))
                 .map(feed -> createFeedInfo(feed, user)).toList();
 
-        return FeedsGetResponse.of(getChosenCategoryOrDefault(category), feeds.hasNext(), feedGetResponses);
+        return FeedsGetResponse.of(feeds.hasNext(), feedGetResponses);
     }
 
     private List<Genre> getPreferenceGenres(User user) {
@@ -119,9 +116,9 @@ public class FeedFindApplication {
         return Optional.ofNullable(category).orElse(DEFAULT_CATEGORY);
     }
 
-    private Slice<Feed> findFeedsByCategoryLabel(String category, Long lastFeedId, Long userId, PageRequest pageRequest,
+    private Slice<Feed> findFeedsByCategoryLabel(Long lastFeedId, Long userId, PageRequest pageRequest,
                                                  FeedGetOption feedGetOption, List<Genre> genres) {
-        return feedServiceImpl.findFeedsByCategoryLabel(category, lastFeedId, userId, pageRequest, feedGetOption,
+        return feedServiceImpl.findFeedsByCategoryLabel(lastFeedId, userId, pageRequest, feedGetOption,
                 genres);
     }
 
@@ -129,16 +126,12 @@ public class FeedFindApplication {
         UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
         Novel novel = getLinkedNovelOrNull(feed.getNovelId());
         Boolean isLiked = user != null && isUserLikedFeed(user, feed);
-        List<String> relevantCategories = feed.getFeedCategories().stream()
-                .map(feedCategory -> feedCategory.getCategory().getCategoryName().getLabel())
-                .collect(Collectors.toList());
         Boolean isMyFeed = user != null && isUserFeedOwner(feed.getUser(), user);
         Integer imageCount = feedServiceImpl.countByFeedId(feed.getFeedId());
         Optional<FeedImage> thumbnailImage = feedServiceImpl.findThumbnailFeedImageByFeedId(feed.getFeedId());
         String thumbnailUrl = thumbnailImage.map(FeedImage::getUrl).orElse(null);
 
-        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, relevantCategories, isMyFeed, thumbnailUrl, imageCount,
-                user);
+        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, isMyFeed, thumbnailUrl, imageCount, user);
     }
 
     @Transactional(readOnly = true)

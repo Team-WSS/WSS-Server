@@ -45,7 +45,11 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .map(novelId -> jpaQueryFactory
                         .selectFrom(feed)
                         .leftJoin(feed.likes, like)
-                        .where(feed.novelId.eq(novelId))
+                        .where(
+                                feed.novelId.eq(novelId),
+                                feed.isPublic.isTrue(),
+                                feed.isSpoiler.isFalse()
+                        )
                         .groupBy(feed.feedId)
                         .orderBy(like.count().desc())
                         .fetchFirst())
@@ -56,9 +60,10 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     @Override
     public List<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size, Boolean isVisible,
                                                     Boolean isUnVisible, SortCriteria sortCriteria,
-                                                    List<Genre> genres, Long visitorId) {
+                                                    List<Genre> genres, Long visitorId, boolean includeEtc) {
         return jpaQueryFactory
                 .selectFrom(feed)
+                .distinct()
                 .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
                 .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
                 .leftJoin(genre).on(novelGenre.genre.eq(genre))
@@ -67,7 +72,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                         ltFeedId(lastFeedId),
                         checkVisible(visitorId),
                         checkPublic(isVisible, isUnVisible),
-                        checkGenres(genres)
+                        checkGenres(genres, includeEtc)
                 )
                 .orderBy(
                         checkSortCriteria(sortCriteria),
@@ -92,9 +97,9 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     @Override
     public Long countVisibleFeeds(User owner, Long lastFeedId, Boolean isVisible,
                                   Boolean isUnVisible, List<Genre> genres,
-                                  Long visitorId) {
+                                  Long visitorId, boolean includeEtc) {
         return jpaQueryFactory
-                .select(feed.count())
+                .select(feed.feedId.countDistinct())
                 .from(feed)
                 .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
                 .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
@@ -103,7 +108,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                         feed.user.eq(owner),
                         checkVisible(visitorId),
                         checkPublic(isVisible, isUnVisible),
-                        checkGenres(genres)
+                        checkGenres(genres, includeEtc)
                 )
                 .fetchOne();
     }
@@ -148,7 +153,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .where(
                         ltFeedId(lastFeedId),
                         checkPopularFeed(),
-                        checkGenres(genres),
+                        checkGenres(genres, true),
                         checkBlocking(userId),
                         checkHidden()
                 )
@@ -173,11 +178,39 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .goe(POPULAR_FEED_LIKE_COUNT);
     }
 
-    private BooleanExpression checkGenres(List<Genre> genres) {
+    private BooleanExpression checkGenres(List<Genre> genres, boolean includeEtc) {
         if (genres != null && !genres.isEmpty()) {
-            return genre.in(genres).or(feed.novelId.isNull());
+            BooleanExpression genreCondition = genre.in(genres);
+            BooleanExpression etcCondition = includeEtc ? feed.novelId.isNull() : null;
+            return etcCondition != null ? genreCondition.or(etcCondition) : genreCondition;
         }
         return null;
+    }
+
+    @Override
+    public Slice<Feed> findFeedsByGenres(List<Genre> genres, boolean includeEtc, Long lastFeedId, Long userId,
+                                         PageRequest pageRequest) {
+        List<Feed> feeds = jpaQueryFactory
+                .selectFrom(feed)
+                .distinct()
+                .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
+                .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
+                .leftJoin(genre).on(novelGenre.genre.eq(genre))
+                .where(
+                        ltFeedId(lastFeedId),
+                        checkGenres(genres, includeEtc),
+                        checkBlocking(userId),
+                        checkHidden()
+                )
+                .orderBy(feed.feedId.desc())
+                .limit(pageRequest.getPageSize() + 1)
+                .fetch();
+
+        boolean hasNext = feeds.size() > pageRequest.getPageSize();
+        if (hasNext) {
+            feeds.remove(feeds.size() - 1);
+        }
+        return new SliceImpl<>(feeds, pageRequest, hasNext);
     }
 
     private BooleanExpression checkBlocking(Long userId) {

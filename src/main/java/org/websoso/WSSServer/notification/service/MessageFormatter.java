@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.service;
+package org.websoso.WSSServer.notification.service;
 
 import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.COMMENT_REPORT;
 import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.FEED_REPORT;

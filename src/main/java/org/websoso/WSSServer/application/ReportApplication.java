@@ -23,7 +23,7 @@ import org.websoso.WSSServer.feed.service.CommentServiceImpl;
 import org.websoso.WSSServer.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.feed.service.ReportServiceImpl;
 import org.websoso.WSSServer.notification.service.DiscordMessageClient;
-import org.websoso.WSSServer.service.MessageFormatter;
+import org.websoso.WSSServer.notification.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.repository.UserRepository;
 

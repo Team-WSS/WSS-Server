@@ -1,12 +1,12 @@
 package org.websoso.WSSServer.dto.feed;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
+import org.websoso.WSSServer.util.TimeFormatUtil;
 
 public record FeedInfo(
         Long feedId,
@@ -22,7 +22,6 @@ public record FeedInfo(
         String title,
         Integer novelRatingCount,
         Float novelRating,
-        List<String> relevantCategories,
         Boolean isSpoiler,
         Boolean isModified,
         Boolean isMyFeed,
@@ -34,8 +33,7 @@ public record FeedInfo(
         Float feedWriterNovelRating
 ) {
     public static FeedInfo of(Feed feed, UserBasicInfo userBasicInfo, Novel novel, Boolean isLiked,
-                              List<String> relevantCategories, Boolean isMyFeed, String thumbnailUrl,
-                              Integer imageCount, User user) {
+                              Boolean isMyFeed, String thumbnailUrl, Integer imageCount, User user) {
         String title = null;
         Integer novelRatingCount = null;
         Float novelRating = null;
@@ -61,7 +59,7 @@ public record FeedInfo(
                 userBasicInfo.userId(),
                 userBasicInfo.nickname(),
                 userBasicInfo.avatarImage(),
-                feed.getCreatedDate().format(DateTimeFormatter.ofPattern("M월 d일")),
+                TimeFormatUtil.formatRelativeTime(feed.getCreatedDate()),
                 feed.getFeedContent(),
                 feed.getLikes().size(),
                 isLiked,
@@ -70,7 +68,6 @@ public record FeedInfo(
                 title,
                 novelRatingCount,
                 novelRating,
-                relevantCategories,
                 feed.getIsSpoiler(),
                 !feed.getCreatedDate().equals(feed.getModifiedDate()),
                 isMyFeed,

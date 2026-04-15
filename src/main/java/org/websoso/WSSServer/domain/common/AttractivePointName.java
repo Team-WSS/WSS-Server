@@ -10,7 +10,8 @@ public enum AttractivePointName {
     MATERIAL("material"),
     CHARACTER("character"),
     RELATIONSHIP("relationship"),
-    VIBE("vibe");
+    VIBE("vibe"),
+    WRITINGSKILL("writingskill");
 
     private final String label;
 }
