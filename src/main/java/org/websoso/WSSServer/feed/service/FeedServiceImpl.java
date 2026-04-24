@@ -3,11 +3,16 @@ package org.websoso.WSSServer.feed.service;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Genre;
@@ -48,7 +53,22 @@ public class FeedServiceImpl {
             if (FeedGetOption.isAll(feedGetOption)) {
                 return feedRepository.findFeeds(lastFeedId, userId, pageRequest);
             } else {
-                return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres);
+                // 인기 피드
+                Slice<Feed> recommendedFeeds = feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres);
+                // 내가 관심 등록한 작품의 피드
+                Slice<Feed> interestedNovelFeeds = feedRepository.findInterestedNovelFeeds(lastFeedId, userId, pageRequest);
+                int pageSize = pageRequest.getPageSize();
+                List<Feed> combinedFeeds = Stream.concat(
+                    recommendedFeeds.getContent().stream(),
+                    interestedNovelFeeds.getContent().stream())
+                    .distinct()
+                    .sorted(Comparator.comparing(Feed::getFeedId).reversed()) // feedId 내림차순 정렬
+                    .collect(Collectors.toList());
+                boolean hasNext = combinedFeeds.size() > pageSize || recommendedFeeds.hasNext() || interestedNovelFeeds.hasNext();
+                List<Feed> resultFeeds = combinedFeeds.stream()
+                    .limit(pageSize)
+                    .collect(Collectors.toList());
+                return new SliceImpl<>(resultFeeds, pageRequest, hasNext);
             }
 
     }

@@ -4,6 +4,7 @@ import static org.websoso.WSSServer.domain.QGenre.genre;
 import static org.websoso.WSSServer.feed.domain.QFeed.feed;
 import static org.websoso.WSSServer.feed.domain.QFeedImage.feedImage;
 import static org.websoso.WSSServer.feed.domain.QLike.like;
+import static org.websoso.WSSServer.library.domain.QUserNovel.userNovel;
 import static org.websoso.WSSServer.novel.domain.QNovel.novel;
 import static org.websoso.WSSServer.novel.domain.QNovelGenre.novelGenre;
 import static org.websoso.WSSServer.user.domain.QBlock.block;
@@ -170,6 +171,31 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
         return new SliceImpl<>(feeds, pageRequest, hasNext);
     }
 
+    @Override
+    public Slice<Feed> findInterestedNovelFeeds(Long lastFeedId, Long userId, PageRequest pageRequest) {
+        List<Feed> feeds = jpaQueryFactory
+                .selectFrom(feed)
+                .join(novel).on(feed.novelId.eq(novel.novelId))
+                .join(userNovel).on(novel.eq(userNovel.novel))
+                .where(
+                        ltFeedId(lastFeedId),
+                        checkBlocking(userId),
+                        checkHidden(),
+                        checkInterestedNovels(userId)
+                )
+                .limit(pageRequest.getPageSize() + 1)
+                .orderBy(feed.feedId.desc())
+                .fetch();
+
+        boolean hasNext = feeds.size() > pageRequest.getPageSize();
+
+        if (hasNext) {
+            feeds.remove(feeds.size() - 1);
+        }
+
+        return new SliceImpl<>(feeds, pageRequest, hasNext);
+    }
+
     private BooleanExpression checkPopularFeed() {
         return JPAExpressions
                 .select(like.count())
@@ -235,4 +261,12 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
         }
         return null;
     }
+
+    private BooleanExpression checkInterestedNovels(Long userId) {
+        if (userId != null) {
+            return userNovel.user.userId.eq(userId).and(userNovel.isInterest.isTrue());
+        }
+        return null;
+    }
+
 }
