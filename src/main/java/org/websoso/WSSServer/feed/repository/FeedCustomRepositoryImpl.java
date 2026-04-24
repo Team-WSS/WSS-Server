@@ -61,7 +61,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     @Override
     public List<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size, Boolean isVisible,
                                                     Boolean isUnVisible, SortCriteria sortCriteria,
-                                                    List<Genre> genres, Long visitorId, boolean includeEtc) {
+                                                    List<Genre> genres, Long visitorId, boolean isNotNovelConnect) {
         return jpaQueryFactory
                 .selectFrom(feed)
                 .distinct()
@@ -73,7 +73,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                         ltFeedId(lastFeedId),
                         checkVisible(visitorId),
                         checkPublic(isVisible, isUnVisible),
-                        checkGenres(genres, includeEtc)
+                        checkGenresAndNovels(genres, isNotNovelConnect)
                 )
                 .orderBy(
                         checkSortCriteria(sortCriteria),
@@ -98,7 +98,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     @Override
     public Long countVisibleFeeds(User owner, Long lastFeedId, Boolean isVisible,
                                   Boolean isUnVisible, List<Genre> genres,
-                                  Long visitorId, boolean includeEtc) {
+                                  Long visitorId, boolean isNotNovelConnect) {
         return jpaQueryFactory
                 .select(feed.feedId.countDistinct())
                 .from(feed)
@@ -109,7 +109,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                         feed.user.eq(owner),
                         checkVisible(visitorId),
                         checkPublic(isVisible, isUnVisible),
-                        checkGenres(genres, includeEtc)
+                        checkGenresAndNovels(genres, isNotNovelConnect)
                 )
                 .fetchOne();
     }
@@ -154,7 +154,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .where(
                         ltFeedId(lastFeedId),
                         checkPopularFeed(),
-                        checkGenres(genres, true),
+                        checkGenresAndNovels(genres, true),
                         checkBlocking(userId),
                         checkHidden()
                 )
@@ -204,17 +204,17 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .goe(POPULAR_FEED_LIKE_COUNT);
     }
 
-    private BooleanExpression checkGenres(List<Genre> genres, boolean includeEtc) {
+    private BooleanExpression checkGenresAndNovels(List<Genre> genres, boolean isNotNovelConnect) {
         if (genres != null && !genres.isEmpty()) {
             BooleanExpression genreCondition = genre.in(genres);
-            BooleanExpression etcCondition = includeEtc ? feed.novelId.isNull() : null;
-            return etcCondition != null ? genreCondition.or(etcCondition) : genreCondition;
+            BooleanExpression novelConnectCondition = isNotNovelConnect ? feed.novelId.isNull() : null;
+            return novelConnectCondition != null ? genreCondition.or(novelConnectCondition) : genreCondition;
         }
         return null;
     }
 
     @Override
-    public Slice<Feed> findFeedsByGenres(List<Genre> genres, boolean includeEtc, Long lastFeedId, Long userId,
+    public Slice<Feed> findFeedsByGenres(List<Genre> genres, boolean isNotNovelConnect, Long lastFeedId, Long userId,
                                          PageRequest pageRequest) {
         List<Feed> feeds = jpaQueryFactory
                 .selectFrom(feed)
@@ -224,7 +224,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .leftJoin(genre).on(novelGenre.genre.eq(genre))
                 .where(
                         ltFeedId(lastFeedId),
-                        checkGenres(genres, includeEtc),
+                        checkGenresAndNovels(genres, isNotNovelConnect),
                         checkBlocking(userId),
                         checkHidden()
                 )
