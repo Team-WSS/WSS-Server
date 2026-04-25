@@ -61,13 +61,13 @@ public class FeedServiceImpl {
                 List<Feed> combinedFeeds = Stream.concat(
                     recommendedFeeds.getContent().stream(),
                     interestedNovelFeeds.getContent().stream())
-                    .distinct()
-                    .sorted(Comparator.comparing(Feed::getFeedId).reversed()) // feedId 내림차순 정렬
-                    .collect(Collectors.toList());
-                boolean hasNext = combinedFeeds.size() > pageSize || recommendedFeeds.hasNext() || interestedNovelFeeds.hasNext();
+                        .distinct()
+                        .sorted(Comparator.comparing(Feed::getFeedId).reversed()) // feedId 내림차순 정렬
+                        .toList();
                 List<Feed> resultFeeds = combinedFeeds.stream()
-                    .limit(pageSize)
-                    .collect(Collectors.toList());
+                        .limit(pageSize)
+                        .toList();
+                boolean hasNext = combinedFeeds.size() > pageSize || recommendedFeeds.hasNext() || interestedNovelFeeds.hasNext();
                 return new SliceImpl<>(resultFeeds, pageRequest, hasNext);
             }
 
