@@ -33,7 +33,7 @@ import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.repository.CommentRepository;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.feed.repository.ReportedCommentRepository;
-import org.websoso.WSSServer.notification.FCMClient;
+import org.websoso.WSSServer.notification.infrastructure.FCMClient;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.novel.repository.NovelRepository;
@@ -42,7 +42,7 @@ import org.websoso.WSSServer.user.repository.BlockRepository;
 import org.websoso.WSSServer.notification.repository.NotificationRepository;
 import org.websoso.WSSServer.notification.repository.NotificationTypeRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
-import org.websoso.WSSServer.notification.service.DiscordMessageClient;
+import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
 
 @Service
 @Transactional

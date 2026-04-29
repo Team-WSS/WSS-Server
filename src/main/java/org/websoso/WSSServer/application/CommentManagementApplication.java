@@ -20,7 +20,7 @@ import org.websoso.WSSServer.feed.domain.Comment;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.service.CommentServiceImpl;
 import org.websoso.WSSServer.feed.service.FeedServiceImpl;
-import org.websoso.WSSServer.notification.FCMClient;
+import org.websoso.WSSServer.notification.infrastructure.FCMClient;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;

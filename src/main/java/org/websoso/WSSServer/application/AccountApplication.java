@@ -1,18 +1,18 @@
 package org.websoso.WSSServer.application;
 
-import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.WITHDRAW;
+import static org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessageType.WITHDRAW;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
+import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
+import org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessage;
 import org.websoso.WSSServer.dto.user.WithdrawalRequest;
 import org.websoso.WSSServer.feed.repository.CommentRepository;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.oauth2.repository.RefreshTokenRepository;
-import org.websoso.WSSServer.notification.service.DiscordMessageClient;
 import org.websoso.WSSServer.notification.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.domain.WithdrawalReason;

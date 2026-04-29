@@ -69,7 +69,7 @@ import org.websoso.WSSServer.feed.repository.PopularFeedRepository;
 import org.websoso.WSSServer.feed.repository.ReportedCommentRepository;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.library.repository.UserNovelRepository;
-import org.websoso.WSSServer.notification.FCMClient;
+import org.websoso.WSSServer.notification.infrastructure.FCMClient;
 import org.websoso.WSSServer.notification.dto.FCMMessageRequest;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.novel.repository.NovelRepository;

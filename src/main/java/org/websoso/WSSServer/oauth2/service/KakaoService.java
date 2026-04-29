@@ -21,7 +21,7 @@ import org.websoso.WSSServer.exception.exception.CustomKakaoException;
 import org.websoso.WSSServer.oauth2.dto.KakaoUserInfo;
 import org.websoso.WSSServer.oauth2.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
-import org.websoso.WSSServer.notification.service.DiscordMessageClient;
+import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
 
 @Service
 @Transactional

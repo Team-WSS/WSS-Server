@@ -1,20 +1,22 @@
 package org.websoso.WSSServer.notification.service;
 
-import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.COMMENT_REPORT;
-import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.FEED_REPORT;
-import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.USER_JOIN;
-import static org.websoso.WSSServer.domain.common.DiscordMessageTemplate.USER_WITHDRAW;
+import static org.websoso.WSSServer.infrastructure.discord.DiscordMessageTemplate.COMMENT_REPORT;
+import static org.websoso.WSSServer.infrastructure.discord.DiscordMessageTemplate.FEED_REPORT;
+import static org.websoso.WSSServer.infrastructure.discord.DiscordMessageTemplate.USER_JOIN;
+import static org.websoso.WSSServer.infrastructure.discord.DiscordMessageTemplate.USER_WITHDRAW;
 import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
 import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 
 import org.websoso.WSSServer.feed.domain.Comment;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.domain.common.DiscordMessageTemplate;
+import org.websoso.WSSServer.infrastructure.discord.DiscordMessageTemplate;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
 
 public class MessageFormatter {
+
+    private MessageFormatter() {}
 
     public static String formatFeedReportMessage(User user, Feed feed, ReportedType reportedType, int reportedCount,
                                                  boolean isHidden) {

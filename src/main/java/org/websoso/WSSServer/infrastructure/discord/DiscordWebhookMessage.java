@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.domain.common;
+package org.websoso.WSSServer.infrastructure.discord;
 
 public record DiscordWebhookMessage(
         String content,
