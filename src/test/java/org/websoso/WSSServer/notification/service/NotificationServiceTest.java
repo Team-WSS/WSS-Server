@@ -40,7 +40,7 @@ class NotificationServiceTest {
     private ReadNotificationRepository readNotificationRepository;
 
     @Nested
-    @DisplayName("hasUnreadNotifications")
+    @DisplayName("읽지 않은 알림 테스트")
     class HasUnreadNotifications {
 
         @DisplayName("읽지 않은 알림이 존재하면 true를 반환한다")
@@ -73,7 +73,7 @@ class NotificationServiceTest {
     }
 
     @Nested
-    @DisplayName("getNotification")
+    @DisplayName("알림 조회 테스트")
     class GetNotification {
 
         @DisplayName("자신에게 온 알림을 조회할 수 있다")
@@ -137,7 +137,7 @@ class NotificationServiceTest {
     }
 
     @Nested
-    @DisplayName("markAsRead")
+    @DisplayName("알림 읽음 처리 테스트")
     class MarkAsRead {
 
         @DisplayName("알림을 읽음 처리한다")
@@ -156,7 +156,7 @@ class NotificationServiceTest {
     }
 
     @Nested
-    @DisplayName("getNotifications")
+    @DisplayName("알림 목록 조회 테스트")
     class GetNotifications {
 
         @DisplayName("알림 목록을 조회한다")

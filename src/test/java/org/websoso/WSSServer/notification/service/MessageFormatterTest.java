@@ -16,7 +16,7 @@ import org.websoso.WSSServer.user.domain.User;
 class MessageFormatterTest {
 
     @Nested
-    @DisplayName("formatFeedReportMessage")
+    @DisplayName("피드 신고 메시지 포맷팅 테스트")
     class FormatFeedReportMessage {
 
         @DisplayName("숨김 처리된 피드 신고 메시지를 포맷팅한다")
@@ -66,7 +66,7 @@ class MessageFormatterTest {
     }
 
     @Nested
-    @DisplayName("formatCommentReportMessage")
+    @DisplayName("댓글 신고 메시지 포맷팅 테스트")
     class FormatCommentReportMessage {
 
         @DisplayName("숨김 처리된 댓글 신고 메시지를 포맷팅한다")
@@ -117,7 +117,7 @@ class MessageFormatterTest {
     }
 
     @Nested
-    @DisplayName("formatUserWithdrawMessage")
+    @DisplayName("회원 탈퇴 메시지 포맷팅 테스트")
     class FormatUserWithdrawMessage {
 
         @DisplayName("회원탈퇴 메시지를 포맷팅한다")
@@ -139,7 +139,7 @@ class MessageFormatterTest {
     }
 
     @Nested
-    @DisplayName("formatUserJoinMessage")
+    @DisplayName("회원 가입 메시지 포맷팅 테스트")
     class FormatUserJoinMessage {
 
         @DisplayName("회원가입 메시지를 포맷팅한다")

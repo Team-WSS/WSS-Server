@@ -25,7 +25,7 @@ class UserDeviceServiceTest {
     private User user;
 
     @Nested
-    @DisplayName("registerFcmToken")
+    @DisplayName("FCM 토큰 등록 테스트")
     class RegisterFcmToken {
 
         @DisplayName("FCM 토큰을 등록한다")
@@ -60,7 +60,7 @@ class UserDeviceServiceTest {
     }
 
     @Nested
-    @DisplayName("deleteDeviceIdentifier")
+    @DisplayName("디바이스 식별자 삭제 테스트")
     class DeleteDeviceIdentifier {
 
         @DisplayName("디바이스를 삭제한다")
