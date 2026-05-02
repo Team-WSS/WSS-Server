@@ -14,6 +14,7 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 import org.websoso.WSSServer.user.domain.User;
 
 @Entity
@@ -27,17 +28,19 @@ import org.websoso.WSSServer.user.domain.User;
 })
 public class ReadNotification {
 
-    @Id
-    @GeneratedValue(strategy = IDENTITY)
+    @Id @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)
+    @Comment("읽음 기록 고유 ID")
     private Long readNotificationId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notification_id", nullable = false)
+    @Comment("읽은 알림 ID (FK)")
     private Notification notification;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @Comment("알림을 읽은 사용자 ID (FK)")
     private User user;
 
     private ReadNotification(Notification notification, User user) {

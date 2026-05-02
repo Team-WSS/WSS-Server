@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.user.service;
 
 import static java.lang.Boolean.FALSE;
-import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.JOIN;
+import static org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessageType.JOIN;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_AVATAR;
@@ -22,12 +22,12 @@ import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.user.repository.AvatarProfileRepository;
-import org.websoso.WSSServer.notification.service.DiscordMessageClient;
+import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
 import org.websoso.WSSServer.notification.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
+import org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
-import org.websoso.WSSServer.notification.dto.PushSettingGetResponse;
+import org.websoso.WSSServer.dto.user.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;

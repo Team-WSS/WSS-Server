@@ -8,17 +8,16 @@ import org.websoso.WSSServer.user.domain.User;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class UserDeviceService {
 
     private final UserDeviceRepository userDeviceRepository;
 
-    // 사용자 디바이스 식별자와 FCM Token 정보 저장
+    @Transactional
     public void registerFcmToken(Long userId, String deviceIdentifier, String fcmToken) {
         userDeviceRepository.upsertFcmToken(userId, deviceIdentifier, fcmToken);
     }
 
-    // 사용자 디바이스 식별자와 FCM Token 정보 물리 삭제
+    @Transactional
     public void deleteDeviceIdentifier(User user, String deviceIdentifier) {
         userDeviceRepository.deleteByUserAndDeviceIdentifier(user, deviceIdentifier);
     }

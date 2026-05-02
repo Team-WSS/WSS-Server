@@ -1,5 +1,6 @@
-package org.websoso.WSSServer.notification;
+package org.websoso.WSSServer.notification.infrastructure;
 
+import com.google.firebase.ErrorCode;
 import com.google.firebase.messaging.ApnsConfig;
 import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.ApsAlert;
@@ -9,6 +10,7 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.SendResponse;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,15 +24,17 @@ public class FCMClient {
 
     private final FirebaseMessaging firebaseMessaging;
 
-    public void sendPushMessage(String targetFCMToken, FCMMessageRequest fcmMessageRequest) {
+    public List<String> sendPushMessage(String targetFCMToken, FCMMessageRequest fcmMessageRequest) {
+        List<String> failedTokens = new ArrayList<>();
         Message message = createMessage(targetFCMToken, fcmMessageRequest);
 
         try {
             firebaseMessaging.send(message);
+            log.debug("[FCM] Push message sent successfully to token: {}", maskToken(targetFCMToken));
         } catch (FirebaseMessagingException e) {
-            log.error("[FirebaseMessagingException] exception ", e);
-            // TODO: discord로 알림 추가 혹은 후속 작업 논의 후 추가
+            handleFirebaseException(e, targetFCMToken, failedTokens);
         }
+        return failedTokens;
     }
 
     private Message createMessage(String targetFCMToken, FCMMessageRequest fcmMessageRequest) {
@@ -54,25 +58,38 @@ public class FCMClient {
                 .build();
     }
 
-    public void sendMulticastPushMessage(List<String> targetFCMTokens, FCMMessageRequest fcmMessageRequest) {
+    public List<String> sendMulticastPushMessage(List<String> targetFCMTokens, FCMMessageRequest fcmMessageRequest) {
+        List<String> failedTokens = new ArrayList<>();
         MulticastMessage multicastMessage = createMulticastMessage(targetFCMTokens, fcmMessageRequest);
+
         try {
             BatchResponse batchResponse = firebaseMessaging.sendEachForMulticast(multicastMessage);
-            // 푸시알림 전송 실패한 메시지 로그 기록
             List<SendResponse> responses = batchResponse.getResponses();
+            int successCount = 0;
+
             for (int i = 0; i < responses.size(); i++) {
-                if (responses.get(i).isSuccessful()) {
-                    log.info("[FCM 전송 성공] Token: {}", targetFCMTokens.get(i));
+                SendResponse response = responses.get(i);
+                String token = targetFCMTokens.get(i);
+
+                if (response.isSuccessful()) {
+                    successCount++;
                 } else {
-                    log.error("[FCM 전송 실패] Token: {} - Error: {}", targetFCMTokens.get(i),
-                            responses.get(i).getException().getMessage());
-                    log.error("FCM 전송 Exception: ", responses.get(i).getException());
+                    FirebaseMessagingException exception = response.getException();
+                    if (exception != null && isUnregisteredException(exception)) {
+                        log.warn("[FCM] Token unregistered/expired: {}, reason: {}", maskToken(token), exception.getMessage());
+                        failedTokens.add(token);
+                    } else {
+                        log.error("[FCM] Send failed for token: {}, error: {}", maskToken(token),
+                                exception != null ? exception.getMessage() : "unknown");
+                    }
                 }
             }
-        } catch (Exception e) {
-            log.error("[FirebaseMessagingException] exception ", e);
-            // TODO: discord로 알림 추가 혹은 후속 작업 논의 후 추가
+            log.info("[FCM] Multicast result: success={}, failed={}, total={}", successCount, failedTokens.size(), targetFCMTokens.size());
+        } catch (FirebaseMessagingException e) {
+            log.error("[FCM] Multicast send failed completely: {}", e.getMessage(), e);
+            failedTokens.addAll(targetFCMTokens);
         }
+        return failedTokens;
     }
 
     private MulticastMessage createMulticastMessage(List<String> targetFCMTokens, FCMMessageRequest fcmMessageRequest) {
@@ -96,4 +113,24 @@ public class FCMClient {
                 .build();
     }
 
+    private void handleFirebaseException(FirebaseMessagingException e, String token, List<String> failedTokens) {
+        if (isUnregisteredException(e)) {
+            log.warn("[FCM] Token unregistered/expired: {}, reason: {}", maskToken(token), e.getMessage());
+            failedTokens.add(token);
+        } else {
+            log.error("[FCM] Firebase messaging error for token: {}, errorCode={}, message={}",
+                    maskToken(token), e.getErrorCode(), e.getMessage(), e);
+        }
+    }
+
+    private boolean isUnregisteredException(FirebaseMessagingException e) {
+        return e.getErrorCode() == ErrorCode.INVALID_ARGUMENT;
+    }
+
+    private String maskToken(String token) {
+        if (token == null || token.length() < 10) {
+            return "***";
+        }
+        return token.substring(0, 5) + "..." + token.substring(token.length() - 5);
+    }
 }

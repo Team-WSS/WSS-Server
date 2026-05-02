@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.domain.common;
+package org.websoso.WSSServer.infrastructure.discord;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
