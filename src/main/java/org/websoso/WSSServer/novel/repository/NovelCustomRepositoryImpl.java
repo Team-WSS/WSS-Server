@@ -74,8 +74,8 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     }
 
     @Override
-    public Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRating,
-                                          List<Keyword> keywords) {
+    public Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRatingStart,
+                                          Float novelRatingEnd, List<Keyword> keywords) {
 
         NumberTemplate<Long> popularity = Expressions.numberTemplate(Long.class,
                 "(SELECT COUNT(un) FROM UserNovel un WHERE un.novel = {0} AND (un.isInterest = true OR un.status <> 'QUIT'))",
@@ -92,9 +92,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                         isCompleted == null
                                 ? null
                                 : novel.isCompleted.eq(isCompleted),
-                        novelRating == null
-                                ? null
-                                : getAverageRating(novel).goe(novelRating),
+                        getAverageRating(novel).between(novelRatingStart, novelRatingEnd),
                         keywords.isEmpty()
                                 ? null
                                 : getKeywordCount(novel, keywords).eq(keywords.size())
