@@ -64,8 +64,7 @@ public class NovelController {
     public ResponseEntity<FilteredNovelsResponse> getFilteredNovels(
             @RequestParam(required = false) List<String> genres,
             @RequestParam(required = false) Boolean isCompleted,
-            @Deprecated
-            @RequestParam(required = false) Float novelRating,
+            @Deprecated @RequestParam(required = false) Float novelRating,
             @RequestParam(required = false, defaultValue = "0.0") Float novelRatingStart,
             @RequestParam(required = false, defaultValue = "5.0") Float novelRatingEnd,
             @RequestParam(required = false) List<Integer> keywordIds,
