@@ -87,15 +87,24 @@ public class SearchNovelApplication {
         return SearchedNovelsResponse.of(novelGetResponsePreviews, novels.getTotalElements(), novels.hasNext());
     }
 
+    //TODO: 추후 novelRating 제거
     @Transactional(readOnly = true)
-    public FilteredNovelsResponse getFilteredNovels(List<String> genreNames, List<Integer> keywordIds, Boolean isCompleted, Float novelRating, int page, int size) {
+    public FilteredNovelsResponse getFilteredNovels(List<String> genreNames, List<Integer> keywordIds, Boolean isCompleted, Float novelRating, Float novelRatingStart, Float novelRatingEnd, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
 
         List<Genre> genres = genreService.getGenresOrException(genreNames);
 
         List<Keyword> keywords = keywordService.getKeywordsOrException(keywordIds);
 
-        Page<Novel> novels = novelService.findFilteredNovels(pageRequest, genres, keywords, isCompleted, novelRating);
+        Page<Novel> novels;
+
+        if (novelRating == null) {
+            novels = novelService.findFilteredNovels(pageRequest, genres, keywords, isCompleted, novelRatingStart, novelRatingEnd);
+        } else {
+            novels = novelService.findFilteredNovels(pageRequest, genres, keywords, isCompleted, novelRating, novelRatingEnd);
+        }
+
+
 
         List<NovelSummaryResponse> novelGetResponsePreviews = novels.stream()
                 .map(this::convertToDTO2)

@@ -42,8 +42,8 @@ public class NovelServiceImpl {
     }
 
     public Page<Novel> findFilteredNovels(PageRequest pageRequest, List<Genre> genres, List<Keyword> keywords,
-                                          Boolean isCompleted, Float novelRating) {
-        return novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRating, keywords);
+                                          Boolean isCompleted, Float novelRatingStart, Float novelRatingEnd) {
+        return novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRatingStart, novelRatingEnd, keywords);
     }
 
     public List<NovelGenre> getGenresByNovel(Novel novel) {

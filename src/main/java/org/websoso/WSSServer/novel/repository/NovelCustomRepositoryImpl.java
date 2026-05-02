@@ -74,8 +74,8 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     }
 
     @Override
-    public Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRating,
-                                          List<Keyword> keywords) {
+    public Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRatingStart,
+                                          Float novelRatingEnd, List<Keyword> keywords) {
 
         NumberTemplate<Long> popularity = Expressions.numberTemplate(Long.class,
                 "(SELECT COUNT(un) FROM UserNovel un WHERE un.novel = {0} AND (un.isInterest = true OR un.status <> 'QUIT'))",
@@ -92,9 +92,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                         isCompleted == null
                                 ? null
                                 : novel.isCompleted.eq(isCompleted),
-                        novelRating == null
-                                ? null
-                                : getAverageRating(novel).goe(novelRating),
+                        getAverageRatingCondition(novel, novelRatingStart, novelRatingEnd),
                         keywords.isEmpty()
                                 ? null
                                 : getKeywordCount(novel, keywords).eq(keywords.size())
@@ -108,6 +106,21 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
         return Expressions.numberTemplate(Double.class,
                 "(SELECT AVG(un.userNovelRating) FROM UserNovel un WHERE un.novel = {0} AND un.userNovelRating <> 0)",
                 novel);
+    }
+
+    private BooleanExpression getAverageRatingCondition(QNovel novel, Float novelRatingStart, Float novelRatingEnd) {
+        if (novelRatingStart == null) {
+            return null;
+        }
+
+        NumberExpression<Double> averageRating = getAverageRating(novel);
+        BooleanExpression averageRatingBetween = averageRating.between(novelRatingStart, novelRatingEnd);
+
+        if (Float.compare(novelRatingStart, 0.0f) == 0) {
+            return averageRating.isNull().or(averageRatingBetween);
+        }
+
+        return averageRatingBetween;
     }
 
     private NumberExpression<Integer> getKeywordCount(QNovel novel, List<Keyword> keywords) {
