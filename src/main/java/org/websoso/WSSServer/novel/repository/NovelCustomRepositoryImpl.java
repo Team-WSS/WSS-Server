@@ -92,7 +92,9 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                         isCompleted == null
                                 ? null
                                 : novel.isCompleted.eq(isCompleted),
-                        getAverageRating(novel).between(novelRatingStart, novelRatingEnd),
+                        novelRatingStart == null
+                                ? null
+                                : getAverageRating(novel).between(novelRatingStart, novelRatingEnd),
                         keywords.isEmpty()
                                 ? null
                                 : getKeywordCount(novel, keywords).eq(keywords.size())

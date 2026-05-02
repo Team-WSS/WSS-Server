@@ -66,7 +66,7 @@ public class NovelController {
             @RequestParam(required = false) Boolean isCompleted,
             @Deprecated
             @RequestParam(required = false) Float novelRating,
-            @RequestParam(required = false, defaultValue = "0.0") Float novelRatingStart,
+            @RequestParam(required = false) Float novelRatingStart,
             @RequestParam(required = false, defaultValue = "5.0") Float novelRatingEnd,
             @RequestParam(required = false) List<Integer> keywordIds,
             @RequestParam int page,
