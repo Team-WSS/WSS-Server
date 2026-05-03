@@ -4,7 +4,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class RecentSearchNativeRepositoryImpl implements RecentSearchNativeRepository {
@@ -13,7 +12,6 @@ public class RecentSearchNativeRepositoryImpl implements RecentSearchNativeRepos
     private EntityManager em;
 
     @Override
-    @Transactional
     public void upsert(Long userId, String keyword, LocalDateTime searchedAt) {
         em.createNativeQuery("""
                         INSERT INTO recent_search (user_id, keyword, searched_at)
@@ -27,7 +25,6 @@ public class RecentSearchNativeRepositoryImpl implements RecentSearchNativeRepos
     }
 
     @Override
-    @Transactional
     public void trimToMaxSize(Long userId, int maxSize) {
         em.createNativeQuery("""
                         DELETE FROM recent_search
@@ -47,7 +44,6 @@ public class RecentSearchNativeRepositoryImpl implements RecentSearchNativeRepos
     }
 
     @Override
-    @Transactional
     public int deleteOlderThan(LocalDateTime threshold, int batchSize) {
         return em.createNativeQuery("""
                         DELETE FROM recent_search
