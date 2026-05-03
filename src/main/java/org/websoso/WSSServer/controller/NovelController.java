@@ -65,14 +65,16 @@ public class NovelController {
     public ResponseEntity<FilteredNovelsResponse> getFilteredNovels(
             @RequestParam(required = false) List<String> genres,
             @RequestParam(required = false) Boolean isCompleted,
-            @RequestParam(required = false) Float novelRating,
+            @Deprecated @RequestParam(required = false) Float novelRating,
+            @RequestParam(required = false, defaultValue = "0.0") Float novelRatingStart,
+            @RequestParam(required = false, defaultValue = "5.0") Float novelRatingEnd,
             @RequestParam(required = false) List<Integer> keywordIds,
             @RequestParam int page,
             @RequestParam int size) {
         return ResponseEntity
                 .status(OK)
-                .body(searchNovelApplication.getFilteredNovels(genres, keywordIds, isCompleted, novelRating, page,
-                        size));
+                .body(searchNovelApplication.getFilteredNovels(genres, keywordIds, isCompleted, novelRating,
+                        novelRatingStart, novelRatingEnd, page, size));
     }
 
     /**
