@@ -40,12 +40,13 @@ public class NovelController {
      * @return SearchedNovelsResponse
      */
     @GetMapping
-    public ResponseEntity<SearchedNovelsResponse> searchNovels(@RequestParam(required = false) String query,
+    public ResponseEntity<SearchedNovelsResponse> searchNovels(@AuthenticationPrincipal User user,
+                                                               @RequestParam(required = false) String query,
                                                                @RequestParam int page,
                                                                @RequestParam int size) {
         return ResponseEntity
                 .status(OK)
-                .body(searchNovelApplication.searchNovels(query, page, size));
+                .body(searchNovelApplication.searchNovels(user, query, page, size));
     }
 
     /**
@@ -70,7 +71,8 @@ public class NovelController {
             @RequestParam int size) {
         return ResponseEntity
                 .status(OK)
-                .body(searchNovelApplication.getFilteredNovels(genres, keywordIds, isCompleted, novelRating, page, size));
+                .body(searchNovelApplication.getFilteredNovels(genres, keywordIds, isCompleted, novelRating, page,
+                        size));
     }
 
     /**
