@@ -1,14 +1,16 @@
 package org.websoso.WSSServer.recentsearch.service;
 
+import static org.springframework.data.domain.Sort.Direction.DESC;
 import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.dto.recentsearch.RecentSearchItem;
-import org.websoso.WSSServer.dto.recentsearch.RecentSearchesGetResponse;
 import org.websoso.WSSServer.recentsearch.domain.RecentSearch;
 import org.websoso.WSSServer.recentsearch.repository.RecentSearchRepository;
 
@@ -16,7 +18,7 @@ import org.websoso.WSSServer.recentsearch.repository.RecentSearchRepository;
 @RequiredArgsConstructor
 public class RecentSearchService {
 
-    private static final int MAX_SIZE = 200;
+    private static final int MAX_SIZE = 20;
     private static final int MAX_KEYWORD_LENGTH = 100;
 
     private final RecentSearchRepository repository;
@@ -41,19 +43,15 @@ public class RecentSearchService {
     }
 
     @Transactional(readOnly = true)
-    public RecentSearchesGetResponse findRecentSearchesWithCursor(long userId, int size, LocalDateTime lastSearchedAt,
-                                                                Long lastRecentSearchId) {
-        List<RecentSearch> rows = repository.findByUserIdOrderBySearchedAtDesc(userId, size + 1, lastSearchedAt,
-                lastRecentSearchId);
+    public List<RecentSearchItem> findRecentSearches(long userId) {
 
-        boolean hasNext = rows.size() > size;
+        PageRequest pageRequest = PageRequest.of(0, MAX_SIZE, Sort.by(DESC, "searchedAt"));
 
-        List<RecentSearchItem> items = rows.stream()
-                .limit(size)
+        List<RecentSearch> rows = repository.findByUserId(userId, pageRequest);
+
+        return rows.stream()
                 .map(it -> new RecentSearchItem(it.getId(), it.getKeyword(), it.getSearchedAt()))
                 .toList();
-
-        return new RecentSearchesGetResponse(items, hasNext);
     }
 
     @Transactional
