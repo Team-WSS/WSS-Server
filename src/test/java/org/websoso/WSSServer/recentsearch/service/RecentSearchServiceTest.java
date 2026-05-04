@@ -21,7 +21,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.websoso.WSSServer.dto.recentsearch.RecentSearchItem;
 import org.websoso.WSSServer.recentsearch.domain.RecentSearch;
 import org.websoso.WSSServer.recentsearch.repository.RecentSearchRepository;
 

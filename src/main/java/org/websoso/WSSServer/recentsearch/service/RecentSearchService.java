@@ -1,7 +1,6 @@
 package org.websoso.WSSServer.recentsearch.service;
 
 import static org.springframework.data.domain.Sort.Direction.DESC;
-import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,7 +9,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.dto.recentsearch.RecentSearchItem;
 import org.websoso.WSSServer.recentsearch.domain.RecentSearch;
 import org.websoso.WSSServer.recentsearch.repository.RecentSearchRepository;
 
