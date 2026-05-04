@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.websoso.WSSServer.dto.recentsearch.RecentSearchItem;
 import org.websoso.WSSServer.recentsearch.domain.RecentSearch;
 import org.websoso.WSSServer.recentsearch.repository.RecentSearchRepository;
 
@@ -127,7 +128,7 @@ class RecentSearchServiceTest {
                     .willReturn(createRows(userId, 20));
 
             // when
-            List<String> result = recentSearchService.findRecentSearches(userId);
+            List<RecentSearchItem> result = recentSearchService.findRecentSearches(userId);
 
             // then
             assertThat(result).hasSize(20);
@@ -142,7 +143,7 @@ class RecentSearchServiceTest {
                     .willReturn(Collections.emptyList());
 
             // when
-            List<String> result = recentSearchService.findRecentSearches(userId);
+            List<RecentSearchItem> result = recentSearchService.findRecentSearches(userId);
 
             // then
             assertThat(result).isEmpty();
@@ -160,10 +161,10 @@ class RecentSearchServiceTest {
                     .willReturn(List.of(row));
 
             // when
-            List<String> result = recentSearchService.findRecentSearches(userId);
+            List<RecentSearchItem> result = recentSearchService.findRecentSearches(userId);
 
             // then
-            assertThat(result.get(0)).isEqualTo("소설");
+            assertThat(result.get(0).keyword()).isEqualTo("소설");
         }
     }
 

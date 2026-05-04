@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.dto.recentsearch.RecentSearchItem;
 import org.websoso.WSSServer.recentsearch.domain.RecentSearch;
 import org.websoso.WSSServer.recentsearch.repository.RecentSearchRepository;
 
@@ -41,14 +42,14 @@ public class RecentSearchService {
     }
 
     @Transactional(readOnly = true)
-    public List<String> findRecentSearches(long userId) {
+    public List<RecentSearchItem> findRecentSearches(long userId) {
 
         PageRequest pageRequest = PageRequest.of(0, MAX_SIZE, Sort.by(DESC, "searchedAt"));
 
         List<RecentSearch> rows = repository.findByUserId(userId, pageRequest);
 
         return rows.stream()
-                .map(RecentSearch::getKeyword)
+                .map(it -> new RecentSearchItem(it.getId(), it.getKeyword()))
                 .toList();
     }
 
