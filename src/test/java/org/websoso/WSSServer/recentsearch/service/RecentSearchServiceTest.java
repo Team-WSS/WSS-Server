@@ -128,7 +128,7 @@ class RecentSearchServiceTest {
                     .willReturn(createRows(userId, 20));
 
             // when
-            List<RecentSearchItem> result = recentSearchService.findRecentSearches(userId);
+            List<String> result = recentSearchService.findRecentSearches(userId);
 
             // then
             assertThat(result).hasSize(20);
@@ -143,7 +143,7 @@ class RecentSearchServiceTest {
                     .willReturn(Collections.emptyList());
 
             // when
-            List<RecentSearchItem> result = recentSearchService.findRecentSearches(userId);
+            List<String> result = recentSearchService.findRecentSearches(userId);
 
             // then
             assertThat(result).isEmpty();
@@ -161,13 +161,10 @@ class RecentSearchServiceTest {
                     .willReturn(List.of(row));
 
             // when
-            List<RecentSearchItem> result = recentSearchService.findRecentSearches(userId);
+            List<String> result = recentSearchService.findRecentSearches(userId);
 
             // then
-            RecentSearchItem item = result.get(0);
-            assertThat(item.id()).isEqualTo(42L);
-            assertThat(item.keyword()).isEqualTo("소설");
-            assertThat(item.searchedAt()).isEqualTo(searchedAt);
+            assertThat(result.get(0)).isEqualTo("소설");
         }
     }
 
