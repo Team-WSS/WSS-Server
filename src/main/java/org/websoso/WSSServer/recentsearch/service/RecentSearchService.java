@@ -43,14 +43,14 @@ public class RecentSearchService {
     }
 
     @Transactional(readOnly = true)
-    public List<RecentSearchItem> findRecentSearches(long userId) {
+    public List<String> findRecentSearches(long userId) {
 
         PageRequest pageRequest = PageRequest.of(0, MAX_SIZE, Sort.by(DESC, "searchedAt"));
 
         List<RecentSearch> rows = repository.findByUserId(userId, pageRequest);
 
         return rows.stream()
-                .map(it -> new RecentSearchItem(it.getId(), it.getKeyword(), it.getSearchedAt()))
+                .map(RecentSearch::getKeyword)
                 .toList();
     }
 

@@ -21,7 +21,7 @@ public class RecentSearchController {
     private final RecentSearchService service;
 
     @GetMapping
-    public ResponseEntity<List<RecentSearchItem>> findRecentSearches(@AuthenticationPrincipal User user) {
+    public ResponseEntity<List<String>> findRecentSearches(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(service.findRecentSearches(user.getUserId()));
     }
 
