@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.dto.recentsearch.RecentSearchItem;
+import org.websoso.WSSServer.dto.recentsearch.RecentSearchesGetResponse;
 import org.websoso.WSSServer.recentsearch.service.RecentSearchService;
 import org.websoso.WSSServer.user.domain.User;
 
@@ -21,8 +21,8 @@ public class RecentSearchController {
     private final RecentSearchService service;
 
     @GetMapping
-    public ResponseEntity<List<RecentSearchItem>> findRecentSearches(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(service.findRecentSearches(user.getUserId()));
+    public ResponseEntity<RecentSearchesGetResponse> findRecentSearches(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(new RecentSearchesGetResponse(service.findRecentSearches(user.getUserId())));
     }
 
     @DeleteMapping("/{id}")

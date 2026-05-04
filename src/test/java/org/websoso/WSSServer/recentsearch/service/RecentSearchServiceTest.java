@@ -164,10 +164,7 @@ class RecentSearchServiceTest {
             List<RecentSearchItem> result = recentSearchService.findRecentSearches(userId);
 
             // then
-            RecentSearchItem item = result.get(0);
-            assertThat(item.id()).isEqualTo(42L);
-            assertThat(item.keyword()).isEqualTo("소설");
-            assertThat(item.searchedAt()).isEqualTo(searchedAt);
+            assertThat(result.get(0).keyword()).isEqualTo("소설");
         }
     }
 

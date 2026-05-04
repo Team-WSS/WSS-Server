@@ -1,7 +1,6 @@
 package org.websoso.WSSServer.recentsearch.service;
 
 import static org.springframework.data.domain.Sort.Direction.DESC;
-import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -50,7 +49,7 @@ public class RecentSearchService {
         List<RecentSearch> rows = repository.findByUserId(userId, pageRequest);
 
         return rows.stream()
-                .map(it -> new RecentSearchItem(it.getId(), it.getKeyword(), it.getSearchedAt()))
+                .map(it -> new RecentSearchItem(it.getId(), it.getKeyword()))
                 .toList();
     }
 
