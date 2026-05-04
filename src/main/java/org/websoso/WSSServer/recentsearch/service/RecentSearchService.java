@@ -23,7 +23,7 @@ public class RecentSearchService {
 
     private final RecentSearchRepository repository;
 
-    @Transactional(propagation = REQUIRES_NEW)
+    @Transactional
     public void add(long userId, String keyword) {
         if (keyword == null) {
             return;

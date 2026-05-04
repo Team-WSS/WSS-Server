@@ -15,7 +15,7 @@ public class RecentSearchEventListener {
 
     private final RecentSearchService recentSearchService;
 
-    @Async
+    @Async("asyncExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void on(NovelSearchedEvent event) {
         try {
