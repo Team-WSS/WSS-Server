@@ -41,6 +41,10 @@ public class NovelServiceImpl {
         return novelRepository.findSearchedNovels(pageRequest, searchQuery);
     }
 
+    public List<Novel> getAutocompleteNovels(String searchQuery, int getSize) {
+        return novelRepository.findAutocompleteNovels(searchQuery, getSize);
+    }
+
     public Page<Novel> findFilteredNovels(PageRequest pageRequest, List<Genre> genres, List<Keyword> keywords,
                                           Boolean isCompleted, Float novelRatingStart, Float novelRatingEnd) {
         return novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRatingStart, novelRatingEnd, keywords);
