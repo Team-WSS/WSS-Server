@@ -30,6 +30,7 @@ public class SecurityConfig {
             "/users/login",
             "/actuator/health",
             "/novels",
+            "/novels/autocomplete",
             "/novels/{novelId}",
             "/novels/{novelId}/info",
             "/novels/{novelId}/feeds",

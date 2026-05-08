@@ -36,13 +36,12 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     @Override
     public Page<Novel> findSearchedNovels(Pageable pageable, String searchQuery) {
 
-        BooleanExpression titleContainsQuery = getCleanedString(novel.title).containsIgnoreCase(searchQuery);
         BooleanExpression authorContainsQuery = getCleanedString(novel.author).containsIgnoreCase(searchQuery);
 
         List<Novel> novelsByTitle = jpaQueryFactory
                 .selectFrom(novel)
                 .leftJoin(novel.userNovels, userNovel)
-                .where(titleContainsQuery)
+                .where(titleContainsQuery(searchQuery))
                 .groupBy(novel.novelId)
                 .orderBy(getPopularity(novel).desc())
                 .fetch();
@@ -50,7 +49,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
         List<Novel> novelsByAuthor = jpaQueryFactory
                 .selectFrom(novel)
                 .leftJoin(novel.userNovels, userNovel)
-                .where(authorContainsQuery.and(titleContainsQuery.not()))
+                .where(authorContainsQuery.and(titleContainsQuery(searchQuery).not()))
                 .groupBy(novel.novelId)
                 .orderBy(getPopularity(novel).desc())
                 .fetch();
@@ -101,6 +100,25 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
         return applyPagination(pageable, query);
     }
+
+    @Override
+    public List<Novel> findAutocompleteNovels(String searchQuery, int limitSize) {
+
+
+        return jpaQueryFactory
+                .selectFrom(novel)
+                .leftJoin(novel.userNovels, userNovel)
+                .where(titleContainsQuery(searchQuery))
+                .groupBy(novel.novelId)
+                .orderBy(getPopularity(novel).desc())
+                .limit(limitSize)
+                .fetch();
+    }
+
+    private BooleanExpression titleContainsQuery(String searchQuery) {
+        return getCleanedString(novel.title).containsIgnoreCase(searchQuery);
+    }
+
 
     private NumberExpression<Double> getAverageRating(QNovel novel) {
         return Expressions.numberTemplate(Double.class,

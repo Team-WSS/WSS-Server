@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.application.SearchNovelApplication;
+import org.websoso.WSSServer.dto.novel.AutocompleteKeywordsResponse;
 import org.websoso.WSSServer.dto.novel.FilteredNovelsResponse;
 import org.websoso.WSSServer.dto.novel.SearchedNovelsResponse;
 import org.websoso.WSSServer.user.domain.User;
@@ -47,6 +48,20 @@ public class NovelController {
         return ResponseEntity
                 .status(OK)
                 .body(searchNovelApplication.searchNovels(user, query, page, size));
+    }
+
+    /**
+     * 검색어를 사용해서 소설을 찾는다.
+     *
+     * @param query 검색할 작품명
+     * @return SearchedNovelsResponse
+     */
+    @GetMapping("/autocomplete")
+    public ResponseEntity<AutocompleteKeywordsResponse> autocomplete(@RequestParam String query,
+                                                                     @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity
+                .status(OK)
+                .body(searchNovelApplication.autocompleteKeywords(query, size));
     }
 
     /**

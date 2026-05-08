@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.dto.novel.AutocompleteKeywordsResponse;
 import org.websoso.WSSServer.recentsearch.event.NovelSearchedEvent;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
@@ -186,6 +187,16 @@ public class SearchNovelApplication {
         Map<Long, AvatarProfile> avatarMap = createAvatarMap(feedMap);
 
         return PopularNovelsGetResponse.create(popularNovels, feedMap, avatarMap);
+    }
+
+    @Transactional(readOnly = true)
+    public AutocompleteKeywordsResponse autocompleteKeywords(String searchQuery, int size) {
+        List<String> autocompleteKeywords = novelService.getAutocompleteNovels(searchQuery, size)
+                .stream()
+                .map(Novel::getTitle)
+                .toList();
+
+        return new AutocompleteKeywordsResponse(autocompleteKeywords);
     }
 
     /**
