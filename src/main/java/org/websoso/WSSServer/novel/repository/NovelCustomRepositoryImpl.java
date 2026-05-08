@@ -102,6 +102,21 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
         return applyPagination(pageable, query);
     }
 
+    @Override
+    public List<Novel> findAutocompleteNovels(String searchQuery, int limitSize) {
+
+        BooleanExpression titleContainsQuery = getCleanedString(novel.title).containsIgnoreCase(searchQuery);
+
+        return jpaQueryFactory
+                .selectFrom(novel)
+                .leftJoin(novel.userNovels, userNovel)
+                .where(titleContainsQuery)
+                .groupBy(novel.novelId)
+                .orderBy(getPopularity(novel).desc())
+                .limit(limitSize)
+                .fetch();
+    }
+
     private NumberExpression<Double> getAverageRating(QNovel novel) {
         return Expressions.numberTemplate(Double.class,
                 "(SELECT AVG(un.userNovelRating) FROM UserNovel un WHERE un.novel = {0} AND un.userNovelRating <> 0)",
