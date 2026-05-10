@@ -20,7 +20,7 @@ public class TimeFormatUtil {
     private static final DateTimeFormatter NOTIFICATION_FMT = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
     /**
-     * 피드 날짜 포맷
+     * 피드/댓글 날짜 포맷
      * 60초 미만: 방금 전
      * 1시간 미만: N분 전
      * 24시간 미만: N시간 전
@@ -28,11 +28,11 @@ public class TimeFormatUtil {
      * 동일 년도: M월 d일
      * 과거 년도: yyyy년 M월 d일
      */
-    public static String formatFeedDate(LocalDateTime createdDate) {
-        return formatFeedDate(createdDate, Clock.systemDefaultZone());
+    public static String formatRelativeDateTime(LocalDateTime createdDate) {
+        return formatRelativeDateTime(createdDate, Clock.systemDefaultZone());
     }
 
-    public static String formatFeedDate(LocalDateTime createdDate, Clock clock) {
+    public static String formatRelativeDateTime(LocalDateTime createdDate, Clock clock) {
         LocalDateTime now = LocalDateTime.now(clock);
         Duration duration = Duration.between(createdDate, now);
 
