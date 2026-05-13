@@ -3,22 +3,17 @@ package org.websoso.WSSServer.library.service;
 import static org.websoso.WSSServer.exception.error.CustomKeywordCategoryError.KEYWORD_CATEGORY_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomKeywordError.KEYWORD_NOT_FOUND;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.dto.keyword.KeywordCountGetResponse;
 import org.websoso.WSSServer.library.domain.Keyword;
 import org.websoso.WSSServer.library.domain.KeywordCategory;
-import org.websoso.WSSServer.domain.common.KeywordCategoryName;
-import org.websoso.WSSServer.dto.keyword.CategoryGetResponse;
-import org.websoso.WSSServer.dto.keyword.KeywordByCategoryGetResponse;
-import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomKeywordCategoryException;
 import org.websoso.WSSServer.exception.exception.CustomKeywordException;
 import org.websoso.WSSServer.library.domain.UserNovel;
@@ -46,18 +41,6 @@ public class KeywordService {
                         "keyword with the given id is not found"));
     }
 
-    @Transactional(readOnly = true)
-    public KeywordByCategoryGetResponse searchKeywordByCategory(String query) {
-        List<Keyword> searchedKeywords = searchKeyword(query);
-        List<CategoryGetResponse> categories = Arrays.stream(KeywordCategoryName.values())
-                .map(category -> CategoryGetResponse.of(
-                        getKeywordCategory(category.getLabel()),
-                        sortByCategoryAndOrder(category, searchedKeywords)
-                ))
-                .toList();
-        return KeywordByCategoryGetResponse.of(categories);
-    }
-
     public void createNovelKeyword(UserNovel userNovel, Keyword keyword) {
         userNovelKeywordRepository.save(UserNovelKeyword.create(userNovel, keyword));
     }
@@ -73,22 +56,18 @@ public class KeywordService {
         userNovelKeywordRepository.deleteAll(userNovelKeywords);
     }
 
-    private KeywordCategory getKeywordCategory(String keywordCategoryName) {
+    public KeywordCategory getKeywordCategory(String keywordCategoryName) {
         return keywordCategoryRepository.findByKeywordCategoryName(keywordCategoryName).orElseThrow(
                 () -> new CustomKeywordCategoryException(KEYWORD_CATEGORY_NOT_FOUND,
                         "keyword category with the given name is not found"));
     }
 
-    private List<KeywordGetResponse> sortByCategoryAndOrder(KeywordCategoryName categoryName,
-                                                            List<Keyword> searchedKeywords) {
-        return searchedKeywords.stream()
-                .filter(k -> k.getKeywordCategory().getKeywordCategoryName().equals(categoryName.getLabel()))
-                .sorted(Comparator.comparing(Keyword::getSortOrder))
-                .map(KeywordGetResponse::of)
-                .toList();
+    @Transactional(readOnly = true)
+    public List<Keyword> getPopularKeywords(int size) {
+        return userNovelKeywordRepository.findTopKeywordsByCount(PageRequest.of(0, size));
     }
 
-    private List<Keyword> searchKeyword(String query) {
+    public List<Keyword> searchKeyword(String query) {
         List<Keyword> allKeywords = keywordRepository.findAllByOrderBySortOrderAsc();
 
         if (query == null || query.isBlank()) {
