@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.novel.repository;
 
+import static org.websoso.WSSServer.domain.QGenre.genre;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 import static org.websoso.WSSServer.library.domain.QUserNovel.userNovel;
@@ -103,8 +104,6 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
     @Override
     public List<Novel> findAutocompleteNovels(String searchQuery, int limitSize) {
-
-
         return jpaQueryFactory
                 .selectFrom(novel)
                 .leftJoin(novel.userNovels, userNovel)
@@ -112,6 +111,17 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                 .groupBy(novel.novelId)
                 .orderBy(getPopularity(novel).desc())
                 .limit(limitSize)
+                .fetch();
+    }
+
+    @Override
+    public List<Novel> findAllByNovelIdInWithGenres(List<Long> novelIds) {
+        return jpaQueryFactory
+                .selectDistinct(novel)
+                .from(novel)
+                .leftJoin(novel.novelGenres, novelGenre).fetchJoin()
+                .leftJoin(novelGenre.genre, genre).fetchJoin()
+                .where(novel.novelId.in(novelIds))
                 .fetch();
     }
 
