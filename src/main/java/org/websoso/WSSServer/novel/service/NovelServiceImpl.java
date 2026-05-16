@@ -2,8 +2,6 @@ package org.websoso.WSSServer.novel.service;
 
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,7 +9,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Genre;
-import org.websoso.WSSServer.novel.domain.PopularNovel;
 import org.websoso.WSSServer.dto.platform.PlatformGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.library.domain.Keyword;
@@ -20,7 +17,6 @@ import org.websoso.WSSServer.novel.domain.NovelGenre;
 import org.websoso.WSSServer.novel.repository.NovelGenreRepository;
 import org.websoso.WSSServer.novel.repository.NovelPlatformRepository;
 import org.websoso.WSSServer.novel.repository.NovelRepository;
-import org.websoso.WSSServer.novel.repository.PopularNovelRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +31,15 @@ public class NovelServiceImpl {
         return novelRepository.findById(novelId)
                 .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
                         "novel with the given id is not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Novel> getNovelsWithGenresByIds(List<Long> novelIds) {
+        if (novelIds == null || novelIds.isEmpty()) {
+            return List.of();
+        }
+
+        return novelRepository.findAllByNovelIdInWithGenres(novelIds);
     }
 
     public Page<Novel> searchNovels(PageRequest pageRequest, String searchQuery) {
