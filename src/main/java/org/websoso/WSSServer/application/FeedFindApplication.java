@@ -131,9 +131,10 @@ public class FeedFindApplication {
     }
 
     @Transactional(readOnly = true)
-    public PopularFeedsGetResponse getPopularFeeds(User user) {
-        List<PopularFeed> popularFeeds = Optional.ofNullable(user).map(u -> findPopularFeedsWithUser(u.getUserId()))
-                .orElseGet(this::findPopularFeedsWithoutUser);
+    public PopularFeedsGetResponse getPopularFeeds(User user, int size) {
+        List<PopularFeed> popularFeeds = Optional.ofNullable(user)
+                .map(u -> findPopularFeedsWithUser(u.getUserId(), size))
+                .orElseGet(() -> findPopularFeedsWithoutUser(size));
 
         List<Long> novelIds = popularFeeds.stream()
                 .map(f -> f.getFeed().getNovelId())
@@ -149,12 +150,12 @@ public class FeedFindApplication {
         return PopularFeedsGetResponse.of(popularFeedGetResponses);
     }
 
-    private List<PopularFeed> findPopularFeedsWithUser(Long userId) {
-        return feedServiceImpl.findPopularFeedsWithUser(userId);
+    private List<PopularFeed> findPopularFeedsWithUser(Long userId, int size) {
+        return feedServiceImpl.findPopularFeedsWithUser(userId, size);
     }
 
-    private List<PopularFeed> findPopularFeedsWithoutUser() {
-        return feedServiceImpl.findPopularFeedsWithoutUser();
+    private List<PopularFeed> findPopularFeedsWithoutUser(int size) {
+        return feedServiceImpl.findPopularFeedsWithoutUser(size);
     }
 
     private static List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(List<PopularFeed> popularFeeds,

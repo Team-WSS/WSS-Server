@@ -6,7 +6,6 @@ import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_F
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import lombok.RequiredArgsConstructor;
@@ -90,13 +89,13 @@ public class FeedServiceImpl {
     }
 
     @Transactional(readOnly = true)
-    public List<PopularFeed> findPopularFeedsWithUser(Long userId) {
-        return popularFeedRepository.findTodayPopularFeeds(userId);
+    public List<PopularFeed> findPopularFeedsWithUser(Long userId, int size) {
+        return popularFeedRepository.findTodayPopularFeeds(userId, size);
     }
 
     @Transactional(readOnly = true)
-    public List<PopularFeed> findPopularFeedsWithoutUser() {
-        return popularFeedRepository.findTop9ByOrderByPopularFeedIdDesc();
+    public List<PopularFeed> findPopularFeedsWithoutUser(int size) {
+        return popularFeedRepository.findOrderByPopularFeedIdDesc(size);
     }
 
     @Transactional(readOnly = true)

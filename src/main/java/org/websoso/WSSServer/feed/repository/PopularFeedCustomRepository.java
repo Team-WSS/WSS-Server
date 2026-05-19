@@ -5,7 +5,7 @@ import org.websoso.WSSServer.feed.domain.PopularFeed;
 
 public interface PopularFeedCustomRepository {
 
-    List<PopularFeed> findTodayPopularFeeds(Long userId);
+    List<PopularFeed> findTodayPopularFeeds(Long userId, int size);
 
-    List<PopularFeed> findTop9ByOrderByPopularFeedIdDesc();
+    List<PopularFeed> findOrderByPopularFeedIdDesc(int size);
 }

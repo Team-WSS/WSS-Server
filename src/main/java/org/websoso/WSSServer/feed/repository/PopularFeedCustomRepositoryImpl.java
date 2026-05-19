@@ -22,7 +22,7 @@ public class PopularFeedCustomRepositoryImpl implements PopularFeedCustomReposit
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<PopularFeed> findTodayPopularFeeds(Long userId) {
+    public List<PopularFeed> findTodayPopularFeeds(Long userId, int size) {
         List<Long> blockingIds = jpaQueryFactory
                 .select(block.blockedId)
                 .from(block)
@@ -47,19 +47,19 @@ public class PopularFeedCustomRepositoryImpl implements PopularFeedCustomReposit
                         popularFeed.feed.isPublic.isTrue(),
                         popularFeed.feed.isHidden.isFalse())
                 .orderBy(popularFeed.popularFeedId.desc())
-                .limit(9)
+                .limit(size)
                 .fetch();
     }
 
     @Override
-    public List<PopularFeed> findTop9ByOrderByPopularFeedIdDesc() {
+    public List<PopularFeed> findOrderByPopularFeedIdDesc(int size) {
         return jpaQueryFactory
                 .selectFrom(popularFeed)
                 .join(popularFeed.feed, feed)
                 .where(feed.isPublic.isTrue(),
                         feed.isHidden.isFalse())
                 .orderBy(popularFeed.popularFeedId.desc())
-                .limit(9)
+                .limit(size)
                 .fetch();
     }
 }
