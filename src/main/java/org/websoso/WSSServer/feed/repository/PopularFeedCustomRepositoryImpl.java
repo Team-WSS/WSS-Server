@@ -1,12 +1,16 @@
 package org.websoso.WSSServer.feed.repository;
 
+import static org.websoso.WSSServer.feed.domain.QFeed.feed;
 import static org.websoso.WSSServer.feed.domain.QPopularFeed.popularFeed;
 import static org.websoso.WSSServer.user.domain.QBlock.block;
+import static org.websoso.WSSServer.user.domain.QUser.user;
 
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+
 import java.util.List;
 import java.util.stream.Stream;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.feed.domain.PopularFeed;
@@ -18,7 +22,7 @@ public class PopularFeedCustomRepositoryImpl implements PopularFeedCustomReposit
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<PopularFeed> findTodayPopularFeeds(Long userId) {
+    public List<PopularFeed> findTodayPopularFeeds(Long userId, int size) {
         List<Long> blockingIds = jpaQueryFactory
                 .select(block.blockedId)
                 .from(block)
@@ -37,9 +41,25 @@ public class PopularFeedCustomRepositoryImpl implements PopularFeedCustomReposit
 
         return jpaQueryFactory
                 .selectFrom(popularFeed)
-                .where(popularFeed.feed.user.userId.notIn(blockIds))
+                .join(popularFeed.feed, feed)
+                .join(feed.user, user)
+                .where(user.userId.notIn(blockIds),
+                        popularFeed.feed.isPublic.isTrue(),
+                        popularFeed.feed.isHidden.isFalse())
                 .orderBy(popularFeed.popularFeedId.desc())
-                .limit(9)
+                .limit(size)
+                .fetch();
+    }
+
+    @Override
+    public List<PopularFeed> findOrderByPopularFeedIdDesc(int size) {
+        return jpaQueryFactory
+                .selectFrom(popularFeed)
+                .join(popularFeed.feed, feed)
+                .where(feed.isPublic.isTrue(),
+                        feed.isHidden.isFalse())
+                .orderBy(popularFeed.popularFeedId.desc())
+                .limit(size)
                 .fetch();
     }
 }
