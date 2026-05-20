@@ -2,6 +2,7 @@ package org.websoso.WSSServer.library.repository;
 
 import java.util.List;
 import java.util.Set;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +17,9 @@ import org.websoso.WSSServer.library.domain.UserNovelKeyword;
 public interface UserNovelKeywordRepository extends JpaRepository<UserNovelKeyword, Long> {
 
     List<UserNovelKeyword> findAllByUserNovel_Novel(Novel novel);
+
+    @Query("SELECT unk.keyword FROM UserNovelKeyword unk GROUP BY unk.keyword ORDER BY COUNT(unk) DESC")
+    List<Keyword> findTopKeywordsByCount(Pageable pageable);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional

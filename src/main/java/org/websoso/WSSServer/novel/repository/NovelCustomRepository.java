@@ -11,6 +11,9 @@ public interface NovelCustomRepository {
 
     Page<Novel> findSearchedNovels(Pageable pageable, String query);
 
-    Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRating, List<Keyword> keywords);
+    Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRatingStart, Float novelRatingEnd, List<Keyword> keywords);
 
+    List<Novel> findAutocompleteNovels(String searchQuery, int limitSize);
+
+    List<Novel> findAllByNovelIdInWithGenres(List<Long> novelIds);
 }

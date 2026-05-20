@@ -14,7 +14,7 @@ public interface ReadNotificationRepository extends JpaRepository<ReadNotificati
 
     boolean existsByUserAndNotification(User user, Notification notification);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """
             INSERT IGNORE INTO read_notification (notification_id, user_id)
             VALUES (:notificationId, :userId)

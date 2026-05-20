@@ -11,5 +11,4 @@ public interface PopularFeedRepository extends JpaRepository<PopularFeed, Long>,
 
     Boolean existsByFeed(Feed feed);
 
-    List<PopularFeed> findTop9ByOrderByPopularFeedIdDesc();
 }

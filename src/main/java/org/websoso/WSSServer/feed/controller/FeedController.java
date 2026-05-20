@@ -112,10 +112,11 @@ public class FeedController {
     }
 
     @GetMapping("/popular")
-    public ResponseEntity<PopularFeedsGetResponse> getPopularFeeds(@AuthenticationPrincipal User user) {
+    public ResponseEntity<PopularFeedsGetResponse> getPopularFeeds(@AuthenticationPrincipal User user,
+                                                                   @RequestParam(name = "size", defaultValue = "9") int size) {
         return ResponseEntity
                 .status(OK)
-                .body(feedFindApplication.getPopularFeeds(user));
+                .body(feedFindApplication.getPopularFeeds(user, size));
     }
 
     @GetMapping("/interest")

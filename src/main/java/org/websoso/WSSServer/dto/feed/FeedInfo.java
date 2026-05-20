@@ -59,7 +59,7 @@ public record FeedInfo(
                 userBasicInfo.userId(),
                 userBasicInfo.nickname(),
                 userBasicInfo.avatarImage(),
-                TimeFormatUtil.formatRelativeTime(feed.getCreatedDate()),
+                TimeFormatUtil.formatRelativeDateTime(feed.getCreatedDate()),
                 feed.getFeedContent(),
                 feed.getLikes().size(),
                 isLiked,

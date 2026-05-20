@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.novel.repository;
 
+import static org.websoso.WSSServer.domain.QGenre.genre;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 import static org.websoso.WSSServer.library.domain.QUserNovel.userNovel;
@@ -36,13 +37,12 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     @Override
     public Page<Novel> findSearchedNovels(Pageable pageable, String searchQuery) {
 
-        BooleanExpression titleContainsQuery = getCleanedString(novel.title).containsIgnoreCase(searchQuery);
         BooleanExpression authorContainsQuery = getCleanedString(novel.author).containsIgnoreCase(searchQuery);
 
         List<Novel> novelsByTitle = jpaQueryFactory
                 .selectFrom(novel)
                 .leftJoin(novel.userNovels, userNovel)
-                .where(titleContainsQuery)
+                .where(titleContainsQuery(searchQuery))
                 .groupBy(novel.novelId)
                 .orderBy(getPopularity(novel).desc())
                 .fetch();
@@ -50,7 +50,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
         List<Novel> novelsByAuthor = jpaQueryFactory
                 .selectFrom(novel)
                 .leftJoin(novel.userNovels, userNovel)
-                .where(authorContainsQuery.and(titleContainsQuery.not()))
+                .where(authorContainsQuery.and(titleContainsQuery(searchQuery).not()))
                 .groupBy(novel.novelId)
                 .orderBy(getPopularity(novel).desc())
                 .fetch();
@@ -74,8 +74,8 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     }
 
     @Override
-    public Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRating,
-                                          List<Keyword> keywords) {
+    public Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRatingStart,
+                                          Float novelRatingEnd, List<Keyword> keywords) {
 
         NumberTemplate<Long> popularity = Expressions.numberTemplate(Long.class,
                 "(SELECT COUNT(un) FROM UserNovel un WHERE un.novel = {0} AND (un.isInterest = true OR un.status <> 'QUIT'))",
@@ -92,9 +92,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                         isCompleted == null
                                 ? null
                                 : novel.isCompleted.eq(isCompleted),
-                        novelRating == null
-                                ? null
-                                : getAverageRating(novel).goe(novelRating),
+                        getAverageRatingCondition(novel, novelRatingStart, novelRatingEnd),
                         keywords.isEmpty()
                                 ? null
                                 : getKeywordCount(novel, keywords).eq(keywords.size())
@@ -104,10 +102,53 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
         return applyPagination(pageable, query);
     }
 
+    @Override
+    public List<Novel> findAutocompleteNovels(String searchQuery, int limitSize) {
+        return jpaQueryFactory
+                .selectFrom(novel)
+                .leftJoin(novel.userNovels, userNovel)
+                .where(titleContainsQuery(searchQuery))
+                .groupBy(novel.novelId)
+                .orderBy(getPopularity(novel).desc())
+                .limit(limitSize)
+                .fetch();
+    }
+
+    @Override
+    public List<Novel> findAllByNovelIdInWithGenres(List<Long> novelIds) {
+        return jpaQueryFactory
+                .selectDistinct(novel)
+                .from(novel)
+                .leftJoin(novel.novelGenres, novelGenre).fetchJoin()
+                .leftJoin(novelGenre.genre, genre).fetchJoin()
+                .where(novel.novelId.in(novelIds))
+                .fetch();
+    }
+
+    private BooleanExpression titleContainsQuery(String searchQuery) {
+        return getCleanedString(novel.title).containsIgnoreCase(searchQuery);
+    }
+
+
     private NumberExpression<Double> getAverageRating(QNovel novel) {
         return Expressions.numberTemplate(Double.class,
                 "(SELECT AVG(un.userNovelRating) FROM UserNovel un WHERE un.novel = {0} AND un.userNovelRating <> 0)",
                 novel);
+    }
+
+    private BooleanExpression getAverageRatingCondition(QNovel novel, Float novelRatingStart, Float novelRatingEnd) {
+        if (novelRatingStart == null) {
+            return null;
+        }
+
+        NumberExpression<Double> averageRating = getAverageRating(novel);
+        BooleanExpression averageRatingBetween = averageRating.between(novelRatingStart, novelRatingEnd);
+
+        if (Float.compare(novelRatingStart, 0.0f) == 0) {
+            return averageRating.isNull().or(averageRatingBetween);
+        }
+
+        return averageRatingBetween;
     }
 
     private NumberExpression<Integer> getKeywordCount(QNovel novel, List<Keyword> keywords) {

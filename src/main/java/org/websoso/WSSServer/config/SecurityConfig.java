@@ -21,14 +21,16 @@ import org.websoso.WSSServer.config.jwt.JwtAuthenticationFilter;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomJwtAuthenticationEntryPoint customJwtAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-    private final String[] permitAllPaths = {
+    private static final String[] permitAllPaths = {
             "/users/login",
             "/actuator/health",
             "/novels",
+            "/novels/autocomplete",
             "/novels/{novelId}",
             "/novels/{novelId}/info",
             "/novels/{novelId}/feeds",
@@ -45,7 +47,13 @@ public class SecurityConfig {
             "/auth/login/kakao",
             "/auth/login/apple",
             "/auth/apple/sync",
-            "/minimum-version"
+            "/minimum-version",
+    };
+
+    private static final String[] swaggerPaths = {
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
     };
 
     @Bean
@@ -61,6 +69,7 @@ public class SecurityConfig {
                 })
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(permitAllPaths).permitAll();
+                    auth.requestMatchers(swaggerPaths).permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

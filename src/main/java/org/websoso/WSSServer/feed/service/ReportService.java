@@ -1,6 +1,6 @@
 package org.websoso.WSSServer.feed.service;
 
-import static org.websoso.WSSServer.domain.common.DiscordWebhookMessageType.REPORT;
+import static org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessageType.REPORT;
 import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
 import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 import static org.websoso.WSSServer.exception.error.CustomCommentError.ALREADY_REPORTED_COMMENT;
@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.domain.common.DiscordWebhookMessage;
+import org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.exception.error.CustomCommentError;
 import org.websoso.WSSServer.exception.exception.CustomCommentException;
@@ -28,9 +28,9 @@ import org.websoso.WSSServer.feed.repository.CommentRepository;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.feed.repository.ReportedCommentRepository;
 import org.websoso.WSSServer.feed.repository.ReportedFeedRepository;
-import org.websoso.WSSServer.user.repository.UserRepository;
-import org.websoso.WSSServer.notification.service.DiscordMessageClient;
+import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
 import org.websoso.WSSServer.notification.service.MessageFormatter;
+import org.websoso.WSSServer.user.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor

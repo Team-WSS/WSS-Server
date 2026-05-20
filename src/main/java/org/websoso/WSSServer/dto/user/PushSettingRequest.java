@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.notification.dto;
+package org.websoso.WSSServer.dto.user;
 
 import jakarta.validation.constraints.NotNull;
 

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.application.SearchNovelApplication;
+import org.websoso.WSSServer.dto.novel.AutocompleteKeywordsResponse;
 import org.websoso.WSSServer.dto.novel.FilteredNovelsResponse;
 import org.websoso.WSSServer.dto.novel.SearchedNovelsResponse;
 import org.websoso.WSSServer.user.domain.User;
@@ -40,12 +41,27 @@ public class NovelController {
      * @return SearchedNovelsResponse
      */
     @GetMapping
-    public ResponseEntity<SearchedNovelsResponse> searchNovels(@RequestParam(required = false) String query,
+    public ResponseEntity<SearchedNovelsResponse> searchNovels(@AuthenticationPrincipal User user,
+                                                               @RequestParam(required = false) String query,
                                                                @RequestParam int page,
                                                                @RequestParam int size) {
         return ResponseEntity
                 .status(OK)
-                .body(searchNovelApplication.searchNovels(query, page, size));
+                .body(searchNovelApplication.searchNovels(user, query, page, size));
+    }
+
+    /**
+     * 검색어를 사용해서 소설을 찾는다.
+     *
+     * @param query 검색할 작품명
+     * @return SearchedNovelsResponse
+     */
+    @GetMapping("/autocomplete")
+    public ResponseEntity<AutocompleteKeywordsResponse> autocomplete(@RequestParam String query,
+                                                                     @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity
+                .status(OK)
+                .body(searchNovelApplication.autocompleteKeywords(query, size));
     }
 
     /**
@@ -64,13 +80,16 @@ public class NovelController {
     public ResponseEntity<FilteredNovelsResponse> getFilteredNovels(
             @RequestParam(required = false) List<String> genres,
             @RequestParam(required = false) Boolean isCompleted,
-            @RequestParam(required = false) Float novelRating,
+            @Deprecated @RequestParam(required = false) Float novelRating,
+            @RequestParam(required = false, defaultValue = "0.0") Float novelRatingStart,
+            @RequestParam(required = false, defaultValue = "5.0") Float novelRatingEnd,
             @RequestParam(required = false) List<Integer> keywordIds,
             @RequestParam int page,
             @RequestParam int size) {
         return ResponseEntity
                 .status(OK)
-                .body(searchNovelApplication.getFilteredNovels(genres, keywordIds, isCompleted, novelRating, page, size));
+                .body(searchNovelApplication.getFilteredNovels(genres, keywordIds, isCompleted, novelRating,
+                        novelRatingStart, novelRatingEnd, page, size));
     }
 
     /**

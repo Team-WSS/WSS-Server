@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
+import org.websoso.WSSServer.notification.domain.Notification;
 import org.websoso.WSSServer.notification.dto.ReadNotificationDto;
 
 @Repository
@@ -27,11 +28,11 @@ public class NotificationCustomRepositoryImpl implements NotificationCustomRepos
                 .from(notification)
                 .leftJoin(readNotification)
                 .on(
-                        notification.eq(readNotification.notification),
+                        readNotification.notification.eq(notification),
                         readNotification.user.userId.eq(userId)
                 )
                 .where(
-                        notification.userId.in(userId, 0L),
+                        isAccessibleBy(userId),
                         readNotification.readNotificationId.isNull()
                 )
                 .fetchFirst() != null;
@@ -52,13 +53,17 @@ public class NotificationCustomRepositoryImpl implements NotificationCustomRepos
                         readNotification.user.userId.eq(userId))
                 .where(
                         ltNotificationId(lastNotificationId),
-                        notification.userId.eq(userId).or(notification.userId.eq(0L))
+                        isAccessibleBy(userId)
                 )
                 .orderBy(notification.notificationId.desc())
-                .limit(pageable.getPageSize() + 1)
+                .limit(pageable.getPageSize() + 1L)
                 .fetch();
 
         return toSlice(content, pageable);
+    }
+
+    private BooleanExpression isAccessibleBy(Long userId) {
+        return notification.userId.in(userId, Notification.GLOBAL_USER_ID);
     }
 
     private BooleanExpression ltNotificationId(Long lastNotificationId) {

@@ -2,13 +2,9 @@ package org.websoso.WSSServer.application;
 
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -135,30 +131,51 @@ public class FeedFindApplication {
     }
 
     @Transactional(readOnly = true)
-    public PopularFeedsGetResponse getPopularFeeds(User user) {
-        Long currentUserId = Optional.ofNullable(user).map(User::getUserId).orElse(null);
+    public PopularFeedsGetResponse getPopularFeeds(User user, int size) {
+        List<PopularFeed> popularFeeds = Optional.ofNullable(user)
+                .map(u -> findPopularFeedsWithUser(u.getUserId(), size))
+                .orElseGet(() -> findPopularFeedsWithoutUser(size));
 
-        List<PopularFeed> popularFeeds = Optional.ofNullable(user).map(u -> findPopularFeedsWithUser(u.getUserId()))
-                .orElseGet(this::findPopularFeedsWithoutUser);
+        List<Long> novelIds = popularFeeds.stream()
+                .map(f -> f.getFeed().getNovelId())
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
 
-        List<PopularFeedGetResponse> popularFeedGetResponses = mapToPopularFeedGetResponseList(popularFeeds,
-                currentUserId);
+        Map<Long, Novel> novelMap = novelServiceImpl.getNovelsWithGenresByIds(novelIds).stream()
+                .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
 
-        return new PopularFeedsGetResponse(popularFeedGetResponses);
+        List<PopularFeedGetResponse> popularFeedGetResponses = mapToPopularFeedGetResponseList(popularFeeds, novelMap);
+
+        return PopularFeedsGetResponse.of(popularFeedGetResponses);
     }
 
-    private List<PopularFeed> findPopularFeedsWithUser(Long userId) {
-        return feedServiceImpl.findPopularFeedsWithUser(userId);
+    private List<PopularFeed> findPopularFeedsWithUser(Long userId, int size) {
+        return feedServiceImpl.findPopularFeedsWithUser(userId, size);
     }
 
-    private List<PopularFeed> findPopularFeedsWithoutUser() {
-        return feedServiceImpl.findPopularFeedsWithoutUser();
+    private List<PopularFeed> findPopularFeedsWithoutUser(int size) {
+        return feedServiceImpl.findPopularFeedsWithoutUser(size);
     }
 
     private static List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(List<PopularFeed> popularFeeds,
-                                                                                Long currentUserId) {
-        return popularFeeds.stream().filter(pf -> pf.getFeed().isVisibleTo(currentUserId))
-                .map(PopularFeedGetResponse::of).toList();
+                                                                                Map<Long, Novel> novelMap) {
+        return popularFeeds.stream()
+                .map(popularFeed -> {
+                    Novel novel = novelMap.get(popularFeed.getFeed().getNovelId());
+                    String novelImage = Optional.ofNullable(novel).map(Novel::getNovelImage).orElse(null);
+                    String novelGenreImage = Optional.ofNullable(novel)
+                            .flatMap(FeedFindApplication::getFirstNovelGenreImage)
+                            .orElse(null);
+
+                    return PopularFeedGetResponse.of(popularFeed, novelImage, novelGenreImage);
+                }).toList();
+    }
+
+    private static Optional<String> getFirstNovelGenreImage(Novel novel) {
+        return novel.getNovelGenres().stream()
+                .findFirst()
+                .map(novelGenre -> novelGenre.getGenre().getGenreImage());
     }
 
     @Transactional(readOnly = true)

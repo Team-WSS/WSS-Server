@@ -10,10 +10,13 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.dto.novel.AutocompleteKeywordsResponse;
+import org.websoso.WSSServer.recentsearch.event.NovelSearchedEvent;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
@@ -55,6 +58,7 @@ public class SearchNovelApplication {
     private final KeywordService libraryKeywordService;
     private final KeywordServiceImpl keywordService;
     private final LibraryService libraryService;
+    private final ApplicationEventPublisher eventPublisher;
 
     // TODO: 삭제될 레포지토리 의존성
     private final FeedRepository feedRepository;
@@ -70,7 +74,7 @@ public class SearchNovelApplication {
      * @return SearchedNovelsGetResponse
      */
     @Transactional(readOnly = true)
-    public SearchedNovelsResponse searchNovels(String query, int page, int size) {
+    public SearchedNovelsResponse searchNovels(User user, String query, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         String searchQuery = sanitizeQuery(query);
 
@@ -84,18 +88,30 @@ public class SearchNovelApplication {
                 .map(this::convertToDTO2)
                 .toList();
 
+        // 로그인한 사용자이며, 검색어가 있는 경우에만 검색 기록에 저장한다.
+        if (user != null && user.getUserId() != null && !searchQuery.isBlank()) {
+            eventPublisher.publishEvent(new NovelSearchedEvent(user.getUserId(), searchQuery));
+        }
+
         return SearchedNovelsResponse.of(novelGetResponsePreviews, novels.getTotalElements(), novels.hasNext());
     }
 
+    //TODO: 추후 novelRating 제거
     @Transactional(readOnly = true)
-    public FilteredNovelsResponse getFilteredNovels(List<String> genreNames, List<Integer> keywordIds, Boolean isCompleted, Float novelRating, int page, int size) {
+    public FilteredNovelsResponse getFilteredNovels(List<String> genreNames, List<Integer> keywordIds, Boolean isCompleted, Float novelRating, Float novelRatingStart, Float novelRatingEnd, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
 
         List<Genre> genres = genreService.getGenresOrException(genreNames);
 
         List<Keyword> keywords = keywordService.getKeywordsOrException(keywordIds);
 
-        Page<Novel> novels = novelService.findFilteredNovels(pageRequest, genres, keywords, isCompleted, novelRating);
+        Page<Novel> novels;
+
+        if (novelRating == null) {
+            novels = novelService.findFilteredNovels(pageRequest, genres, keywords, isCompleted, novelRatingStart, novelRatingEnd);
+        } else {
+            novels = novelService.findFilteredNovels(pageRequest, genres, keywords, isCompleted, novelRating, novelRatingEnd);
+        }
 
         List<NovelSummaryResponse> novelGetResponsePreviews = novels.stream()
                 .map(this::convertToDTO2)
@@ -171,6 +187,16 @@ public class SearchNovelApplication {
         Map<Long, AvatarProfile> avatarMap = createAvatarMap(feedMap);
 
         return PopularNovelsGetResponse.create(popularNovels, feedMap, avatarMap);
+    }
+
+    @Transactional(readOnly = true)
+    public AutocompleteKeywordsResponse autocompleteKeywords(String searchQuery, int size) {
+        List<String> autocompleteKeywords = novelService.getAutocompleteNovels(searchQuery, size)
+                .stream()
+                .map(Novel::getTitle)
+                .toList();
+
+        return new AutocompleteKeywordsResponse(autocompleteKeywords);
     }
 
     /**
