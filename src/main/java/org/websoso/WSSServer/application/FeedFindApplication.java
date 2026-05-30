@@ -95,6 +95,7 @@ public class FeedFindApplication {
         Slice<Feed> feeds = findFeedsByCategoryLabel(lastFeedId, userIdOrNull,
                 PageRequest.of(DEFAULT_PAGE_NUMBER, size), feedGetOption, genres);
 
+        // TODO: feed -> feed.isVisibleTo(userIdOrNull) 해당 필터링 로직은 필요 없음
         List<FeedInfo> feedGetResponses = feeds.getContent().stream().filter(feed -> feed.isVisibleTo(userIdOrNull))
                 .map(feed -> createFeedInfo(feed, user)).toList();
 

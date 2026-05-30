@@ -18,6 +18,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
     @Query(value = "SELECT f FROM Feed f WHERE "
             + "(:lastFeedId = 0 OR f.feedId < :lastFeedId) "
             + "AND f.isHidden = false "
+            + "AND (f.isPublic = true OR f.user.userId = :userId)"
             + "AND (:userId IS NULL "
             + "OR f.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = :userId)) "
             + "ORDER BY f.feedId DESC")
@@ -29,6 +30,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
             + "(:lastFeedId = 0 OR f.feedId < :lastFeedId) "
             + "AND f.novelId = :novelId "
             + "AND f.isHidden = false "
+            + "AND (f.isPublic = true OR f.user.userId = :userId)"
             + "AND (:userId IS NULL "
             + "OR f.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = :userId)) "
             + "ORDER BY f.feedId DESC")
