@@ -156,7 +156,8 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                         checkPopularFeed(),
                         checkGenresAndNovels(genres, true),
                         checkBlocking(userId),
-                        checkHidden()
+                        checkHidden(),
+                        checkVisible(userId)
                 )
                 .limit(pageRequest.getPageSize() + 1)
                 .orderBy(feed.feedId.desc())
@@ -181,7 +182,8 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                         ltFeedId(lastFeedId),
                         checkBlocking(userId),
                         checkHidden(),
-                        checkInterestedNovels(userId)
+                        checkInterestedNovels(userId),
+                        checkVisible(userId)
                 )
                 .limit(pageRequest.getPageSize() + 1)
                 .orderBy(feed.feedId.desc())
