@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.dto.novel.AutocompleteKeywordsResponse;
+import org.websoso.WSSServer.library.domain.UserNovelKeyword;
 import org.websoso.WSSServer.recentsearch.event.NovelSearchedEvent;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
@@ -176,17 +178,30 @@ public class SearchNovelApplication {
     }
 
     @Transactional(readOnly = true)
-    public PopularNovelsGetResponse getTodayPopularNovels() {
+    public PopularNovelsGetResponse getTodayPopularNovels(Integer keywordSize) {
         List<Long> novelIdsFromPopularNovel = popularNovelService.getNovelIdsFromPopularNovel();
         List<Long> selectedNovelIdsFromPopularNovel = getSelectedNovelIdsFromPopularNovel(novelIdsFromPopularNovel);
         List<Novel> popularNovels = novelService.getSelectedPopularNovels(selectedNovelIdsFromPopularNovel);
         List<Feed> popularFeedsFromPopularNovels = feedRepository.findPopularFeedsByNovelIds(
                 selectedNovelIdsFromPopularNovel);
 
+        Map<Long, List<Keyword>> keywordMap = popularNovels.stream()
+                .collect(Collectors.toMap(
+                    Novel::getNovelId,
+                    novel -> libraryKeywordService.getKeywords(novel).stream()
+                            .map(UserNovelKeyword::getKeyword)
+                            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                            .entrySet().stream()
+                            .sorted(Map.Entry.<Keyword, Long>comparingByValue().reversed())
+                            .limit(keywordSize)
+                            .map(Map.Entry::getKey)
+                            .collect(Collectors.toList())
+                ));
+
         Map<Long, Feed> feedMap = createFeedMap(popularFeedsFromPopularNovels);
         Map<Long, AvatarProfile> avatarMap = createAvatarMap(feedMap);
 
-        return PopularNovelsGetResponse.create(popularNovels, feedMap, avatarMap);
+        return PopularNovelsGetResponse.create(popularNovels, feedMap, avatarMap, keywordMap);
     }
 
     @Transactional(readOnly = true)

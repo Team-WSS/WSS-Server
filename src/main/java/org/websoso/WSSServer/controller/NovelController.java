@@ -127,11 +127,12 @@ public class NovelController {
      * @return PopularNovelsGetResponse
      */
     @GetMapping("/popular")
-    public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(@AuthenticationPrincipal User user) {
+    public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(@AuthenticationPrincipal User user,
+                                                                          @RequestParam(required = false, defaultValue = "2") Integer keywordSize) {
         //TODO 차단 관계에 있는 유저의 피드글 처리
         return ResponseEntity
                 .status(OK)
-                .body(searchNovelApplication.getTodayPopularNovels());
+                .body(searchNovelApplication.getTodayPopularNovels(keywordSize));
     }
 
     /**
