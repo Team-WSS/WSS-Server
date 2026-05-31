@@ -73,9 +73,6 @@ public class Feed {
     @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ReportedFeed> reportedFeeds = new ArrayList<>();
 
-    @OneToOne(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private PopularFeed popularFeed;
-
     private Feed(String feedContent, Long novelId, Boolean isSpoiler, Boolean isPublic, User user, List<FeedImage> images) {
         this.feedContent = feedContent;
         this.novelId = novelId;
