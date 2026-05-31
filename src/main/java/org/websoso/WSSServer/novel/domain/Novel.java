@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,5 +46,11 @@ public class Novel {
 
     @OneToMany(mappedBy = "novel", fetch = FetchType.LAZY)
     private List<NovelGenre> novelGenres = new ArrayList<>();
+
+    public Optional<String> getFirstGenreImage(){
+        return novelGenres.stream()
+                .findFirst()
+                .map(novelGenre -> novelGenre.getGenre().getGenreImage());
+    }
 
 }
