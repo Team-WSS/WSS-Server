@@ -47,10 +47,10 @@ public class Novel {
     @OneToMany(mappedBy = "novel", fetch = FetchType.LAZY)
     private List<NovelGenre> novelGenres = new ArrayList<>();
 
-    public Optional<String> getFirstGenreImage(){
+    public String getFirstGenreName(){
         return novelGenres.stream()
                 .findFirst()
-                .map(novelGenre -> novelGenre.getGenre().getGenreImage());
+                .map(novelGenre -> novelGenre.getGenre().getGenreName()).orElse(null);
     }
 
 }
