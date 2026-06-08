@@ -1,7 +1,5 @@
 package org.websoso.WSSServer.dto.popularNovel;
 
-import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
-import org.websoso.WSSServer.library.domain.Keyword;
 import org.websoso.WSSServer.novel.domain.NovelGenre;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.feed.domain.Feed;
@@ -19,7 +17,7 @@ public record PopularNovelGetResponse(
         String feedContent,
         List<String> keywords,
         String author,
-        Optional<String> novelGenreImage,
+        Optional<String> genreName,
         String novelDescription,
         boolean isNovelCompleted,
         List<String> novelGenres
@@ -37,7 +35,7 @@ public record PopularNovelGetResponse(
                     null,
                     keywords,
                     novel.getAuthor(),
-                    novel.getFirstGenreImage(),
+                    novel.getFirstGenreName(),
                     novel.getNovelDescription(),
                     novel.getIsCompleted(),
                     genres
@@ -53,7 +51,7 @@ public record PopularNovelGetResponse(
                 feed.getFeedContent(),
                 keywords,
                 novel.getAuthor(),
-                novel.getFirstGenreImage(),
+                novel.getFirstGenreName(),
                 novel.getNovelDescription(),
                 novel.getIsCompleted(),
                 genres

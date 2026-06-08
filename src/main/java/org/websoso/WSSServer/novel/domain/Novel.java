@@ -53,4 +53,10 @@ public class Novel {
                 .map(novelGenre -> novelGenre.getGenre().getGenreImage());
     }
 
+    public Optional<String> getFirstGenreName(){
+        return novelGenres.stream()
+                .findFirst()
+                .map(novelGenre -> novelGenre.getGenre().getGenreName());
+    }
+
 }
