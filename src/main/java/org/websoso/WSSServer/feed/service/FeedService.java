@@ -192,7 +192,9 @@ public class FeedService {
         }
         likeRepository.save(Like.create(user.getUserId(), feed));
 
-        if (feed.getLikes().size() == POPULAR_FEED_LIKE_THRESHOLD) {
+        long likeCount = likeRepository.countByFeed(feed);
+
+        if (likeCount == POPULAR_FEED_LIKE_THRESHOLD && feed.getNovelId() != null) {
             if (!popularFeedRepository.existsByFeed(feed)) {
                 popularFeedRepository.save(PopularFeed.create(feed));
 

@@ -12,4 +12,6 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     Optional<Like> findByUserIdAndFeed(Long userId, Feed feed);
 
     boolean existsByUserIdAndFeed(Long userId, Feed feed);
+
+    long countByFeed(Feed feed);
 }
