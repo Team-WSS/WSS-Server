@@ -9,11 +9,12 @@ public record PopularFeedGetResponse(
         Integer commentCount,
         Boolean isSpoiler,
         Boolean isPublic,
+        String novelTitle,
         String novelImage,
         String novelGenre
 ) {
 
-    public static PopularFeedGetResponse of(PopularFeed popularFeed, String novelImage, String novelGenre) {
+    public static PopularFeedGetResponse of(PopularFeed popularFeed,String novelTitle, String novelImage, String novelGenre) {
         return new PopularFeedGetResponse(
                 popularFeed.getFeed().getFeedId(),
                 popularFeed.getFeed().getFeedContent(),
@@ -21,6 +22,7 @@ public record PopularFeedGetResponse(
                 popularFeed.getFeed().getComments().size(),
                 popularFeed.getFeed().getIsSpoiler(),
                 popularFeed.getFeed().getIsPublic(),
+                novelTitle,
                 novelImage,
                 novelGenre
         );
