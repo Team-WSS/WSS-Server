@@ -6,10 +6,11 @@ import static org.websoso.WSSServer.user.domain.QBlock.block;
 import static org.websoso.WSSServer.user.domain.QUser.user;
 
 
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -23,29 +24,17 @@ public class PopularFeedCustomRepositoryImpl implements PopularFeedCustomReposit
 
     @Override
     public List<PopularFeed> findTodayPopularFeeds(Long userId, int size) {
-        List<Long> blockingIds = jpaQueryFactory
-                .select(block.blockedId)
-                .from(block)
-                .where(block.blockingId.eq(userId))
-                .fetch();
-
-        List<Long> blockedIds = jpaQueryFactory
-                .select(block.blockingId)
-                .from(block)
-                .where(block.blockedId.eq(userId))
-                .fetch();
-
-        List<Long> blockIds = Stream.concat(blockingIds.stream(), blockedIds.stream())
-                .distinct()
-                .toList();
+        List<Long> blockIds = getBlockIds(userId);
 
         return jpaQueryFactory
                 .selectFrom(popularFeed)
                 .join(popularFeed.feed, feed)
                 .join(feed.user, user)
-                .where(user.userId.notIn(blockIds),
-                        popularFeed.feed.isPublic.isTrue(),
-                        popularFeed.feed.isHidden.isFalse())
+                .where(
+                        feed.isPublic.isTrue(),
+                        feed.isHidden.isFalse(),
+                        user.userId.notIn(blockIds)
+                )
                 .orderBy(popularFeed.popularFeedId.desc())
                 .limit(size)
                 .fetch();
@@ -56,10 +45,34 @@ public class PopularFeedCustomRepositoryImpl implements PopularFeedCustomReposit
         return jpaQueryFactory
                 .selectFrom(popularFeed)
                 .join(popularFeed.feed, feed)
-                .where(feed.isPublic.isTrue(),
-                        feed.isHidden.isFalse())
+                .where(
+                        feed.isPublic.isTrue(),
+                        feed.isHidden.isFalse()
+                )
                 .orderBy(popularFeed.popularFeedId.desc())
                 .limit(size)
+                .fetch();
+    }
+
+    /**
+     * 본인이 차단했거나, 본인을 차단한 사용자의 ID를 조회한다.
+     *
+     * @param userId 사용자 ID
+     * @return 차단 사용자 ID
+     */
+    private List<Long> getBlockIds(Long userId) {
+        NumberExpression<Long> blockUserId = new CaseBuilder()
+                .when(block.blockingId.eq(userId)).then(block.blockedId)
+                .otherwise(block.blockingId);
+
+        return jpaQueryFactory
+                .select(blockUserId)
+                .from(block)
+                .where(
+                        block.blockingId.eq(userId)
+                                .or(block.blockedId.eq(userId))
+                )
+                .distinct()
                 .fetch();
     }
 }
