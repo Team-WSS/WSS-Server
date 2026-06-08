@@ -3,6 +3,7 @@ package org.websoso.WSSServer.application;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
@@ -19,7 +21,6 @@ import org.websoso.WSSServer.dto.feed.FeedInfo;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
-import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
@@ -43,7 +44,6 @@ public class FeedFindApplication {
     private final FeedServiceImpl feedServiceImpl;
     private final NovelServiceImpl novelServiceImpl;
 
-    private static final String DEFAULT_CATEGORY = "all";
     private static final int DEFAULT_PAGE_NUMBER = 0;
 
     //ToDo : 의존성 제거 필요 부분
@@ -109,10 +109,6 @@ public class FeedFindApplication {
         return genrePreferenceRepository.findByUser(user).stream().map(GenrePreference::getGenre).toList();
     }
 
-    private static String getChosenCategoryOrDefault(String category) {
-        return Optional.ofNullable(category).orElse(DEFAULT_CATEGORY);
-    }
-
     private Slice<Feed> findFeedsByCategoryLabel(Long lastFeedId, Long userId, PageRequest pageRequest,
                                                  FeedGetOption feedGetOption, List<Genre> genres) {
         return feedServiceImpl.findFeedsByCategoryLabel(lastFeedId, userId, pageRequest, feedGetOption,
@@ -134,49 +130,43 @@ public class FeedFindApplication {
     @Transactional(readOnly = true)
     public PopularFeedsGetResponse getPopularFeeds(User user, int size) {
         List<PopularFeed> popularFeeds = Optional.ofNullable(user)
-                .map(u -> findPopularFeedsWithUser(u.getUserId(), size))
-                .orElseGet(() -> findPopularFeedsWithoutUser(size));
+                .map(u -> feedServiceImpl.findPopularFeedsWithUser(u.getUserId(), size))
+                .orElseGet(() -> feedServiceImpl.findPopularFeedsWithoutUser(size));
 
+        // TODO: PopularFeeds에 이런 메서드들이 더 많으면 일급 함수 객체 만들어도 괜찮을듯
         List<Long> novelIds = popularFeeds.stream()
                 .map(f -> f.getFeed().getNovelId())
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
 
-        Map<Long, Novel> novelMap = novelServiceImpl.getNovelsWithGenresByIds(novelIds).stream()
-                .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
+        Map<Long, Novel> novelMap = novelServiceImpl.getNovelsWithGenresByIds(novelIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        Novel::getNovelId,
+                        Function.identity()
+                ));
 
         List<PopularFeedGetResponse> popularFeedGetResponses = mapToPopularFeedGetResponseList(popularFeeds, novelMap);
 
         return PopularFeedsGetResponse.of(popularFeedGetResponses);
     }
 
-    private List<PopularFeed> findPopularFeedsWithUser(Long userId, int size) {
-        return feedServiceImpl.findPopularFeedsWithUser(userId, size);
-    }
-
-    private List<PopularFeed> findPopularFeedsWithoutUser(int size) {
-        return feedServiceImpl.findPopularFeedsWithoutUser(size);
-    }
-
-    private static List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(List<PopularFeed> popularFeeds,
-                                                                                Map<Long, Novel> novelMap) {
+    private static List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(
+            List<PopularFeed> popularFeeds,
+            Map<Long, Novel> novelMap
+    ) {
         return popularFeeds.stream()
                 .map(popularFeed -> {
                     Novel novel = novelMap.get(popularFeed.getFeed().getNovelId());
-                    String novelImage = Optional.ofNullable(novel).map(Novel::getNovelImage).orElse(null);
-                    String novelGenreImage = Optional.ofNullable(novel)
-                            .flatMap(FeedFindApplication::getFirstNovelGenreImage)
-                            .orElse(null);
 
-                    return PopularFeedGetResponse.of(popularFeed, novelImage, novelGenreImage);
-                }).toList();
-    }
-
-    private static Optional<String> getFirstNovelGenreImage(Novel novel) {
-        return novel.getNovelGenres().stream()
-                .findFirst()
-                .map(novelGenre -> novelGenre.getGenre().getGenreImage());
+                    return PopularFeedGetResponse.of(
+                            popularFeed,
+                            novel == null ? null : novel.getNovelImage(),
+                            novel == null ? null : novel.getFirstGenreName()
+                    );
+                })
+                .toList();
     }
 
     @Transactional(readOnly = true)
