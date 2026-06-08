@@ -3,7 +3,6 @@ package org.websoso.WSSServer.dto.popularNovel;
 import java.util.List;
 import java.util.Map;
 
-import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.library.domain.Keyword;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.feed.domain.Feed;
@@ -23,14 +22,12 @@ public record PopularNovelsGetResponse(
                     List<String> keywordGetResponsesList = keywords.get(novel.getNovelId()).stream()
                             .map(keyword -> keyword.getKeywordName())
                             .toList();
-                    List<String> genres = novel.getNovelGenres().stream()
-                            .map(novelGenre -> novelGenre.getGenre().getGenreName())
-                            .toList();
+
                     if (feed == null) {
-                        return PopularNovelGetResponse.of(novel, null, null, keywordGetResponsesList, genres);
+                        return PopularNovelGetResponse.of(novel, null, null, keywordGetResponsesList);
                     }
                     AvatarProfile avatar = avatarMap.get(feed.getUser().getAvatarProfileId());
-                    return PopularNovelGetResponse.of(novel, avatar, feed, keywordGetResponsesList, genres);
+                    return PopularNovelGetResponse.of(novel, avatar, feed, keywordGetResponsesList);
                 })
                 .toList();
         return new PopularNovelsGetResponse(popularNovelResponses);
