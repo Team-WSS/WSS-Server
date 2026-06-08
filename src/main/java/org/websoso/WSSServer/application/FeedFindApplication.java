@@ -162,6 +162,7 @@ public class FeedFindApplication {
 
                     return PopularFeedGetResponse.of(
                             popularFeed,
+                            novel == null ? null : novel.getTitle(),
                             novel == null ? null : novel.getNovelImage(),
                             novel == null ? null : novel.getFirstGenreName()
                     );
