@@ -23,7 +23,7 @@ public class PopularFeedCustomRepositoryImpl implements PopularFeedCustomReposit
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<PopularFeed> findTodayPopularFeeds(Long userId, int size) {
+    public List<PopularFeed> findPopularFeedsForMember(Long userId, int size) {
         List<Long> blockIds = getBlockIds(userId);
 
         return jpaQueryFactory
@@ -41,7 +41,7 @@ public class PopularFeedCustomRepositoryImpl implements PopularFeedCustomReposit
     }
 
     @Override
-    public List<PopularFeed> findOrderByPopularFeedIdDesc(int size) {
+    public List<PopularFeed> findPopularFeedsForGuest(int size) {
         return jpaQueryFactory
                 .selectFrom(popularFeed)
                 .join(popularFeed.feed, feed)

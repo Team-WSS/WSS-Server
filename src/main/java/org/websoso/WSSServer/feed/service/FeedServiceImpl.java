@@ -90,12 +90,12 @@ public class FeedServiceImpl {
 
     @Transactional(readOnly = true)
     public List<PopularFeed> findPopularFeedsWithUser(Long userId, int size) {
-        return popularFeedRepository.findTodayPopularFeeds(userId, size);
+        return popularFeedRepository.findPopularFeedsForMember(userId, size);
     }
 
     @Transactional(readOnly = true)
     public List<PopularFeed> findPopularFeedsWithoutUser(int size) {
-        return popularFeedRepository.findOrderByPopularFeedIdDesc(size);
+        return popularFeedRepository.findPopularFeedsForGuest(size);
     }
 
     @Transactional(readOnly = true)
