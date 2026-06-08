@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
@@ -19,7 +20,6 @@ import org.websoso.WSSServer.dto.feed.FeedInfo;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
-import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.exception.exception.CustomAvatarException;
@@ -165,18 +165,18 @@ public class FeedFindApplication {
                 .map(popularFeed -> {
                     Novel novel = novelMap.get(popularFeed.getFeed().getNovelId());
                     String novelImage = Optional.ofNullable(novel).map(Novel::getNovelImage).orElse(null);
-                    String novelGenreImage = Optional.ofNullable(novel)
-                            .flatMap(FeedFindApplication::getFirstNovelGenreImage)
+                    String novelGenreName = Optional.ofNullable(novel)
+                            .flatMap(FeedFindApplication::getFirstNovelGenreName)
                             .orElse(null);
 
-                    return PopularFeedGetResponse.of(popularFeed, novelImage, novelGenreImage);
+                    return PopularFeedGetResponse.of(popularFeed, novelImage, novelGenreName);
                 }).toList();
     }
 
-    private static Optional<String> getFirstNovelGenreImage(Novel novel) {
+    private static Optional<String> getFirstNovelGenreName(Novel novel) {
         return novel.getNovelGenres().stream()
                 .findFirst()
-                .map(novelGenre -> novelGenre.getGenre().getGenreImage());
+                .map(novelGenre -> novelGenre.getGenre().getGenreName());
     }
 
     @Transactional(readOnly = true)
