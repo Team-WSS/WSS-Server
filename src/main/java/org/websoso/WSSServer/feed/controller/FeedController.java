@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.application.FeedFindApplication;
+import org.websoso.WSSServer.feed.application.FeedFindApplication;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedCreateResponse;

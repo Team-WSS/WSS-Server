@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.application;
+package org.websoso.WSSServer.feed.application;
 
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 
