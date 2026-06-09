@@ -2,6 +2,7 @@ package org.websoso.WSSServer.feed.service;
 
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import java.util.Comparator;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
+import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.feed.domain.PopularFeed;
@@ -48,6 +50,17 @@ public class FeedServiceImpl {
     public Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId)
                 .orElseThrow(() -> new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public Feed getOwnedFeedOrException(Long feedId, Long userId) {
+        Feed feed = getFeedOrException(feedId);
+
+        if (!feed.isMine(userId)) {
+            throw new CustomUserException(INVALID_AUTHORIZED, "User with ID " + userId + " is not the owner of feed " + feed.getFeedId());
+        }
+
+        return feed;
     }
 
     @Transactional(readOnly = true)
