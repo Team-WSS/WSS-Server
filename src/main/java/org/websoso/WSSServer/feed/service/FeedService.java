@@ -126,6 +126,11 @@ public class FeedService {
     }
 
     @Transactional
+    public void createFeed(Feed feed) {
+        feedRepository.save(feed);
+    }
+
+    @Transactional
     public FeedCreateResponse updateFeed(Long feedId, FeedUpdateRequest request, FeedImageUpdateRequest imagesRequest) {
         Feed feed = getFeedOrException(feedId);
 

@@ -30,6 +30,7 @@ import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
+import org.websoso.WSSServer.feed.application.FeedManagementApplication;
 import org.websoso.WSSServer.feed.service.FeedService;
 import org.websoso.WSSServer.user.domain.User;
 
@@ -39,6 +40,7 @@ import org.websoso.WSSServer.user.domain.User;
 public class FeedController {
 
     private final FeedService feedService;
+    private final FeedManagementApplication feedManagementApplication;
     private final FeedFindApplication feedFindApplication;
 
     @PostMapping
@@ -48,7 +50,7 @@ public class FeedController {
                                                          @Valid @ModelAttribute FeedImageCreateRequest requestImage) {
         return ResponseEntity
                 .status(CREATED)
-                .body(feedService.createFeed(user, request, requestImage));
+                .body(feedManagementApplication.create(user, request, requestImage));
     }
 
     @GetMapping("/{feedId}")
