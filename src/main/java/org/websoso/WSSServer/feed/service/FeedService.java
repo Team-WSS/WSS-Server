@@ -111,56 +111,6 @@ public class FeedService {
     private final ImageClient imageClient;
     private final FCMClient fcmClient;
 
-    @Transactional
-    public FeedCreateResponse updateFeed(Long feedId, FeedUpdateRequest request, FeedImageUpdateRequest imagesRequest) {
-        Feed feed = getFeedOrException(feedId);
-
-        List<FeedImage> oldImages = new ArrayList<>(feed.getImages());
-
-        if (request.novelId() != null && feed.isNovelChanged(request.novelId())) {
-            novelRepository.findById(request.novelId())
-                    .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
-                            "novel with the given id is not found"));
-        }
-
-        List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
-
-        feed.updateFeed(request.feedContent(), request.isSpoiler(), request.isPublic(), request.novelId(), feedImages);
-
-        List<String> oldImageUrls = oldImages.stream().map(FeedImage::getUrl).toList();
-        eventPublisher.publishEvent(new FeedImageDeleteEvent(oldImageUrls));
-
-        return FeedCreateResponse.of(feedImages);
-    }
-
-    private List<FeedImage> processFeedImages(List<MultipartFile> images) {
-        List<String> uploadedImageUrls = new ArrayList<>();
-
-        if (images != null && !images.isEmpty()) {
-            try {
-                for (MultipartFile image : images) {
-                    String imageUrl = imageClient.uploadFeedImage(image);
-                    uploadedImageUrls.add(imageUrl);
-                }
-            } catch (Exception e) {
-                if (!uploadedImageUrls.isEmpty()) {
-                    imageClient.deleteImages(uploadedImageUrls);
-                }
-
-                throw e;
-            }
-        }
-
-        List<FeedImage> feedImages = new ArrayList<>();
-        if (!uploadedImageUrls.isEmpty()) {
-            feedImages.add(FeedImage.createThumbnail(uploadedImageUrls.get(0)));
-            for (int i = 1; i < uploadedImageUrls.size(); i++) {
-                feedImages.add(FeedImage.createCommon(uploadedImageUrls.get(i), i));
-            }
-        }
-
-        return feedImages;
-    }
 
     @Transactional
     public void deleteFeed(Long feedId) {

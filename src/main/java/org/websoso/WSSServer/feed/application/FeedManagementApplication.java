@@ -11,8 +11,11 @@ import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedImageDeleteEvent;
 import org.websoso.WSSServer.dto.feed.FeedImageUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
+import org.websoso.WSSServer.feed.domain.Comment;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.domain.FeedImage;
+import org.websoso.WSSServer.feed.service.CommentServiceImpl;
+import org.websoso.WSSServer.feed.service.FeedLikeService;
 import org.websoso.WSSServer.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;
 import org.websoso.WSSServer.service.ImageClient;
@@ -26,6 +29,8 @@ import java.util.List;
 public class FeedManagementApplication {
 
     private final FeedServiceImpl feedService;
+    private final FeedLikeService feedLikeService;
+    private final CommentServiceImpl commentService;
     private final NovelServiceImpl novelService;
     private final ImageClient imageUploader;
 
@@ -77,6 +82,22 @@ public class FeedManagementApplication {
         eventPublisher.publishEvent(new FeedImageDeleteEvent(oldImageUrls));
 
         return FeedCreateResponse.of(feedImages);
+    }
+
+    @Transactional
+    public void delete(User user, Long feedId) {
+
+        // 사용자가 작성한 피드인지 확인
+        Feed feed = feedService.getOwnedFeedOrException(user.getUserId(), feedId);
+
+        // 댓글 삭제 (댓글 / 신고 내역)
+        commentService.deleteByFeedId(feed.getFeedId());
+
+        // 좋아요 내역 삭제
+        feedLikeService.deleteByFeedId(feed.getFeedId());
+
+        // 피드 삭제
+        feedService.delete(feed);
     }
 
     // TODO: 이미지 업로드 로직이 여기에서 관리되지 않도록 수정 예정

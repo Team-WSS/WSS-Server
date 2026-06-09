@@ -46,6 +46,11 @@ public class FeedServiceImpl {
         feedRepository.save(feed);
     }
 
+    @Transactional
+    public void delete(Feed feed) {
+        feedRepository.delete(feed);
+    }
+
     @Transactional(readOnly = true)
     public Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId)
@@ -88,12 +93,6 @@ public class FeedServiceImpl {
                 return new SliceImpl<>(resultFeeds, pageRequest, hasNext);
             }
 
-    }
-
-    private Genre findGenreByName(String genreName) {
-        return genreRepository.findByGenreName(genreName)
-                .orElseThrow(() -> new CustomGenreException(GENRE_NOT_FOUND,
-                        "genre with the given name is not found"));
     }
 
     @Transactional(readOnly = true)

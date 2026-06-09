@@ -5,6 +5,7 @@ import static org.websoso.WSSServer.exception.error.CustomCommentError.COMMENT_N
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.feed.repository.ReportedCommentRepository;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
 import org.websoso.WSSServer.dto.comment.CommentUpdateRequest;
@@ -18,6 +19,7 @@ import org.websoso.WSSServer.feed.repository.CommentRepository;
 public class CommentServiceImpl {
 
     private final CommentRepository commentRepository;
+    private final ReportedCommentRepository reportedCommentRepository;
 
     @Transactional
     public void createComment(User user, Feed feed, CommentCreateRequest request) {
@@ -39,4 +41,11 @@ public class CommentServiceImpl {
     public void deleteComment(Comment comment) {
         commentRepository.delete(comment);
     }
+
+    @Transactional
+    public void deleteByFeedId(Long feedId) {
+        commentRepository.deleteByFeedId(feedId);
+        reportedCommentRepository.deleteByFeedId(feedId);
+    }
+
 }

@@ -59,10 +59,10 @@ public class Feed {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "feed", fetch = FetchType.LAZY)
     private List<Like> likes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "feed", cascade = ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "feed", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(cascade = ALL, fetch = FetchType.LAZY, orphanRemoval = true)
