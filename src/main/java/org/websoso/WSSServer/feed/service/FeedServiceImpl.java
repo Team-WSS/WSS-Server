@@ -39,6 +39,11 @@ public class FeedServiceImpl {
 
     private static final String DEFAULT_CATEGORY = "all";
 
+    @Transactional
+    public void createFeed(Feed feed) {
+        feedRepository.save(feed);
+    }
+
     @Transactional(readOnly = true)
     public Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId)

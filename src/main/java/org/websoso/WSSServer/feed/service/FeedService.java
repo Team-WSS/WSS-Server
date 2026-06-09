@@ -112,25 +112,6 @@ public class FeedService {
     private final FCMClient fcmClient;
 
     @Transactional
-    public FeedCreateResponse createFeed(User user, FeedCreateRequest request, FeedImageCreateRequest imagesRequest) {
-        List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
-
-        Optional.ofNullable(request.novelId()).ifPresent(novelId -> novelRepository.findById(novelId)
-                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found")));
-        Feed feed = Feed.create(request.feedContent(), request.novelId(), request.isSpoiler(), request.isPublic(), user,
-                feedImages);
-
-        feedRepository.save(feed);
-
-        return FeedCreateResponse.of(feedImages);
-    }
-
-    @Transactional
-    public void createFeed(Feed feed) {
-        feedRepository.save(feed);
-    }
-
-    @Transactional
     public FeedCreateResponse updateFeed(Long feedId, FeedUpdateRequest request, FeedImageUpdateRequest imagesRequest) {
         Feed feed = getFeedOrException(feedId);
 

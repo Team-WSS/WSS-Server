@@ -73,14 +73,14 @@ public class FeedController {
     }
 
     @PutMapping("/{feedId}")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#feedId, #user, T(org.websoso.WSSServer.feed.domain.Feed))")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<FeedCreateResponse> updateFeed(@AuthenticationPrincipal User user,
                                                          @PathVariable("feedId") Long feedId,
                                                          @Valid @RequestPart("feed") FeedUpdateRequest request,
                                                          @Valid @ModelAttribute FeedImageUpdateRequest requestImage) {
         return ResponseEntity
                 .status(OK)
-                .body(feedService.updateFeed(feedId, request, requestImage));
+                .body(feedManagementApplication.update(user, feedId, request, requestImage));
     }
 
     @DeleteMapping("/{feedId}")
