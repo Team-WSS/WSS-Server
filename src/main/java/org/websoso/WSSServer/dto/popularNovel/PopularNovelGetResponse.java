@@ -16,12 +16,11 @@ public record PopularNovelGetResponse(
         String author,
         String genreName,
         String novelDescription,
-        boolean isNovelCompleted,
-        List<String> novelGenres
+        boolean isNovelCompleted
 
 ) {
 
-    public static PopularNovelGetResponse of(Novel novel, AvatarProfile avatarProfile, Feed feed, List<String> keywords, List<String> genres) {
+    public static PopularNovelGetResponse of(Novel novel, AvatarProfile avatarProfile, Feed feed, List<String> keywords) {
         if (avatarProfile == null && feed == null) {
             return new PopularNovelGetResponse(
                     novel.getNovelId(),
@@ -34,8 +33,7 @@ public record PopularNovelGetResponse(
                     novel.getAuthor(),
                     novel.getFirstGenreName(),
                     novel.getNovelDescription(),
-                    novel.getIsCompleted(),
-                    genres
+                    novel.getIsCompleted()
 
             );
         }
@@ -50,8 +48,7 @@ public record PopularNovelGetResponse(
                 novel.getAuthor(),
                 novel.getFirstGenreName(),
                 novel.getNovelDescription(),
-                novel.getIsCompleted(),
-                genres
+                novel.getIsCompleted()
         );
     }
 }
