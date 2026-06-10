@@ -34,7 +34,7 @@ jobs:
           DEV_DB_NAME: ${{ secrets.DEV_DB_NAME }}
           DEV_DB_PWD: ${{ secrets.DEV_DB_PWD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          DEV_APPLE_KEY_NAME: ${{ secrets.APPLE_KEY_NAME }}
+          DEV_APPLE_KEY_NAME: ${{ secrets.DEV_APPLE_KEY_NAME }}
           S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
           S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
         run: ./gradlew build -x test

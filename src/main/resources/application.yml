@@ -4,9 +4,5 @@ spring:
 
   config:
     import:
-      - optional:file:./config-repo/
-
-#  config:
-#    import:
-#      - optional:file:./config-repo/application-common.yml
-#      - optional:file:./config-repo/application-${spring.profiles.active}.yml
+      - optional:file:./config-repo/application-common.yml
+      - optional:file:./config-repo/application-${spring.profiles.active}.yml
