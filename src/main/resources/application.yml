@@ -2,9 +2,9 @@ spring:
   profiles:
     active: local
 
-config:
-  import:
-    - optional:file:./config-repo/
+  config:
+    import:
+      - optional:file:./config-repo/
 
 #  config:
 #    import:
