@@ -96,7 +96,7 @@ public class FeedController {
     }
 
     @PostMapping("/{feedId}/likes")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> likeFeed(@AuthenticationPrincipal User user,
                                          @PathVariable("feedId") Long feedId) {
         feedLikeApplication.create(user, feedId);
