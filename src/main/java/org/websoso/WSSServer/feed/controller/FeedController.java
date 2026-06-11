@@ -30,6 +30,7 @@ import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
+import org.websoso.WSSServer.feed.application.FeedLikeApplication;
 import org.websoso.WSSServer.feed.application.FeedManagementApplication;
 import org.websoso.WSSServer.feed.service.FeedService;
 import org.websoso.WSSServer.user.domain.User;
@@ -42,6 +43,7 @@ public class FeedController {
     private final FeedService feedService;
     private final FeedManagementApplication feedManagementApplication;
     private final FeedFindApplication feedFindApplication;
+    private final FeedLikeApplication feedLikeApplication;
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
@@ -97,7 +99,7 @@ public class FeedController {
     @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
     public ResponseEntity<Void> likeFeed(@AuthenticationPrincipal User user,
                                          @PathVariable("feedId") Long feedId) {
-        feedService.likeFeed(user, feedId);
+        feedLikeApplication.create(user, feedId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

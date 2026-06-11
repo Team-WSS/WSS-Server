@@ -10,14 +10,24 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 import org.websoso.common.entity.BaseEntity;
 
 @Entity
 @Getter
-@Table(name = "`like`")
+@Table(
+        name = "`like`",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_like_user_id_feed_id",
+                        columnNames = {"user_id", "feed_id"}
+                )
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Like extends BaseEntity {
 
@@ -26,11 +36,13 @@ public class Like extends BaseEntity {
     @Column(nullable = false)
     private Long likeId;
 
-    @Column(nullable = false)
+    @Column(name = "user_id", nullable = false)
+    @Comment("좋아요를 누른 사용자 PK")
     private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feed_id", nullable = false)
+    @Comment("좋아요를 받은 피드 PK")
     private Feed feed;
 
 

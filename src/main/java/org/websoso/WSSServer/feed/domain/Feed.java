@@ -11,7 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -116,5 +115,17 @@ public class Feed {
 
     public boolean isVisibleTo(Long userId) {
         return this.isPublic || this.isMine(userId);
+    }
+
+    public boolean canAccess(Long userId) {
+        if (isMine(userId)) {
+            return true;
+        }
+
+        return !isHidden && isPublic;
+    }
+
+    public boolean containsNovel() {
+        return novelId != null;
     }
 }

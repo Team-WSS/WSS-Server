@@ -119,72 +119,72 @@ public class FeedService {
         feedRepository.deleteById(feedId);
     }
 
-    @Transactional
-    public void likeFeed(User user, Long feedId) {
-        Feed feed = getFeedOrException(feedId);
+//    @Transactional
+//    public void likeFeed(User user, Long feedId) {
+//        Feed feed = getFeedOrException(feedId);
+//
+//        if (likeRepository.existsByUserIdAndFeed(user.getUserId(), feed)) {
+//            throw new CustomFeedException(ALREADY_LIKED, "user already liked that feed");
+//        }
+//        likeRepository.save(Like.create(user.getUserId(), feed));
+//
+//        long likeCount = likeRepository.countByFeed(feed);
+//
+//        if (likeCount == POPULAR_FEED_LIKE_THRESHOLD && feed.getNovelId() != null) {
+//            if (!popularFeedRepository.existsByFeed(feed)) {
+//                popularFeedRepository.save(PopularFeed.create(feed));
+//
+//                sendPopularFeedPushMessage(feed);
+//            }
+//        }
+//
+//        sendLikePushMessage(user, feed);
+//    }
 
-        if (likeRepository.existsByUserIdAndFeed(user.getUserId(), feed)) {
-            throw new CustomFeedException(ALREADY_LIKED, "user already liked that feed");
-        }
-        likeRepository.save(Like.create(user.getUserId(), feed));
+//    private void sendLikePushMessage(User liker, Feed feed) {
+//        User feedOwner = feed.getUser();
+//        if (liker.equals(feedOwner) || blockRepository.existsByBlockingIdAndBlockedId(feedOwner.getUserId(),
+//                liker.getUserId())) {
+//            return;
+//        }
+//
+//        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("좋아요");
+//
+//        String notificationTitle = createNotificationTitle(feed);
+//        String notificationBody = String.format("%s님이 내 글을 좋아해요.", liker.getNickname());
+//        Long feedId = feed.getFeedId();
+//
+//        Notification notification = Notification.create(notificationTitle, notificationBody, null,
+//                feedOwner.getUserId(), feedId, notificationTypeComment);
+//        notificationRepository.save(notification);
+//
+//        if (!TRUE.equals(feedOwner.getIsPushEnabled())) {
+//            return;
+//        }
+//
+//        List<UserDevice> feedOwnerDevices = feedOwner.getUserDevices();
+//        if (feedOwnerDevices.isEmpty()) {
+//            return;
+//        }
+//
+//        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(notificationTitle, notificationBody,
+//                String.valueOf(feedId), "feedDetail", String.valueOf(notification.getNotificationId()));
+//
+//        List<String> targetFCMTokens = feedOwnerDevices.stream().map(UserDevice::getFcmToken).toList();
+//        fcmClient.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
+//    }
 
-        long likeCount = likeRepository.countByFeed(feed);
-
-        if (likeCount == POPULAR_FEED_LIKE_THRESHOLD && feed.getNovelId() != null) {
-            if (!popularFeedRepository.existsByFeed(feed)) {
-                popularFeedRepository.save(PopularFeed.create(feed));
-
-                sendPopularFeedPushMessage(feed);
-            }
-        }
-
-        sendLikePushMessage(user, feed);
-    }
-
-    private void sendLikePushMessage(User liker, Feed feed) {
-        User feedOwner = feed.getUser();
-        if (liker.equals(feedOwner) || blockRepository.existsByBlockingIdAndBlockedId(feedOwner.getUserId(),
-                liker.getUserId())) {
-            return;
-        }
-
-        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("좋아요");
-
-        String notificationTitle = createNotificationTitle(feed);
-        String notificationBody = String.format("%s님이 내 글을 좋아해요.", liker.getNickname());
-        Long feedId = feed.getFeedId();
-
-        Notification notification = Notification.create(notificationTitle, notificationBody, null,
-                feedOwner.getUserId(), feedId, notificationTypeComment);
-        notificationRepository.save(notification);
-
-        if (!TRUE.equals(feedOwner.getIsPushEnabled())) {
-            return;
-        }
-
-        List<UserDevice> feedOwnerDevices = feedOwner.getUserDevices();
-        if (feedOwnerDevices.isEmpty()) {
-            return;
-        }
-
-        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(notificationTitle, notificationBody,
-                String.valueOf(feedId), "feedDetail", String.valueOf(notification.getNotificationId()));
-
-        List<String> targetFCMTokens = feedOwnerDevices.stream().map(UserDevice::getFcmToken).toList();
-        fcmClient.sendMulticastPushMessage(targetFCMTokens, fcmMessageRequest);
-    }
-
-    private String createNotificationTitle(Feed feed) {
-        if (feed.getNovelId() == null) {
-            String feedContent = feed.getFeedContent();
-            feedContent = feedContent.length() <= NOTIFICATION_TITLE_MAX_LENGTH ? feedContent
-                    : feedContent.substring(NOTIFICATION_TITLE_MIN_LENGTH, NOTIFICATION_TITLE_MAX_LENGTH);
-            return "'" + feedContent + "...'";
-        }
-        Novel novel = novelRepository.findById(feed.getNovelId())
-                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
-        return novel.getTitle();
-    }
+//    private String createNotificationTitle(Feed feed) {
+//        if (feed.getNovelId() == null) {
+//            String feedContent = feed.getFeedContent();
+//            feedContent = feedContent.length() <= NOTIFICATION_TITLE_MAX_LENGTH ? feedContent
+//                    : feedContent.substring(NOTIFICATION_TITLE_MIN_LENGTH, NOTIFICATION_TITLE_MAX_LENGTH);
+//            return "'" + feedContent + "...'";
+//        }
+//        Novel novel = novelRepository.findById(feed.getNovelId())
+//                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND, "novel with the given id is not found"));
+//        return novel.getTitle();
+//    }
 
     @Transactional
     public void unLikeFeed(User user, Long feedId) {
@@ -195,43 +195,43 @@ public class FeedService {
         likeRepository.delete(like);
     }
 
-    @Transactional(readOnly = true)
-    public FeedGetResponse getFeedById(User user, Long feedId) {
-        Feed feed = getFeedOrException(feedId);
-        UserBasicInfo feedUserBasicInfo = getUserBasicInfo(feed.getUser());
-        Novel novel = getLinkedNovelOrNull(feed.getNovelId());
-        Boolean isLiked = isUserLikedFeed(user, feed);
-        Boolean isMyFeed = isUserFeedOwner(feed.getUser(), user);
+//    @Transactional(readOnly = true)
+//    public FeedGetResponse getFeedById(User user, Long feedId) {
+//        Feed feed = getFeedOrException(feedId);
+//        UserBasicInfo feedUserBasicInfo = getUserBasicInfo(feed.getUser());
+//        Novel novel = getLinkedNovelOrNull(feed.getNovelId());
+//        Boolean isLiked = isUserLikedFeed(user, feed);
+//        Boolean isMyFeed = isUserFeedOwner(feed.getUser(), user);
+//
+//        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, isMyFeed);
+//    }
+//
+//    @Transactional(readOnly = true)
+//    public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size,
+//                                     FeedGetOption feedGetOption) {
+//        Long userIdOrNull = Optional.ofNullable(user).map(User::getUserId).orElse(null);
+//
+//        List<Genre> genres = getPreferenceGenres(user);
+//
+//        Slice<Feed> feeds = findFeedsByCategoryLabel(lastFeedId, userIdOrNull,
+//                PageRequest.of(DEFAULT_PAGE_NUMBER, size), feedGetOption, genres);
+//
+//        List<FeedInfo> feedGetResponses = feeds.getContent().stream().filter(feed -> feed.isVisibleTo(userIdOrNull))
+//                .map(feed -> createFeedInfo(feed, user)).toList();
+//
+//        return FeedsGetResponse.of(feeds.hasNext(), feedGetResponses);
+//    }
 
-        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, isMyFeed);
-    }
-
-    @Transactional(readOnly = true)
-    public FeedsGetResponse getFeeds(User user, String category, Long lastFeedId, int size,
-                                     FeedGetOption feedGetOption) {
-        Long userIdOrNull = Optional.ofNullable(user).map(User::getUserId).orElse(null);
-
-        List<Genre> genres = getPreferenceGenres(user);
-
-        Slice<Feed> feeds = findFeedsByCategoryLabel(lastFeedId, userIdOrNull,
-                PageRequest.of(DEFAULT_PAGE_NUMBER, size), feedGetOption, genres);
-
-        List<FeedInfo> feedGetResponses = feeds.getContent().stream().filter(feed -> feed.isVisibleTo(userIdOrNull))
-                .map(feed -> createFeedInfo(feed, user)).toList();
-
-        return FeedsGetResponse.of(feeds.hasNext(), feedGetResponses);
-    }
-
-    private List<Genre> getPreferenceGenres(User user) {
-        if (user == null) {
-            return null;
-        }
-        return genrePreferenceRepository.findByUser(user).stream().map(GenrePreference::getGenre).toList();
-    }
-
-    private static String getChosenCategoryOrDefault(String category) {
-        return Optional.ofNullable(category).orElse(DEFAULT_CATEGORY);
-    }
+//    private List<Genre> getPreferenceGenres(User user) {
+//        if (user == null) {
+//            return null;
+//        }
+//        return genrePreferenceRepository.findByUser(user).stream().map(GenrePreference::getGenre).toList();
+//    }
+//
+//    private static String getChosenCategoryOrDefault(String category) {
+//        return Optional.ofNullable(category).orElse(DEFAULT_CATEGORY);
+//    }
 
     private Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId)
@@ -274,53 +274,53 @@ public class FeedService {
         return FeedInfo.of(feed, userBasicInfo, novel, isLiked, isMyFeed, thumbnailUrl, imageCount, user);
     }
 
-    private Slice<Feed> findFeedsByCategoryLabel(Long lastFeedId, Long userId, PageRequest pageRequest,
-                                                 FeedGetOption feedGetOption, List<Genre> preferenceGenres) {
-            if (FeedGetOption.isAll(feedGetOption)) {
-                return feedRepository.findFeeds(lastFeedId, userId, pageRequest);
-            }
-            return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres);
-
-    }
-
-    private Genre findGenreByName(String genreName) {
-        return genreRepository.findByGenreName(genreName)
-                .orElseThrow(() -> new CustomGenreException(GENRE_NOT_FOUND,
-                        "genre with the given name is not found"));
-    }
-
-    @Transactional(readOnly = true)
-    public InterestFeedsGetResponse getInterestFeeds(User user) {
-        List<Novel> interestNovels = userNovelRepository.findByUserAndIsInterestTrue(user).stream()
-                .map(UserNovel::getNovel).toList();
-
-        if (interestNovels.isEmpty()) {
-            return InterestFeedsGetResponse.of(Collections.emptyList(), "NO_INTEREST_NOVELS");
-        }
-
-        Map<Long, Novel> novelMap = interestNovels.stream()
-                .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
-        List<Long> interestNovelIds = new ArrayList<>(novelMap.keySet());
-
-        List<Feed> interestFeeds = feedRepository.findTop10ByNovelIdInOrderByFeedIdDesc(interestNovelIds);
-
-        if (interestFeeds.isEmpty()) {
-            return InterestFeedsGetResponse.of(Collections.emptyList(), "NO_ASSOCIATED_FEEDS");
-        }
-
-        Set<Long> avatarIds = interestFeeds.stream().map(feed -> feed.getUser().getAvatarProfileId())
-                .collect(Collectors.toSet());
-        Map<Long, AvatarProfile> avatarMap = avatarProfileRepository.findAllById(avatarIds).stream()
-                .collect(Collectors.toMap(AvatarProfile::getAvatarProfileId, avatar -> avatar));
-
-        List<InterestFeedGetResponse> interestFeedGetResponses = interestFeeds.stream()
-                .filter(feed -> feed.isVisibleTo(user.getUserId())).map(feed -> {
-                    Novel novel = novelMap.get(feed.getNovelId());
-                    AvatarProfile avatar = avatarMap.get(feed.getUser().getAvatarProfileId());
-                    return InterestFeedGetResponse.of(novel, feed.getUser(), feed, avatar);
-                }).toList();
-        return InterestFeedsGetResponse.of(interestFeedGetResponses, "");
-    }
+//    private Slice<Feed> findFeedsByCategoryLabel(Long lastFeedId, Long userId, PageRequest pageRequest,
+//                                                 FeedGetOption feedGetOption, List<Genre> preferenceGenres) {
+//            if (FeedGetOption.isAll(feedGetOption)) {
+//                return feedRepository.findFeeds(lastFeedId, userId, pageRequest);
+//            }
+//            return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres);
+//
+//    }
+//
+//    private Genre findGenreByName(String genreName) {
+//        return genreRepository.findByGenreName(genreName)
+//                .orElseThrow(() -> new CustomGenreException(GENRE_NOT_FOUND,
+//                        "genre with the given name is not found"));
+//    }
+//
+//    @Transactional(readOnly = true)
+//    public InterestFeedsGetResponse getInterestFeeds(User user) {
+//        List<Novel> interestNovels = userNovelRepository.findByUserAndIsInterestTrue(user).stream()
+//                .map(UserNovel::getNovel).toList();
+//
+//        if (interestNovels.isEmpty()) {
+//            return InterestFeedsGetResponse.of(Collections.emptyList(), "NO_INTEREST_NOVELS");
+//        }
+//
+//        Map<Long, Novel> novelMap = interestNovels.stream()
+//                .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
+//        List<Long> interestNovelIds = new ArrayList<>(novelMap.keySet());
+//
+//        List<Feed> interestFeeds = feedRepository.findTop10ByNovelIdInOrderByFeedIdDesc(interestNovelIds);
+//
+//        if (interestFeeds.isEmpty()) {
+//            return InterestFeedsGetResponse.of(Collections.emptyList(), "NO_ASSOCIATED_FEEDS");
+//        }
+//
+//        Set<Long> avatarIds = interestFeeds.stream().map(feed -> feed.getUser().getAvatarProfileId())
+//                .collect(Collectors.toSet());
+//        Map<Long, AvatarProfile> avatarMap = avatarProfileRepository.findAllById(avatarIds).stream()
+//                .collect(Collectors.toMap(AvatarProfile::getAvatarProfileId, avatar -> avatar));
+//
+//        List<InterestFeedGetResponse> interestFeedGetResponses = interestFeeds.stream()
+//                .filter(feed -> feed.isVisibleTo(user.getUserId())).map(feed -> {
+//                    Novel novel = novelMap.get(feed.getNovelId());
+//                    AvatarProfile avatar = avatarMap.get(feed.getUser().getAvatarProfileId());
+//                    return InterestFeedGetResponse.of(novel, feed.getUser(), feed, avatar);
+//                }).toList();
+//        return InterestFeedsGetResponse.of(interestFeedGetResponses, "");
+//    }
 
     @Transactional(readOnly = true)
     public NovelGetResponseFeedTab getFeedsByNovel(User user, Long novelId, Long lastFeedId, int size) {
@@ -396,67 +396,67 @@ public class FeedService {
         return feedImageRepository.countByFeedId(feed.getFeedId());
     }
 
-    private void sendPopularFeedPushMessage(Feed feed) {
-        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("지금뜨는글");
+//    private void sendPopularFeedPushMessage(Feed feed) {
+//        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("지금뜨는글");
+//
+//        User feedOwner = feed.getUser();
+//        Long feedId = feed.getFeedId();
+//        String notificationTitle = "지금 뜨는 글 등극\uD83D\uDE4C";
+//        String notificationBody = createNotificationBody(feed);
+//
+//        Notification notification = Notification.create(
+//                notificationTitle,
+//                notificationBody,
+//                null,
+//                feedOwner.getUserId(),
+//                feedId,
+//                notificationTypeComment
+//        );
+//        notificationRepository.save(notification);
+//
+//        if (!TRUE.equals(feedOwner.getIsPushEnabled())) {
+//            return;
+//        }
+//
+//        List<UserDevice> feedOwnerDevices = feedOwner.getUserDevices();
+//        if (feedOwnerDevices.isEmpty()) {
+//            return;
+//        }
+//
+//        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
+//                notificationTitle,
+//                notificationBody,
+//                String.valueOf(feedId),
+//                "feedDetail",
+//                String.valueOf(notification.getNotificationId())
+//        );
+//
+//        List<String> targetFCMTokens = feedOwnerDevices
+//                .stream()
+//                .map(UserDevice::getFcmToken)
+//                .toList();
+//        fcmClient.sendMulticastPushMessage(
+//                targetFCMTokens,
+//                fcmMessageRequest
+//        );
+//    }
 
-        User feedOwner = feed.getUser();
-        Long feedId = feed.getFeedId();
-        String notificationTitle = "지금 뜨는 글 등극\uD83D\uDE4C";
-        String notificationBody = createNotificationBody(feed);
+//    private String createNotificationBody(Feed feed) {
+//        return String.format("내가 남긴 %s 글이 관심 받고 있어요!", generateNotificationBodyFragment(feed));
+//    }
 
-        Notification notification = Notification.create(
-                notificationTitle,
-                notificationBody,
-                null,
-                feedOwner.getUserId(),
-                feedId,
-                notificationTypeComment
-        );
-        notificationRepository.save(notification);
-
-        if (!TRUE.equals(feedOwner.getIsPushEnabled())) {
-            return;
-        }
-
-        List<UserDevice> feedOwnerDevices = feedOwner.getUserDevices();
-        if (feedOwnerDevices.isEmpty()) {
-            return;
-        }
-
-        FCMMessageRequest fcmMessageRequest = FCMMessageRequest.of(
-                notificationTitle,
-                notificationBody,
-                String.valueOf(feedId),
-                "feedDetail",
-                String.valueOf(notification.getNotificationId())
-        );
-
-        List<String> targetFCMTokens = feedOwnerDevices
-                .stream()
-                .map(UserDevice::getFcmToken)
-                .toList();
-        fcmClient.sendMulticastPushMessage(
-                targetFCMTokens,
-                fcmMessageRequest
-        );
-    }
-
-    private String createNotificationBody(Feed feed) {
-        return String.format("내가 남긴 %s 글이 관심 받고 있어요!", generateNotificationBodyFragment(feed));
-    }
-
-    private String generateNotificationBodyFragment(Feed feed) {
-        if (feed.getNovelId() == null) {
-            String feedContent = feed.getFeedContent();
-            feedContent = feedContent.length() <= 12
-                    ? feedContent
-                    : feedContent.substring(0, 12);
-            return "'" + feedContent + "...'";
-        }
-        Novel novel = novelRepository.findById(feed.getNovelId())
-                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
-                        "novel with the given id is not found"));
-        return String.format("<%s>", novel.getTitle());
-    }
+//    private String generateNotificationBodyFragment(Feed feed) {
+//        if (feed.getNovelId() == null) {
+//            String feedContent = feed.getFeedContent();
+//            feedContent = feedContent.length() <= 12
+//                    ? feedContent
+//                    : feedContent.substring(0, 12);
+//            return "'" + feedContent + "...'";
+//        }
+//        Novel novel = novelRepository.findById(feed.getNovelId())
+//                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
+//                        "novel with the given id is not found"));
+//        return String.format("<%s>", novel.getTitle());
+//    }
 
 }

@@ -22,4 +22,6 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     void deleteByFeedId(Long feedId);
 
     Long feed(Feed feed);
+
+    long countByFeed_FeedId(Long feedFeedId);
 }

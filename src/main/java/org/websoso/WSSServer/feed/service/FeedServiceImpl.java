@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.feed.service;
 
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
@@ -63,6 +64,17 @@ public class FeedServiceImpl {
 
         if (!feed.isMine(userId)) {
             throw new CustomUserException(INVALID_AUTHORIZED, "User with ID " + userId + " is not the owner of feed " + feed.getFeedId());
+        }
+
+        return feed;
+    }
+
+    @Transactional(readOnly = true)
+    public Feed getAccessFeedOrException(Long feedId, Long userId) {
+        Feed feed = getFeedOrException(feedId);
+
+        if (!feed.canAccess(userId)) {
+            throw new CustomFeedException(HIDDEN_FEED_ACCESS, "Cannot access hidden feed.");
         }
 
         return feed;

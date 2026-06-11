@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.notification.domain.UserDevice;
 
+import java.util.List;
+
 @Repository
 public interface UserDeviceRepository extends JpaRepository<UserDevice, Long> {
 
@@ -22,4 +24,6 @@ public interface UserDeviceRepository extends JpaRepository<UserDevice, Long> {
                         @Param("fcmToken") String fcmToken);
 
     void deleteByUserAndDeviceIdentifier(User user, String deviceIdentifier);
+
+    List<UserDevice> getUserDevicesByUser_UserId(Long userUserId);
 }
