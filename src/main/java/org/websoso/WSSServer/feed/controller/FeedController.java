@@ -32,7 +32,6 @@ import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.feed.application.FeedLikeApplication;
 import org.websoso.WSSServer.feed.application.FeedManagementApplication;
-import org.websoso.WSSServer.feed.service.FeedService;
 import org.websoso.WSSServer.user.domain.User;
 
 @RequestMapping("/feeds")
@@ -40,7 +39,6 @@ import org.websoso.WSSServer.user.domain.User;
 @RequiredArgsConstructor
 public class FeedController {
 
-    private final FeedService feedService;
     private final FeedManagementApplication feedManagementApplication;
     private final FeedFindApplication feedFindApplication;
     private final FeedLikeApplication feedLikeApplication;
@@ -106,10 +104,10 @@ public class FeedController {
     }
 
     @DeleteMapping("/{feedId}/likes")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unLikeFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId) {
-        feedService.unLikeFeed(user, feedId);
+        feedLikeApplication.delete(user, feedId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

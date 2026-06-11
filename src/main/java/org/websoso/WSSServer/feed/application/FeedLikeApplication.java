@@ -51,4 +51,17 @@ public class FeedLikeApplication {
         );
 
     }
+
+    @Transactional
+    public void delete(User user, Long feedId) {
+
+        // 접근 가능한 피드인지 체크하고 조회
+        Feed feed = feedService.getAccessFeedOrException(feedId, user.getUserId());
+
+        // 작성자와 본인이 차단 관계인지 체크
+        blockService.validateNotBlocked(feed.getWriterId(),user.getUserId());
+
+        feedLikeService.delete(user.getUserId(), feed);
+
+    }
 }

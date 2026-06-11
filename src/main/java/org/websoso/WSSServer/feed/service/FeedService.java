@@ -112,12 +112,12 @@ public class FeedService {
     private final FCMClient fcmClient;
 
 
-    @Transactional
-    public void deleteFeed(Long feedId) {
-        List<Long> commentIds = commentRepository.findAllByFeedId(feedId).stream().map(Comment::getCommentId).toList();
-        reportedCommentRepository.deleteByCommentIdsIn(commentIds);
-        feedRepository.deleteById(feedId);
-    }
+//    @Transactional
+//    public void deleteFeed(Long feedId) {
+//        List<Long> commentIds = commentRepository.findAllByFeedId(feedId).stream().map(Comment::getCommentId).toList();
+//        reportedCommentRepository.deleteByCommentIdsIn(commentIds);
+//        feedRepository.deleteById(feedId);
+//    }
 
 //    @Transactional
 //    public void likeFeed(User user, Long feedId) {
@@ -186,14 +186,14 @@ public class FeedService {
 //        return novel.getTitle();
 //    }
 
-    @Transactional
-    public void unLikeFeed(User user, Long feedId) {
-        Feed feed = getFeedOrException(feedId);
-        Like like = likeRepository.findByUserIdAndFeed(user.getUserId(), feed)
-                .orElseThrow(() -> new CustomFeedException(NOT_LIKED,
-                        "User did not like this feed or like already deleted"));
-        likeRepository.delete(like);
-    }
+//    @Transactional
+//    public void unLikeFeed(User user, Long feedId) {
+//        Feed feed = getFeedOrException(feedId);
+//        Like like = likeRepository.findByUserIdAndFeed(user.getUserId(), feed)
+//                .orElseThrow(() -> new CustomFeedException(NOT_LIKED,
+//                        "User did not like this feed or like already deleted"));
+//        likeRepository.delete(like);
+//    }
 
 //    @Transactional(readOnly = true)
 //    public FeedGetResponse getFeedById(User user, Long feedId) {
@@ -233,10 +233,10 @@ public class FeedService {
 //        return Optional.ofNullable(category).orElse(DEFAULT_CATEGORY);
 //    }
 
-    private Feed getFeedOrException(Long feedId) {
-        return feedRepository.findById(feedId)
-                .orElseThrow(() -> new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
-    }
+//    private Feed getFeedOrException(Long feedId) {
+//        return feedRepository.findById(feedId)
+//                .orElseThrow(() -> new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
+//    }
 
     private UserBasicInfo getUserBasicInfo(User user) {
         return user.getUserBasicInfo(

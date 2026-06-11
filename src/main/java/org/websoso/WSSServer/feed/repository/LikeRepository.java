@@ -21,6 +21,10 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     @Query("DELETE FROM Like l WHERE l.feed.feedId = :feedId")
     void deleteByFeedId(Long feedId);
 
+    @Modifying
+    @Query("DELETE FROM Like l WHERE l.userId = :userId AND l.feed = :feed")
+    void deleteByUserIdAndFeed(Long userId, Feed feed);
+
     Long feed(Feed feed);
 
     long countByFeed_FeedId(Long feedFeedId);

@@ -28,6 +28,11 @@ public class FeedLikeService {
     }
 
     @Transactional
+    public void delete(Long userId, Feed feed) {
+        likeRepository.deleteByUserIdAndFeed(userId, feed);
+    }
+
+    @Transactional
     public void deleteByFeedId(Long feedId) {
         likeRepository.deleteByFeedId(feedId);
     }
