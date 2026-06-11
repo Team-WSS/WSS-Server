@@ -29,7 +29,6 @@ import org.websoso.WSSServer.feed.service.FeedService;
 @RequiredArgsConstructor
 public class NovelController {
 
-    private final FeedService feedService;
     private final SearchNovelApplication searchNovelApplication;
 
     /**
@@ -149,14 +148,4 @@ public class NovelController {
                 .body(searchNovelApplication.getTasteNovels(user));
     }
 
-    // TODO: Feed Controller로 이동해야함
-    @GetMapping("/{novelId}/feeds")
-    public ResponseEntity<NovelGetResponseFeedTab> getFeedsByNovel(@AuthenticationPrincipal User user,
-                                                                   @PathVariable Long novelId,
-                                                                   @RequestParam("lastFeedId") Long lastFeedId,
-                                                                   @RequestParam("size") int size) {
-        return ResponseEntity
-                .status(OK)
-                .body(feedService.getFeedsByNovel(user, novelId, lastFeedId, size));
-    }
 }

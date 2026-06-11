@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.domain.common.SortCriteria;
+import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.feed.application.FeedFindApplication;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
@@ -32,18 +35,22 @@ import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.feed.application.FeedLikeApplication;
 import org.websoso.WSSServer.feed.application.FeedManagementApplication;
+import org.websoso.WSSServer.feed.service.FeedService;
 import org.websoso.WSSServer.user.domain.User;
 
-@RequestMapping("/feeds")
+import java.util.List;
+
+@RequestMapping
 @RestController
 @RequiredArgsConstructor
 public class FeedController {
 
+    private final FeedService feedService;
     private final FeedManagementApplication feedManagementApplication;
     private final FeedFindApplication feedFindApplication;
     private final FeedLikeApplication feedLikeApplication;
 
-    @PostMapping
+    @PostMapping("/feeds")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<FeedCreateResponse> createFeed(@AuthenticationPrincipal User user,
                                                          @Valid @RequestPart("feed") FeedCreateRequest request,
@@ -53,7 +60,7 @@ public class FeedController {
                 .body(feedManagementApplication.create(user, request, requestImage));
     }
 
-    @GetMapping("/{feedId}")
+    @GetMapping("/feeds/{feedId}")
     @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
     public ResponseEntity<FeedGetResponse> getFeed(@AuthenticationPrincipal User user,
                                                    @PathVariable("feedId") Long feedId) {
@@ -62,7 +69,7 @@ public class FeedController {
                 .body(feedFindApplication.getFeedById(user, feedId));
     }
 
-    @GetMapping
+    @GetMapping("/feeds")
     public ResponseEntity<FeedsGetResponse> getFeeds(@AuthenticationPrincipal User user,
                                                      @RequestParam("lastFeedId") Long lastFeedId,
                                                      @RequestParam("size") int size,
@@ -72,7 +79,7 @@ public class FeedController {
                 .body(feedFindApplication.getFeeds(user, lastFeedId, size, feedGetOption));
     }
 
-    @PutMapping("/{feedId}")
+    @PutMapping("/feeds/{feedId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<FeedCreateResponse> updateFeed(@AuthenticationPrincipal User user,
                                                          @PathVariable("feedId") Long feedId,
@@ -83,7 +90,7 @@ public class FeedController {
                 .body(feedManagementApplication.update(user, feedId, request, requestImage));
     }
 
-    @DeleteMapping("/{feedId}")
+    @DeleteMapping("/feeds/{feedId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId) {
@@ -93,7 +100,7 @@ public class FeedController {
                 .build();
     }
 
-    @PostMapping("/{feedId}/likes")
+    @PostMapping("/feeds/{feedId}/likes")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> likeFeed(@AuthenticationPrincipal User user,
                                          @PathVariable("feedId") Long feedId) {
@@ -103,7 +110,7 @@ public class FeedController {
                 .build();
     }
 
-    @DeleteMapping("/{feedId}/likes")
+    @DeleteMapping("/feeds/{feedId}/likes")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unLikeFeed(@AuthenticationPrincipal User user,
                                            @PathVariable("feedId") Long feedId) {
@@ -113,7 +120,7 @@ public class FeedController {
                 .build();
     }
 
-    @GetMapping("/popular")
+    @GetMapping("/feeds/popular")
     public ResponseEntity<PopularFeedsGetResponse> getPopularFeeds(@AuthenticationPrincipal User user,
                                                                    @RequestParam(name = "size", defaultValue = "9") int size) {
         return ResponseEntity
@@ -121,7 +128,7 @@ public class FeedController {
                 .body(feedFindApplication.getPopularFeeds(user, size));
     }
 
-    @GetMapping("/interest")
+    @GetMapping("/feeds/interest")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<InterestFeedsGetResponse> getInterestFeeds(@AuthenticationPrincipal User user) {
         return ResponseEntity
@@ -129,4 +136,29 @@ public class FeedController {
                 .body(feedFindApplication.getInterestFeeds(user));
     }
 
+    @GetMapping("/novels/{novelId}/feeds")
+    public ResponseEntity<NovelGetResponseFeedTab> getFeedsByNovel(@AuthenticationPrincipal User user,
+                                                                   @PathVariable Long novelId,
+                                                                   @RequestParam("lastFeedId") Long lastFeedId,
+                                                                   @RequestParam("size") int size) {
+        return ResponseEntity
+                .status(OK)
+                .body(feedService.getFeedsByNovel(user, novelId, lastFeedId, size));
+    }
+
+    @GetMapping("/users/{userId}/feeds")
+    public ResponseEntity<UserFeedsGetResponse> getUserFeeds(@AuthenticationPrincipal User visitor,
+                                                             @PathVariable("userId") Long userId,
+                                                             @RequestParam("lastFeedId") Long lastFeedId,
+                                                             @RequestParam("size") int size,
+                                                             @RequestParam(value = "isVisible", required = false) Boolean isVisible,
+                                                             @RequestParam(value = "isUnVisible", required = false) Boolean isUnVisible,
+                                                             @RequestParam(value = "genreNames", required = false) List<String> genreNames,
+                                                             @RequestParam(value = "sortCriteria", required = false) SortCriteria sortCriteria) {
+        return ResponseEntity
+                .status(OK)
+                // ToDo: isVisible -> isPublic으로 수정
+                .body(feedService.getUserFeeds(visitor, userId, lastFeedId, size, isVisible, isUnVisible, genreNames,
+                        sortCriteria));
+    }
 }
