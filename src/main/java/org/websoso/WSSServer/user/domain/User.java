@@ -215,4 +215,8 @@ public class User extends BaseEntity {
     public boolean isTemporaryNickname() {
         return this.nickname.contains("*");
     }
+
+    public boolean canBeViewedBy(Long visitorId) {
+        return this.isProfilePublic || this.userId.equals(visitorId);
+    }
 }

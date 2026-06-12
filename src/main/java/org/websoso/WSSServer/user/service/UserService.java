@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.user.service;
 
 import static java.lang.Boolean.FALSE;
+import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 import static org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessageType.JOIN;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
@@ -262,5 +263,15 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<User> findAllByIds(List<Long> blockUserIds) {
         return userRepository.findAllById(blockUserIds);
+    }
+
+
+    public void validateProfileAccessible(User owner, Long visitorId) {
+        if (!owner.canBeViewedBy(visitorId)) {
+            throw new CustomUserException(
+                    PRIVATE_PROFILE_STATUS,
+                    "the profile status of the user is set to private"
+            );
+        }
     }
 }

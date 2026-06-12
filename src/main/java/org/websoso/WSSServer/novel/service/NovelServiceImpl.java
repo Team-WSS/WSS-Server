@@ -42,6 +42,11 @@ public class NovelServiceImpl {
         return novelRepository.findAllByNovelIdInWithGenres(novelIds);
     }
 
+    @Transactional(readOnly = true)
+    public List<Novel> findAllByIds(List<Long> novelIds) {
+        return novelRepository.findAllById(novelIds);
+    }
+
     public Page<Novel> searchNovels(PageRequest pageRequest, String searchQuery) {
         return novelRepository.findSearchedNovels(pageRequest, searchQuery);
     }

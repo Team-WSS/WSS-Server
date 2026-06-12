@@ -11,7 +11,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.domain.common.SortCriteria;
+import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
+import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
+import org.websoso.WSSServer.feed.service.FeedImageService;
+import org.websoso.WSSServer.novel.service.GenreServiceImpl;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
@@ -36,15 +42,19 @@ import org.websoso.WSSServer.novel.service.NovelServiceImpl;
 import org.websoso.WSSServer.user.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.user.domain.User;
+import org.websoso.WSSServer.user.service.UserService;
 
 @Service
 @RequiredArgsConstructor
 public class FeedFindApplication {
 
-    private final FeedServiceImpl feedServiceImpl;
-    private final NovelServiceImpl novelServiceImpl;
-
     private static final int DEFAULT_PAGE_NUMBER = 0;
+
+    private final GenreServiceImpl genreService;
+    private final UserService userService;
+    private final FeedServiceImpl feedServiceImpl;
+    private final FeedImageService feedImageService;
+    private final NovelServiceImpl novelServiceImpl;
 
     //ToDo : 의존성 제거 필요 부분
     private final AvatarProfileRepository avatarRepository;
@@ -202,4 +212,69 @@ public class FeedFindApplication {
                 }).toList();
         return InterestFeedsGetResponse.of(interestFeedGetResponses, "");
     }
+
+    @Transactional(readOnly = true)
+    public NovelGetResponseFeedTab getFeedsByNovel(User user, Long novelId, Long lastFeedId, int size) {
+
+        // 있는 웹소설인지 체크
+        novelServiceImpl.getNovelOrException(novelId);
+
+        Long userIdOrNull = Optional.ofNullable(user).map(User::getUserId).orElse(null);
+
+        Slice<Feed> feeds = feedServiceImpl.findFeedsByNovel(userIdOrNull, novelId, lastFeedId, size);
+
+        List<FeedInfo> feedGetResponses = feeds.getContent().stream()
+                .map(feed -> createFeedInfo(feed, user))
+                .toList();
+
+        return NovelGetResponseFeedTab.of(feeds.hasNext(), feedGetResponses);
+    }
+
+    @Transactional(readOnly = true)
+    public UserFeedsGetResponse getUserFeeds(User visitor, Long ownerId, Long lastFeedId, int size, Boolean isVisible,
+                                             Boolean isUnVisible, List<String> genreNames, SortCriteria sortCriteria) {
+
+        User owner = userService.getUserOrException(ownerId);
+
+        Long visitorId = Optional.ofNullable(visitor).map(User::getUserId).orElse(null);
+
+        userService.validateProfileAccessible(owner, visitorId);
+
+        boolean includeEtc = genreNames != null && genreNames.contains("etc");
+        List<String> filteredGenreNames = genreNames == null
+                ? null
+                : genreNames.stream().filter(name -> !name.equals("etc")).collect(Collectors.toList());
+        List<Genre> genres = genreService.getGenresOrException(filteredGenreNames);
+
+        List<Feed> visibleFeeds = feedServiceImpl.getViewableUserFeed(owner, lastFeedId, size, isVisible,
+                isUnVisible, sortCriteria, genres, visitorId, includeEtc);
+
+        List<Long> novelIds = visibleFeeds.stream().map(Feed::getNovelId).filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        // 소설 ID에 해당하는 소설 정보들 전부 불러오기
+        List<Novel> novels = novelServiceImpl.findAllByIds(novelIds);
+
+        // 해당 로직 수정
+        Map<Long, Novel> novelMap = novels.stream()
+                .collect(Collectors.toMap(Novel::getNovelId, Function.identity()));
+
+        List<UserFeedGetResponse> userFeedGetResponseList = visibleFeeds.stream()
+                .map(feed -> UserFeedGetResponse.of(
+                        feed,
+                        novelMap.get(feed.getNovelId()),
+                        visitorId,
+                        feedImageService.getThumbnailUrl(feed),
+                        feedImageService.getImageCount(feed))
+                ).toList();
+
+        // TODO Slice의 hasNext()로 판단하도록 수정
+        Boolean isLoadable = visibleFeeds.size() == size;
+
+        long feedsCount = feedServiceImpl.getViewableUserFeedCount(owner, isVisible, isUnVisible, genres, visitorId, includeEtc);
+
+        return UserFeedsGetResponse.of(isLoadable, feedsCount, userFeedGetResponseList);
+
+    }
+
 }

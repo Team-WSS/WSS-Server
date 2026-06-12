@@ -35,7 +35,6 @@ import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.feed.application.FeedLikeApplication;
 import org.websoso.WSSServer.feed.application.FeedManagementApplication;
-import org.websoso.WSSServer.feed.service.FeedService;
 import org.websoso.WSSServer.user.domain.User;
 
 import java.util.List;
@@ -45,7 +44,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FeedController {
 
-    private final FeedService feedService;
     private final FeedManagementApplication feedManagementApplication;
     private final FeedFindApplication feedFindApplication;
     private final FeedLikeApplication feedLikeApplication;
@@ -143,7 +141,7 @@ public class FeedController {
                                                                    @RequestParam("size") int size) {
         return ResponseEntity
                 .status(OK)
-                .body(feedService.getFeedsByNovel(user, novelId, lastFeedId, size));
+                .body(feedFindApplication.getFeedsByNovel(user, novelId, lastFeedId, size));
     }
 
     @GetMapping("/users/{userId}/feeds")
@@ -158,7 +156,7 @@ public class FeedController {
         return ResponseEntity
                 .status(OK)
                 // ToDo: isVisible -> isPublic으로 수정
-                .body(feedService.getUserFeeds(visitor, userId, lastFeedId, size, isVisible, isUnVisible, genreNames,
+                .body(feedFindApplication.getUserFeeds(visitor, userId, lastFeedId, size, isVisible, isUnVisible, genreNames,
                         sortCriteria));
     }
 }

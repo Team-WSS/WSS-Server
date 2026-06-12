@@ -105,7 +105,6 @@ public class FeedService {
     private final UserRepository userRepository;
     private final AvatarProfileRepository avatarProfileRepository;
     private final FeedImageRepository feedImageRepository;
-    private final FeedImageCustomRepository feedImageCustomRepository;
     private final UserNovelRepository userNovelRepository;
     private final GenreRepository genreRepository;
     private final ImageClient imageClient;
@@ -238,41 +237,41 @@ public class FeedService {
 //                .orElseThrow(() -> new CustomFeedException(FEED_NOT_FOUND, "feed with the given id was not found"));
 //    }
 
-    private UserBasicInfo getUserBasicInfo(User user) {
-        return user.getUserBasicInfo(
-                avatarProfileRepository.findById(user.getAvatarProfileId()).orElseThrow(() ->
-                                new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"))
-                        .getAvatarProfileImage());
-    }
+//    private UserBasicInfo getUserBasicInfo(User user) {
+//        return user.getUserBasicInfo(
+//                avatarProfileRepository.findById(user.getAvatarProfileId()).orElseThrow(() ->
+//                                new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"))
+//                        .getAvatarProfileImage());
+//    }
 
-    private Novel getLinkedNovelOrNull(Long linkedNovelId) {
-        if (linkedNovelId == null) {
-            return null;
-        }
-        return novelRepository.findById(linkedNovelId)
-                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
-                        "novel with the given id is not found"));
-    }
+//    private Novel getLinkedNovelOrNull(Long linkedNovelId) {
+//        if (linkedNovelId == null) {
+//            return null;
+//        }
+//        return novelRepository.findById(linkedNovelId)
+//                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
+//                        "novel with the given id is not found"));
+//    }
 
-    private Boolean isUserLikedFeed(User user, Feed feed) {
-        return likeRepository.existsByUserIdAndFeed(user.getUserId(), feed);
-    }
+//    private Boolean isUserLikedFeed(User user, Feed feed) {
+//        return likeRepository.existsByUserIdAndFeed(user.getUserId(), feed);
+//    }
+//
+//    private Boolean isUserFeedOwner(User createdUser, User user) {
+//        return createdUser.equals(user);
+//    }
 
-    private Boolean isUserFeedOwner(User createdUser, User user) {
-        return createdUser.equals(user);
-    }
-
-    private FeedInfo createFeedInfo(Feed feed, User user) {
-        UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
-        Novel novel = getLinkedNovelOrNull(feed.getNovelId());
-        Boolean isLiked = user != null && isUserLikedFeed(user, feed);
-        Boolean isMyFeed = user != null && isUserFeedOwner(feed.getUser(), user);
-        Integer imageCount = feedImageRepository.countByFeedId(feed.getFeedId());
-        Optional<FeedImage> thumbnailImage = feedImageCustomRepository.findThumbnailFeedImageByFeedId(feed.getFeedId());
-        String thumbnailUrl = thumbnailImage.map(FeedImage::getUrl).orElse(null);
-
-        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, isMyFeed, thumbnailUrl, imageCount, user);
-    }
+//    private FeedInfo createFeedInfo(Feed feed, User user) {
+//        UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
+//        Novel novel = getLinkedNovelOrNull(feed.getNovelId());
+//        Boolean isLiked = user != null && isUserLikedFeed(user, feed);
+//        Boolean isMyFeed = user != null && isUserFeedOwner(feed.getUser(), user);
+//        Integer imageCount = feedImageRepository.countByFeedId(feed.getFeedId());
+//        Optional<FeedImage> thumbnailImage = feedImageCustomRepository.findThumbnailFeedImageByFeedId(feed.getFeedId());
+//        String thumbnailUrl = thumbnailImage.map(FeedImage::getUrl).orElse(null);
+//
+//        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, isMyFeed, thumbnailUrl, imageCount, user);
+//    }
 
 //    private Slice<Feed> findFeedsByCategoryLabel(Long lastFeedId, Long userId, PageRequest pageRequest,
 //                                                 FeedGetOption feedGetOption, List<Genre> preferenceGenres) {
@@ -322,79 +321,15 @@ public class FeedService {
 //        return InterestFeedsGetResponse.of(interestFeedGetResponses, "");
 //    }
 
-    @Transactional(readOnly = true)
-    public NovelGetResponseFeedTab getFeedsByNovel(User user, Long novelId, Long lastFeedId, int size) {
-        Long userIdOrNull = Optional.ofNullable(user).map(User::getUserId).orElse(null);
-        Slice<Feed> feeds = feedRepository.findFeedsByNovelId(novelId, lastFeedId, userIdOrNull,
-                PageRequest.of(DEFAULT_PAGE_NUMBER, size));
 
-        List<FeedInfo> feedGetResponses = feeds.getContent().stream().filter(feed -> feed.isVisibleTo(userIdOrNull))
-                .map(feed -> createFeedInfo(feed, user)).toList();
 
-        return NovelGetResponseFeedTab.of(feeds.hasNext(), feedGetResponses);
-    }
 
-    @Transactional(readOnly = true)
-    public UserFeedsGetResponse getUserFeeds(User visitor, Long ownerId, Long lastFeedId, int size, Boolean isVisible,
-                                             Boolean isUnVisible, List<String> genreNames, SortCriteria sortCriteria) {
-        User owner = userRepository.findById(ownerId)
-                .orElseThrow(() -> new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
-        Long visitorId = Optional.ofNullable(visitor).map(User::getUserId).orElse(null);
 
-        if (owner.getIsProfilePublic() || isOwner(visitor, ownerId)) {
-            boolean includeEtc = genreNames != null && genreNames.contains("etc");
-            List<String> filteredGenreNames = genreNames == null ? null :
-                    genreNames.stream().filter(name -> !name.equals("etc")).collect(Collectors.toList());
-            List<Genre> genres = getGenres(filteredGenreNames);
 
-            List<Feed> visibleFeeds = feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size, isVisible,
-                    isUnVisible, sortCriteria, genres, visitorId, includeEtc);
 
-            List<Long> novelIds = visibleFeeds.stream().map(Feed::getNovelId).filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-            Map<Long, Novel> novelMap = novelRepository.findAllById(novelIds).stream()
-                    .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
 
-            List<UserFeedGetResponse> userFeedGetResponseList = visibleFeeds.stream()
-                    .map(feed -> UserFeedGetResponse.of(feed, novelMap.get(feed.getNovelId()), visitorId,
-                            getThumbnailUrl(feed), getImageCount(feed))).toList();
 
-            // TODO Slice의 hasNext()로 판단하도록 수정
-            Boolean isLoadable = visibleFeeds.size() == size;
-            long feedsCount = feedRepository.countVisibleFeeds(owner, lastFeedId, isVisible, isUnVisible, genres,
-                    visitorId, includeEtc);
 
-            return UserFeedsGetResponse.of(isLoadable, feedsCount, userFeedGetResponseList);
-        }
-
-        throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
-    }
-
-    private static boolean isOwner(User visitor, Long ownerId) {
-        //TODO 현재는 비로그인 회원인 경우
-        return visitor != null && visitor.getUserId().equals(ownerId);
-    }
-
-    private List<Genre> getGenres(List<String> genreNames) {
-        if (genreNames != null && !genreNames.isEmpty()) {
-            List<Genre> genres = genreNames.stream()
-                    .map(genreName -> genreRepository.findByGenreName(genreName)
-                            .orElseThrow(() -> new CustomGenreException(GENRE_NOT_FOUND,
-                                    "genre with the given name is not found"))
-                    ).toList();
-            return genres.isEmpty() ? null : genres;
-        }
-        return null;
-    }
-
-    private String getThumbnailUrl(Feed feed) {
-        Optional<FeedImage> thumbnailImage = feedImageCustomRepository.findThumbnailFeedImageByFeedId(feed.getFeedId());
-        return thumbnailImage.map(FeedImage::getUrl).orElse(null);
-    }
-
-    private Integer getImageCount(Feed feed) {
-        return feedImageRepository.countByFeedId(feed.getFeedId());
-    }
 
 //    private void sendPopularFeedPushMessage(Feed feed) {
 //        NotificationType notificationTypeComment = notificationTypeRepository.findByNotificationTypeName("지금뜨는글");

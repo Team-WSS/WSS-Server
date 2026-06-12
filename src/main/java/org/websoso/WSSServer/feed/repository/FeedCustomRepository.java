@@ -23,7 +23,9 @@ public interface FeedCustomRepository {
     Slice<Feed> findFeedsByGenres(List<Genre> genres, boolean includeEtc, Long lastFeedId, Long userId,
                                   PageRequest pageRequest);
 
-    Long countVisibleFeeds(User owner, Long lastFeedId, Boolean isVisible,
+    Long countVisibleFeeds(User owner, Boolean isVisible,
                            Boolean isUnVisible, List<Genre> genres,
                            Long visitorId, boolean includeEtc);
+
+    Slice<Feed> findFeedsByNovelId(Long novelId, Long lastFeedId, Long userId, PageRequest pageRequest);
 }

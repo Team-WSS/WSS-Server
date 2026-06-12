@@ -96,7 +96,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     }
 
     @Override
-    public Long countVisibleFeeds(User owner, Long lastFeedId, Boolean isVisible,
+    public Long countVisibleFeeds(User owner, Boolean isVisible,
                                   Boolean isUnVisible, List<Genre> genres,
                                   Long visitorId, boolean isNotNovelConnect) {
         return jpaQueryFactory
@@ -112,6 +112,30 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                         checkGenresAndNovels(genres, isNotNovelConnect)
                 )
                 .fetchOne();
+    }
+
+    @Override
+    public Slice<Feed> findFeedsByNovelId(Long novelId, Long lastFeedId, Long userId, PageRequest pageRequest) {
+        List<Feed> feeds = jpaQueryFactory
+                .selectFrom(feed)
+                .where(
+                        feed.novelId.eq(novelId),
+                        ltFeedId(lastFeedId),
+                        checkHidden(),
+                        checkVisible(userId),
+                        checkBlockRelation(userId)
+                )
+                .orderBy(feed.feedId.desc())
+                .limit(pageRequest.getPageSize() + 1)
+                .fetch();
+
+        boolean hasNext = feeds.size() > pageRequest.getPageSize();
+
+        if (hasNext) {
+            feeds.remove(feeds.size() - 1);
+        }
+
+        return new SliceImpl<>(feeds, pageRequest, hasNext);
     }
 
     private BooleanExpression ltFeedId(Long lastFeedId) {
@@ -251,6 +275,24 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
             );
         }
         return null;
+    }
+
+    private BooleanExpression checkBlockRelation(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+
+        return feed.user.userId.notIn(
+                JPAExpressions
+                        .select(block.blockedId)
+                        .from(block)
+                        .where(block.blockingId.eq(userId))
+        ).and(feed.user.userId.notIn(
+                JPAExpressions
+                        .select(block.blockingId)
+                        .from(block)
+                        .where(block.blockedId.eq(userId))
+        ));
     }
 
     private BooleanExpression checkHidden() {

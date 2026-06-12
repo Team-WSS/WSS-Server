@@ -2,7 +2,6 @@ package org.websoso.WSSServer.feed.service;
 
 import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
-import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import java.util.Comparator;
@@ -18,8 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
+import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.exception.exception.CustomFeedException;
-import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.domain.FeedImage;
@@ -29,10 +28,13 @@ import org.websoso.WSSServer.feed.repository.FeedImageRepository;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.feed.repository.PopularFeedRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
+import org.websoso.WSSServer.user.domain.User;
 
 @Service
 @RequiredArgsConstructor
 public class FeedServiceImpl {
+
+    private static final int DEFAULT_PAGE_NUMBER = 0;
 
     private final FeedRepository feedRepository;
     private final FeedImageRepository feedImageRepository;
@@ -81,29 +83,50 @@ public class FeedServiceImpl {
     }
 
     @Transactional(readOnly = true)
+    public Slice<Feed> findFeedsByNovel(Long userIdOrNull, Long novelId, Long lastFeedId, int size) {
+        return feedRepository.findFeedsByNovelId(novelId, lastFeedId, userIdOrNull,
+                PageRequest.of(DEFAULT_PAGE_NUMBER, size));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Feed> getViewableUserFeed(User owner, Long lastFeedId, int size, Boolean isVisible,
+                                          Boolean isUnVisible, SortCriteria sortCriteria,
+                                          List<Genre> genres, Long visitorId, boolean isNotNovelConnect) {
+        return feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size, isVisible,
+                isUnVisible, sortCriteria, genres, visitorId, isNotNovelConnect);
+    }
+
+    @Transactional(readOnly = true)
+    public long getViewableUserFeedCount(User owner, Boolean isVisible,
+                                         Boolean isUnVisible, List<Genre> genres,
+                                         Long visitorId, boolean includeEtc) {
+        return feedRepository.countVisibleFeeds(owner, isVisible, isUnVisible, genres, visitorId, includeEtc);
+    }
+
+    @Transactional(readOnly = true)
     public Slice<Feed> findFeedsByCategoryLabel(Long lastFeedId, Long userId, PageRequest pageRequest,
                                                 FeedGetOption feedGetOption, List<Genre> preferenceGenres) {
 
-            if (FeedGetOption.isAll(feedGetOption)) {
-                return feedRepository.findFeeds(lastFeedId, userId, pageRequest);
-            } else {
-                // 인기 피드
-                Slice<Feed> recommendedFeeds = feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres);
-                // 내가 관심 등록한 작품의 피드
-                Slice<Feed> interestedNovelFeeds = feedRepository.findInterestedNovelFeeds(lastFeedId, userId, pageRequest);
-                int pageSize = pageRequest.getPageSize();
-                List<Feed> combinedFeeds = Stream.concat(
-                    recommendedFeeds.getContent().stream(),
-                    interestedNovelFeeds.getContent().stream())
-                        .distinct()
-                        .sorted(Comparator.comparing(Feed::getFeedId).reversed()) // feedId 내림차순 정렬
-                        .toList();
-                List<Feed> resultFeeds = combinedFeeds.stream()
-                        .limit(pageSize)
-                        .toList();
-                boolean hasNext = combinedFeeds.size() > pageSize || recommendedFeeds.hasNext() || interestedNovelFeeds.hasNext();
-                return new SliceImpl<>(resultFeeds, pageRequest, hasNext);
-            }
+        if (FeedGetOption.isAll(feedGetOption)) {
+            return feedRepository.findFeeds(lastFeedId, userId, pageRequest);
+        } else {
+            // 인기 피드
+            Slice<Feed> recommendedFeeds = feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres);
+            // 내가 관심 등록한 작품의 피드
+            Slice<Feed> interestedNovelFeeds = feedRepository.findInterestedNovelFeeds(lastFeedId, userId, pageRequest);
+            int pageSize = pageRequest.getPageSize();
+            List<Feed> combinedFeeds = Stream.concat(
+                            recommendedFeeds.getContent().stream(),
+                            interestedNovelFeeds.getContent().stream())
+                    .distinct()
+                    .sorted(Comparator.comparing(Feed::getFeedId).reversed()) // feedId 내림차순 정렬
+                    .toList();
+            List<Feed> resultFeeds = combinedFeeds.stream()
+                    .limit(pageSize)
+                    .toList();
+            boolean hasNext = combinedFeeds.size() > pageSize || recommendedFeeds.hasNext() || interestedNovelFeeds.hasNext();
+            return new SliceImpl<>(resultFeeds, pageRequest, hasNext);
+        }
 
     }
 
