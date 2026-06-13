@@ -17,6 +17,7 @@ import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.feed.service.FeedImageService;
+import org.websoso.WSSServer.feed.service.FeedLikeService;
 import org.websoso.WSSServer.novel.service.GenreServiceImpl;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
@@ -42,6 +43,8 @@ import org.websoso.WSSServer.novel.service.NovelServiceImpl;
 import org.websoso.WSSServer.user.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.user.domain.User;
+import org.websoso.WSSServer.user.service.AvatarService;
+import org.websoso.WSSServer.user.service.BlockService;
 import org.websoso.WSSServer.user.service.UserService;
 
 @Service
@@ -55,6 +58,9 @@ public class FeedFindApplication {
     private final FeedServiceImpl feedServiceImpl;
     private final FeedImageService feedImageService;
     private final NovelServiceImpl novelServiceImpl;
+    private final AvatarService avatarService;
+    private final FeedLikeService feedLikeService;
+    private final BlockService blockService;
 
     //ToDo : 의존성 제거 필요 부분
     private final AvatarProfileRepository avatarRepository;
@@ -64,11 +70,27 @@ public class FeedFindApplication {
 
     @Transactional(readOnly = true)
     public FeedGetResponse getFeedById(User user, Long feedId) {
-        Feed feed = feedServiceImpl.getFeedOrException(feedId);
-        UserBasicInfo feedUserBasicInfo = getUserBasicInfo(feed.getUser());
+
+        Feed feed = feedServiceImpl.getAccessFeedOrException(feedId, user.getUserId());
+
+        // 서로 차단 관계인지 체크한다.
+        blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
+
+        // 피드 작성자의 프로필 이미지를 불러온다.
+        AvatarProfile avatarProfile = avatarService.getAvatarProfileOrException(feed.getUser().getAvatarProfileId());
+        String avatarImageUrl = avatarProfile.getAvatarProfileImage();
+
+        // 피드 작성자의 사용자 정보 전달 객체 생성
+        UserBasicInfo feedUserBasicInfo = UserBasicInfo.of(feed.getUser().getUserId(), feed.getUser().getNickname(), avatarImageUrl);
+
+        // 피드에 연결된 소설 정보 가져오기
         Novel novel = getLinkedNovelOrNull(feed.getNovelId());
-        Boolean isLiked = isUserLikedFeed(user, feed);
-        Boolean isMyFeed = isUserFeedOwner(feed.getUser(), user);
+
+        // 사용자가 현재 피드에 좋아요를 했는지 여부 체크
+        boolean isLiked = feedLikeService.isUserLikedFeed(user.getUserId(), feed);
+
+        // 피드가 본인 피드인지 체크
+        boolean isMyFeed = feed.isMine(user.getUserId());
 
         return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, isMyFeed);
     }

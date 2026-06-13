@@ -23,11 +23,9 @@ import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.feed.domain.PopularFeed;
-import org.websoso.WSSServer.feed.repository.FeedImageCustomRepository;
 import org.websoso.WSSServer.feed.repository.FeedImageRepository;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.feed.repository.PopularFeedRepository;
-import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.user.domain.User;
 
 @Service
@@ -38,11 +36,7 @@ public class FeedServiceImpl {
 
     private final FeedRepository feedRepository;
     private final FeedImageRepository feedImageRepository;
-    private final FeedImageCustomRepository feedImageCustomRepository;
     private final PopularFeedRepository popularFeedRepository;
-    private final GenreRepository genreRepository;
-
-    private static final String DEFAULT_CATEGORY = "all";
 
     @Transactional
     public void createFeed(Feed feed) {
@@ -137,7 +131,7 @@ public class FeedServiceImpl {
 
     @Transactional(readOnly = true)
     public Optional<FeedImage> findThumbnailFeedImageByFeedId(Long feedId) {
-        return feedImageCustomRepository.findThumbnailFeedImageByFeedId(feedId);
+        return feedImageRepository.findThumbnailFeedImageByFeedId(feedId);
     }
 
     @Transactional(readOnly = true)

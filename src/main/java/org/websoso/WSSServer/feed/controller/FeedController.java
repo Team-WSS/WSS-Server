@@ -59,7 +59,7 @@ public class FeedController {
     }
 
     @GetMapping("/feeds/{feedId}")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<FeedGetResponse> getFeed(@AuthenticationPrincipal User user,
                                                    @PathVariable("feedId") Long feedId) {
         return ResponseEntity

@@ -42,4 +42,9 @@ public class FeedLikeService {
         return likeRepository.countByFeed_FeedId(feedId);
     }
 
+    @Transactional(readOnly = true)
+    public boolean isUserLikedFeed(Long userId, Feed feed) {
+        return likeRepository.existsByUserIdAndFeed(userId, feed);
+    }
+
 }
