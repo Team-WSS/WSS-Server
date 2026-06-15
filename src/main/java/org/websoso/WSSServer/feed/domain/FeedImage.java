@@ -2,6 +2,7 @@ package org.websoso.WSSServer.feed.domain;
 
 
 import static jakarta.persistence.GenerationType.IDENTITY;
+import static org.websoso.WSSServer.domain.common.FeedImageType.FEED_THUMBNAIL;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -47,5 +48,9 @@ public class FeedImage {
 
     public static FeedImage createCommon(String url, int sequence) {
         return new FeedImage(url, FeedImageType.FEED_COMMON, sequence);
+    }
+
+    public boolean isThumbnail() {
+        return feedImageType == FEED_THUMBNAIL;
     }
 }

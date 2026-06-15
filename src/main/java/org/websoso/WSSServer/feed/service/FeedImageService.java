@@ -1,9 +1,6 @@
 package org.websoso.WSSServer.feed.service;
 
-import static org.websoso.WSSServer.domain.common.FeedImageType.FEED_THUMBNAIL;
-
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,8 +36,7 @@ public class FeedImageService {
         }
 
         return feedImageRepository.findByFeedIdIn(feedIds).stream()
-                .filter(feedImage -> feedImage.getFeedImageType() == FEED_THUMBNAIL)
-                .sorted(Comparator.comparing(FeedImage::getSequence))
+                .filter(FeedImage::isThumbnail)
                 .collect(Collectors.toMap(
                         FeedImage::getFeedId,
                         FeedImage::getUrl,
