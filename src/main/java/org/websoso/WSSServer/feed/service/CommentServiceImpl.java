@@ -2,9 +2,14 @@ package org.websoso.WSSServer.feed.service;
 
 import static org.websoso.WSSServer.exception.error.CustomCommentError.COMMENT_NOT_FOUND;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.feed.repository.FeedCountProjection;
 import org.websoso.WSSServer.feed.repository.ReportedCommentRepository;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.comment.CommentCreateRequest;
@@ -46,6 +51,19 @@ public class CommentServiceImpl {
     public void deleteByFeedId(Long feedId) {
         commentRepository.deleteByFeedId(feedId);
         reportedCommentRepository.deleteByFeedId(feedId);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Integer> countByFeedIds(List<Long> feedIds) {
+        if (feedIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return commentRepository.countByFeedIds(feedIds).stream()
+                .collect(Collectors.toMap(
+                        FeedCountProjection::getFeedId,
+                        projection -> projection.getCount().intValue()
+                ));
     }
 
 }

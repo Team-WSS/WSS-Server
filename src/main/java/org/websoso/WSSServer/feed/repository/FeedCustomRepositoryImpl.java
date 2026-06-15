@@ -65,6 +65,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
         return jpaQueryFactory
                 .selectFrom(feed)
                 .distinct()
+                .join(feed.user).fetchJoin()
                 .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
                 .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
                 .leftJoin(genre).on(novelGenre.genre.eq(genre))
@@ -86,6 +87,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     public Slice<Feed> findFeeds(Long lastFeedId, Long userId, PageRequest pageRequest) {
         List<Feed> feeds = jpaQueryFactory
                 .selectFrom(feed)
+                .join(feed.user).fetchJoin()
                 .where(
                         ltFeedId(lastFeedId),
                         checkHidden(),
@@ -141,6 +143,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     public Slice<Feed> findFeedsByNovelId(Long novelId, Long lastFeedId, Long userId, PageRequest pageRequest) {
         List<Feed> feeds = jpaQueryFactory
                 .selectFrom(feed)
+                .join(feed.user).fetchJoin()
                 .where(
                         feed.novelId.eq(novelId),
                         ltFeedId(lastFeedId),
@@ -195,6 +198,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     public Slice<Feed> findRecommendedFeeds(Long lastFeedId, Long userId, PageRequest pageRequest, List<Genre> genres) {
         List<Feed> feeds = jpaQueryFactory
                 .selectFrom(feed)
+                .join(feed.user).fetchJoin()
                 .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
                 .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
                 .leftJoin(genre).on(novelGenre.genre.eq(genre))
@@ -223,6 +227,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     public Slice<Feed> findInterestedNovelFeeds(Long lastFeedId, Long userId, PageRequest pageRequest) {
         List<Feed> feeds = jpaQueryFactory
                 .selectFrom(feed)
+                .join(feed.user).fetchJoin()
                 .join(novel).on(feed.novelId.eq(novel.novelId))
                 .join(userNovel).on(novel.eq(userNovel.novel))
                 .where(
@@ -268,6 +273,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
         List<Feed> feeds = jpaQueryFactory
                 .selectFrom(feed)
                 .distinct()
+                .join(feed.user).fetchJoin()
                 .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
                 .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
                 .leftJoin(genre).on(novelGenre.genre.eq(genre))

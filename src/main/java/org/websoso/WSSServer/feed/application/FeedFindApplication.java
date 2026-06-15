@@ -1,7 +1,5 @@
 package org.websoso.WSSServer.feed.application;
 
-import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
-
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -21,7 +19,6 @@ import org.websoso.WSSServer.feed.service.FeedLikeService;
 import org.websoso.WSSServer.novel.service.GenreServiceImpl;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
-import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedInfo;
@@ -30,18 +27,13 @@ import org.websoso.WSSServer.dto.feed.InterestFeedGetResponse;
 import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
-import org.websoso.WSSServer.exception.exception.CustomAvatarException;
 import org.websoso.WSSServer.feed.domain.Feed;
-import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.feed.domain.PopularFeed;
-import org.websoso.WSSServer.feed.repository.LikeRepository;
+import org.websoso.WSSServer.feed.service.CommentServiceImpl;
 import org.websoso.WSSServer.feed.service.FeedServiceImpl;
-import org.websoso.WSSServer.library.domain.UserNovel;
-import org.websoso.WSSServer.library.repository.UserNovelRepository;
+import org.websoso.WSSServer.library.service.LibraryService;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;
-import org.websoso.WSSServer.user.repository.AvatarProfileRepository;
-import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.service.AvatarService;
 import org.websoso.WSSServer.user.service.BlockService;
@@ -60,12 +52,9 @@ public class FeedFindApplication {
     private final NovelServiceImpl novelServiceImpl;
     private final AvatarService avatarService;
     private final FeedLikeService feedLikeService;
+    private final CommentServiceImpl commentServiceImpl;
     private final BlockService blockService;
-
-    //ToDo : 의존성 제거 필요 부분
-    private final AvatarProfileRepository avatarRepository;
-    private final LikeRepository likeRepository;
-    private final UserNovelRepository userNovelRepository;
+    private final LibraryService libraryService;
 
     @Transactional(readOnly = true)
     public FeedGetResponse getFeedById(User user, Long feedId) {
@@ -94,65 +83,23 @@ public class FeedFindApplication {
         return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, isMyFeed);
     }
 
-    private UserBasicInfo getUserBasicInfo(User user) {
-        return user.getUserBasicInfo(
-                avatarRepository.findById(user.getAvatarProfileId()).orElseThrow(() ->
-                                new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"))
-                        .getAvatarProfileImage());
-    }
-
-    private Novel getLinkedNovelOrNull(Long linkedNovelId) {
-        if (linkedNovelId == null) {
-            return null;
-        }
-        return novelServiceImpl.getNovelOrException(linkedNovelId);
-    }
-
-    private Boolean isUserLikedFeed(User user, Feed feed) {
-        return likeRepository.existsByUserIdAndFeed(user.getUserId(), feed);
-    }
-
-    private Boolean isUserFeedOwner(User createdUser, User user) {
-        return createdUser.equals(user);
-    }
-
     @Transactional(readOnly = true)
     public FeedsGetResponse getFeeds(User user, Long lastFeedId, int size, FeedGetOption feedGetOption) {
+
+        // 로그인 유저 여부 확인
         Long userIdOrNull = Optional.ofNullable(user).map(User::getUserId).orElse(null);
 
+        // 사용자의 선호하는 장르 확인
         List<Genre> genres = user == null ? null : genreService.findUserPreferenceGenres(user);
 
+        // 피드 불러오기
         Slice<Feed> feeds = feedServiceImpl.findFeedsByCategoryLabel(lastFeedId, userIdOrNull, PageRequest.of(DEFAULT_PAGE_NUMBER, size), feedGetOption, genres);
 
         // TODO: feed -> feed.isVisibleTo(userIdOrNull) 해당 필터링 로직은 필요 없음
-        List<FeedInfo> feedGetResponses = feeds.getContent().stream().filter(feed -> feed.isVisibleTo(userIdOrNull))
-                .map(feed -> createFeedInfo(feed, user)).toList();
+        List<Feed> visibleFeeds = feeds.getContent().stream().filter(feed -> feed.isVisibleTo(userIdOrNull))
+                .toList();
 
-        return FeedsGetResponse.of(feeds.hasNext(), feedGetResponses);
-    }
-
-//    private List<Genre> getPreferenceGenres(User user) {
-//        if (user == null) {
-//            return null;
-//        }
-//        return genrePreferenceRepository.findByUser(user).stream().map(GenrePreference::getGenre).toList();
-//    }
-//
-//    private Slice<Feed> findFeedsByCategoryLabel(Long lastFeedId, Long userId, PageRequest pageRequest,
-//                                                 FeedGetOption feedGetOption, List<Genre> genres) {
-//        return feedServiceImpl.findFeedsByCategoryLabel(lastFeedId, userId, pageRequest, feedGetOption, genres);
-//    }
-
-    private FeedInfo createFeedInfo(Feed feed, User user) {
-        UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());
-        Novel novel = getLinkedNovelOrNull(feed.getNovelId());
-        Boolean isLiked = user != null && isUserLikedFeed(user, feed);
-        Boolean isMyFeed = user != null && isUserFeedOwner(feed.getUser(), user);
-        Integer imageCount = feedServiceImpl.countByFeedId(feed.getFeedId());
-        Optional<FeedImage> thumbnailImage = feedServiceImpl.findThumbnailFeedImageByFeedId(feed.getFeedId());
-        String thumbnailUrl = thumbnailImage.map(FeedImage::getUrl).orElse(null);
-
-        return FeedInfo.of(feed, userBasicInfo, novel, isLiked, isMyFeed, thumbnailUrl, imageCount, user);
+        return FeedsGetResponse.of(feeds.hasNext(), createFeedInfos(visibleFeeds, user));
     }
 
     @Transactional(readOnly = true)
@@ -180,28 +127,9 @@ public class FeedFindApplication {
         return PopularFeedsGetResponse.of(popularFeedGetResponses);
     }
 
-    private static List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(
-            List<PopularFeed> popularFeeds,
-            Map<Long, Novel> novelMap
-    ) {
-        return popularFeeds.stream()
-                .map(popularFeed -> {
-                    Novel novel = novelMap.get(popularFeed.getFeed().getNovelId());
-
-                    return PopularFeedGetResponse.of(
-                            popularFeed,
-                            novel == null ? null : novel.getTitle(),
-                            novel == null ? null : novel.getNovelImage(),
-                            novel == null ? null : novel.getFirstGenreName()
-                    );
-                })
-                .toList();
-    }
-
     @Transactional(readOnly = true)
     public InterestFeedsGetResponse getInterestFeeds(User user) {
-        List<Novel> interestNovels = userNovelRepository.findByUserAndIsInterestTrue(user).stream()
-                .map(UserNovel::getNovel).toList();
+        List<Novel> interestNovels = libraryService.getInterestNovels(user);
 
         if (interestNovels.isEmpty()) {
             return InterestFeedsGetResponse.of(Collections.emptyList(), "NO_INTEREST_NOVELS");
@@ -219,7 +147,7 @@ public class FeedFindApplication {
 
         Set<Long> avatarProfileIds = interestFeeds.stream().map(feed -> feed.getUser().getAvatarProfileId())
                 .collect(Collectors.toSet());
-        Map<Long, AvatarProfile> avatarMap = avatarRepository.findAllById(avatarProfileIds).stream()
+        Map<Long, AvatarProfile> avatarMap = avatarService.findAllByIds(new ArrayList<>(avatarProfileIds)).stream()
                 .collect(Collectors.toMap(AvatarProfile::getAvatarProfileId, avatar -> avatar));
 
         List<InterestFeedGetResponse> interestFeedGetResponses = interestFeeds.stream()
@@ -241,11 +169,9 @@ public class FeedFindApplication {
 
         Slice<Feed> feeds = feedServiceImpl.findFeedsByNovel(userIdOrNull, novelId, lastFeedId, size);
 
-        List<FeedInfo> feedGetResponses = feeds.getContent().stream()
-                .map(feed -> createFeedInfo(feed, user))
-                .toList();
+        List<Feed> visibleFeeds = feeds.getContent();
 
-        return NovelGetResponseFeedTab.of(feeds.hasNext(), feedGetResponses);
+        return NovelGetResponseFeedTab.of(feeds.hasNext(), createFeedInfos(visibleFeeds, user));
     }
 
     @Transactional(readOnly = true)
@@ -271,20 +197,13 @@ public class FeedFindApplication {
                 .collect(Collectors.toList());
 
         // 소설 ID에 해당하는 소설 정보들 전부 불러오기
-        List<Novel> novels = novelServiceImpl.findAllByIds(novelIds);
+        List<Novel> novels = novelServiceImpl.getNovelsWithGenresByIds(novelIds);
 
-        // 해당 로직 수정
+        //
         Map<Long, Novel> novelMap = novels.stream()
                 .collect(Collectors.toMap(Novel::getNovelId, Function.identity()));
 
-        List<UserFeedGetResponse> userFeedGetResponseList = visibleFeeds.stream()
-                .map(feed -> UserFeedGetResponse.of(
-                        feed,
-                        novelMap.get(feed.getNovelId()),
-                        visitorId,
-                        feedImageService.getThumbnailUrl(feed),
-                        feedImageService.getImageCount(feed))
-                ).toList();
+        List<UserFeedGetResponse> userFeedGetResponseList = createUserFeedResponses(visibleFeeds, novelMap, visitorId);
 
         // TODO Slice의 hasNext()로 판단하도록 수정
         Boolean isLoadable = visibleFeeds.size() == size;
@@ -293,6 +212,155 @@ public class FeedFindApplication {
 
         return UserFeedsGetResponse.of(isLoadable, feedsCount, userFeedGetResponseList);
 
+    }
+
+    private Novel getLinkedNovelOrNull(Long linkedNovelId) {
+        if (linkedNovelId == null) {
+            return null;
+        }
+        return novelServiceImpl.getNovelOrException(linkedNovelId);
+    }
+
+    private Boolean isUserFeedOwner(User createdUser, User user) {
+        return createdUser.equals(user);
+    }
+
+    private List<FeedInfo> createFeedInfos(List<Feed> feeds, User user) {
+        FeedInfoContext context = getFeedInfoContext(feeds, user);
+
+        return feeds.stream()
+                .map(feed -> {
+                    Long feedId = feed.getFeedId();
+                    UserBasicInfo userBasicInfo = context.userBasicInfoMap().get(feed.getUser().getUserId());
+                    Novel novel = context.novelMap().get(feed.getNovelId());
+                    boolean isLiked = context.likedFeedIds().contains(feedId);
+                    boolean isMyFeed = user != null && isUserFeedOwner(feed.getUser(), user);
+                    String thumbnailUrl = context.thumbnailUrlMap().get(feedId);
+                    Integer imageCount = context.imageCountMap().getOrDefault(feedId, 0);
+                    Integer likeCount = context.likeCountMap().getOrDefault(feedId, 0);
+                    Integer commentCount = context.commentCountMap().getOrDefault(feedId, 0);
+
+                    return FeedInfo.of(
+                            feed,
+                            userBasicInfo,
+                            novel,
+                            isLiked,
+                            isMyFeed,
+                            thumbnailUrl,
+                            imageCount,
+                            user,
+                            likeCount,
+                            commentCount
+                    );
+                })
+                .toList();
+    }
+
+    private List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(
+            List<PopularFeed> popularFeeds,
+            Map<Long, Novel> novelMap
+    ) {
+        return popularFeeds.stream()
+                .map(popularFeed -> {
+                    Novel novel = novelMap.get(popularFeed.getFeed().getNovelId());
+
+                    return PopularFeedGetResponse.of(
+                            popularFeed,
+                            novel == null ? null : novel.getTitle(),
+                            novel == null ? null : novel.getNovelImage(),
+                            novel == null ? null : novel.getFirstGenreName()
+                    );
+                })
+                .toList();
+    }
+
+    private FeedInfoContext getFeedInfoContext(List<Feed> feeds, User user) {
+        List<Long> feedIds = feeds.stream()
+                .map(Feed::getFeedId)
+                .toList();
+        List<Long> novelIds = feeds.stream()
+                .map(Feed::getNovelId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        List<Long> avatarProfileIds = feeds.stream()
+                .map(feed -> feed.getUser().getAvatarProfileId())
+                .distinct()
+                .toList();
+
+        Map<Long, String> avatarImageMap = avatarService.findAllByIds(avatarProfileIds).stream()
+                .collect(Collectors.toMap(AvatarProfile::getAvatarProfileId, AvatarProfile::getAvatarProfileImage));
+        Map<Long, UserBasicInfo> userBasicInfoMap = feeds.stream()
+                .map(Feed::getUser)
+                .collect(Collectors.toMap(
+                        User::getUserId,
+                        feedUser -> feedUser.getUserBasicInfo(avatarImageMap.get(feedUser.getAvatarProfileId())),
+                        (first, second) -> first
+                ));
+
+        Map<Long, Novel> novelMap = novelServiceImpl.getNovelsWithGenresByIds(novelIds).stream()
+                .collect(Collectors.toMap(Novel::getNovelId, Function.identity()));
+        Set<Long> likedFeedIds = new HashSet<>(feedLikeService.findLikedFeedIds(
+                Optional.ofNullable(user).map(User::getUserId).orElse(null),
+                feedIds
+        ));
+        Map<Long, Integer> likeCountMap = feedLikeService.countByFeedIds(feedIds);
+        Map<Long, Integer> commentCountMap = commentServiceImpl.countByFeedIds(feedIds);
+        Map<Long, String> thumbnailUrlMap = feedImageService.getThumbnailUrlMap(feedIds);
+        Map<Long, Integer> imageCountMap = feedImageService.getImageCountMap(feedIds);
+
+        return new FeedInfoContext(
+                userBasicInfoMap,
+                novelMap,
+                likedFeedIds,
+                likeCountMap,
+                commentCountMap,
+                thumbnailUrlMap,
+                imageCountMap
+        );
+    }
+
+    private List<UserFeedGetResponse> createUserFeedResponses(
+            List<Feed> feeds,
+            Map<Long, Novel> novelMap,
+            Long visitorId
+    ) {
+        List<Long> feedIds = feeds.stream()
+                .map(Feed::getFeedId)
+                .toList();
+        Map<Long, List<Long>> likerUserIdsMap = feedLikeService.findLikerUserIdsByFeedIds(feedIds);
+        Map<Long, Integer> likeCountMap = feedLikeService.countByFeedIds(feedIds);
+        Map<Long, Integer> commentCountMap = commentServiceImpl.countByFeedIds(feedIds);
+        Map<Long, String> thumbnailUrlMap = feedImageService.getThumbnailUrlMap(feedIds);
+        Map<Long, Integer> imageCountMap = feedImageService.getImageCountMap(feedIds);
+
+        return feeds.stream()
+                .map(feed -> {
+                    Long feedId = feed.getFeedId();
+
+                    return UserFeedGetResponse.of(
+                            feed,
+                            novelMap.get(feed.getNovelId()),
+                            visitorId,
+                            thumbnailUrlMap.get(feedId),
+                            imageCountMap.getOrDefault(feedId, 0),
+                            likerUserIdsMap.getOrDefault(feedId, Collections.emptyList()),
+                            likeCountMap.getOrDefault(feedId, 0),
+                            commentCountMap.getOrDefault(feedId, 0)
+                    );
+                })
+                .toList();
+    }
+
+    private record FeedInfoContext(
+            Map<Long, UserBasicInfo> userBasicInfoMap,
+            Map<Long, Novel> novelMap,
+            Set<Long> likedFeedIds,
+            Map<Long, Integer> likeCountMap,
+            Map<Long, Integer> commentCountMap,
+            Map<Long, String> thumbnailUrlMap,
+            Map<Long, Integer> imageCountMap
+    ) {
     }
 
 }

@@ -31,10 +31,24 @@ public record UserFeedGetResponse(
 
     public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId, String thumbnailUrl,
                                          Integer imageCount) {
+        return of(
+                feed,
+                novel,
+                visitorId,
+                thumbnailUrl,
+                imageCount,
+                getLikeUsers(feed),
+                feed.getLikes().size(),
+                feed.getComments().size()
+        );
+    }
+
+    public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId, String thumbnailUrl,
+                                         Integer imageCount, List<Long> likeUsers, Integer likeCount,
+                                         Integer commentCount) {
         boolean isModified = !feed.getCreatedDate().equals(feed.getModifiedDate());
         Long novelRatingCount = getNovelRatingCount(novel);
         Float novelRating = getNovelRating(novel, novelRatingCount);
-        List<Long> likeUsers = getLikeUsers(feed);
         boolean isLiked = likeUsers.contains(visitorId);
         String genreName = getNovelGenreName(novel);
         Float userNovelRating = getUserNovelRating(novel, visitorId);
@@ -48,8 +62,8 @@ public record UserFeedGetResponse(
                 isModified,
                 likeUsers,
                 isLiked,
-                feed.getLikes().size(),
-                feed.getComments().size(),
+                likeCount,
+                commentCount,
                 novel == null ?
                         null : novel.getNovelId(),
                 novel == null ?

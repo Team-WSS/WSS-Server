@@ -34,6 +34,23 @@ public record FeedInfo(
 ) {
     public static FeedInfo of(Feed feed, UserBasicInfo userBasicInfo, Novel novel, Boolean isLiked,
                               Boolean isMyFeed, String thumbnailUrl, Integer imageCount, User user) {
+        return of(
+                feed,
+                userBasicInfo,
+                novel,
+                isLiked,
+                isMyFeed,
+                thumbnailUrl,
+                imageCount,
+                user,
+                feed.getLikes().size(),
+                feed.getComments().size()
+        );
+    }
+
+    public static FeedInfo of(Feed feed, UserBasicInfo userBasicInfo, Novel novel, Boolean isLiked,
+                              Boolean isMyFeed, String thumbnailUrl, Integer imageCount, User user,
+                              Integer likeCount, Integer commentCount) {
         String title = null;
         Integer novelRatingCount = null;
         Float novelRating = null;
@@ -61,9 +78,9 @@ public record FeedInfo(
                 userBasicInfo.avatarImage(),
                 TimeFormatUtil.formatRelativeDateTime(feed.getCreatedDate()),
                 feed.getFeedContent(),
-                feed.getLikes().size(),
+                likeCount,
                 isLiked,
-                feed.getComments().size(),
+                commentCount,
                 feed.getNovelId(),
                 title,
                 novelRatingCount,
