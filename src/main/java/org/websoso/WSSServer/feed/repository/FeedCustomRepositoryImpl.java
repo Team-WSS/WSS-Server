@@ -329,10 +329,11 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     }
 
     private BooleanExpression checkVisible(Long userId) {
-        if (userId != null) {
-            return feed.isPublic.isTrue().or(feed.user.userId.eq(userId));
+        if (userId == null) {
+            return feed.isPublic.isTrue();
         }
-        return null;
+
+        return feed.isPublic.isTrue().or(feed.user.userId.eq(userId));
     }
 
     private BooleanExpression checkFeedListVisibility(Long userId) {
