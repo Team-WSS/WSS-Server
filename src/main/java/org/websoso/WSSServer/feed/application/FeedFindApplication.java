@@ -50,11 +50,9 @@ public class FeedFindApplication {
     private final UserService userService;
     private final FeedServiceImpl feedServiceImpl;
     private final FeedQueryService feedQueryService;
-    private final FeedImageService feedImageService;
     private final NovelServiceImpl novelServiceImpl;
     private final AvatarService avatarService;
     private final FeedLikeService feedLikeService;
-    private final CommentServiceImpl commentServiceImpl;
     private final BlockService blockService;
     private final LibraryService libraryService;
 
@@ -100,7 +98,7 @@ public class FeedFindApplication {
 
         // FeedInfo에 필요한 정보들을 JOIN 및 서브 쿼리로 불러오기
         List<Feed> visibleFeeds = feeds.getContent().stream().toList();
-        List<FeedInfo> feedInfos = feedQueryService.createFeedInfos(visibleFeeds, userIdOrNull);
+        List<FeedInfo> feedInfos = feedQueryService.findFeedInfoRows(visibleFeeds, userIdOrNull);
 
         return FeedsGetResponse.of(feeds.hasNext(), feedInfos);
     }
@@ -173,7 +171,7 @@ public class FeedFindApplication {
         Slice<Feed> feeds = feedServiceImpl.findFeedsByNovel(userIdOrNull, novelId, lastFeedId, size);
 
         List<Feed> visibleFeeds = feeds.getContent();
-        List<FeedInfo> feedInfos = feedQueryService.createFeedInfos(visibleFeeds, userIdOrNull);
+        List<FeedInfo> feedInfos = feedQueryService.findFeedInfoRows(visibleFeeds, userIdOrNull);
 
         return NovelGetResponseFeedTab.of(feeds.hasNext(), feedInfos);
     }
@@ -207,7 +205,7 @@ public class FeedFindApplication {
         Map<Long, Novel> novelMap = novels.stream()
                 .collect(Collectors.toMap(Novel::getNovelId, Function.identity()));
 
-        List<UserFeedGetResponse> userFeedGetResponseList = createUserFeedResponses(visibleFeeds, novelMap, visitorId);
+        List<UserFeedGetResponse> userFeedGetResponseList = feedQueryService.findUserFeedRows(visibleFeeds, visitorId);
 
         // TODO Slice의 hasNext()로 판단하도록 수정
         Boolean isLoadable = visibleFeeds.size() == size;
@@ -238,38 +236,6 @@ public class FeedFindApplication {
                             novel == null ? null : novel.getTitle(),
                             novel == null ? null : novel.getNovelImage(),
                             novel == null ? null : novel.getFirstGenreName()
-                    );
-                })
-                .toList();
-    }
-
-    private List<UserFeedGetResponse> createUserFeedResponses(
-            List<Feed> feeds,
-            Map<Long, Novel> novelMap,
-            Long visitorId
-    ) {
-        List<Long> feedIds = feeds.stream()
-                .map(Feed::getFeedId)
-                .toList();
-        Map<Long, List<Long>> likerUserIdsMap = feedLikeService.findLikerUserIdsByFeedIds(feedIds);
-        Map<Long, Integer> likeCountMap = feedLikeService.countByFeedIds(feedIds);
-        Map<Long, Integer> commentCountMap = commentServiceImpl.countByFeedIds(feedIds);
-        Map<Long, String> thumbnailUrlMap = feedImageService.getThumbnailUrlMap(feedIds);
-        Map<Long, Integer> imageCountMap = feedImageService.getImageCountMap(feedIds);
-
-        return feeds.stream()
-                .map(feed -> {
-                    Long feedId = feed.getFeedId();
-
-                    return UserFeedGetResponse.of(
-                            feed,
-                            novelMap.get(feed.getNovelId()),
-                            visitorId,
-                            thumbnailUrlMap.get(feedId),
-                            imageCountMap.getOrDefault(feedId, 0),
-                            likerUserIdsMap.getOrDefault(feedId, Collections.emptyList()),
-                            likeCountMap.getOrDefault(feedId, 0),
-                            commentCountMap.getOrDefault(feedId, 0)
                     );
                 })
                 .toList();

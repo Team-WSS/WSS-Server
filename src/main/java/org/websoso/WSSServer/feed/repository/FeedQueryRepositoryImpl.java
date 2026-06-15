@@ -73,6 +73,47 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
                 .fetch();
     }
 
+    @Override
+    public List<UserFeedInfoRow> findUserFeedInfoRows(List<Long> feedIds, Long visitorId) {
+        if (feedIds.isEmpty()) {
+            return List.of();
+        }
+
+        QFeedImage thumbnailImage = new QFeedImage("userFeedThumbnailImage");
+
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        UserFeedInfoRow.class,
+                        feed.feedId,
+                        feed.feedContent,
+                        feed.createdDate,
+                        feed.isSpoiler,
+                        feed.createdDate.ne(feed.modifiedDate),
+                        isLiked(visitorId),
+                        likeCount(),
+                        commentCount(),
+                        feed.novelId,
+                        novel.title,
+                        novelRating(),
+                        novelRatingCount(),
+                        feed.isPublic,
+                        firstGenreName(),
+                        userNovelRating(visitorId),
+                        thumbnailImage.url,
+                        imageCount(),
+                        feedWriterNovelRating()
+                ))
+                .from(feed)
+                .join(feed.user)
+                .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
+                .leftJoin(thumbnailImage).on(
+                        thumbnailImage.feedId.eq(feed.feedId),
+                        thumbnailImage.feedImageType.eq(FeedImageType.FEED_THUMBNAIL)
+                )
+                .where(feed.feedId.in(feedIds))
+                .fetch();
+    }
+
     private JPQLQuery<Long> likeCount() {
         QLike likeSub = new QLike("likeCountSub");
 

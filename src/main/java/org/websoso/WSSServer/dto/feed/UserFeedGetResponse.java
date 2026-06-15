@@ -1,8 +1,6 @@
 package org.websoso.WSSServer.dto.feed;
 
-import java.util.List;
 import org.websoso.WSSServer.feed.domain.Feed;
-import org.websoso.WSSServer.feed.domain.Like;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.util.TimeFormatUtil;
@@ -13,7 +11,6 @@ public record UserFeedGetResponse(
         String createdDate,
         Boolean isSpoiler,
         Boolean isModified,
-        List<Long> likerUsers,
         Boolean isLiked,
         Integer likeCount,
         Integer commentCount,
@@ -37,19 +34,19 @@ public record UserFeedGetResponse(
                 visitorId,
                 thumbnailUrl,
                 imageCount,
-                getLikeUsers(feed),
+                visitorId != null && feed.getLikes().stream()
+                        .anyMatch(like -> like.getUserId().equals(visitorId)),
                 feed.getLikes().size(),
                 feed.getComments().size()
         );
     }
 
     public static UserFeedGetResponse of(Feed feed, Novel novel, Long visitorId, String thumbnailUrl,
-                                         Integer imageCount, List<Long> likeUsers, Integer likeCount,
+                                         Integer imageCount, Boolean isLiked, Integer likeCount,
                                          Integer commentCount) {
         boolean isModified = !feed.getCreatedDate().equals(feed.getModifiedDate());
         Long novelRatingCount = getNovelRatingCount(novel);
         Float novelRating = getNovelRating(novel, novelRatingCount);
-        boolean isLiked = likeUsers.contains(visitorId);
         String genreName = getNovelGenreName(novel);
         Float userNovelRating = getUserNovelRating(novel, visitorId);
         Float feedWriterNovelRating = getFeedWriterNovelRating(novel, feed.getUser().getUserId());
@@ -60,7 +57,6 @@ public record UserFeedGetResponse(
                 TimeFormatUtil.formatRelativeDateTime(feed.getCreatedDate()),
                 feed.getIsSpoiler(),
                 isModified,
-                likeUsers,
                 isLiked,
                 likeCount,
                 commentCount,
@@ -77,13 +73,6 @@ public record UserFeedGetResponse(
                 imageCount,
                 feedWriterNovelRating
         );
-    }
-
-    private static List<Long> getLikeUsers(Feed feed) {
-        return feed.getLikes()
-                .stream()
-                .map(Like::getUserId)
-                .toList();
     }
 
     private static Long getNovelRatingCount(Novel novel) {
