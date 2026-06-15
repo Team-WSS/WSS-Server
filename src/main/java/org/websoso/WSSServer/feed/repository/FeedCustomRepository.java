@@ -16,14 +16,13 @@ public interface FeedCustomRepository {
                                              Boolean isUnVisible, SortCriteria sortCriteria, List<Genre> genres,
                                              Long visitorId, boolean includeEtc);
 
-    Slice<Feed> findFeeds(Long lastFeedId, Long userId, PageRequest pageRequest);
+    Slice<Feed> findFeeds(Long lastFeedId, Long userId, PageRequest pageRequest, List<Long> blockedUserIds);
 
-    Slice<Feed> findRecommendedFeeds(Long lastFeedId, Long userId, PageRequest pageRequest, List<Genre> genres);
+    Slice<Feed> findRecommendedFeeds(Long lastFeedId, Long userId, PageRequest pageRequest, List<Genre> genres,
+                                     List<Long> blockedUserIds);
 
-    Slice<Feed> findInterestedNovelFeeds(Long lastFeedId, Long userId, PageRequest pageRequest);
-
-    Slice<Feed> findFeedsByGenres(List<Genre> genres, boolean includeEtc, Long lastFeedId, Long userId,
-                                  PageRequest pageRequest);
+    Slice<Feed> findInterestedNovelFeeds(Long lastFeedId, Long userId, PageRequest pageRequest,
+                                         List<Long> blockedUserIds);
 
     Long countVisibleFeeds(User owner, Boolean isVisible,
                            Boolean isUnVisible, List<Genre> genres,

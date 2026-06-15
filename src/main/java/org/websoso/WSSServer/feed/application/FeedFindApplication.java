@@ -2,17 +2,18 @@ package org.websoso.WSSServer.feed.application;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
-import org.websoso.WSSServer.feed.service.FeedImageService;
 import org.websoso.WSSServer.feed.service.FeedLikeService;
 import org.websoso.WSSServer.feed.service.FeedQueryService;
 import org.websoso.WSSServer.novel.service.GenreServiceImpl;
@@ -27,7 +28,6 @@ import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.feed.domain.Feed;
-import org.websoso.WSSServer.feed.service.CommentServiceImpl;
 import org.websoso.WSSServer.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.library.service.LibraryService;
 import org.websoso.WSSServer.novel.domain.Novel;
@@ -85,17 +85,26 @@ public class FeedFindApplication {
     public FeedsGetResponse getFeeds(User user, Long lastFeedId, int size, FeedGetOption feedGetOption) {
 
         // 로그인 유저 여부 확인
-        Long userIdOrNull = Optional.ofNullable(user).map(User::getUserId).orElse(null);
+        Long userIdOrNull = user == null ? null : user.getUserId();
 
         // 사용자의 선호하는 장르 확인
         List<Genre> genres = user == null ? null : genreService.findUserPreferenceGenres(user);
 
-        // 피드 불러오기
-        Slice<Feed> feeds = feedServiceImpl.findFeedsByCategoryLabel(lastFeedId, userIdOrNull, PageRequest.of(DEFAULT_PAGE_NUMBER, size), feedGetOption, genres);
+        // 사용자의 차단 목록 조회
+        List<Long> blockedUserIds = Optional.ofNullable(user)
+                .map(User::getUserId)
+                .map(blockService::findBlockRelationUserIds)
+                .orElseGet(Collections::emptyList);
+
+        PageRequest pageRequest = PageRequest.of(DEFAULT_PAGE_NUMBER, size);
+
+        // 피드 불러오기 (검색 옵션에 맞게 서비스 로직 호출)
+        Slice<Feed> feeds = feedGetOption.isAll()
+                ? feedServiceImpl.findFeeds(lastFeedId, userIdOrNull, pageRequest, blockedUserIds)
+                : feedServiceImpl.findRecommendedFeeds(lastFeedId, userIdOrNull, pageRequest, genres, blockedUserIds);
 
         // FeedInfo에 필요한 정보들을 JOIN 및 서브 쿼리로 불러오기
-        List<Feed> visibleFeeds = feeds.getContent().stream().toList();
-        List<FeedInfo> feedInfos = feedQueryService.findFeedInfoRows(visibleFeeds, userIdOrNull);
+        List<FeedInfo> feedInfos = feedQueryService.findFeedInfoRows(feeds.getContent(), userIdOrNull);
 
         return FeedsGetResponse.of(feeds.hasNext(), feedInfos);
     }

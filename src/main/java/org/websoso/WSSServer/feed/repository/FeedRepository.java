@@ -17,16 +17,6 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
 
     List<Feed> findTop10ByNovelIdInOrderByFeedIdDesc(List<Long> novelIds);
 
-//    @Query(value = "SELECT f FROM Feed f WHERE "
-//            + "(:lastFeedId = 0 OR f.feedId < :lastFeedId) "
-//            + "AND f.novelId = :novelId "
-//            + "AND f.isHidden = false "
-//            + "AND (f.isPublic = true OR f.user.userId = :userId)"
-//            + "AND (:userId IS NULL "
-//            + "OR f.user.userId NOT IN (SELECT b.blockedId FROM Block b WHERE b.blockingId = :userId)) "
-//            + "ORDER BY f.feedId DESC")
-//    Slice<Feed> findFeedsByNovelId(Long novelId, Long lastFeedId, Long userId, PageRequest pageRequest);
-
     @Transactional
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Feed f SET f.user.userId = -1 WHERE f.user.userId = :userId")

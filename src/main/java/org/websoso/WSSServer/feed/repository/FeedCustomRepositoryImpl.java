@@ -84,7 +84,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     }
 
     @Override
-    public Slice<Feed> findFeeds(Long lastFeedId, Long userId, PageRequest pageRequest) {
+    public Slice<Feed> findFeeds(Long lastFeedId, Long userId, PageRequest pageRequest, List<Long> blockedUserIds) {
         List<Feed> feeds = jpaQueryFactory
                 .selectFrom(feed)
                 .join(feed.user).fetchJoin()
@@ -92,7 +92,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                         ltFeedId(lastFeedId),
                         checkHidden(),
                         checkFeedListVisibility(userId),
-                        checkBlocking(userId)
+                        excludeBlockedUsers(blockedUserIds)
                 )
                 .orderBy(feed.feedId.desc())
                 .limit(pageRequest.getPageSize() + 1L)
@@ -195,7 +195,8 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     }
 
     @Override
-    public Slice<Feed> findRecommendedFeeds(Long lastFeedId, Long userId, PageRequest pageRequest, List<Genre> genres) {
+    public Slice<Feed> findRecommendedFeeds(Long lastFeedId, Long userId, PageRequest pageRequest, List<Genre> genres,
+                                            List<Long> blockedUserIds) {
         List<Feed> feeds = jpaQueryFactory
                 .selectFrom(feed)
                 .join(feed.user).fetchJoin()
@@ -206,7 +207,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                         ltFeedId(lastFeedId),
                         checkPopularFeed(),
                         checkGenresAndNovels(genres, true),
-                        checkBlocking(userId),
+                        excludeBlockedUsers(blockedUserIds),
                         checkHidden(),
                         checkVisible(userId)
                 )
@@ -224,7 +225,8 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     }
 
     @Override
-    public Slice<Feed> findInterestedNovelFeeds(Long lastFeedId, Long userId, PageRequest pageRequest) {
+    public Slice<Feed> findInterestedNovelFeeds(Long lastFeedId, Long userId, PageRequest pageRequest,
+                                                List<Long> blockedUserIds) {
         List<Feed> feeds = jpaQueryFactory
                 .selectFrom(feed)
                 .join(feed.user).fetchJoin()
@@ -232,7 +234,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
                 .join(userNovel).on(novel.eq(userNovel.novel))
                 .where(
                         ltFeedId(lastFeedId),
-                        checkBlocking(userId),
+                        excludeBlockedUsers(blockedUserIds),
                         checkHidden(),
                         checkInterestedNovels(userId),
                         checkVisible(userId)
@@ -267,43 +269,12 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
         return null;
     }
 
-    @Override
-    public Slice<Feed> findFeedsByGenres(List<Genre> genres, boolean isNotNovelConnect, Long lastFeedId, Long userId,
-                                         PageRequest pageRequest) {
-        List<Feed> feeds = jpaQueryFactory
-                .selectFrom(feed)
-                .distinct()
-                .join(feed.user).fetchJoin()
-                .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
-                .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
-                .leftJoin(genre).on(novelGenre.genre.eq(genre))
-                .where(
-                        ltFeedId(lastFeedId),
-                        checkGenresAndNovels(genres, isNotNovelConnect),
-                        checkBlocking(userId),
-                        checkHidden()
-                )
-                .orderBy(feed.feedId.desc())
-                .limit(pageRequest.getPageSize() + 1)
-                .fetch();
-
-        boolean hasNext = feeds.size() > pageRequest.getPageSize();
-        if (hasNext) {
-            feeds.remove(feeds.size() - 1);
+    private BooleanExpression excludeBlockedUsers(List<Long> blockedUserIds) {
+        if (blockedUserIds == null || blockedUserIds.isEmpty()) {
+            return null;
         }
-        return new SliceImpl<>(feeds, pageRequest, hasNext);
-    }
 
-    private BooleanExpression checkBlocking(Long userId) {
-        if (userId != null) {
-            return feed.user.userId.notIn(
-                    JPAExpressions
-                            .select(block.blockedId)
-                            .from(block)
-                            .where(block.blockingId.eq(userId)) // userId는 파라미터
-            );
-        }
-        return null;
+        return feed.user.userId.notIn(blockedUserIds);
     }
 
     private BooleanExpression checkBlockRelation(Long userId) {

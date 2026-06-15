@@ -71,7 +71,7 @@ public class FeedController {
     public ResponseEntity<FeedsGetResponse> getFeeds(@AuthenticationPrincipal User user,
                                                      @RequestParam("lastFeedId") Long lastFeedId,
                                                      @RequestParam("size") int size,
-                                                     @RequestParam(value = "feedsOption", required = false) FeedGetOption feedGetOption) {
+                                                     @RequestParam(value = "feedsOption", defaultValue = "ALL") FeedGetOption feedGetOption) {
         return ResponseEntity
                 .status(OK)
                 .body(feedFindApplication.getFeeds(user, lastFeedId, size, feedGetOption));
