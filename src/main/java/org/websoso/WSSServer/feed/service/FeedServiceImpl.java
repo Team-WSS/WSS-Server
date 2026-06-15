@@ -40,6 +40,11 @@ public class FeedServiceImpl {
         feedRepository.delete(feed);
     }
 
+    @Transactional
+    public void updateWriterToUnknown(Long writerId) {
+        feedRepository.updateUserToUnknown(writerId);
+    }
+
     @Transactional(readOnly = true)
     public Feed getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId)

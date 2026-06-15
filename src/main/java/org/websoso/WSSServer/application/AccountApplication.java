@@ -3,6 +3,7 @@ package org.websoso.WSSServer.application;
 import static org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessageType.WITHDRAW;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
@@ -16,6 +17,7 @@ import org.websoso.WSSServer.oauth2.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.notification.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.domain.WithdrawalReason;
+import org.websoso.WSSServer.user.event.WithdrawUserEvent;
 import org.websoso.WSSServer.user.repository.UserRepository;
 import org.websoso.WSSServer.user.repository.WithdrawalReasonRepository;
 
@@ -35,6 +37,8 @@ public class AccountApplication {
     private final RefreshTokenRepository refreshTokenRepository;
     private final KakaoService kakaoService;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     public void withdrawUser(User user, WithdrawalRequest withdrawalRequest) {
         unlinkSocialAccount(user);
 
@@ -47,6 +51,10 @@ public class AccountApplication {
                 DiscordWebhookMessage.of(messageContent, WITHDRAW));
 
         withdrawalReasonRepository.save(WithdrawalReason.create(withdrawalRequest.reason()));
+
+        eventPublisher.publishEvent(
+                WithdrawUserEvent.of(user.getUserId())
+        );
     }
 
     private void unlinkSocialAccount(User user) {
@@ -59,7 +67,6 @@ public class AccountApplication {
 
     private void cleanupUserData(Long userId) {
         refreshTokenRepository.deleteAll(refreshTokenRepository.findAllByUserId(userId));
-        feedRepository.updateUserToUnknown(userId);
         commentRepository.updateUserToUnknown(userId);
         userRepository.deleteById(userId);
     }

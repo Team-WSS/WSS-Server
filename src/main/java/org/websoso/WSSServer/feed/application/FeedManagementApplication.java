@@ -11,7 +11,6 @@ import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedImageDeleteEvent;
 import org.websoso.WSSServer.dto.feed.FeedImageUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
-import org.websoso.WSSServer.feed.domain.Comment;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.feed.service.CommentServiceImpl;
@@ -98,6 +97,11 @@ public class FeedManagementApplication {
 
         // 피드 삭제
         feedService.delete(feed);
+    }
+
+    @Transactional
+    public void updateFeedWriterToUnknown(Long userId) {
+        feedService.updateWriterToUnknown(userId);
     }
 
     // TODO: 이미지 업로드 로직이 여기에서 관리되지 않도록 수정 예정
