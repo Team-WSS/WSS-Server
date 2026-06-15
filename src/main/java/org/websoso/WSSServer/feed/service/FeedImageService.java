@@ -1,59 +1,61 @@
 package org.websoso.WSSServer.feed.service;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.feed.domain.Feed;
+import org.springframework.web.multipart.MultipartFile;
 import org.websoso.WSSServer.feed.domain.FeedImage;
-import org.websoso.WSSServer.feed.repository.FeedImageRepository;
+import org.websoso.WSSServer.service.ImageClient;
 
 @Service
 @RequiredArgsConstructor
 public class FeedImageService {
 
-    private final FeedImageRepository feedImageRepository;
+    private final ImageClient imageUploader;
 
-    @Transactional(readOnly = true)
-    public String getThumbnailUrl(Feed feed) {
-        Optional<FeedImage> thumbnailImage = feedImageRepository.findThumbnailFeedImageByFeedId(feed.getFeedId());
-        return thumbnailImage.map(FeedImage::getUrl).orElse(null);
+    public List<FeedImage> processFeedImages(List<MultipartFile> images) {
+        List<String> uploadedImageUrls = uploadFeedImages(images);
+
+        return createFeedImages(uploadedImageUrls);
     }
 
-    @Transactional(readOnly = true)
-    public Integer getImageCount(Feed feed) {
-        return feedImageRepository.countByFeedId(feed.getFeedId());
-    }
+    private List<String> uploadFeedImages(List<MultipartFile> images) {
+        List<String> uploadedImageUrls = new ArrayList<>();
 
-    @Transactional(readOnly = true)
-    public Map<Long, String> getThumbnailUrlMap(List<Long> feedIds) {
-        if (feedIds.isEmpty()) {
-            return Collections.emptyMap();
+        if (images == null || images.isEmpty()) {
+            return uploadedImageUrls;
         }
 
-        return feedImageRepository.findByFeedIdIn(feedIds).stream()
-                .filter(FeedImage::isThumbnail)
-                .collect(Collectors.toMap(
-                        FeedImage::getFeedId,
-                        FeedImage::getUrl,
-                        (first, second) -> first
-                ));
-    }
+        try {
+            for (MultipartFile image : images) {
+                String imageUrl = imageUploader.uploadFeedImage(image);
+                uploadedImageUrls.add(imageUrl);
+            }
+        } catch (Exception e) {
+            if (!uploadedImageUrls.isEmpty()) {
+                imageUploader.deleteImages(uploadedImageUrls);
+            }
 
-    @Transactional(readOnly = true)
-    public Map<Long, Integer> getImageCountMap(List<Long> feedIds) {
-        if (feedIds.isEmpty()) {
-            return Collections.emptyMap();
+            throw e;
         }
 
-        return feedImageRepository.findByFeedIdIn(feedIds).stream()
-                .collect(Collectors.groupingBy(
-                        FeedImage::getFeedId,
-                        Collectors.collectingAndThen(Collectors.counting(), Long::intValue)
-                ));
+        return uploadedImageUrls;
     }
+
+    private List<FeedImage> createFeedImages(List<String> uploadedImageUrls) {
+        List<FeedImage> feedImages = new ArrayList<>();
+
+        if (uploadedImageUrls.isEmpty()) {
+            return feedImages;
+        }
+
+        feedImages.add(FeedImage.createThumbnail(uploadedImageUrls.get(0)));
+        for (int i = 1; i < uploadedImageUrls.size(); i++) {
+            feedImages.add(FeedImage.createCommon(uploadedImageUrls.get(i), i));
+        }
+
+        return feedImages;
+    }
+
 }

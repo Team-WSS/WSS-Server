@@ -22,8 +22,6 @@ import org.springframework.data.domain.PageRequest;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
-import org.websoso.WSSServer.feed.repository.FeedImageCustomRepository;
-import org.websoso.WSSServer.feed.repository.FeedImageRepository;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
 import org.websoso.WSSServer.feed.repository.PopularFeedRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
@@ -33,8 +31,6 @@ class FeedServiceImplTest {
 
     @Mock
     FeedRepository feedRepository;
-    @Mock
-    FeedImageRepository feedImageRepository;
     @Mock
     PopularFeedRepository popularFeedRepository;
     @Mock

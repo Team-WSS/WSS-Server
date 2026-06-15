@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedCreateResponse;
 import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
@@ -14,10 +13,10 @@ import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.feed.service.CommentServiceImpl;
+import org.websoso.WSSServer.feed.service.FeedImageService;
 import org.websoso.WSSServer.feed.service.FeedLikeService;
 import org.websoso.WSSServer.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;
-import org.websoso.WSSServer.service.ImageClient;
 import org.websoso.WSSServer.user.domain.User;
 
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ public class FeedManagementApplication {
     private final FeedLikeService feedLikeService;
     private final CommentServiceImpl commentService;
     private final NovelServiceImpl novelService;
-    private final ImageClient imageUploader;
+    private final FeedImageService feedImageService;
 
     private final ApplicationEventPublisher eventPublisher;
 
@@ -44,7 +43,7 @@ public class FeedManagementApplication {
         }
 
         // 이미지 업로드
-        List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
+        List<FeedImage> feedImages = feedImageService.processFeedImages(imagesRequest.images());
 
         // 피드 객체 생성
         Feed feed = Feed.create(request.feedContent(), request.novelId(), request.isSpoiler(), request.isPublic(), user, feedImages);
@@ -71,7 +70,7 @@ public class FeedManagementApplication {
         }
 
         // 이미지 업로드
-        List<FeedImage> feedImages = processFeedImages(imagesRequest.images());
+        List<FeedImage> feedImages = feedImageService.processFeedImages(imagesRequest.images());
 
         // 피드 업데이트
         feed.updateFeed(request.feedContent(), request.isSpoiler(), request.isPublic(), request.novelId(), feedImages);
@@ -102,36 +101,6 @@ public class FeedManagementApplication {
     @Transactional
     public void updateFeedWriterToUnknown(Long userId) {
         feedService.updateWriterToUnknown(userId);
-    }
-
-    // TODO: 이미지 업로드 로직이 여기에서 관리되지 않도록 수정 예정
-    private List<FeedImage> processFeedImages(List<MultipartFile> images) {
-        List<String> uploadedImageUrls = new ArrayList<>();
-
-        if (images != null && !images.isEmpty()) {
-            try {
-                for (MultipartFile image : images) {
-                    String imageUrl = imageUploader.uploadFeedImage(image);
-                    uploadedImageUrls.add(imageUrl);
-                }
-            } catch (Exception e) {
-                if (!uploadedImageUrls.isEmpty()) {
-                    imageUploader.deleteImages(uploadedImageUrls);
-                }
-
-                throw e;
-            }
-        }
-
-        List<FeedImage> feedImages = new ArrayList<>();
-        if (!uploadedImageUrls.isEmpty()) {
-            feedImages.add(FeedImage.createThumbnail(uploadedImageUrls.get(0)));
-            for (int i = 1; i < uploadedImageUrls.size(); i++) {
-                feedImages.add(FeedImage.createCommon(uploadedImageUrls.get(i), i));
-            }
-        }
-
-        return feedImages;
     }
 
 }

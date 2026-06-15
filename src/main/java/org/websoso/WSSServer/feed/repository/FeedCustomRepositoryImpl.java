@@ -33,10 +33,9 @@ import org.websoso.WSSServer.domain.common.SortCriteria;
 
 @Repository
 @RequiredArgsConstructor
-public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImageCustomRepository {
+public class FeedCustomRepositoryImpl implements FeedCustomRepository {
 
     private static final long NO_CURSOR = 0L;
-    private static final int THUMBNAIL_IMAGE_COUNT = 1;
     private static final long POPULAR_FEED_LIKE_COUNT = 5;
     private final JPAQueryFactory jpaQueryFactory;
 
@@ -105,19 +104,6 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
         }
 
         return new SliceImpl<>(feeds, pageRequest, hasNext);
-    }
-
-    @Override
-    public Optional<FeedImage> findThumbnailFeedImageByFeedId(long feedId) {
-        return Optional.ofNullable(jpaQueryFactory
-                .selectFrom(feedImage)
-                .where(
-                        feedImage.feedId.eq(feedId),
-                        feedImage.feedImageType.eq(FeedImageType.FEED_THUMBNAIL)
-                )
-                .orderBy(feedImage.sequence.asc())
-                .limit(THUMBNAIL_IMAGE_COUNT)
-                .fetchOne());
     }
 
     @Override
