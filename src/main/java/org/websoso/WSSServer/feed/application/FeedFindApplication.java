@@ -195,16 +195,6 @@ public class FeedFindApplication {
         List<Feed> visibleFeeds = feedServiceImpl.getViewableUserFeed(owner, lastFeedId, size, isVisible,
                 isUnVisible, sortCriteria, genres, visitorId, includeEtc);
 
-        List<Long> novelIds = visibleFeeds.stream().map(Feed::getNovelId).filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
-        // 소설 ID에 해당하는 소설 정보들 전부 불러오기
-        List<Novel> novels = novelServiceImpl.getNovelsWithGenresByIds(novelIds);
-
-        //
-        Map<Long, Novel> novelMap = novels.stream()
-                .collect(Collectors.toMap(Novel::getNovelId, Function.identity()));
-
         List<UserFeedGetResponse> userFeedGetResponseList = feedQueryService.findUserFeedRows(visibleFeeds, visitorId);
 
         // TODO Slice의 hasNext()로 판단하도록 수정
