@@ -1,11 +1,13 @@
 package org.websoso.WSSServer.feed.repository;
 
 import static org.websoso.WSSServer.feed.domain.QFeed.feed;
+import static org.websoso.WSSServer.feed.domain.QPopularFeed.popularFeed;
 import static org.websoso.WSSServer.novel.domain.QNovel.novel;
 import static org.websoso.WSSServer.user.domain.QAvatarProfile.avatarProfile;
 
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -111,6 +113,34 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
                         thumbnailImage.feedImageType.eq(FeedImageType.FEED_THUMBNAIL)
                 )
                 .where(feed.feedId.in(feedIds))
+                .fetch();
+    }
+
+    @Override
+    public List<PopularFeedInfoRow> findPopularFeedInfoRows(List<Long> blockedUserIds, int size) {
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        PopularFeedInfoRow.class,
+                        feed.feedId,
+                        feed.feedContent,
+                        likeCount(),
+                        commentCount(),
+                        feed.isSpoiler,
+                        feed.isPublic,
+                        novel.title,
+                        novel.novelImage,
+                        firstGenreName()
+                ))
+                .from(popularFeed)
+                .join(popularFeed.feed, feed)
+                .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
+                .where(
+                        feed.isPublic.isTrue(),
+                        feed.isHidden.isFalse(),
+                        excludeBlockedUsers(blockedUserIds)
+                )
+                .orderBy(popularFeed.popularFeedId.desc())
+                .limit(size)
                 .fetch();
     }
 
@@ -228,5 +258,13 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
                         writerNovelSub.user.userId.eq(feed.user.userId),
                         writerNovelSub.status.isNotNull()
                 );
+    }
+
+    private BooleanExpression excludeBlockedUsers(List<Long> blockedUserIds) {
+        if (blockedUserIds == null || blockedUserIds.isEmpty()) {
+            return null;
+        }
+
+        return feed.user.userId.notIn(blockedUserIds);
     }
 }

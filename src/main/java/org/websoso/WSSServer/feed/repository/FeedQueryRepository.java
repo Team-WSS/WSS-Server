@@ -8,4 +8,6 @@ public interface FeedQueryRepository {
 
     List<UserFeedInfoRow> findUserFeedInfoRows(List<Long> feedIds, Long visitorId);
 
+    List<PopularFeedInfoRow> findPopularFeedInfoRows(List<Long> blockedUserIds, int size);
+
 }

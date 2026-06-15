@@ -10,9 +10,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.dto.feed.FeedInfo;
 import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
+import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.repository.FeedInfoRow;
 import org.websoso.WSSServer.feed.repository.FeedQueryRepository;
+import org.websoso.WSSServer.feed.repository.PopularFeedInfoRow;
 import org.websoso.WSSServer.feed.repository.UserFeedInfoRow;
 
 @Service
@@ -50,6 +52,13 @@ public class FeedQueryService {
                 .map(userFeedInfoRowMap::get)
                 .filter(Objects::nonNull)
                 .map(UserFeedInfoRow::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PopularFeedGetResponse> findPopularFeedRows(List<Long> blockedUserIds, int size) {
+        return feedQueryRepository.findPopularFeedInfoRows(blockedUserIds, size).stream()
+                .map(PopularFeedInfoRow::toResponse)
                 .toList();
     }
 

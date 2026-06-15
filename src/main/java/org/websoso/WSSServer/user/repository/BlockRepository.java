@@ -20,4 +20,13 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
                    OR (b.blockingId = :userId2 AND b.blockedId = :userId1)
             """)
     boolean existsBlockRelation(Long userId1, Long userId2);
+
+    @Query("""
+                SELECT DISTINCT CASE WHEN b.blockingId = :userId THEN b.blockedId
+                                     ELSE b.blockingId END
+                FROM Block b
+                WHERE b.blockingId = :userId
+                   OR b.blockedId  = :userId
+            """)
+    List<Long> findBlockRelationUserIds(Long userId);
 }

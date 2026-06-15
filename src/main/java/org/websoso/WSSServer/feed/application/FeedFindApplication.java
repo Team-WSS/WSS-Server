@@ -1,7 +1,6 @@
 package org.websoso.WSSServer.feed.application;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,6 @@ import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
 import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
-import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.feed.service.FeedImageService;
 import org.websoso.WSSServer.feed.service.FeedLikeService;
 import org.websoso.WSSServer.feed.service.FeedQueryService;
@@ -29,7 +27,6 @@ import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.feed.domain.Feed;
-import org.websoso.WSSServer.feed.domain.PopularFeed;
 import org.websoso.WSSServer.feed.service.CommentServiceImpl;
 import org.websoso.WSSServer.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.library.service.LibraryService;
@@ -105,27 +102,14 @@ public class FeedFindApplication {
 
     @Transactional(readOnly = true)
     public PopularFeedsGetResponse getPopularFeeds(User user, int size) {
-        List<PopularFeed> popularFeeds = Optional.ofNullable(user)
-                .map(u -> feedServiceImpl.findPopularFeedsWithUser(u.getUserId(), size))
-                .orElseGet(() -> feedServiceImpl.findPopularFeedsWithoutUser(size));
 
-        // TODO: PopularFeeds에 이런 메서드들이 더 많으면 일급 함수 객체 만들어도 괜찮을듯
-        List<Long> novelIds = popularFeeds.stream()
-                .map(f -> f.getFeed().getNovelId())
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
+        // 사용자의 차단 목록 조회
+        List<Long> blockedUserIds = Optional.ofNullable(user)
+                .map(User::getUserId)
+                .map(blockService::findBlockRelationUserIds)
+                .orElseGet(Collections::emptyList);
 
-        Map<Long, Novel> novelMap = novelServiceImpl.getNovelsWithGenresByIds(novelIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        Novel::getNovelId,
-                        Function.identity()
-                ));
-
-        List<PopularFeedGetResponse> popularFeedGetResponses = mapToPopularFeedGetResponseList(popularFeeds, novelMap);
-
-        return PopularFeedsGetResponse.of(popularFeedGetResponses);
+        return PopularFeedsGetResponse.of(feedQueryService.findPopularFeedRows(blockedUserIds, size));
     }
 
     @Transactional(readOnly = true)
@@ -211,24 +195,6 @@ public class FeedFindApplication {
             return null;
         }
         return novelServiceImpl.getNovelOrException(linkedNovelId);
-    }
-
-    private List<PopularFeedGetResponse> mapToPopularFeedGetResponseList(
-            List<PopularFeed> popularFeeds,
-            Map<Long, Novel> novelMap
-    ) {
-        return popularFeeds.stream()
-                .map(popularFeed -> {
-                    Novel novel = novelMap.get(popularFeed.getFeed().getNovelId());
-
-                    return PopularFeedGetResponse.of(
-                            popularFeed,
-                            novel == null ? null : novel.getTitle(),
-                            novel == null ? null : novel.getNovelImage(),
-                            novel == null ? null : novel.getFirstGenreName()
-                    );
-                })
-                .toList();
     }
 
 }
