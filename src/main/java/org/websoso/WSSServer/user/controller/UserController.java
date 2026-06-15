@@ -45,7 +45,6 @@ import org.websoso.WSSServer.dto.userNovel.UserGenrePreferencesGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponseLegacy;
 import org.websoso.WSSServer.dto.userNovel.UserTasteAttractivePointPreferencesAndKeywordsGetResponse;
-import org.websoso.WSSServer.feed.service.FeedService;
 import org.websoso.WSSServer.library.service.UserNovelService;
 import org.websoso.WSSServer.user.service.UserService;
 import org.websoso.WSSServer.validation.NicknameConstraint;

@@ -22,7 +22,6 @@ import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
-import org.websoso.WSSServer.feed.service.FeedService;
 
 @RestController
 @RequestMapping("/novels")
