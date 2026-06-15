@@ -65,7 +65,6 @@ public class FeedFindApplication {
     //ToDo : 의존성 제거 필요 부분
     private final AvatarProfileRepository avatarRepository;
     private final LikeRepository likeRepository;
-    private final GenrePreferenceRepository genrePreferenceRepository;
     private final UserNovelRepository userNovelRepository;
 
     @Transactional(readOnly = true)
@@ -118,14 +117,12 @@ public class FeedFindApplication {
     }
 
     @Transactional(readOnly = true)
-    public FeedsGetResponse getFeeds(User user, Long lastFeedId, int size,
-                                     FeedGetOption feedGetOption) {
+    public FeedsGetResponse getFeeds(User user, Long lastFeedId, int size, FeedGetOption feedGetOption) {
         Long userIdOrNull = Optional.ofNullable(user).map(User::getUserId).orElse(null);
 
-        List<Genre> genres = getPreferenceGenres(user);
+        List<Genre> genres = user == null ? null : genreService.findUserPreferenceGenres(user);
 
-        Slice<Feed> feeds = findFeedsByCategoryLabel(lastFeedId, userIdOrNull,
-                PageRequest.of(DEFAULT_PAGE_NUMBER, size), feedGetOption, genres);
+        Slice<Feed> feeds = feedServiceImpl.findFeedsByCategoryLabel(lastFeedId, userIdOrNull, PageRequest.of(DEFAULT_PAGE_NUMBER, size), feedGetOption, genres);
 
         // TODO: feed -> feed.isVisibleTo(userIdOrNull) 해당 필터링 로직은 필요 없음
         List<FeedInfo> feedGetResponses = feeds.getContent().stream().filter(feed -> feed.isVisibleTo(userIdOrNull))
@@ -134,18 +131,17 @@ public class FeedFindApplication {
         return FeedsGetResponse.of(feeds.hasNext(), feedGetResponses);
     }
 
-    private List<Genre> getPreferenceGenres(User user) {
-        if (user == null) {
-            return null;
-        }
-        return genrePreferenceRepository.findByUser(user).stream().map(GenrePreference::getGenre).toList();
-    }
-
-    private Slice<Feed> findFeedsByCategoryLabel(Long lastFeedId, Long userId, PageRequest pageRequest,
-                                                 FeedGetOption feedGetOption, List<Genre> genres) {
-        return feedServiceImpl.findFeedsByCategoryLabel(lastFeedId, userId, pageRequest, feedGetOption,
-                genres);
-    }
+//    private List<Genre> getPreferenceGenres(User user) {
+//        if (user == null) {
+//            return null;
+//        }
+//        return genrePreferenceRepository.findByUser(user).stream().map(GenrePreference::getGenre).toList();
+//    }
+//
+//    private Slice<Feed> findFeedsByCategoryLabel(Long lastFeedId, Long userId, PageRequest pageRequest,
+//                                                 FeedGetOption feedGetOption, List<Genre> genres) {
+//        return feedServiceImpl.findFeedsByCategoryLabel(lastFeedId, userId, pageRequest, feedGetOption, genres);
+//    }
 
     private FeedInfo createFeedInfo(Feed feed, User user) {
         UserBasicInfo userBasicInfo = getUserBasicInfo(feed.getUser());

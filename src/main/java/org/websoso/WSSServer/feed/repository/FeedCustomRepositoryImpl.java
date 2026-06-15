@@ -83,6 +83,29 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
     }
 
     @Override
+    public Slice<Feed> findFeeds(Long lastFeedId, Long userId, PageRequest pageRequest) {
+        List<Feed> feeds = jpaQueryFactory
+                .selectFrom(feed)
+                .where(
+                        ltFeedId(lastFeedId),
+                        checkHidden(),
+                        checkFeedListVisibility(userId),
+                        checkBlocking(userId)
+                )
+                .orderBy(feed.feedId.desc())
+                .limit(pageRequest.getPageSize() + 1L)
+                .fetch();
+
+        boolean hasNext = feeds.size() > pageRequest.getPageSize();
+
+        if (hasNext) {
+            feeds.remove(feeds.size() - 1);
+        }
+
+        return new SliceImpl<>(feeds, pageRequest, hasNext);
+    }
+
+    @Override
     public Optional<FeedImage> findThumbnailFeedImageByFeedId(long feedId) {
         return Optional.ofNullable(jpaQueryFactory
                 .selectFrom(feedImage)
@@ -304,6 +327,14 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository, FeedImage
             return feed.isPublic.isTrue().or(feed.user.userId.eq(userId));
         }
         return null;
+    }
+
+    private BooleanExpression checkFeedListVisibility(Long userId) {
+        if (userId == null) {
+            return feed.isPublic.isTrue();
+        }
+
+        return feed.isPublic.isTrue().or(feed.user.userId.eq(userId));
     }
 
     private BooleanExpression checkInterestedNovels(Long userId) {

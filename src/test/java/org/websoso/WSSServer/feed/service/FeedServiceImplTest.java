@@ -36,8 +36,6 @@ class FeedServiceImplTest {
     @Mock
     FeedImageRepository feedImageRepository;
     @Mock
-    FeedImageCustomRepository feedImageCustomRepository;
-    @Mock
     PopularFeedRepository popularFeedRepository;
     @Mock
     GenreRepository genreRepository;
