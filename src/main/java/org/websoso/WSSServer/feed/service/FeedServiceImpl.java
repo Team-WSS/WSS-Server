@@ -80,9 +80,9 @@ public class FeedServiceImpl {
     }
 
     @Transactional(readOnly = true)
-    public List<Feed> getViewableUserFeed(User owner, Long lastFeedId, int size, Boolean isVisible,
-                                          Boolean isUnVisible, SortCriteria sortCriteria,
-                                          List<Genre> genres, Long visitorId, boolean isNotNovelConnect) {
+    public Slice<Feed> getViewableUserFeed(User owner, Long lastFeedId, int size, Boolean isVisible,
+                                           Boolean isUnVisible, SortCriteria sortCriteria,
+                                           List<Genre> genres, Long visitorId, boolean isNotNovelConnect) {
         return feedRepository.findFeedsByNoOffsetPagination(owner, lastFeedId, size, isVisible,
                 isUnVisible, sortCriteria, genres, visitorId, isNotNovelConnect);
     }

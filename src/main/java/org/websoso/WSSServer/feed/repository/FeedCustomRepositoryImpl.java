@@ -25,6 +25,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.feed.domain.Feed;
+import org.websoso.WSSServer.feed.domain.QFeed;
 import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.user.domain.User;
@@ -58,10 +59,12 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
     }
 
     @Override
-    public List<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size, Boolean isVisible,
-                                                    Boolean isUnVisible, SortCriteria sortCriteria,
-                                                    List<Genre> genres, Long visitorId, boolean isNotNovelConnect) {
-        return jpaQueryFactory
+    public Slice<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size, Boolean isVisible,
+                                                     Boolean isUnVisible, SortCriteria sortCriteria,
+                                                     List<Genre> genres, Long visitorId, boolean isNotNovelConnect) {
+        PageRequest pageRequest = PageRequest.of(0, size);
+
+        List<Feed> feeds = jpaQueryFactory
                 .selectFrom(feed)
                 .distinct()
                 .join(feed.user).fetchJoin()
@@ -70,16 +73,24 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                 .leftJoin(genre).on(novelGenre.genre.eq(genre))
                 .where(
                         feed.user.eq(owner),
-                        ltFeedId(lastFeedId),
+                        userFeedCursor(lastFeedId, sortCriteria),
                         checkVisible(visitorId),
                         checkPublic(isVisible, isUnVisible),
                         checkGenresAndNovels(genres, isNotNovelConnect)
                 )
                 .orderBy(
                         checkSortCriteria(sortCriteria),
-                        feed.feedId.desc())
-                .limit(size)
+                        checkFeedIdSortCriteria(sortCriteria))
+                .limit(pageRequest.getPageSize() + 1L)
                 .fetch();
+
+        boolean hasNext = feeds.size() > pageRequest.getPageSize();
+
+        if (hasNext) {
+            feeds.remove(feeds.size() - 1);
+        }
+
+        return new SliceImpl<>(feeds, pageRequest, hasNext);
     }
 
     @Override
@@ -157,6 +168,41 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
         return feed.feedId.lt(lastFeedId);
     }
 
+    private BooleanExpression userFeedCursor(Long lastFeedId, SortCriteria sortCriteria) {
+        if (lastFeedId == NO_CURSOR) {
+            return null;
+        }
+
+        QFeed cursorFeed = new QFeed("cursorFeed");
+
+        BooleanExpression sameCreatedDate = feed.createdDate.eq(
+                JPAExpressions
+                        .select(cursorFeed.createdDate)
+                        .from(cursorFeed)
+                        .where(cursorFeed.feedId.eq(lastFeedId))
+        );
+
+        if (sortCriteria != null && sortCriteria.isOld()) {
+            BooleanExpression nextByFeedId = sameCreatedDate.and(feed.feedId.gt(lastFeedId));
+
+            return feed.createdDate.gt(
+                    JPAExpressions
+                            .select(cursorFeed.createdDate)
+                            .from(cursorFeed)
+                            .where(cursorFeed.feedId.eq(lastFeedId))
+            ).or(nextByFeedId);
+        }
+
+        BooleanExpression nextByFeedId = sameCreatedDate.and(feed.feedId.lt(lastFeedId));
+
+        return feed.createdDate.lt(
+                JPAExpressions
+                        .select(cursorFeed.createdDate)
+                        .from(cursorFeed)
+                        .where(cursorFeed.feedId.eq(lastFeedId))
+        ).or(nextByFeedId);
+    }
+
     private BooleanExpression checkPublic(Boolean isVisible, Boolean isUnVisible) {
         if (Boolean.TRUE.equals(isVisible) && Boolean.TRUE.equals(isUnVisible)) {
             return null;
@@ -178,6 +224,13 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
             return new OrderSpecifier<>(Order.ASC, feed.createdDate);
         }
         return new OrderSpecifier<>(Order.DESC, feed.createdDate);
+    }
+
+    private OrderSpecifier<?> checkFeedIdSortCriteria(SortCriteria sortCriteria) {
+        if (sortCriteria != null && sortCriteria.equals(SortCriteria.OLD)) {
+            return new OrderSpecifier<>(Order.ASC, feed.feedId);
+        }
+        return new OrderSpecifier<>(Order.DESC, feed.feedId);
     }
 
     @Override

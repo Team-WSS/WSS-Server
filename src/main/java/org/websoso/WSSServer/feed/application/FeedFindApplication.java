@@ -149,17 +149,13 @@ public class FeedFindApplication {
                 : genreNames.stream().filter(name -> !name.equals("etc")).collect(Collectors.toList());
         List<Genre> genres = genreService.getGenresOrException(filteredGenreNames);
 
-        List<Feed> visibleFeeds = feedServiceImpl.getViewableUserFeed(owner, lastFeedId, size, isVisible,
-                isUnVisible, sortCriteria, genres, visitorId, includeEtc);
+        Slice<Feed> visibleFeeds = feedServiceImpl.getViewableUserFeed(owner, lastFeedId, size, isVisible, isUnVisible, sortCriteria, genres, visitorId, includeEtc);
 
-        List<UserFeedGetResponse> userFeedGetResponseList = feedQueryService.findUserFeedRows(visibleFeeds, visitorId);
-
-        // TODO Slice의 hasNext()로 판단하도록 수정
-        Boolean isLoadable = visibleFeeds.size() == size;
+        List<UserFeedGetResponse> userFeedGetResponseList = feedQueryService.findUserFeedRows(visibleFeeds.getContent(), visitorId);
 
         long feedsCount = feedServiceImpl.getViewableUserFeedCount(owner, isVisible, isUnVisible, genres, visitorId, includeEtc);
 
-        return UserFeedsGetResponse.of(isLoadable, feedsCount, userFeedGetResponseList);
+        return UserFeedsGetResponse.of(visibleFeeds.hasNext(), feedsCount, userFeedGetResponseList);
 
     }
 
