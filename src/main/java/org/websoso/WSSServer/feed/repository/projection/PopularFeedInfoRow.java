@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.feed.repository;
+package org.websoso.WSSServer.feed.repository.projection;
 
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 

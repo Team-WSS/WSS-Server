@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.feed.service;
 
-import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.HIDDEN_FEED_ACCESS;
+import static org.websoso.WSSServer.feed.exception.CustomFeedError.FEED_NOT_FOUND;
+import static org.websoso.WSSServer.feed.exception.CustomFeedError.HIDDEN_FEED_ACCESS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import java.util.Comparator;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.common.SortCriteria;
-import org.websoso.WSSServer.exception.exception.CustomFeedException;
+import org.websoso.WSSServer.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.repository.FeedRepository;

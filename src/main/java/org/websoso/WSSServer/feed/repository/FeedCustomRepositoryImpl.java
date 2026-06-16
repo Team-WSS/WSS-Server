@@ -76,6 +76,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                         userFeedCursor(lastFeedId, sortCriteria),
                         checkVisible(visitorId),
                         checkPublic(isVisible, isUnVisible),
+                        checkHidden(),
                         checkGenresAndNovels(genres, isNotNovelConnect)
                 )
                 .orderBy(
@@ -131,6 +132,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                         feed.user.eq(owner),
                         checkVisible(visitorId),
                         checkPublic(isVisible, isUnVisible),
+                        checkHidden(),
                         checkGenresAndNovels(genres, isNotNovelConnect)
                 )
                 .fetchOne();

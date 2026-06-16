@@ -4,12 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.dto.feed.FeedCreateRequest;
-import org.websoso.WSSServer.dto.feed.FeedCreateResponse;
-import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
-import org.websoso.WSSServer.dto.feed.FeedImageDeleteEvent;
-import org.websoso.WSSServer.dto.feed.FeedImageUpdateRequest;
-import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
+import org.websoso.WSSServer.feed.controller.dto.FeedCreateRequest;
+import org.websoso.WSSServer.feed.controller.dto.FeedCreateResponse;
+import org.websoso.WSSServer.feed.controller.dto.FeedImageCreateRequest;
+import org.websoso.WSSServer.feed.event.FeedImageDeleteEvent;
+import org.websoso.WSSServer.feed.controller.dto.FeedImageUpdateRequest;
+import org.websoso.WSSServer.feed.controller.dto.FeedUpdateRequest;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.domain.FeedImage;
 import org.websoso.WSSServer.feed.service.CommentServiceImpl;
@@ -59,7 +59,7 @@ public class FeedManagementApplication {
     public FeedCreateResponse update(User user, Long feedId, FeedUpdateRequest request, FeedImageUpdateRequest imagesRequest) {
 
         // 사용자가 작성한 피드인지 확인
-        Feed feed = feedService.getOwnedFeedOrException(user.getUserId(), feedId);
+        Feed feed = feedService.getOwnedFeedOrException(feedId, user.getUserId());
 
         // 기존 이미지를 임시 저장
         List<FeedImage> oldImages = new ArrayList<>(feed.getImages());
@@ -86,7 +86,7 @@ public class FeedManagementApplication {
     public void delete(User user, Long feedId) {
 
         // 사용자가 작성한 피드인지 확인
-        Feed feed = feedService.getOwnedFeedOrException(user.getUserId(), feedId);
+        Feed feed = feedService.getOwnedFeedOrException(feedId, user.getUserId());
 
         // 댓글 삭제 (댓글 / 신고 내역)
         commentService.deleteByFeedId(feed.getFeedId());

@@ -1,7 +1,7 @@
-package org.websoso.WSSServer.feed.repository;
+package org.websoso.WSSServer.feed.repository.projection;
 
 import java.time.LocalDateTime;
-import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
+import org.websoso.WSSServer.feed.controller.dto.UserFeedGetResponse;
 import org.websoso.WSSServer.util.TimeFormatUtil;
 
 public record UserFeedInfoRow(

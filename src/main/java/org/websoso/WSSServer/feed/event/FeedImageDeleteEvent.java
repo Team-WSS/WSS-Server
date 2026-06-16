@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.dto.feed;
+package org.websoso.WSSServer.feed.event;
 
 import java.util.List;
 

@@ -4,8 +4,8 @@ import static org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessage
 import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
 import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 import static org.websoso.WSSServer.exception.error.CustomCommentError.ALREADY_REPORTED_COMMENT;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.ALREADY_REPORTED_FEED;
-import static org.websoso.WSSServer.exception.error.CustomFeedError.SELF_REPORT_NOT_ALLOWED;
+import static org.websoso.WSSServer.feed.exception.CustomFeedError.ALREADY_REPORTED_FEED;
+import static org.websoso.WSSServer.feed.exception.CustomFeedError.SELF_REPORT_NOT_ALLOWED;
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.exception.error.CustomCommentError;
 import org.websoso.WSSServer.exception.exception.CustomCommentException;
-import org.websoso.WSSServer.exception.exception.CustomFeedException;
+import org.websoso.WSSServer.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.domain.Comment;
 import org.websoso.WSSServer.feed.domain.Feed;

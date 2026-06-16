@@ -1,10 +1,10 @@
-package org.websoso.WSSServer.dto.feed;
+package org.websoso.WSSServer.feed.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record FeedCreateRequest(
+public record FeedUpdateRequest(
         @NotBlank(message = "피드 내용은 비어 있거나, 공백일 수 없습니다.")
         @Size(max = 2000, message = "피드 내용은 2000자를 초과할 수 없습니다.")
         String feedContent,

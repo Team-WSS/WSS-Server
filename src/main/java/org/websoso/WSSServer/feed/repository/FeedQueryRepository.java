@@ -1,5 +1,9 @@
 package org.websoso.WSSServer.feed.repository;
 
+import org.websoso.WSSServer.feed.repository.projection.FeedInfoRow;
+import org.websoso.WSSServer.feed.repository.projection.PopularFeedInfoRow;
+import org.websoso.WSSServer.feed.repository.projection.UserFeedInfoRow;
+
 import java.util.List;
 
 public interface FeedQueryRepository {

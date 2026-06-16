@@ -1,18 +1,17 @@
 package org.websoso.WSSServer.user.service;
 
 import java.util.List;
-import java.util.Objects;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.exception.exception.CustomFeedException;
+import org.websoso.WSSServer.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.user.domain.Block;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.repository.BlockRepository;
 
-import static org.websoso.WSSServer.exception.error.CustomFeedError.BLOCKED_USER_ACCESS;
+import static org.websoso.WSSServer.feed.exception.CustomFeedError.BLOCKED_USER_ACCESS;
 
 @Service
 @RequiredArgsConstructor

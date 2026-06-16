@@ -20,6 +20,9 @@ import org.websoso.WSSServer.domain.common.FeedImageType;
 import org.websoso.WSSServer.feed.domain.QComment;
 import org.websoso.WSSServer.feed.domain.QFeedImage;
 import org.websoso.WSSServer.feed.domain.QLike;
+import org.websoso.WSSServer.feed.repository.projection.FeedInfoRow;
+import org.websoso.WSSServer.feed.repository.projection.PopularFeedInfoRow;
+import org.websoso.WSSServer.feed.repository.projection.UserFeedInfoRow;
 import org.websoso.WSSServer.library.domain.QUserNovel;
 import org.websoso.WSSServer.novel.domain.QNovelGenre;
 

@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.dto.feed;
+package org.websoso.WSSServer.feed.controller.dto;
 
 import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;

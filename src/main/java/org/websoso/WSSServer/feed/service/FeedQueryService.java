@@ -8,14 +8,14 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.dto.feed.FeedInfo;
-import org.websoso.WSSServer.dto.feed.UserFeedGetResponse;
+import org.websoso.WSSServer.feed.controller.dto.FeedInfo;
+import org.websoso.WSSServer.feed.controller.dto.UserFeedGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedGetResponse;
 import org.websoso.WSSServer.feed.domain.Feed;
-import org.websoso.WSSServer.feed.repository.FeedInfoRow;
+import org.websoso.WSSServer.feed.repository.projection.FeedInfoRow;
 import org.websoso.WSSServer.feed.repository.FeedQueryRepository;
-import org.websoso.WSSServer.feed.repository.PopularFeedInfoRow;
-import org.websoso.WSSServer.feed.repository.UserFeedInfoRow;
+import org.websoso.WSSServer.feed.repository.projection.PopularFeedInfoRow;
+import org.websoso.WSSServer.feed.repository.projection.UserFeedInfoRow;
 
 @Service
 @RequiredArgsConstructor

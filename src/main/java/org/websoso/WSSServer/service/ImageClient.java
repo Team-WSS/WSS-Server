@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.multipart.MultipartFile;
-import org.websoso.WSSServer.dto.feed.FeedImageDeleteEvent;
+import org.websoso.WSSServer.feed.event.FeedImageDeleteEvent;
 import org.websoso.WSSServer.exception.exception.CustomImageException;
 import org.websoso.s3.core.S3FileService;
 import org.websoso.s3.modle.S3UploadResult;

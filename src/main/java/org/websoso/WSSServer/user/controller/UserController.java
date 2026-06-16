@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.application.AuthApplication;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.SortCriteria;
-import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.PushSettingRequest;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;

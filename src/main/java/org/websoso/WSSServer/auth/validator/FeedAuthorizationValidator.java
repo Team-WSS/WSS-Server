@@ -1,13 +1,13 @@
 package org.websoso.WSSServer.auth.validator;
 
-import static org.websoso.WSSServer.exception.error.CustomFeedError.FEED_NOT_FOUND;
+import static org.websoso.WSSServer.feed.exception.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.exception.exception.CustomFeedException;
+import org.websoso.WSSServer.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.repository.FeedRepository;
 

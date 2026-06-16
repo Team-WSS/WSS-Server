@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.exception.error;
+package org.websoso.WSSServer.feed.exception;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
