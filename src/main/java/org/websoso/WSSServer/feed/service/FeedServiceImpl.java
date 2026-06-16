@@ -124,8 +124,4 @@ public class FeedServiceImpl {
         return new SliceImpl<>(resultFeeds, pageRequest, hasNext);
     }
 
-    @Transactional(readOnly = true)
-    public List<Feed> findInterestFeeds(List<Long> interestNovelIds) {
-        return feedRepository.findTop10ByNovelIdInOrderByFeedIdDesc(interestNovelIds);
-    }
 }

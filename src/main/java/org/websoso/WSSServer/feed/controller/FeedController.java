@@ -31,7 +31,6 @@ import org.websoso.WSSServer.dto.feed.FeedImageCreateRequest;
 import org.websoso.WSSServer.dto.feed.FeedImageUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedUpdateRequest;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
-import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.feed.application.FeedLikeApplication;
 import org.websoso.WSSServer.feed.application.FeedManagementApplication;
@@ -124,14 +123,6 @@ public class FeedController {
         return ResponseEntity
                 .status(OK)
                 .body(feedFindApplication.getPopularFeeds(user, size));
-    }
-
-    @GetMapping("/feeds/interest")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<InterestFeedsGetResponse> getInterestFeeds(@AuthenticationPrincipal User user) {
-        return ResponseEntity
-                .status(OK)
-                .body(feedFindApplication.getInterestFeeds(user));
     }
 
     @GetMapping("/novels/{novelId}/feeds")

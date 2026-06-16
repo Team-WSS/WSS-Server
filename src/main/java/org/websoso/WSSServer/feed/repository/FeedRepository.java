@@ -15,8 +15,6 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedCustomRep
 
     Integer countByNovelId(Long novelId);
 
-    List<Feed> findTop10ByNovelIdInOrderByFeedIdDesc(List<Long> novelIds);
-
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Feed f SET f.user.userId = -1 WHERE f.user.userId = :userId")
     void updateUserToUnknown(Long userId);

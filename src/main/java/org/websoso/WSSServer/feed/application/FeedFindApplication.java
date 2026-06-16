@@ -2,12 +2,10 @@ package org.websoso.WSSServer.feed.application;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.common.SortCriteria;
@@ -23,8 +21,6 @@ import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.dto.feed.FeedGetResponse;
 import org.websoso.WSSServer.dto.feed.FeedInfo;
 import org.websoso.WSSServer.dto.feed.FeedsGetResponse;
-import org.websoso.WSSServer.dto.feed.InterestFeedGetResponse;
-import org.websoso.WSSServer.dto.feed.InterestFeedsGetResponse;
 import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.feed.domain.Feed;
@@ -119,38 +115,6 @@ public class FeedFindApplication {
                 .orElseGet(Collections::emptyList);
 
         return PopularFeedsGetResponse.of(feedQueryService.findPopularFeedRows(blockedUserIds, size));
-    }
-
-    @Transactional(readOnly = true)
-    public InterestFeedsGetResponse getInterestFeeds(User user) {
-        List<Novel> interestNovels = libraryService.getInterestNovels(user);
-
-        if (interestNovels.isEmpty()) {
-            return InterestFeedsGetResponse.of(Collections.emptyList(), "NO_INTEREST_NOVELS");
-        }
-
-        Map<Long, Novel> novelMap = interestNovels.stream()
-                .collect(Collectors.toMap(Novel::getNovelId, novel -> novel));
-        List<Long> interestNovelIds = new ArrayList<>(novelMap.keySet());
-
-        List<Feed> interestFeeds = feedServiceImpl.findInterestFeeds(interestNovelIds);
-
-        if (interestFeeds.isEmpty()) {
-            return InterestFeedsGetResponse.of(Collections.emptyList(), "NO_ASSOCIATED_FEEDS");
-        }
-
-        Set<Long> avatarProfileIds = interestFeeds.stream().map(feed -> feed.getUser().getAvatarProfileId())
-                .collect(Collectors.toSet());
-        Map<Long, AvatarProfile> avatarMap = avatarService.findAllByIds(new ArrayList<>(avatarProfileIds)).stream()
-                .collect(Collectors.toMap(AvatarProfile::getAvatarProfileId, avatar -> avatar));
-
-        List<InterestFeedGetResponse> interestFeedGetResponses = interestFeeds.stream()
-                .filter(feed -> feed.isVisibleTo(user.getUserId())).map(feed -> {
-                    Novel novel = novelMap.get(feed.getNovelId());
-                    AvatarProfile avatar = avatarMap.get(feed.getUser().getAvatarProfileId());
-                    return InterestFeedGetResponse.of(novel, feed.getUser(), feed, avatar);
-                }).toList();
-        return InterestFeedsGetResponse.of(interestFeedGetResponses, "");
     }
 
     @Transactional(readOnly = true)
