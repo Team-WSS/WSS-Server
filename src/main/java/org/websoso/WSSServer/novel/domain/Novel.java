@@ -47,6 +47,9 @@ public class Novel {
     @OneToMany(mappedBy = "novel", fetch = FetchType.LAZY)
     private List<NovelGenre> novelGenres = new ArrayList<>();
 
+    @OneToMany(mappedBy = "novel", fetch = FetchType.LAZY)
+    private List<NovelPlatform> novelPlatforms = new ArrayList<>();
+
     public String getFirstGenreName(){
         return novelGenres.stream()
                 .findFirst()

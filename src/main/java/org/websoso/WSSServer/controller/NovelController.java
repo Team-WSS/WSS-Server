@@ -84,12 +84,13 @@ public class NovelController {
             @RequestParam(required = false, defaultValue = "0.0") Float novelRatingStart,
             @RequestParam(required = false, defaultValue = "5.0") Float novelRatingEnd,
             @RequestParam(required = false) List<Integer> keywordIds,
+            @RequestParam(required = false) List<String> platformNames,
             @RequestParam int page,
             @RequestParam int size) {
         return ResponseEntity
                 .status(OK)
                 .body(searchNovelApplication.getFilteredNovels(genres, keywordIds, isCompleted, novelRating,
-                        novelRatingStart, novelRatingEnd, page, size));
+                        novelRatingStart, novelRatingEnd, platformNames, page, size));
     }
 
     /**

@@ -2,13 +2,13 @@ package org.websoso.WSSServer.novel.domain;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -24,5 +24,8 @@ public class Platform {
 
     @Column(columnDefinition = "text", nullable = false)
     private String platformImage;
+
+    @OneToMany(mappedBy = "platform", fetch = FetchType.LAZY)
+    private List<NovelPlatform> novelPlatforms = new ArrayList<>();
 
 }

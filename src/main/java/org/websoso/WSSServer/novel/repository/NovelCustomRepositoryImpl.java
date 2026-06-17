@@ -6,6 +6,8 @@ import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 import static org.websoso.WSSServer.library.domain.QUserNovel.userNovel;
 import static org.websoso.WSSServer.novel.domain.QNovel.novel;
 import static org.websoso.WSSServer.novel.domain.QNovelGenre.novelGenre;
+import static org.websoso.WSSServer.novel.domain.QNovelPlatform.novelPlatform;
+import static org.websoso.WSSServer.novel.domain.QPlatform.platform;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -75,7 +77,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
     @Override
     public Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRatingStart,
-                                          Float novelRatingEnd, List<Keyword> keywords) {
+                                          Float novelRatingEnd, List<Keyword> keywords, List<String> platformNames) {
 
         NumberTemplate<Long> popularity = Expressions.numberTemplate(Long.class,
                 "(SELECT COUNT(un) FROM UserNovel un WHERE un.novel = {0} AND (un.isInterest = true OR un.status <> 'QUIT'))",
@@ -85,6 +87,8 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                 .selectFrom(novel)
                 .distinct()
                 .join(novel.novelGenres, novelGenre)
+                .leftJoin(novel.novelPlatforms, novelPlatform)
+                .leftJoin(novelPlatform.platform, platform)
                 .where(
                         genres.isEmpty()
                                 ? null
@@ -95,7 +99,11 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                         getAverageRatingCondition(novel, novelRatingStart, novelRatingEnd),
                         keywords.isEmpty()
                                 ? null
-                                : getKeywordCount(novel, keywords).eq(keywords.size())
+                                : getKeywordCount(novel, keywords).eq(keywords.size()),
+                        platformNames == null || platformNames.isEmpty()
+                                ? null
+                                : platform.platformName.in(platformNames)
+
                 )
                 .orderBy(popularity.desc());
 
