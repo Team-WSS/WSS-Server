@@ -1,15 +1,15 @@
 package org.websoso.WSSServer.auth.validator;
 
-import static org.websoso.WSSServer.feed.exception.CustomFeedError.BLOCKED_USER_ACCESS;
-import static org.websoso.WSSServer.feed.exception.CustomFeedError.FEED_NOT_FOUND;
-import static org.websoso.WSSServer.feed.exception.CustomFeedError.HIDDEN_FEED_ACCESS;
+import static org.websoso.WSSServer.feed.feed.exception.CustomFeedError.BLOCKED_USER_ACCESS;
+import static org.websoso.WSSServer.feed.feed.exception.CustomFeedError.FEED_NOT_FOUND;
+import static org.websoso.WSSServer.feed.feed.exception.CustomFeedError.HIDDEN_FEED_ACCESS;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.feed.domain.Feed;
+import org.websoso.WSSServer.feed.feed.domain.Feed;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.feed.exception.CustomFeedException;
-import org.websoso.WSSServer.feed.repository.FeedRepository;
+import org.websoso.WSSServer.feed.feed.exception.CustomFeedException;
+import org.websoso.WSSServer.feed.feed.repository.FeedRepository;
 import org.websoso.WSSServer.user.service.BlockService;
 
 @Component

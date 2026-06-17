@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.dto.popularNovel;
 
 import org.websoso.WSSServer.user.domain.AvatarProfile;
-import org.websoso.WSSServer.feed.domain.Feed;
+import org.websoso.WSSServer.feed.feed.domain.Feed;
 import org.websoso.WSSServer.novel.domain.Novel;
 import java.util.List;
 

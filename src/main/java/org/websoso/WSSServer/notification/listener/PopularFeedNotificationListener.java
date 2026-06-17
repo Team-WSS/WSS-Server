@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import org.websoso.WSSServer.feed.event.FeedBecamePopularEvent;
+import org.websoso.WSSServer.feed.feed.event.FeedBecamePopularEvent;
 import org.websoso.WSSServer.notification.application.NotificationSendApplication;
 
 @Component

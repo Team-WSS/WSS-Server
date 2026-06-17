@@ -3,10 +3,9 @@ package org.websoso.WSSServer.dto.popularNovel;
 import java.util.List;
 import java.util.Map;
 
-import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
 import org.websoso.WSSServer.library.domain.Keyword;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
-import org.websoso.WSSServer.feed.domain.Feed;
+import org.websoso.WSSServer.feed.feed.domain.Feed;
 import org.websoso.WSSServer.novel.domain.Novel;
 
 public record PopularNovelsGetResponse(

@@ -10,7 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.feed.domain.Feed;
+import org.websoso.WSSServer.feed.feed.domain.Feed;
 import org.websoso.WSSServer.notification.controller.response.NotificationPageResponse;
 import org.websoso.WSSServer.notification.domain.Notification;
 import org.websoso.WSSServer.notification.domain.NotificationType;

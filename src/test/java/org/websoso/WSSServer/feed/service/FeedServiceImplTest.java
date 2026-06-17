@@ -2,28 +2,20 @@ package org.websoso.WSSServer.feed.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
-import org.websoso.WSSServer.domain.Genre;
-import org.websoso.WSSServer.domain.common.FeedGetOption;
-import org.websoso.WSSServer.exception.exception.CustomGenreException;
-import org.websoso.WSSServer.feed.repository.FeedRepository;
-import org.websoso.WSSServer.feed.repository.PopularFeedRepository;
+import org.websoso.WSSServer.feed.feed.service.FeedServiceImpl;
+import org.websoso.WSSServer.feed.feed.repository.FeedRepository;
+import org.websoso.WSSServer.feed.feed.repository.PopularFeedRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 
 @ExtendWith(MockitoExtension.class)

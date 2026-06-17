@@ -6,12 +6,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.feed.exception.CustomFeedException;
+import org.websoso.WSSServer.feed.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.user.domain.Block;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.repository.BlockRepository;
 
-import static org.websoso.WSSServer.feed.exception.CustomFeedError.BLOCKED_USER_ACCESS;
+import static org.websoso.WSSServer.feed.feed.exception.CustomFeedError.BLOCKED_USER_ACCESS;
 
 @Service
 @RequiredArgsConstructor

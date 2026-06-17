@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.dto.novel;
 
 import java.util.List;
-import org.websoso.WSSServer.feed.controller.dto.FeedInfo;
+import org.websoso.WSSServer.feed.feed.controller.dto.FeedInfo;
 
 public record NovelGetResponseFeedTab(
         Boolean isLoadable,
