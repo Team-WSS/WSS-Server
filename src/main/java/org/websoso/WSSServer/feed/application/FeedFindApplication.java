@@ -25,7 +25,6 @@ import org.websoso.WSSServer.dto.popularFeed.PopularFeedsGetResponse;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.feed.domain.Feed;
 import org.websoso.WSSServer.feed.service.FeedServiceImpl;
-import org.websoso.WSSServer.library.service.LibraryService;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;
 import org.websoso.WSSServer.user.domain.User;
@@ -47,7 +46,6 @@ public class FeedFindApplication {
     private final AvatarService avatarService;
     private final FeedLikeService feedLikeService;
     private final BlockService blockService;
-    private final LibraryService libraryService;
 
     @Transactional(readOnly = true)
     public FeedGetResponse getFeedById(User user, Long feedId) {
