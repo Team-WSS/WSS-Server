@@ -2,7 +2,6 @@ package org.websoso.WSSServer.domain.common;
 
 import static org.websoso.WSSServer.exception.error.CustomFilteringError.SORT_CRITERIA_NOT_FOUND;
 import static org.websoso.WSSServer.library.domain.QUserNovel.userNovel;
-import static org.websoso.WSSServer.novel.domain.QNovel.novel;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -12,7 +11,7 @@ import org.websoso.WSSServer.exception.exception.CustomFilteringException;
 public enum UserNovelSortType {
     CREATED_DESC("created_desc"),
     CREATED_ASC("created_asc"),
-    TITLE("title"),
+    READ_DATE("read_date"),
     RATING_DESC("rating_desc"),
     RATING_ASC("rating_asc");
 
@@ -41,7 +40,7 @@ public enum UserNovelSortType {
         return switch (this) {
             case CREATED_DESC -> List.of(userNovel.createdDate.desc(), userNovel.userNovelId.desc());
             case CREATED_ASC -> List.of(userNovel.createdDate.asc(), userNovel.userNovelId.asc());
-            case TITLE -> List.of(novel.title.asc(), userNovel.userNovelId.asc());
+            case READ_DATE -> List.of(userNovel.startDate.desc().nullsLast(), userNovel.userNovelId.desc());
             case RATING_DESC -> List.of(
                     new CaseBuilder()
                             .when(userNovel.userNovelRating.eq(0.0f))

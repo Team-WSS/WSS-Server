@@ -255,7 +255,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
         return switch (sortType) {
             case CREATED_DESC -> createdDescCursorCondition(cursor);
             case CREATED_ASC -> createdAscCursorCondition(cursor);
-            case TITLE -> titleCursorCondition(cursor);
+            case READ_DATE -> readDateCursorCondition(cursor);
             case RATING_DESC -> ratingDescCursorCondition(cursor);
             case RATING_ASC -> ratingAscCursorCondition(cursor);
         };
@@ -273,10 +273,16 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                         .and(userNovel.userNovelId.gt(cursor.lastUserNovelId())));
     }
 
-    private BooleanExpression titleCursorCondition(UserNovelCursor cursor) {
-        return novel.title.gt(cursor.lastTitle())
-                .or(novel.title.eq(cursor.lastTitle())
-                        .and(userNovel.userNovelId.gt(cursor.lastUserNovelId())));
+    private BooleanExpression readDateCursorCondition(UserNovelCursor cursor) {
+        if (cursor.lastStartDate() == null) {
+            return userNovel.startDate.isNull()
+                    .and(userNovel.userNovelId.lt(cursor.lastUserNovelId()));
+        }
+
+        return userNovel.startDate.lt(cursor.lastStartDate())
+                .or(userNovel.startDate.eq(cursor.lastStartDate())
+                        .and(userNovel.userNovelId.lt(cursor.lastUserNovelId())))
+                .or(userNovel.startDate.isNull());
     }
 
     private BooleanExpression ratingDescCursorCondition(UserNovelCursor cursor) {

@@ -221,7 +221,7 @@ public class UserNovelService {
                 userNovel.getCreatedDate(),
                 userNovel.getUserNovelId(),
                 Float.compare(userNovel.getUserNovelRating(), 0.0f) != 0,
-                userNovel.getNovel().getTitle()
+                userNovel.getStartDate()
         );
     }
 
