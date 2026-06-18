@@ -22,10 +22,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Genre;
-import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.domain.common.ReadStatus;
+import org.websoso.WSSServer.domain.common.UserNovelSortType;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
+import org.websoso.WSSServer.library.repository.cursor.UserNovelCursor;
+import org.websoso.WSSServer.novel.domain.Novel;
 
 @Repository
 @RequiredArgsConstructor
@@ -153,6 +155,43 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
         return queryBuilder.fetchOne();
     }
 
+    @Override
+    public List<UserNovel> findFilteredUserNovelsV2(Long userId, Boolean isInterest, List<String> readStatuses,
+                                                    List<String> genres, Boolean isCompleted, Float ratingMin,
+                                                    Float ratingMax, Boolean unratedOnly,
+                                                    List<String> attractivePoints, List<String> keywords,
+                                                    UserNovelCursor cursor, int size, UserNovelSortType sortType) {
+        JPAQuery<UserNovel> queryBuilder = jpaQueryFactory
+                .selectFrom(userNovel)
+                .distinct()
+                .join(userNovel.novel, novel).fetchJoin()
+                .where(userNovel.user.userId.eq(userId));
+
+        applyFiltersV2(queryBuilder, isInterest, readStatuses, genres, isCompleted, ratingMin, ratingMax,
+                unratedOnly, attractivePoints, keywords);
+
+        queryBuilder.where(cursorCondition(cursor, sortType));
+        queryBuilder.orderBy(sortType.orderSpecifiers().toArray(OrderSpecifier[]::new));
+
+        return queryBuilder.limit(size).fetch();
+    }
+
+    @Override
+    public Long countByUserIdAndFiltersV2(Long userId, Boolean isInterest, List<String> readStatuses,
+                                          List<String> genres, Boolean isCompleted, Float ratingMin, Float ratingMax,
+                                          Boolean unratedOnly, List<String> attractivePoints, List<String> keywords) {
+        JPAQuery<Long> queryBuilder = jpaQueryFactory
+                .select(userNovel.countDistinct())
+                .from(userNovel)
+                .join(userNovel.novel, novel)
+                .where(userNovel.user.userId.eq(userId));
+
+        applyFiltersV2(queryBuilder, isInterest, readStatuses, genres, isCompleted, ratingMin, ratingMax,
+                unratedOnly, attractivePoints, keywords);
+
+        return queryBuilder.fetchOne();
+    }
+
     private <T> void applyFilters(JPAQuery<T> queryBuilder, Boolean isInterest, List<String> readStatuses,
                                   List<String> attractivePoints, Float novelRating, String query,
                                   LocalDateTime updatedSince) {
@@ -180,5 +219,89 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
 
         Optional.ofNullable(updatedSince)
                 .ifPresent(ts -> queryBuilder.where(userNovel.modifiedDate.gt(ts)));
+    }
+
+    private <T> void applyFiltersV2(JPAQuery<T> queryBuilder, Boolean isInterest, List<String> readStatuses,
+                                    List<String> genres, Boolean isCompleted, Float ratingMin, Float ratingMax,
+                                    Boolean unratedOnly, List<String> attractivePoints, List<String> keywords) {
+        applyFilters(queryBuilder, isInterest, readStatuses, attractivePoints, null, null, null);
+
+        Optional.ofNullable(genres)
+                .filter(list -> !list.isEmpty())
+                .ifPresent(names -> queryBuilder.where(novel.novelGenres.any().genre.genreName.in(names)));
+
+        Optional.ofNullable(isCompleted)
+                .ifPresent(completed -> queryBuilder.where(novel.isCompleted.eq(completed)));
+
+        if (Boolean.TRUE.equals(unratedOnly)) {
+            queryBuilder.where(userNovel.userNovelRating.eq(0.0f));
+        } else {
+            Optional.ofNullable(ratingMin)
+                    .ifPresent(min -> queryBuilder.where(userNovel.userNovelRating.goe(min)));
+            Optional.ofNullable(ratingMax)
+                    .ifPresent(max -> queryBuilder.where(userNovel.userNovelRating.loe(max)));
+        }
+
+        Optional.ofNullable(keywords)
+                .filter(list -> !list.isEmpty())
+                .ifPresent(names -> queryBuilder.where(userNovel.userNovelKeywords.any().keyword.keywordName.in(names)));
+    }
+
+    private BooleanExpression cursorCondition(UserNovelCursor cursor, UserNovelSortType sortType) {
+        if (cursor == null) {
+            return null;
+        }
+
+        return switch (sortType) {
+            case CREATED_DESC -> createdDescCursorCondition(cursor);
+            case CREATED_ASC -> createdAscCursorCondition(cursor);
+            case TITLE -> titleCursorCondition(cursor);
+            case RATING_DESC -> ratingDescCursorCondition(cursor);
+            case RATING_ASC -> ratingAscCursorCondition(cursor);
+        };
+    }
+
+    private BooleanExpression createdDescCursorCondition(UserNovelCursor cursor) {
+        return userNovel.createdDate.lt(cursor.lastCreatedDate())
+                .or(userNovel.createdDate.eq(cursor.lastCreatedDate())
+                        .and(userNovel.userNovelId.lt(cursor.lastUserNovelId())));
+    }
+
+    private BooleanExpression createdAscCursorCondition(UserNovelCursor cursor) {
+        return userNovel.createdDate.gt(cursor.lastCreatedDate())
+                .or(userNovel.createdDate.eq(cursor.lastCreatedDate())
+                        .and(userNovel.userNovelId.gt(cursor.lastUserNovelId())));
+    }
+
+    private BooleanExpression titleCursorCondition(UserNovelCursor cursor) {
+        return novel.title.gt(cursor.lastTitle())
+                .or(novel.title.eq(cursor.lastTitle())
+                        .and(userNovel.userNovelId.gt(cursor.lastUserNovelId())));
+    }
+
+    private BooleanExpression ratingDescCursorCondition(UserNovelCursor cursor) {
+        if (Boolean.TRUE.equals(cursor.rated())) {
+            return userNovel.userNovelRating.ne(0.0f)
+                    .and(userNovel.userNovelRating.lt(cursor.lastRating())
+                            .or(userNovel.userNovelRating.eq(cursor.lastRating())
+                                    .and(createdDescCursorCondition(cursor))))
+                    .or(userNovel.userNovelRating.eq(0.0f));
+        }
+
+        return userNovel.userNovelRating.eq(0.0f)
+                .and(createdDescCursorCondition(cursor));
+    }
+
+    private BooleanExpression ratingAscCursorCondition(UserNovelCursor cursor) {
+        if (Boolean.TRUE.equals(cursor.rated())) {
+            return userNovel.userNovelRating.ne(0.0f)
+                    .and(userNovel.userNovelRating.gt(cursor.lastRating())
+                            .or(userNovel.userNovelRating.eq(cursor.lastRating())
+                                    .and(createdDescCursorCondition(cursor))));
+        }
+
+        return userNovel.userNovelRating.eq(0.0f)
+                .and(createdDescCursorCondition(cursor))
+                .or(userNovel.userNovelRating.ne(0.0f));
     }
 }
