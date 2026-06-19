@@ -8,13 +8,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Genre;
+import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
+import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
+import org.websoso.WSSServer.user.domain.User;
 
 @Service
 @RequiredArgsConstructor
 public class GenreServiceImpl {
 
+    private final GenrePreferenceRepository genrePreferenceRepository;
     private final GenreRepository genreRepository;
 
     @Transactional(readOnly = true)
@@ -40,5 +44,10 @@ public class GenreServiceImpl {
         }
 
         return genres;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Genre> findUserPreferenceGenres(User user) {
+        return genrePreferenceRepository.findByUser(user).stream().map(GenrePreference::getGenre).toList();
     }
 }

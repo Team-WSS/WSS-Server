@@ -1,0 +1,51 @@
+package org.websoso.WSSServer.feed.comment.service;
+
+import static org.websoso.WSSServer.feed.comment.exception.CustomCommentError.COMMENT_NOT_FOUND;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.feed.report.repository.ReportedCommentRepository;
+import org.websoso.WSSServer.user.domain.User;
+import org.websoso.WSSServer.feed.comment.controller.dto.CommentCreateRequest;
+import org.websoso.WSSServer.feed.comment.controller.dto.CommentUpdateRequest;
+import org.websoso.WSSServer.feed.comment.exception.CustomCommentException;
+import org.websoso.WSSServer.feed.comment.domain.Comment;
+import org.websoso.WSSServer.feed.feed.domain.Feed;
+import org.websoso.WSSServer.feed.comment.repository.CommentRepository;
+
+@Service
+@RequiredArgsConstructor
+public class CommentServiceImpl {
+
+    private final CommentRepository commentRepository;
+    private final ReportedCommentRepository reportedCommentRepository;
+
+    @Transactional
+    public void createComment(User user, Feed feed, CommentCreateRequest request) {
+        commentRepository.save(Comment.create(user.getUserId(), feed, request.commentContent()));
+    }
+
+    @Transactional(readOnly = true)
+    public Comment findComment(Long commentId) {
+        return commentRepository.findById(commentId).orElseThrow(
+                () -> new CustomCommentException(COMMENT_NOT_FOUND, "comment with the given id was not found"));
+    }
+
+    @Transactional
+    public void updateComment(Comment comment, CommentUpdateRequest request) {
+        comment.updateContent(request.commentContent());
+    }
+
+    @Transactional
+    public void deleteComment(Comment comment) {
+        commentRepository.delete(comment);
+    }
+
+    @Transactional
+    public void deleteByFeedId(Long feedId) {
+        commentRepository.deleteByFeedId(feedId);
+        reportedCommentRepository.deleteByFeedId(feedId);
+    }
+
+}

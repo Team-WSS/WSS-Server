@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
-import org.websoso.WSSServer.feed.domain.Comment;
-import org.websoso.WSSServer.feed.domain.Feed;
+import org.websoso.WSSServer.feed.comment.domain.Comment;
+import org.websoso.WSSServer.feed.feed.domain.Feed;
 import org.websoso.WSSServer.user.domain.User;
 
 class MessageFormatterTest {

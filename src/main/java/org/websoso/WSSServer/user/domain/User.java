@@ -23,8 +23,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.notification.domain.ReadNotification;
-import org.websoso.WSSServer.feed.domain.ReportedComment;
-import org.websoso.WSSServer.feed.domain.ReportedFeed;
+import org.websoso.WSSServer.feed.report.domain.ReportedComment;
+import org.websoso.WSSServer.feed.report.domain.ReportedFeed;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.notification.domain.UserDevice;
 import org.websoso.common.entity.BaseEntity;
@@ -214,5 +214,9 @@ public class User extends BaseEntity {
 
     public boolean isTemporaryNickname() {
         return this.nickname.contains("*");
+    }
+
+    public boolean canBeViewedBy(Long visitorId) {
+        return this.isProfilePublic || this.userId.equals(visitorId);
     }
 }

@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.websoso.WSSServer.library.domain.Keyword;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
-import org.websoso.WSSServer.feed.domain.Feed;
+import org.websoso.WSSServer.feed.feed.domain.Feed;
 import org.websoso.WSSServer.novel.domain.Novel;
 
 public record PopularNovelsGetResponse(

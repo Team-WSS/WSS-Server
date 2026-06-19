@@ -18,6 +18,10 @@ public enum FeedGetOption {
                 "given feed option does not exist");
     }
 
+    public boolean isAll() {
+        return this == ALL;
+    }
+
     public static boolean isAll(FeedGetOption feedGetOption) {
         if (feedGetOption == null) {
             return true;

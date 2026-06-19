@@ -1,0 +1,153 @@
+package org.websoso.WSSServer.feed.feed.controller;
+
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.websoso.WSSServer.domain.common.SortCriteria;
+import org.websoso.WSSServer.feed.feed.controller.dto.UserFeedsGetResponse;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
+import org.websoso.WSSServer.feed.feed.application.FeedFindApplication;
+import org.websoso.WSSServer.domain.common.FeedGetOption;
+import org.websoso.WSSServer.feed.feed.controller.dto.FeedCreateRequest;
+import org.websoso.WSSServer.feed.feed.controller.dto.FeedCreateResponse;
+import org.websoso.WSSServer.feed.feed.controller.dto.FeedGetResponse;
+import org.websoso.WSSServer.feed.feed.controller.dto.FeedImageCreateRequest;
+import org.websoso.WSSServer.feed.feed.controller.dto.FeedImageUpdateRequest;
+import org.websoso.WSSServer.feed.feed.controller.dto.FeedUpdateRequest;
+import org.websoso.WSSServer.feed.feed.controller.dto.FeedsGetResponse;
+import org.websoso.WSSServer.feed.feed.controller.dto.PopularFeedsGetResponse;
+import org.websoso.WSSServer.feed.feed.application.FeedLikeApplication;
+import org.websoso.WSSServer.feed.feed.application.FeedManagementApplication;
+import org.websoso.WSSServer.user.domain.User;
+
+import java.util.List;
+
+@RequestMapping
+@RestController
+@RequiredArgsConstructor
+public class FeedController {
+
+    private final FeedManagementApplication feedManagementApplication;
+    private final FeedFindApplication feedFindApplication;
+    private final FeedLikeApplication feedLikeApplication;
+
+    @PostMapping("/feeds")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<FeedCreateResponse> createFeed(@AuthenticationPrincipal User user,
+                                                         @Valid @RequestPart("feed") FeedCreateRequest request,
+                                                         @Valid @ModelAttribute FeedImageCreateRequest requestImage) {
+        return ResponseEntity
+                .status(CREATED)
+                .body(feedManagementApplication.create(user, request, requestImage));
+    }
+
+    @GetMapping("/feeds/{feedId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<FeedGetResponse> getFeed(@AuthenticationPrincipal User user,
+                                                   @PathVariable("feedId") Long feedId) {
+        return ResponseEntity
+                .status(OK)
+                .body(feedFindApplication.getFeedById(user, feedId));
+    }
+
+    @GetMapping("/feeds")
+    public ResponseEntity<FeedsGetResponse> getFeeds(@AuthenticationPrincipal User user,
+                                                     @RequestParam("lastFeedId") Long lastFeedId,
+                                                     @RequestParam("size") int size,
+                                                     @RequestParam(value = "feedsOption", defaultValue = "ALL") FeedGetOption feedGetOption) {
+        return ResponseEntity
+                .status(OK)
+                .body(feedFindApplication.getFeeds(user, lastFeedId, size, feedGetOption));
+    }
+
+    @PutMapping("/feeds/{feedId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<FeedCreateResponse> updateFeed(@AuthenticationPrincipal User user,
+                                                         @PathVariable("feedId") Long feedId,
+                                                         @Valid @RequestPart("feed") FeedUpdateRequest request,
+                                                         @Valid @ModelAttribute FeedImageUpdateRequest requestImage) {
+        return ResponseEntity
+                .status(OK)
+                .body(feedManagementApplication.update(user, feedId, request, requestImage));
+    }
+
+    @DeleteMapping("/feeds/{feedId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteFeed(@AuthenticationPrincipal User user,
+                                           @PathVariable("feedId") Long feedId) {
+        feedManagementApplication.delete(user, feedId);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @PostMapping("/feeds/{feedId}/likes")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> likeFeed(@AuthenticationPrincipal User user,
+                                         @PathVariable("feedId") Long feedId) {
+        feedLikeApplication.create(user, feedId);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @DeleteMapping("/feeds/{feedId}/likes")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> unLikeFeed(@AuthenticationPrincipal User user,
+                                           @PathVariable("feedId") Long feedId) {
+        feedLikeApplication.delete(user, feedId);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @GetMapping("/feeds/popular")
+    public ResponseEntity<PopularFeedsGetResponse> getPopularFeeds(@AuthenticationPrincipal User user,
+                                                                   @RequestParam(name = "size", defaultValue = "9") int size) {
+        return ResponseEntity
+                .status(OK)
+                .body(feedFindApplication.getPopularFeeds(user, size));
+    }
+
+    @GetMapping("/novels/{novelId}/feeds")
+    public ResponseEntity<NovelGetResponseFeedTab> getFeedsByNovel(@AuthenticationPrincipal User user,
+                                                                   @PathVariable Long novelId,
+                                                                   @RequestParam("lastFeedId") Long lastFeedId,
+                                                                   @RequestParam("size") int size) {
+        return ResponseEntity
+                .status(OK)
+                .body(feedFindApplication.getFeedsByNovel(user, novelId, lastFeedId, size));
+    }
+
+    @GetMapping("/users/{userId}/feeds")
+    public ResponseEntity<UserFeedsGetResponse> getUserFeeds(@AuthenticationPrincipal User visitor,
+                                                             @PathVariable("userId") Long userId,
+                                                             @RequestParam("lastFeedId") Long lastFeedId,
+                                                             @RequestParam("size") int size,
+                                                             @RequestParam(value = "isVisible", required = false) Boolean isVisible,
+                                                             @RequestParam(value = "isUnVisible", required = false) Boolean isUnVisible,
+                                                             @RequestParam(value = "genreNames", required = false) List<String> genreNames,
+                                                             @RequestParam(value = "sortCriteria", required = false) SortCriteria sortCriteria) {
+        return ResponseEntity
+                .status(OK)
+                // ToDo: isVisible -> isPublic으로 수정
+                .body(feedFindApplication.getUserFeeds(visitor, userId, lastFeedId, size, isVisible, isUnVisible, genreNames,
+                        sortCriteria));
+    }
+}
