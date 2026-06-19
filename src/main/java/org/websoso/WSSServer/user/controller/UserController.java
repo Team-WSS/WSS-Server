@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.application.AuthApplication;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.SortCriteria;
-import org.websoso.WSSServer.dto.feed.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.keyword.KeywordPopularGetResponse;
 import org.websoso.WSSServer.dto.user.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.PushSettingRequest;
@@ -47,7 +46,6 @@ import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponseLegacy;
 import org.websoso.WSSServer.dto.userNovel.UserNovelsV2GetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserTasteAttractivePointPreferencesAndKeywordsGetResponse;
-import org.websoso.WSSServer.feed.service.FeedService;
 import org.websoso.WSSServer.library.service.UserNovelService;
 import org.websoso.WSSServer.user.service.UserService;
 import org.websoso.WSSServer.validation.NicknameConstraint;
@@ -61,7 +59,6 @@ public class UserController {
     private final UserService userService;
     private final UserNovelService userNovelService;
     private final AuthApplication authApplication;
-    private final FeedService feedService;
 
     // TODO: AUTH 패키지로 이동해야 함, 그리고 가장 위험한 보안 취약점
     @PostMapping("/login")
@@ -228,22 +225,6 @@ public class UserController {
         return ResponseEntity
                 .status(OK)
                 .body(userNovelService.getUserNovelsAndNovelsLegacy(visitor, userId, readStatus, lastUserNovelId, size,
-                        sortCriteria));
-    }
-
-    @GetMapping("/{userId}/feeds")
-    public ResponseEntity<UserFeedsGetResponse> getUserFeeds(@AuthenticationPrincipal User visitor,
-                                                             @PathVariable("userId") Long userId,
-                                                             @RequestParam("lastFeedId") Long lastFeedId,
-                                                             @RequestParam("size") int size,
-                                                             @RequestParam(value = "isVisible", required = false) Boolean isVisible,
-                                                             @RequestParam(value = "isUnVisible", required = false) Boolean isUnVisible,
-                                                             @RequestParam(value = "genreNames", required = false) List<String> genreNames,
-                                                             @RequestParam(value = "sortCriteria", required = false) SortCriteria sortCriteria) {
-        return ResponseEntity
-                .status(OK)
-                // ToDo: isVisible -> isPublic으로 수정
-                .body(feedService.getUserFeeds(visitor, userId, lastFeedId, size, isVisible, isUnVisible, genreNames,
                         sortCriteria));
     }
 

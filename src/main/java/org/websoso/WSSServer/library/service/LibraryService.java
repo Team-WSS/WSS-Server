@@ -135,6 +135,13 @@ public class LibraryService {
         return userNovelRepository.findTasteNovels(preferGenres);
     }
 
+    @Transactional(readOnly = true)
+    public List<Novel> getInterestNovels(User user) {
+        return userNovelRepository.findByUserAndIsInterestTrue(user).stream()
+                .map(UserNovel::getNovel)
+                .toList();
+    }
+
 
     public List<Long> getTodayPopularNovelIds(PageRequest pageRequest) {
         return userNovelRepository.findTodayPopularNovelsId(pageRequest);
