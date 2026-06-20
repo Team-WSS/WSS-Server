@@ -32,8 +32,9 @@ public class CommentController {
     private final CommentManagementApplication commentManagementApplication;
 
     @PostMapping("/{feedId}/comments")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
-    public ResponseEntity<Void> createComment(@AuthenticationPrincipal User user, @PathVariable("feedId") Long feedId,
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> createComment(@AuthenticationPrincipal User user,
+                                              @PathVariable("feedId") Long feedId,
                                               @Valid @RequestBody CommentCreateRequest request) {
         commentManagementApplication.createComment(user, feedId, request);
         return ResponseEntity.status(NO_CONTENT).build();
