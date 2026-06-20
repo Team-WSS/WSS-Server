@@ -3,6 +3,7 @@ package org.websoso.WSSServer.novel.service;
 import static org.websoso.WSSServer.exception.error.CustomNovelError.NOVEL_NOT_FOUND;
 
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +32,22 @@ public class NovelServiceImpl {
         return novelRepository.findById(novelId)
                 .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
                         "novel with the given id is not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Novel> findOptionalNovel(Long novelId) {
+        if (novelId == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(getNovelOrException(novelId));
+    }
+
+    @Transactional(readOnly = true)
+    public void validateNovelExistsIfPresent(Long novelId) {
+        if (novelId != null) {
+            getNovelOrException(novelId);
+        }
     }
 
     @Transactional(readOnly = true)
