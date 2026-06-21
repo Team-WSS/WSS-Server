@@ -40,6 +40,27 @@ public class CommentManagementApplication {
     }
 
     @Transactional
+    public void update(User user, Long commentId, CommentUpdateRequest request) {
+
+        Comment comment = commentServiceImpl.getCommentOrException(commentId);
+
+        comment.validateOwner(user.getUserId(), UPDATE);
+
+        comment.updateContent(request.commentContent());
+    }
+
+    @Transactional
+    public void delete(User user, Long commentId) {
+
+        Comment comment = commentServiceImpl.getCommentOrException(commentId);
+
+        comment.validateOwner(user.getUserId(), DELETE);
+
+        commentServiceImpl.deleteComment(comment);
+    }
+
+    @Deprecated(since = "PUT /comments/{commentId}으로 완벽 교체시")
+    @Transactional
     public void update(User user, Long feedId, Long commentId, CommentUpdateRequest request) {
 
         Feed feed = feedServiceImpl.getAccessFeedOrException(feedId, user.getUserId());
@@ -55,6 +76,7 @@ public class CommentManagementApplication {
         comment.updateContent(request.commentContent());
     }
 
+    @Deprecated(since = "DELETE /comments/{commentId}으로 완벽 교체시")
     @Transactional
     public void delete(User user, Long feedId, Long commentId) {
 
