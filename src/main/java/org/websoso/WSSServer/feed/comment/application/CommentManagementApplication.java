@@ -24,10 +24,11 @@ public class CommentManagementApplication {
     private final CommentServiceImpl commentServiceImpl;
     private final FeedServiceImpl feedServiceImpl;
     private final BlockService blockService;
+
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void createComment(User user, Long feedId, CommentCreateRequest request) {
+    public void create(User user, Long feedId, CommentCreateRequest request) {
 
         Feed feed = feedServiceImpl.getAccessFeedOrException(feedId, user.getUserId());
 
@@ -39,20 +40,27 @@ public class CommentManagementApplication {
     }
 
     @Transactional
-    public void updateComment(User user, Long feedId, Long commentId, CommentUpdateRequest request) {
-        Feed feed = feedServiceImpl.getFeedOrException(feedId);
-        Comment comment = commentServiceImpl.findComment(commentId);
-        comment.validateFeedAssociation(feed);
-        comment.validateUserAuthorization(user.getUserId(), UPDATE);
-        commentServiceImpl.updateComment(comment, request);
+    public void update(User user, Long feedId, Long commentId, CommentUpdateRequest request) {
+
+        Feed feed = feedServiceImpl.getAccessFeedOrException(feedId, user.getUserId());
+
+        blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
+
+        Comment comment = commentServiceImpl.getCommentOrException(commentId);
+
+        comment.validateBelongsTo(feed);
+
+        comment.validateOwner(user.getUserId(), UPDATE);
+
+        comment.updateContent(request.commentContent());
     }
 
     @Transactional
-    public void deleteComment(User user, Long feedId, Long commentId) {
+    public void delete(User user, Long feedId, Long commentId) {
         Feed feed = feedServiceImpl.getFeedOrException(feedId);
-        Comment comment = commentServiceImpl.findComment(commentId);
-        comment.validateFeedAssociation(feed);
-        comment.validateUserAuthorization(user.getUserId(), DELETE);
+        Comment comment = commentServiceImpl.getCommentOrException(commentId);
+        comment.validateBelongsTo(feed);
+        comment.validateOwner(user.getUserId(), DELETE);
         commentServiceImpl.deleteComment(comment);
     }
 }

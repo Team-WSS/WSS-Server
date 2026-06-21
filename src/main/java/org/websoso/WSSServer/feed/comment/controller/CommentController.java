@@ -36,7 +36,7 @@ public class CommentController {
     public ResponseEntity<Void> createComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @Valid @RequestBody CommentCreateRequest request) {
-        commentManagementApplication.createComment(user, feedId, request);
+        commentManagementApplication.create(user, feedId, request);
         return ResponseEntity.status(NO_CONTENT).build();
     }
 
@@ -50,13 +50,12 @@ public class CommentController {
     }
 
     @PutMapping("/{feedId}/comments/{commentId}")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user) "
-            + "and @authorizationService.validate(#commentId, #user, T(org.websoso.WSSServer.feed.comment.domain.Comment))")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> updateComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId,
                                               @Valid @RequestBody CommentUpdateRequest request) {
-        commentManagementApplication.updateComment(user, feedId, commentId, request);
+        commentManagementApplication.update(user, feedId, commentId, request);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
@@ -68,7 +67,7 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId) {
-        commentManagementApplication.deleteComment(user, feedId, commentId);
+        commentManagementApplication.delete(user, feedId, commentId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();

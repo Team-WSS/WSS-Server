@@ -27,13 +27,13 @@ public class CommentServiceImpl {
     }
 
     @Transactional(readOnly = true)
-    public Comment findComment(Long commentId) {
+    public Comment getCommentOrException(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(
                 () -> new CustomCommentException(COMMENT_NOT_FOUND, "comment with the given id was not found"));
     }
 
     @Transactional
-    public void updateComment(Comment comment, CommentUpdateRequest request) {
+    public void update(Comment comment, CommentUpdateRequest request) {
         comment.updateContent(request.commentContent());
     }
 

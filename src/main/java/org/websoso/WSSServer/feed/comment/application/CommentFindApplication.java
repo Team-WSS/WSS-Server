@@ -19,12 +19,18 @@ import org.websoso.WSSServer.feed.feed.domain.Feed;
 import org.websoso.WSSServer.feed.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.user.repository.BlockRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
+import org.websoso.WSSServer.user.service.AvatarService;
+import org.websoso.WSSServer.user.service.BlockService;
+import org.websoso.WSSServer.user.service.UserService;
 
 @Service
 @RequiredArgsConstructor
 public class CommentFindApplication {
 
     private final FeedServiceImpl feedServiceImpl;
+    private final UserService userService;
+    private final BlockService blockService;
+    private final AvatarService avatarService;
 
     //ToDo : 의존성 제거 필요 부분
     private final UserRepository userRepository;

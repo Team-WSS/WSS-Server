@@ -59,7 +59,7 @@ public class Comment {
         return new Comment(commentContent, userId, feed);
     }
 
-    public void validateUserAuthorization(Long userId, Action action) {
+    public void validateOwner(Long userId, Action action) {
         if (!Objects.equals(this.userId, userId)) {
             throw new CustomUserException(INVALID_AUTHORIZED,
                     "only the author can " + action.getLabel() + " the comment");
@@ -71,7 +71,7 @@ public class Comment {
         this.modifiedDate = LocalDateTime.now();
     }
 
-    public void validateFeedAssociation(Feed feed) {
+    public void validateBelongsTo(Feed feed) {
         if (this.feed != feed) {
             throw new CustomCommentException(COMMENT_NOT_BELONG_TO_FEED,
                     "the comment does not belong to the specified feed");
