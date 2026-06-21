@@ -62,8 +62,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{feedId}/comments/{commentId}")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user) "
-            + "and @authorizationService.validate(#commentId, #user, T(org.websoso.WSSServer.feed.comment.domain.Comment))")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal User user,
                                               @PathVariable("feedId") Long feedId,
                                               @PathVariable("commentId") Long commentId) {

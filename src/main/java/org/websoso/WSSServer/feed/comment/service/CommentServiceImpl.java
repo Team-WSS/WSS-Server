@@ -32,20 +32,28 @@ public class CommentServiceImpl {
                 () -> new CustomCommentException(COMMENT_NOT_FOUND, "comment with the given id was not found"));
     }
 
-    @Transactional
-    public void update(Comment comment, CommentUpdateRequest request) {
-        comment.updateContent(request.commentContent());
-    }
-
+    /**
+     * 댓글을 삭제한다.
+     * 신고된 댓글이 Comment를 참조하므로, FK 제약을 피하기 위해 신고 내역을 먼저 삭제한다.
+     *
+     * @param comment 삭제할 댓글
+     */
     @Transactional
     public void deleteComment(Comment comment) {
+        reportedCommentRepository.deleteByComment(comment);
         commentRepository.delete(comment);
     }
 
+    /**
+     * 피드 삭제 시 해당 피드에 달린 댓글과 댓글 신고 내역을 함께 삭제한다.
+     * 신고 내역이 Comment를 참조하므로 신고 내역을 먼저 삭제한 뒤 댓글을 삭제한다.
+     *
+     * @param feedId 삭제 대상 피드 ID
+     */
     @Transactional
     public void deleteByFeedId(Long feedId) {
-        commentRepository.deleteByFeedId(feedId);
         reportedCommentRepository.deleteByFeedId(feedId);
+        commentRepository.deleteByFeedId(feedId);
     }
 
 }

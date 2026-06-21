@@ -57,10 +57,17 @@ public class CommentManagementApplication {
 
     @Transactional
     public void delete(User user, Long feedId, Long commentId) {
-        Feed feed = feedServiceImpl.getFeedOrException(feedId);
+
+        Feed feed = feedServiceImpl.getAccessFeedOrException(feedId, user.getUserId());
+
+        blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
+
         Comment comment = commentServiceImpl.getCommentOrException(commentId);
+
         comment.validateBelongsTo(feed);
+
         comment.validateOwner(user.getUserId(), DELETE);
+
         commentServiceImpl.deleteComment(comment);
     }
 }
