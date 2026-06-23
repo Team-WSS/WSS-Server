@@ -42,6 +42,11 @@ public class NovelServiceImpl {
         return novelRepository.findAllByNovelIdInWithGenres(novelIds);
     }
 
+    @Transactional(readOnly = true)
+    public List<Novel> findAllByIds(List<Long> novelIds) {
+        return novelRepository.findAllById(novelIds);
+    }
+
     public Page<Novel> searchNovels(PageRequest pageRequest, String searchQuery) {
         return novelRepository.findSearchedNovels(pageRequest, searchQuery);
     }
@@ -51,8 +56,8 @@ public class NovelServiceImpl {
     }
 
     public Page<Novel> findFilteredNovels(PageRequest pageRequest, List<Genre> genres, List<Keyword> keywords,
-                                          Boolean isCompleted, Float novelRatingStart, Float novelRatingEnd) {
-        return novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRatingStart, novelRatingEnd, keywords);
+                                          Boolean isCompleted, Float novelRatingStart, Float novelRatingEnd, List<String> platformNames) {
+        return novelRepository.findFilteredNovels(pageRequest, genres, isCompleted, novelRatingStart, novelRatingEnd, keywords, platformNames);
     }
 
     public List<NovelGenre> getGenresByNovel(Novel novel) {

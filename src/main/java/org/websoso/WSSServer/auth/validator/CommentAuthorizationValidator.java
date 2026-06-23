@@ -1,15 +1,15 @@
 package org.websoso.WSSServer.auth.validator;
 
-import static org.websoso.WSSServer.exception.error.CustomCommentError.COMMENT_NOT_FOUND;
+import static org.websoso.WSSServer.feed.comment.exception.CustomCommentError.COMMENT_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.feed.domain.Comment;
+import org.websoso.WSSServer.feed.comment.domain.Comment;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.exception.exception.CustomCommentException;
+import org.websoso.WSSServer.feed.comment.exception.CustomCommentException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
-import org.websoso.WSSServer.feed.repository.CommentRepository;
+import org.websoso.WSSServer.feed.comment.repository.CommentRepository;
 
 @Component
 @RequiredArgsConstructor

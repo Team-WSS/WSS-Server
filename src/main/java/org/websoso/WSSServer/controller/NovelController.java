@@ -22,14 +22,12 @@ import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseInfoTab;
 import org.websoso.WSSServer.dto.popularNovel.PopularNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
-import org.websoso.WSSServer.feed.service.FeedService;
 
 @RestController
 @RequestMapping("/novels")
 @RequiredArgsConstructor
 public class NovelController {
 
-    private final FeedService feedService;
     private final SearchNovelApplication searchNovelApplication;
 
     /**
@@ -84,12 +82,13 @@ public class NovelController {
             @RequestParam(required = false, defaultValue = "0.0") Float novelRatingStart,
             @RequestParam(required = false, defaultValue = "5.0") Float novelRatingEnd,
             @RequestParam(required = false) List<Integer> keywordIds,
+            @RequestParam(required = false) List<String> platformNames,
             @RequestParam int page,
             @RequestParam int size) {
         return ResponseEntity
                 .status(OK)
                 .body(searchNovelApplication.getFilteredNovels(genres, keywordIds, isCompleted, novelRating,
-                        novelRatingStart, novelRatingEnd, page, size));
+                        novelRatingStart, novelRatingEnd, platformNames, page, size));
     }
 
     /**
@@ -127,11 +126,12 @@ public class NovelController {
      * @return PopularNovelsGetResponse
      */
     @GetMapping("/popular")
-    public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(@AuthenticationPrincipal User user) {
+    public ResponseEntity<PopularNovelsGetResponse> getTodayPopularNovels(@AuthenticationPrincipal User user,
+                                                                          @RequestParam(required = false, defaultValue = "2") Integer keywordSize) {
         //TODO 차단 관계에 있는 유저의 피드글 처리
         return ResponseEntity
                 .status(OK)
-                .body(searchNovelApplication.getTodayPopularNovels());
+                .body(searchNovelApplication.getTodayPopularNovels(keywordSize));
     }
 
     /**
@@ -148,14 +148,4 @@ public class NovelController {
                 .body(searchNovelApplication.getTasteNovels(user));
     }
 
-    // TODO: Feed Controller로 이동해야함
-    @GetMapping("/{novelId}/feeds")
-    public ResponseEntity<NovelGetResponseFeedTab> getFeedsByNovel(@AuthenticationPrincipal User user,
-                                                                   @PathVariable Long novelId,
-                                                                   @RequestParam("lastFeedId") Long lastFeedId,
-                                                                   @RequestParam("size") int size) {
-        return ResponseEntity
-                .status(OK)
-                .body(feedService.getFeedsByNovel(user, novelId, lastFeedId, size));
-    }
 }

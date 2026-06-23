@@ -1,13 +1,17 @@
 package org.websoso.WSSServer.user.service;
 
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.feed.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.user.domain.Block;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.repository.BlockRepository;
+
+import static org.websoso.WSSServer.feed.feed.exception.CustomFeedError.BLOCKED_USER_ACCESS;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +39,23 @@ public class BlockService {
     }
 
     @Transactional(readOnly = true)
+    public void validateNotBlocked(Long userId, Long targetUserId) {
+
+        if (userId.equals(targetUserId)) return;
+
+        if (blockRepository.existsBlockRelation(userId, targetUserId)) {
+            throw new CustomFeedException(BLOCKED_USER_ACCESS,
+                    "cannot access this feed because either you or the feed author has blocked the other.");
+        }
+    }
+
+    @Transactional(readOnly = true)
     public List<Block> findByBlockerId(Long blockingId) {
         return blockRepository.findByBlockingId(blockingId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> findBlockRelationUserIds(Long userId) {
+        return blockRepository.findBlockRelationUserIds(userId);
     }
 }

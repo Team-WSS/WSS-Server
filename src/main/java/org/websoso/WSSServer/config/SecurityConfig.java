@@ -48,6 +48,7 @@ public class SecurityConfig {
             "/auth/login/apple",
             "/auth/apple/sync",
             "/minimum-version",
+            "/keywords/popular",
     };
 
     private static final String[] swaggerPaths = {

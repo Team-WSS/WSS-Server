@@ -1,0 +1,141 @@
+package org.websoso.WSSServer.feed.feed.controller.dto;
+
+import java.util.List;
+import org.websoso.WSSServer.feed.feed.domain.Feed;
+import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.user.domain.User;
+import org.websoso.WSSServer.library.domain.UserNovel;
+import org.websoso.WSSServer.dto.user.UserBasicInfo;
+import org.websoso.WSSServer.util.TimeFormatUtil;
+
+public record FeedInfo(
+        Long feedId,
+        Long userId,
+        String nickname,
+        String avatarImage,
+        String createdDate,
+        String feedContent,
+        Integer likeCount,
+        Boolean isLiked,
+        Integer commentCount,
+        Long novelId,
+        String title,
+        Integer novelRatingCount,
+        Float novelRating,
+        Boolean isSpoiler,
+        Boolean isModified,
+        Boolean isMyFeed,
+        Boolean isPublic,
+        String thumbnailUrl,
+        Integer imageCount,
+        String genreName,
+        Float userNovelRating,
+        Float feedWriterNovelRating
+) {
+    public static FeedInfo of(Feed feed, UserBasicInfo userBasicInfo, Novel novel, Boolean isLiked,
+                              Boolean isMyFeed, String thumbnailUrl, Integer imageCount, User user) {
+        return of(
+                feed,
+                userBasicInfo,
+                novel,
+                isLiked,
+                isMyFeed,
+                thumbnailUrl,
+                imageCount,
+                user,
+                feed.getLikes().size(),
+                feed.getComments().size()
+        );
+    }
+
+    public static FeedInfo of(Feed feed, UserBasicInfo userBasicInfo, Novel novel, Boolean isLiked,
+                              Boolean isMyFeed, String thumbnailUrl, Integer imageCount, User user,
+                              Integer likeCount, Integer commentCount) {
+        String title = null;
+        Integer novelRatingCount = null;
+        Float novelRating = null;
+        String genreName = null;
+        Float userNovelRating = null;
+        Float feedWriterNovelRating = null;
+
+        if (novel != null) {
+            List<UserNovel> userNovels = novel.getUserNovels().stream().filter(un -> un.getUserNovelRating() > 0.0)
+                    .toList();
+            title = novel.getTitle();
+            novelRatingCount = userNovels.size();
+            novelRating = calculateNovelRating(
+                    (float) userNovels.stream().map(UserNovel::getUserNovelRating).mapToDouble(d -> d).sum(),
+                    novelRatingCount);
+            genreName = getNovelGenreName(novel);
+            userNovelRating = getUserNovelRating(novel, user);
+            feedWriterNovelRating = getFeedWriterNovelRating(novel, feed.getUser().getUserId());
+        }
+
+        return new FeedInfo(
+                feed.getFeedId(),
+                userBasicInfo.userId(),
+                userBasicInfo.nickname(),
+                userBasicInfo.avatarImage(),
+                TimeFormatUtil.formatRelativeDateTime(feed.getCreatedDate()),
+                feed.getFeedContent(),
+                likeCount,
+                isLiked,
+                commentCount,
+                feed.getNovelId(),
+                title,
+                novelRatingCount,
+                novelRating,
+                feed.getIsSpoiler(),
+                !feed.getCreatedDate().equals(feed.getModifiedDate()),
+                isMyFeed,
+                feed.getIsPublic(),
+                thumbnailUrl,
+                imageCount,
+                genreName,
+                userNovelRating,
+                feedWriterNovelRating
+        );
+    }
+
+    private static Float calculateNovelRating(Float novelRatingSum, Integer novelRatingCount) {
+        if (novelRatingCount == 0) {
+            return 0.0f;
+        }
+        return Math.round((novelRatingSum / (float) novelRatingCount) * 10) / 10.0f;
+    }
+
+    private static String getNovelGenreName(Novel novel) {
+        if (novel == null) {
+            return null;
+        }
+
+        return novel.getNovelGenres().get(0).getGenre().getGenreName();
+    }
+
+    private static Float getUserNovelRating(Novel novel, User user) {
+        if (novel == null || user == null) {
+            return null;
+        }
+
+        return novel.getUserNovels()
+                .stream()
+                .filter(userNovel -> userNovel.getUser().getUserId().equals(user.getUserId()))
+                .findFirst()
+                .map(UserNovel::getUserNovelRating)
+                .orElse(null);
+    }
+
+    private static Float getFeedWriterNovelRating(Novel novel, Long feedWriterId) {
+        if (novel == null) {
+            return null;
+        }
+
+        return novel.getUserNovels()
+                .stream()
+                .filter(userNovel -> userNovel.getUser().getUserId().equals(feedWriterId))
+                .findFirst()
+                .map(userNovel -> userNovel.isOnlyInterested() ? null : userNovel.getUserNovelRating())
+                .orElse(null);
+    }
+
+}
