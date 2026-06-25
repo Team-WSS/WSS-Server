@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.library.repository.cursor;
+package org.websoso.WSSServer.library.util;
 
 import static org.websoso.WSSServer.exception.error.CustomFilteringError.INVALID_CURSOR;
 
@@ -10,6 +10,7 @@ import java.util.Base64;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.exception.exception.CustomFilteringException;
+import org.websoso.WSSServer.library.repository.cursor.UserNovelCursor;
 
 @Component
 @RequiredArgsConstructor
