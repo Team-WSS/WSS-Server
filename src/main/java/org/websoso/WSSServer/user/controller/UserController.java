@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.application.AuthApplication;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.SortCriteria;
+import org.websoso.WSSServer.dto.keyword.KeywordPopularGetResponse;
 import org.websoso.WSSServer.dto.user.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.PushSettingRequest;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
@@ -43,6 +44,7 @@ import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserGenrePreferencesGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponseLegacy;
+import org.websoso.WSSServer.dto.userNovel.UserNovelsV2GetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserTasteAttractivePointPreferencesAndKeywordsGetResponse;
 import org.websoso.WSSServer.library.service.UserNovelService;
 import org.websoso.WSSServer.user.service.UserService;
@@ -178,6 +180,38 @@ public class UserController {
                 .body(userNovelService.getUserNovelsAndNovels(
                         visitor, userId, isInterest, readStatuses, attractivePoints, novelRating, query,
                         lastUserNovelId, size, sortCriteria, updatedSince));
+    }
+
+    @GetMapping("/{userId}/novels/v2")
+    public ResponseEntity<UserNovelsV2GetResponse> getUserNovelsAndNovelsV2(
+            @AuthenticationPrincipal User visitor,
+            @PathVariable("userId") Long userId,
+            @RequestParam(value = "cursor", required = false) String cursor,
+            @RequestParam("size") int size,
+            @RequestParam(value = "sortType", required = false, defaultValue = "created_desc") String sortType,
+            @RequestParam(value = "isInterest", required = false) Boolean isInterest,
+            @RequestParam(value = "readStatuses", required = false) List<String> readStatuses,
+            @RequestParam(value = "genres", required = false) List<String> genres,
+            @RequestParam(value = "isCompleted", required = false) Boolean isCompleted,
+            @RequestParam(value = "ratingMin", required = false) Float ratingMin,
+            @RequestParam(value = "ratingMax", required = false) Float ratingMax,
+            @RequestParam(value = "unratedOnly", required = false) Boolean unratedOnly,
+            @RequestParam(value = "attractivePoints", required = false) List<String> attractivePoints,
+            @RequestParam(value = "keywords", required = false) List<String> keywords) {
+        return ResponseEntity
+                .status(OK)
+                .body(userNovelService.getUserNovelsAndNovelsV2(visitor, userId, cursor, size, sortType, isInterest,
+                        readStatuses, genres, isCompleted, ratingMin, ratingMax, unratedOnly, attractivePoints,
+                        keywords));
+    }
+
+    @GetMapping("/{userId}/novels/keywords")
+    public ResponseEntity<KeywordPopularGetResponse> getUserNovelKeywordsV2(
+            @AuthenticationPrincipal User visitor,
+            @PathVariable("userId") Long userId) {
+        return ResponseEntity
+                .status(OK)
+                .body(userNovelService.getUserNovelKeywordsV2(visitor, userId));
     }
 
     @GetMapping("/{userId}/novels/legacy")

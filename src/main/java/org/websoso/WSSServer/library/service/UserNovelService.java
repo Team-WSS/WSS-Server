@@ -25,6 +25,9 @@ import org.websoso.WSSServer.library.domain.UserNovelAttractivePoint;
 import org.websoso.WSSServer.library.domain.UserNovelKeyword;
 import org.websoso.WSSServer.domain.common.Gender;
 import org.websoso.WSSServer.domain.common.SortCriteria;
+import org.websoso.WSSServer.domain.common.UserNovelSortType;
+import org.websoso.WSSServer.dto.keyword.KeywordGetResponse;
+import org.websoso.WSSServer.dto.keyword.KeywordPopularGetResponse;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteKeywordGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserGenrePreferenceGetResponse;
@@ -33,10 +36,14 @@ import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponseLegacy;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponseLegacy;
+import org.websoso.WSSServer.dto.userNovel.UserNovelsV2GetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserTasteAttractivePointPreferencesAndKeywordsGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.feed.repository.FeedRepository;
+import org.websoso.WSSServer.library.util.CursorCodec;
+import org.websoso.WSSServer.library.repository.cursor.UserNovelCursor;
+import org.websoso.WSSServer.library.repository.UserNovelKeywordRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.library.repository.UserNovelRepository;
 import org.websoso.WSSServer.user.service.UserService;
@@ -51,6 +58,8 @@ public class UserNovelService {
     private final UserService userService;
     private final GenreRepository genreRepository;
     private final FeedRepository feedRepository;
+    private final CursorCodec cursorCodec;
+    private final UserNovelKeywordRepository userNovelKeywordRepository;
 
     private static final List<String> priorityGenreNamesOfMale = List.of(
             "fantasy", "modernFantasy", "wuxia", "drama", "mystery", "lightNovel", "romance", "romanceFantasy", "BL"
@@ -76,7 +85,7 @@ public class UserNovelService {
             throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
         }
 
-        boolean isOwner = visitor.getUserId().equals(ownerId);
+        boolean isOwner = isOwner(visitor, ownerId);
         boolean isAscending = sortCriteria.isOld();
 
         List<UserNovel> userNovels = userNovelRepository.findFilteredUserNovels(ownerId, isInterest, readStatuses,
@@ -91,6 +100,64 @@ public class UserNovelService {
                 userNovels, ownerId, isOwner);
 
         return new UserNovelAndNovelsGetResponse(totalCount, isLoadable, userNovelAndNovelGetResponses);
+    }
+
+    @Transactional(readOnly = true)
+    public UserNovelsV2GetResponse getUserNovelsAndNovelsV2(User visitor, Long ownerId, String cursor, int size,
+                                                            String sortType, Boolean isInterest,
+                                                            List<String> readStatuses, List<String> genres,
+                                                            Boolean isCompleted, Float ratingMin, Float ratingMax,
+                                                            Boolean unratedOnly, List<String> attractivePoints,
+                                                            List<String> keywords) {
+        User owner = userService.getUserOrException(ownerId);
+
+        if (isProfileInaccessible(visitor, ownerId, owner)) {
+            throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
+        }
+
+        boolean isOwner = isOwner(visitor, ownerId);
+        UserNovelSortType userNovelSortType = UserNovelSortType.of(sortType);
+        UserNovelCursor userNovelCursor = cursorCodec.decode(cursor);
+
+        int requestSize = Math.max(size, 0);
+        List<UserNovel> fetchedUserNovels = userNovelRepository.findFilteredUserNovelsV2(ownerId, isInterest,
+                readStatuses, genres, isCompleted, ratingMin, ratingMax, unratedOnly, attractivePoints, keywords,
+                userNovelCursor, requestSize + 1, userNovelSortType);
+
+        boolean isLoadable = requestSize > 0 && fetchedUserNovels.size() > requestSize;
+        List<UserNovel> userNovels = requestSize == 0
+                ? List.of()
+                : isLoadable
+                        ? fetchedUserNovels.subList(0, requestSize)
+                        : fetchedUserNovels;
+
+        Long totalCount = userNovelRepository.countByUserIdAndFiltersV2(ownerId, isInterest, readStatuses, genres,
+                isCompleted, ratingMin, ratingMax, unratedOnly, attractivePoints, keywords);
+
+        List<UserNovelAndNovelGetResponse> userNovelAndNovelGetResponses = buildUserNovelAndNovelGetResponses(
+                userNovels, ownerId, isOwner);
+
+        String nextCursor = isLoadable && !userNovels.isEmpty()
+                ? cursorCodec.encode(toCursor(userNovels.get(userNovels.size() - 1)))
+                : null;
+
+        return new UserNovelsV2GetResponse(totalCount, isLoadable, nextCursor, userNovelAndNovelGetResponses);
+    }
+
+    @Transactional(readOnly = true)
+    public KeywordPopularGetResponse getUserNovelKeywordsV2(User visitor, Long ownerId) {
+        User owner = userService.getUserOrException(ownerId);
+
+        if (isProfileInaccessible(visitor, ownerId, owner)) {
+            throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
+        }
+
+        List<KeywordGetResponse> keywords = userNovelKeywordRepository.findKeywordsByUserIdOrderByCountDesc(ownerId)
+                .stream()
+                .map(KeywordGetResponse::of)
+                .toList();
+
+        return KeywordPopularGetResponse.of(keywords);
     }
 
     @Transactional(readOnly = true)
@@ -146,6 +213,17 @@ public class UserNovelService {
                     return UserNovelAndNovelGetResponse.from(userNovel, novelRatingAvg, feeds);
                 })
                 .toList();
+    }
+
+    private UserNovelCursor toCursor(UserNovel userNovel) {
+        return new UserNovelCursor(
+                userNovel.getUserNovelRating(),
+                userNovel.getCreatedDate(),
+                userNovel.getUserNovelId(),
+                Float.compare(userNovel.getUserNovelRating(), 0.0f) != 0,
+                userNovel.getStartDate(),
+                userNovel.getNovel().getTitle()
+        );
     }
 
     private Map<Long, List<String>> getFeedsGroupedByNovel(List<UserNovel> userNovels, Long ownerId, boolean isOwner) {
