@@ -221,6 +221,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .ifPresent(ts -> queryBuilder.where(userNovel.modifiedDate.gt(ts)));
     }
 
+    // 전달받은 QueryDSL 쿼리 객체에 필터 조건을 누적해서 적용한다.
     private <T> void applyFiltersV2(JPAQuery<T> queryBuilder, Boolean isInterest, List<String> readStatuses,
                                     List<String> genres, Boolean isCompleted, Float ratingMin, Float ratingMax,
                                     Boolean unratedOnly, List<String> attractivePoints, List<String> keywords) {
@@ -255,6 +256,8 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
         return switch (sortType) {
             case CREATED_DESC -> createdDescCursorCondition(cursor);
             case CREATED_ASC -> createdAscCursorCondition(cursor);
+            case TITLE, TITLE_ASC -> titleAscCursorCondition(cursor);
+            case TITLE_DESC -> titleDescCursorCondition(cursor);
             case READ_DATE -> readDateCursorCondition(cursor);
             case RATING_DESC -> ratingDescCursorCondition(cursor);
             case RATING_ASC -> ratingAscCursorCondition(cursor);
@@ -271,6 +274,26 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
         return userNovel.createdDate.gt(cursor.lastCreatedDate())
                 .or(userNovel.createdDate.eq(cursor.lastCreatedDate())
                         .and(userNovel.userNovelId.gt(cursor.lastUserNovelId())));
+    }
+
+    private BooleanExpression titleAscCursorCondition(UserNovelCursor cursor) {
+        if (cursor.lastTitle() == null) {
+            return null;
+        }
+
+        return novel.title.gt(cursor.lastTitle())
+                .or(novel.title.eq(cursor.lastTitle())
+                        .and(userNovel.userNovelId.gt(cursor.lastUserNovelId())));
+    }
+
+    private BooleanExpression titleDescCursorCondition(UserNovelCursor cursor) {
+        if (cursor.lastTitle() == null) {
+            return null;
+        }
+
+        return novel.title.lt(cursor.lastTitle())
+                .or(novel.title.eq(cursor.lastTitle())
+                        .and(userNovel.userNovelId.lt(cursor.lastUserNovelId())));
     }
 
     private BooleanExpression readDateCursorCondition(UserNovelCursor cursor) {

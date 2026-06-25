@@ -41,7 +41,7 @@ import org.websoso.WSSServer.dto.userNovel.UserTasteAttractivePointPreferencesAn
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.feed.repository.FeedRepository;
-import org.websoso.WSSServer.library.repository.cursor.CursorCodec;
+import org.websoso.WSSServer.library.util.CursorCodec;
 import org.websoso.WSSServer.library.repository.cursor.UserNovelCursor;
 import org.websoso.WSSServer.library.repository.UserNovelKeywordRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
@@ -221,7 +221,8 @@ public class UserNovelService {
                 userNovel.getCreatedDate(),
                 userNovel.getUserNovelId(),
                 Float.compare(userNovel.getUserNovelRating(), 0.0f) != 0,
-                userNovel.getStartDate()
+                userNovel.getStartDate(),
+                userNovel.getNovel().getTitle()
         );
     }
 

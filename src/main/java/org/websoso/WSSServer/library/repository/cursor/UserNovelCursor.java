@@ -8,6 +8,7 @@ public record UserNovelCursor(
         LocalDateTime lastCreatedDate,
         Long lastUserNovelId,
         Boolean rated,
-        LocalDate lastStartDate
+        LocalDate lastStartDate,
+        String lastTitle
 ) {
 }
