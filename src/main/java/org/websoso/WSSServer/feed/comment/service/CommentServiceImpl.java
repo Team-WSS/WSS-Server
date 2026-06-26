@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.feed.report.repository.ReportedCommentRepository;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.feed.comment.controller.dto.CommentCreateRequest;
-import org.websoso.WSSServer.feed.comment.controller.dto.CommentUpdateRequest;
 import org.websoso.WSSServer.feed.comment.exception.CustomCommentException;
 import org.websoso.WSSServer.feed.comment.domain.Comment;
 import org.websoso.WSSServer.feed.feed.domain.Feed;
@@ -56,4 +55,14 @@ public class CommentServiceImpl {
         commentRepository.deleteByFeedId(feedId);
     }
 
+    /**
+     * 댓글 작성자 정보를 (알 수 없음)으로 변경한다.
+     * 회원 탈퇴 시에 사용한다.
+     *
+     * @param userId 변경 대상 사용자 ID
+     */
+    @Transactional
+    public void updateWriterToUnknown(Long userId) {
+        commentRepository.updateUserToUnknown(userId);
+    }
 }

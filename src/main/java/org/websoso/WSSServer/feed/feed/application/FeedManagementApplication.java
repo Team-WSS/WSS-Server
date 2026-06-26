@@ -96,9 +96,4 @@ public class FeedManagementApplication {
         feedService.delete(feed);
     }
 
-    @Transactional
-    public void updateFeedWriterToUnknown(Long userId) {
-        feedService.updateWriterToUnknown(userId);
-    }
-
 }
