@@ -41,7 +41,7 @@ public class CommentController {
     }
 
     @GetMapping("/feeds/{feedId}/comments")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CommentsGetResponse> getComments(@AuthenticationPrincipal User user,
                                                            @PathVariable Long feedId) {
         return ResponseEntity
