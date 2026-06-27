@@ -27,7 +27,13 @@ public class CommentFindApplication {
 
         blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
 
-        List<CommentGetResponse> responses = commentQueryService.findCommentRows(feedId, user.getUserId());
+        List<Long> blockedUserIds = blockService.findBlockRelationUserIds(user.getUserId());
+        List<CommentGetResponse> responses = commentQueryService.findCommentRows(
+                feedId,
+                user.getUserId(),
+                blockedUserIds
+        );
+
         return CommentsGetResponse.of(responses);
     }
 }

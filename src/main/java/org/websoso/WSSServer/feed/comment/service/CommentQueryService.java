@@ -15,8 +15,8 @@ public class CommentQueryService {
     private final CommentQueryRepository commentQueryRepository;
 
     @Transactional(readOnly = true)
-    public List<CommentGetResponse> findCommentRows(Long feedId, Long userId) {
-        return commentQueryRepository.findCommentInfoRows(feedId, userId).stream()
+    public List<CommentGetResponse> findCommentRows(Long feedId, Long userId, List<Long> blockedUserIds) {
+        return commentQueryRepository.findCommentInfoRows(feedId, userId, blockedUserIds).stream()
                 .map(CommentInfoRow::toResponse)
                 .toList();
     }

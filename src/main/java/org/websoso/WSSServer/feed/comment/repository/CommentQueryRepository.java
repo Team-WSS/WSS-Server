@@ -5,5 +5,5 @@ import org.websoso.WSSServer.feed.comment.repository.projection.CommentInfoRow;
 
 public interface CommentQueryRepository {
 
-    List<CommentInfoRow> findCommentInfoRows(Long feedId, Long userId);
+    List<CommentInfoRow> findCommentInfoRows(Long feedId, Long userId, List<Long> blockedUserIds);
 }

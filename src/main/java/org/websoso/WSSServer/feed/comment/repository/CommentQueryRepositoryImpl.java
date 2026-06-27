@@ -2,14 +2,12 @@ package org.websoso.WSSServer.feed.comment.repository;
 
 import static org.websoso.WSSServer.feed.comment.domain.QComment.comment;
 import static org.websoso.WSSServer.user.domain.QAvatarProfile.avatarProfile;
-import static org.websoso.WSSServer.user.domain.QBlock.block;
 import static org.websoso.WSSServer.user.domain.QUser.user;
 
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +21,7 @@ public class CommentQueryRepositoryImpl implements CommentQueryRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<CommentInfoRow> findCommentInfoRows(Long feedId, Long userId) {
+    public List<CommentInfoRow> findCommentInfoRows(Long feedId, Long userId, List<Long> blockedUserIds) {
         return jpaQueryFactory
                 .select(Projections.constructor(
                         CommentInfoRow.class,
@@ -36,7 +34,7 @@ public class CommentQueryRepositoryImpl implements CommentQueryRepository {
                         comment.createdDate.ne(comment.modifiedDate),
                         isMyComment(userId),
                         comment.isSpoiler,
-                        isBlocked(userId),
+                        isBlocked(),
                         comment.isHidden
                 ))
                 .from(comment)
@@ -44,7 +42,7 @@ public class CommentQueryRepositoryImpl implements CommentQueryRepository {
                 .leftJoin(avatarProfile).on(user.avatarProfileId.eq(avatarProfile.avatarProfileId))
                 .where(
                         comment.feed.feedId.eq(feedId),
-                        excludeUsersWhoBlockedMe(userId)
+                        excludeBlockedUsers(blockedUserIds)
                 )
                 .orderBy(comment.commentId.asc())
                 .fetch();
@@ -58,32 +56,16 @@ public class CommentQueryRepositoryImpl implements CommentQueryRepository {
         return comment.userId.eq(userId);
     }
 
-    private Expression<Boolean> isBlocked(Long userId) {
-        if (userId == null) {
-            return Expressions.FALSE;
-        }
-
-        return JPAExpressions
-                .selectOne()
-                .from(block)
-                .where(
-                        block.blockingId.eq(userId),
-                        block.blockedId.eq(comment.userId)
-                )
-                .exists();
+    private Expression<Boolean> isBlocked() {
+        return Expressions.FALSE;
     }
 
-    private BooleanExpression excludeUsersWhoBlockedMe(Long userId) {
-        if (userId == null) {
+    private BooleanExpression excludeBlockedUsers(List<Long> blockedUserIds) {
+        if (blockedUserIds == null || blockedUserIds.isEmpty()) {
             return null;
         }
 
-        return comment.userId.notIn(
-                JPAExpressions
-                        .select(block.blockingId)
-                        .from(block)
-                        .where(block.blockedId.eq(userId))
-        );
+        return comment.userId.notIn(blockedUserIds);
     }
 
 }
