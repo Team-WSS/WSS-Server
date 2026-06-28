@@ -12,7 +12,6 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    @Transactional // TODO: 해당 메서드를 바로 호출하는 곳이 있어서 수정 이후에 트랜잭션 삭제 예정
     public void updateUserToUnknown(Long userId) {
         jpaQueryFactory
                 .update(comment)
