@@ -22,7 +22,7 @@ public class CommentServiceImpl {
 
     @Transactional
     public void createComment(User user, Feed feed, CommentCreateRequest request) {
-        commentRepository.save(Comment.create(user.getUserId(), feed, request.commentContent()));
+        commentRepository.save(Comment.create(feed, user.getUserId(), request.commentContent()));
     }
 
     @Transactional(readOnly = true)

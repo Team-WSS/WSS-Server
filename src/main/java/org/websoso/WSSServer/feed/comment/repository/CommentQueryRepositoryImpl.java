@@ -30,7 +30,7 @@ public class CommentQueryRepositoryImpl implements CommentQueryRepository {
                         avatarProfile.avatarProfileImage,
                         comment.commentId,
                         comment.createdDate,
-                        comment.commentContent,
+                        comment.content,
                         comment.createdDate.ne(comment.modifiedDate),
                         isMyComment(userId),
                         comment.isSpoiler,

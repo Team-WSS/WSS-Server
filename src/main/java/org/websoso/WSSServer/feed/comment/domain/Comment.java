@@ -1,7 +1,9 @@
 package org.websoso.WSSServer.feed.comment.domain;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
+import static org.websoso.WSSServer.feed.comment.exception.CustomCommentError.COMMENT_CONTENT_EMPTY;
 import static org.websoso.WSSServer.feed.comment.exception.CustomCommentError.COMMENT_NOT_BELONG_TO_FEED;
+import static org.websoso.WSSServer.feed.comment.exception.CustomCommentError.COMMENT_CONTENT_TOO_LONG;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
 import jakarta.persistence.Column;
@@ -53,14 +55,19 @@ public class Comment extends BaseEntity {
     @org.hibernate.annotations.Comment("신고에 의한 스포일러 처리 여부")
     private boolean isSpoiler;
 
+    private static final int MAX_CONTENT_LENGTH = 500;
+
     public static Comment create(Feed feed, Long userId, String content) {
         return new Comment(feed, userId, content);
     }
 
     private Comment(Feed feed, Long userId, String content) {
+        validateContent(content);
+
         this.feed = feed;
         this.userId = userId;
         this.content = content;
+
         this.isHidden = false;
         this.isSpoiler = false;
     }
@@ -93,6 +100,7 @@ public class Comment extends BaseEntity {
      * 댓글 내용을 수정합니다.
      */
     public void updateContent(String content) {
+        validateContent(content);
         this.content = content;
     }
 
@@ -108,6 +116,23 @@ public class Comment extends BaseEntity {
      */
     public void markSpoiler() {
         this.isSpoiler = true;
+    }
+
+    /**
+     * 댓글 내용이 작성 가능한 형식인지 검증합니다.
+     *
+     * @throws CustomCommentException 검증에 실패한 경우
+     */
+    private void validateContent(String content) {
+        if (content == null || content.isBlank()) {
+            throw new CustomCommentException(COMMENT_CONTENT_EMPTY,
+                    "comment content cannot be null or blank");
+        }
+
+        if (content.length() > MAX_CONTENT_LENGTH) {
+            throw new CustomCommentException(COMMENT_CONTENT_TOO_LONG,
+                    "comment content cannot exceed " + MAX_CONTENT_LENGTH + " characters");
+        }
     }
 
 }

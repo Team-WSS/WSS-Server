@@ -172,7 +172,7 @@ class MessageFormatterTest {
     }
 
     private Comment createComment(Long commentId, User owner, Feed feed, String content) {
-        Comment comment = Comment.create(owner.getUserId(), feed, content);
+        Comment comment = Comment.create(feed, owner.getUserId(), content);
         ReflectionTestUtils.setField(comment, "commentId", commentId);
         return comment;
     }
