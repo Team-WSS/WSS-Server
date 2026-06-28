@@ -11,7 +11,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.time.LocalDateTime;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -20,11 +19,12 @@ import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.feed.comment.exception.CustomCommentException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.feed.domain.Feed;
+import org.websoso.common.entity.BaseEntity;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Comment {
+public class Comment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
@@ -53,14 +53,6 @@ public class Comment {
     @org.hibernate.annotations.Comment("신고에 의한 스포일러 처리 여부")
     private boolean isSpoiler;
 
-    @Column(nullable = false)
-    @org.hibernate.annotations.Comment("댓글 최초 작성 시각")
-    private LocalDateTime createdDate;
-
-    @Column(nullable = false)
-    @org.hibernate.annotations.Comment("댓글 마지막 수정 시각")
-    private LocalDateTime modifiedDate;
-
     public static Comment create(Feed feed, Long userId, String content) {
         return new Comment(feed, userId, content);
     }
@@ -71,8 +63,6 @@ public class Comment {
         this.content = content;
         this.isHidden = false;
         this.isSpoiler = false;
-        this.createdDate = LocalDateTime.now();
-        this.modifiedDate = this.createdDate;
     }
 
     /**
@@ -100,11 +90,10 @@ public class Comment {
     }
 
     /**
-     * 댓글 내용을 수정합니다. 수정 시각도 함께 갱신합니다.
+     * 댓글 내용을 수정합니다.
      */
-    public void updateContent(String commentContent) {
-        this.content = commentContent;
-        this.modifiedDate = LocalDateTime.now();
+    public void updateContent(String content) {
+        this.content = content;
     }
 
     /**
