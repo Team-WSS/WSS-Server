@@ -63,14 +63,14 @@ public class Comment {
     @org.hibernate.annotations.Comment("댓글 마지막 수정 시각")
     private LocalDateTime modifiedDate;
 
-    public static Comment create(Long userId, Feed feed, String commentContent) {
-        return new Comment(commentContent, userId, feed);
+    public static Comment create(Feed feed,Long userId, String commentContent) {
+        return new Comment(feed, userId, commentContent);
     }
 
-    private Comment(String commentContent, Long userId, Feed feed) {
-        this.commentContent = commentContent;
-        this.userId = userId;
+    private Comment(Feed feed, Long userId, String commentContent) {
         this.feed = feed;
+        this.userId = userId;
+        this.commentContent = commentContent;
         this.isHidden = false;
         this.isSpoiler = false;
         this.createdDate = LocalDateTime.now();
