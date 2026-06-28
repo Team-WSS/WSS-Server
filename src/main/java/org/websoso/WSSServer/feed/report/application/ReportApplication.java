@@ -63,9 +63,9 @@ public class ReportApplication {
 
         if (shouldHide) {
             if (reportedType.equals(SPOILER)) {
-                comment.spoiler();
+                comment.markSpoiler();
             } else if (reportedType.equals(IMPERTINENCE)) {
-                comment.hideComment();
+                comment.markHidden();
             }
         }
 

@@ -56,7 +56,7 @@ public class MessageFormatter {
                 user.getUserId(),
                 commentCreatedUser.getNickname(),
                 commentCreatedUser.getUserId(),
-                comment.getCommentContent(),
+                comment.getContent(),
                 feed.getUser().getNickname(),
                 feed.getUser().getUserId(),
                 feed.getFeedContent(),

@@ -41,9 +41,9 @@ public class Comment {
     @org.hibernate.annotations.Comment("댓글을 작성한 사용자 PK")
     private Long userId;
 
-    @Column(length = 500, nullable = false)
+    @Column(name = "comment_content", length = 500, nullable = false)
     @org.hibernate.annotations.Comment("댓글 내용")
-    private String commentContent;
+    private String content;
 
     @Column(nullable = false)
     @org.hibernate.annotations.Comment("신고에 의한 숨김 처리 여부")
@@ -61,14 +61,14 @@ public class Comment {
     @org.hibernate.annotations.Comment("댓글 마지막 수정 시각")
     private LocalDateTime modifiedDate;
 
-    public static Comment create(Feed feed, Long userId, String commentContent) {
-        return new Comment(feed, userId, commentContent);
+    public static Comment create(Feed feed, Long userId, String content) {
+        return new Comment(feed, userId, content);
     }
 
-    private Comment(Feed feed, Long userId, String commentContent) {
+    private Comment(Feed feed, Long userId, String content) {
         this.feed = feed;
         this.userId = userId;
-        this.commentContent = commentContent;
+        this.content = content;
         this.isHidden = false;
         this.isSpoiler = false;
         this.createdDate = LocalDateTime.now();
@@ -88,14 +88,6 @@ public class Comment {
     }
 
     /**
-     * 댓글 내용을 수정합니다. 수정 시각도 함께 갱신합니다.
-     */
-    public void updateContent(String commentContent) {
-        this.commentContent = commentContent;
-        this.modifiedDate = LocalDateTime.now();
-    }
-
-    /**
      * 댓글이 지정한 피드에 속하는지 검증합니다.
      *
      * @throws CustomCommentException 다른 피드의 댓글인 경우
@@ -108,16 +100,24 @@ public class Comment {
     }
 
     /**
+     * 댓글 내용을 수정합니다. 수정 시각도 함께 갱신합니다.
+     */
+    public void updateContent(String commentContent) {
+        this.content = commentContent;
+        this.modifiedDate = LocalDateTime.now();
+    }
+
+    /**
      * 신고에 의해 댓글을 숨김 처리합니다.
      */
-    public void hideComment() {
+    public void markHidden() {
         this.isHidden = true;
     }
 
     /**
      * 신고에 의해 스포일러 처리합니다.
      */
-    public void spoiler() {
+    public void markSpoiler() {
         this.isSpoiler = true;
     }
 
