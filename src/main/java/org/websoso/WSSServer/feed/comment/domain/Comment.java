@@ -16,7 +16,6 @@ import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.DynamicInsert;
 import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.feed.comment.exception.CustomCommentException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
@@ -24,7 +23,6 @@ import org.websoso.WSSServer.feed.feed.domain.Feed;
 
 @Entity
 @Getter
-@DynamicInsert
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment {
 
@@ -63,7 +61,7 @@ public class Comment {
     @org.hibernate.annotations.Comment("댓글 마지막 수정 시각")
     private LocalDateTime modifiedDate;
 
-    public static Comment create(Feed feed,Long userId, String commentContent) {
+    public static Comment create(Feed feed, Long userId, String commentContent) {
         return new Comment(feed, userId, commentContent);
     }
 
@@ -90,8 +88,7 @@ public class Comment {
     }
 
     /**
-     * 댓글 내용을 수정합니다.
-     * 수정 시각도 함께 갱신합니다.
+     * 댓글 내용을 수정합니다. 수정 시각도 함께 갱신합니다.
      */
     public void updateContent(String commentContent) {
         this.commentContent = commentContent;
