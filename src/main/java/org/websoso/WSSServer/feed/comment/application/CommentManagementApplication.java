@@ -1,8 +1,5 @@
 package org.websoso.WSSServer.feed.comment.application;
 
-import static org.websoso.WSSServer.domain.common.Action.DELETE;
-import static org.websoso.WSSServer.domain.common.Action.UPDATE;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -44,7 +41,7 @@ public class CommentManagementApplication {
 
         Comment comment = commentServiceImpl.getCommentOrException(commentId);
 
-        comment.validateOwner(user.getUserId(), UPDATE);
+        comment.validateOwner(user.getUserId());
 
         comment.updateContent(request.commentContent());
     }
@@ -54,7 +51,7 @@ public class CommentManagementApplication {
 
         Comment comment = commentServiceImpl.getCommentOrException(commentId);
 
-        comment.validateOwner(user.getUserId(), DELETE);
+        comment.validateOwner(user.getUserId());
 
         commentServiceImpl.deleteComment(comment);
     }
@@ -71,7 +68,7 @@ public class CommentManagementApplication {
 
         comment.validateBelongsTo(feed);
 
-        comment.validateOwner(user.getUserId(), UPDATE);
+        comment.validateOwner(user.getUserId());
 
         comment.updateContent(request.commentContent());
     }
@@ -88,7 +85,7 @@ public class CommentManagementApplication {
 
         comment.validateBelongsTo(feed);
 
-        comment.validateOwner(user.getUserId(), DELETE);
+        comment.validateOwner(user.getUserId());
 
         commentServiceImpl.deleteComment(comment);
     }

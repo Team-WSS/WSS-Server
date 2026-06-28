@@ -17,7 +17,6 @@ import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.websoso.WSSServer.domain.common.Action;
 import org.websoso.WSSServer.feed.comment.exception.CustomCommentException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.feed.domain.Feed;
@@ -77,10 +76,10 @@ public class Comment extends BaseEntity {
      *
      * @throws CustomUserException 작성자가 아닌 경우
      */
-    public void validateOwner(Long userId, Action action) {
+    public void validateOwner(Long userId) {
         if (!Objects.equals(this.userId, userId)) {
             throw new CustomUserException(INVALID_AUTHORIZED,
-                    "only the author can " + action.getLabel() + " the comment");
+                    "only the author can modify the comment");
         }
     }
 
