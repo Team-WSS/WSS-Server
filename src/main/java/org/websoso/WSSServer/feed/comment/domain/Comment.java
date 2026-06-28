@@ -43,17 +43,17 @@ public class Comment {
     @org.hibernate.annotations.Comment("댓글을 작성한 사용자 PK")
     private Long userId;
 
-    @Column(columnDefinition = "varchar(500)", nullable = false)
+    @Column(length = 500, nullable = false)
     @org.hibernate.annotations.Comment("댓글 내용")
     private String commentContent;
 
-    @Column(columnDefinition = "Boolean default false", nullable = false)
+    @Column(nullable = false)
     @org.hibernate.annotations.Comment("신고에 의한 숨김 처리 여부")
-    private Boolean isHidden;
+    private boolean isHidden;
 
-    @Column(columnDefinition = "Boolean default false", nullable = false)
+    @Column(nullable = false)
     @org.hibernate.annotations.Comment("신고에 의한 스포일러 처리 여부")
-    private Boolean isSpoiler;
+    private boolean isSpoiler;
 
     @Column(nullable = false)
     @org.hibernate.annotations.Comment("댓글 최초 작성 시각")
@@ -71,6 +71,8 @@ public class Comment {
         this.commentContent = commentContent;
         this.userId = userId;
         this.feed = feed;
+        this.isHidden = false;
+        this.isSpoiler = false;
         this.createdDate = LocalDateTime.now();
         this.modifiedDate = this.createdDate;
     }
