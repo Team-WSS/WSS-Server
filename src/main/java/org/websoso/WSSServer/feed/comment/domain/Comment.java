@@ -31,51 +31,40 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)
+    @org.hibernate.annotations.Comment("댓글 PK")
     private Long commentId;
-
-    @Column(columnDefinition = "Boolean default false", nullable = false)
-    private Boolean isHidden;
-
-    @Column(columnDefinition = "varchar(500)", nullable = false)
-    private String commentContent;
-
-    @Column(nullable = false)
-    private Long userId;
-
-    @Column(columnDefinition = "Boolean default false", nullable = false)
-    private Boolean isSpoiler;
-
-    @Column(nullable = false)
-    private LocalDateTime createdDate;
-
-    @Column(nullable = false)
-    private LocalDateTime modifiedDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feed_id", nullable = false)
+    @org.hibernate.annotations.Comment("댓글이 작성된 피드 PK")
     private Feed feed;
+
+    @Column(nullable = false)
+    @org.hibernate.annotations.Comment("댓글을 작성한 사용자 PK")
+    private Long userId;
+
+    @Column(columnDefinition = "varchar(500)", nullable = false)
+    @org.hibernate.annotations.Comment("댓글 내용")
+    private String commentContent;
+
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    @org.hibernate.annotations.Comment("신고에 의한 숨김 처리 여부")
+    private Boolean isHidden;
+
+    @Column(columnDefinition = "Boolean default false", nullable = false)
+    @org.hibernate.annotations.Comment("신고에 의한 스포일러 처리 여부")
+    private Boolean isSpoiler;
+
+    @Column(nullable = false)
+    @org.hibernate.annotations.Comment("댓글 최초 작성 시각")
+    private LocalDateTime createdDate;
+
+    @Column(nullable = false)
+    @org.hibernate.annotations.Comment("댓글 마지막 수정 시각")
+    private LocalDateTime modifiedDate;
 
     public static Comment create(Long userId, Feed feed, String commentContent) {
         return new Comment(commentContent, userId, feed);
-    }
-
-    public void validateOwner(Long userId, Action action) {
-        if (!Objects.equals(this.userId, userId)) {
-            throw new CustomUserException(INVALID_AUTHORIZED,
-                    "only the author can " + action.getLabel() + " the comment");
-        }
-    }
-
-    public void updateContent(String commentContent) {
-        this.commentContent = commentContent;
-        this.modifiedDate = LocalDateTime.now();
-    }
-
-    public void validateBelongsTo(Feed feed) {
-        if (this.feed != feed) {
-            throw new CustomCommentException(COMMENT_NOT_BELONG_TO_FEED,
-                    "the comment does not belong to the specified feed");
-        }
     }
 
     private Comment(String commentContent, Long userId, Feed feed) {
@@ -86,14 +75,59 @@ public class Comment {
         this.modifiedDate = this.createdDate;
     }
 
+    /**
+     * 댓글 작성자인지 검증합니다.
+     *
+     * @throws CustomUserException 작성자가 아닌 경우
+     */
+    public void validateOwner(Long userId, Action action) {
+        if (!Objects.equals(this.userId, userId)) {
+            throw new CustomUserException(INVALID_AUTHORIZED,
+                    "only the author can " + action.getLabel() + " the comment");
+        }
+    }
+
+    /**
+     * 댓글 내용을 수정합니다.
+     * 수정 시각도 함께 갱신합니다.
+     */
+    public void updateContent(String commentContent) {
+        this.commentContent = commentContent;
+        this.modifiedDate = LocalDateTime.now();
+    }
+
+    /**
+     * 댓글이 지정한 피드에 속하는지 검증합니다.
+     *
+     * @throws CustomCommentException 다른 피드의 댓글인 경우
+     */
+    public void validateBelongsTo(Feed feed) {
+        if (this.feed != feed) {
+            throw new CustomCommentException(COMMENT_NOT_BELONG_TO_FEED,
+                    "the comment does not belong to the specified feed");
+        }
+    }
+
+    /**
+     * 신고에 의해 댓글을 숨김 처리합니다.
+     */
     public void hideComment() {
         this.isHidden = true;
     }
 
+    /**
+     * 신고에 의해 스포일러 처리합니다.
+     */
     public void spoiler() {
         this.isSpoiler = true;
     }
 
+    /**
+     * 작성자 여부를 반환합니다.
+     *
+     * @deprecated validateOwner()로 대체 예정
+     */
+    @Deprecated
     public boolean isMine(Long userId) {
         return this.getUserId().equals(userId);
     }
