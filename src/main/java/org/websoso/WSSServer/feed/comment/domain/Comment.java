@@ -122,13 +122,4 @@ public class Comment {
         this.isSpoiler = true;
     }
 
-    /**
-     * 작성자 여부를 반환합니다.
-     *
-     * @deprecated validateOwner()로 대체 예정
-     */
-    @Deprecated
-    public boolean isMine(Long userId) {
-        return this.getUserId().equals(userId);
-    }
 }
