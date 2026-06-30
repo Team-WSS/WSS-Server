@@ -41,7 +41,7 @@ public class ReportServiceImpl {
 
     @Transactional
     public void saveReportedFeed(Feed feed, User user, ReportedType reportedType) {
-        reportedFeedRepository.save(ReportedFeed.create(feed, user, reportedType));
+        reportedFeedRepository.saveAndFlush(ReportedFeed.create(feed, user, reportedType));
     }
 
     @Transactional(readOnly = true)

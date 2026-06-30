@@ -9,6 +9,7 @@ import static org.websoso.WSSServer.feed.feed.exception.CustomFeedError.SELF_REP
 import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
@@ -44,21 +45,28 @@ public class ReportApplication {
     @Transactional
     public void reportFeed(User user, Long feedId, ReportedType reportedType) {
 
+        // 차단한 경우 피드는 접근할 수 없다. (피드 정책)
         // 접근 가능한 피드인지 체크 및 피드 불러오기
         Feed feed = feedServiceImpl.getAccessFeedOrException(feedId, user.getUserId());
 
         // 서로 차단 관계인지 체크한다.
         blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
 
+        // 본인이 작성한 피드는 신고할 수 없다. (신고 정책)
         if (feed.isMine(user.getUserId())) {
             throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
         }
 
+        // 이미 신고한 피드는 또 신고할 수 없다. (신고 정책)
         if (reportServiceImpl.isExistsByFeedAndUserAndReportedType(feed, user, reportedType)) {
             throw new CustomFeedException(ALREADY_REPORTED_FEED, "feed has already been reported by the user");
         }
 
-        reportServiceImpl.saveReportedFeed(feed, user, reportedType);
+        try {
+            reportServiceImpl.saveReportedFeed(feed, user, reportedType);
+        } catch (DataIntegrityViolationException e) {
+            throw new CustomFeedException(ALREADY_REPORTED_FEED, "feed has already been reported by the user");
+        }
 
         int reportedCount = reportServiceImpl.countByFeedAndReportedType(feed, reportedType);
         boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
