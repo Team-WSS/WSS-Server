@@ -23,7 +23,7 @@ public class ReportController {
     private final ReportApplication reportApplication;
 
     @PostMapping("/{feedId}/spoiler")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> reportFeedSpoiler(@AuthenticationPrincipal User user,
                                                   @PathVariable("feedId") Long feedId) {
         reportApplication.reportFeed(user, feedId, SPOILER);
@@ -33,7 +33,7 @@ public class ReportController {
     }
 
     @PostMapping("/{feedId}/impertinence")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> reportedFeedImpertinence(@AuthenticationPrincipal User user,
                                                          @PathVariable("feedId") Long feedId) {
         reportApplication.reportFeed(user, feedId, IMPERTINENCE);

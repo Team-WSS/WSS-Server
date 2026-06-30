@@ -26,6 +26,7 @@ import org.websoso.WSSServer.feed.report.service.ReportServiceImpl;
 import org.websoso.WSSServer.notification.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.repository.UserRepository;
+import org.websoso.WSSServer.user.service.BlockService;
 
 @Service
 @RequiredArgsConstructor
@@ -34,10 +35,41 @@ public class ReportApplication {
     private final FeedServiceImpl feedServiceImpl;
     private final CommentServiceImpl commentServiceImpl;
     private final ReportServiceImpl reportServiceImpl;
+    private final BlockService blockService;
     private final DiscordMessageClient discordMessageClient;
 
     //ToDo : 의존성 제거 필요 부분
     private final UserRepository userRepository;
+
+    @Transactional
+    public void reportFeed(User user, Long feedId, ReportedType reportedType) {
+
+        // 접근 가능한 피드인지 체크 및 피드 불러오기
+        Feed feed = feedServiceImpl.getAccessFeedOrException(feedId, user.getUserId());
+
+        // 서로 차단 관계인지 체크한다.
+        blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
+
+        if (feed.isMine(user.getUserId())) {
+            throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
+        }
+
+        if (reportServiceImpl.isExistsByFeedAndUserAndReportedType(feed, user, reportedType)) {
+            throw new CustomFeedException(ALREADY_REPORTED_FEED, "feed has already been reported by the user");
+        }
+
+        reportServiceImpl.saveReportedFeed(feed, user, reportedType);
+
+        int reportedCount = reportServiceImpl.countByFeedAndReportedType(feed, reportedType);
+        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
+
+        if (shouldHide) {
+            feed.hideFeed();
+        }
+
+        discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
+                MessageFormatter.formatFeedReportMessage(user, feed, reportedType, reportedCount, shouldHide), REPORT));
+    }
 
     @Transactional
     public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
@@ -72,31 +104,6 @@ public class ReportApplication {
         discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
                 MessageFormatter.formatCommentReportMessage(user, feed, comment, reportedType, commentCreatedUser,
                         reportedCount, shouldHide), REPORT));
-    }
-
-    @Transactional
-    public void reportFeed(User user, Long feedId, ReportedType reportedType) {
-        Feed feed = feedServiceImpl.getFeedOrException(feedId);
-
-        if (isUserFeedOwner(feed.getUser(), user)) {
-            throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
-        }
-
-        if (reportServiceImpl.isExistsByFeedAndUserAndReportedType(feed, user, reportedType)) {
-            throw new CustomFeedException(ALREADY_REPORTED_FEED, "feed has already been reported by the user");
-        }
-
-        reportServiceImpl.saveReportedFeed(feed, user, reportedType);
-
-        int reportedCount = reportServiceImpl.countByFeedAndReportedType(feed, reportedType);
-        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
-
-        if (shouldHide) {
-            feed.hideFeed();
-        }
-
-        discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
-                MessageFormatter.formatFeedReportMessage(user, feed, reportedType, reportedCount, shouldHide), REPORT));
     }
 
     private Boolean isUserFeedOwner(User createdUser, User user) {
