@@ -11,8 +11,9 @@ public record NovelSummaryResponse(
         float novelRating,
         long novelRatingCount
 ) {
-    public static NovelSummaryResponse of(Novel novel, long interestCount, float novelRating,
-                                             long novelRatingCount) {
+    public static NovelSummaryResponse of(Novel novel, long interestCount) {
+        float novelRating = Math.round(novel.getAverageRating().floatValue() * 10.0f) / 10.0f;
+
         return new NovelSummaryResponse(
                 novel.getNovelId(),
                 novel.getNovelImage(),
@@ -20,7 +21,7 @@ public record NovelSummaryResponse(
                 novel.getAuthor(),
                 interestCount,
                 novelRating,
-                novelRatingCount
+                novel.getRatingCount()
         );
     }
 }

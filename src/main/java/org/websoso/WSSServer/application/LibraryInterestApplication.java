@@ -1,13 +1,9 @@
 package org.websoso.WSSServer.application;
 
-import static org.websoso.WSSServer.exception.error.CustomUserNovelError.NOT_INTERESTED;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
-import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.library.service.LibraryService;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;
@@ -40,13 +36,7 @@ public class LibraryInterestApplication {
      */
     @Transactional
     public void unregisterAsInterest(User user, Long novelId) {
-        UserNovel library = libraryService.getLibraryOrNull(user, novelId);
-
-        if (library == null) {
-            return;
-        }
-
-        libraryService.unregisterInterest(library);
+        libraryService.unregisterInterest(user, novelId);
     }
 
 }

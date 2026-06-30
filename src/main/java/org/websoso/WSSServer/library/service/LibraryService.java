@@ -5,8 +5,11 @@ import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
 import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NOVEL_NOT_FOUND;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -16,7 +19,9 @@ import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.library.domain.UserNovel;
+import org.websoso.WSSServer.library.domain.UserNovelStatistics;
 import org.websoso.WSSServer.library.repository.UserNovelRepository;
+import org.websoso.WSSServer.library.repository.projection.NovelInterestCount;
 import org.websoso.WSSServer.novel.domain.Novel;
 
 @Service
@@ -26,9 +31,9 @@ public class LibraryService {
     private final UserNovelRepository userNovelRepository;
 
     // TODO: novelId로 불러옴
-    @Transactional(readOnly = true)
-    public UserNovel getLibraryOrException(User user, Long novelId) {
-        return userNovelRepository.findByNovel_NovelIdAndUser(novelId, user)
+    @Transactional
+    public UserNovel getLibraryForUpdateOrException(User user, Long novelId) {
+        return userNovelRepository.findByNovelIdAndUserForUpdate(novelId, user)
                 .orElseThrow(() -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
                         "user novel with the given user and novel is not found"));
     }
@@ -56,13 +61,15 @@ public class LibraryService {
     @Transactional
     public UserNovel createLibrary(ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,
                                    User user, Novel novel) {
-        return userNovelRepository.save(UserNovel.create(
+        UserNovel userNovel = userNovelRepository.save(UserNovel.create(
                 status,
                 userNovelRating,
                 startDate,
                 endDate,
                 user,
                 novel));
+        updateNovelStatistics(UserNovelStatistics.EMPTY, UserNovelStatistics.from(userNovel), novel);
+        return userNovel;
     }
 
     /**
@@ -74,36 +81,112 @@ public class LibraryService {
      */
     @Transactional
     public void registerInterest(User user, Novel novel) {
-        userNovelRepository.upsertInterest(
+        int insertedCount = userNovelRepository.insertInterestIfAbsent(
                 user.getUserId(),
                 novel.getNovelId(),
                 UserNovel.DEFAULT_RATING,
                 UserNovel.DEFAULT_STATUS
         );
+
+        UserNovel library = userNovelRepository.findByNovelIdAndUserForUpdate(novel.getNovelId(), user)
+                .orElseThrow(() -> new IllegalStateException("inserted user novel could not be found"));
+
+        UserNovelStatistics before = insertedCount == 1
+                ? UserNovelStatistics.EMPTY
+                : UserNovelStatistics.from(library);
+
+        library.markAsInterested();
+        updateNovelStatistics(before, UserNovelStatistics.from(library), novel);
     }
 
     /**
      * <p>관심있어요를 해제한다.</p>
      * 만약, 서재 정보가 없다면 삭제한다.
      *
-     * @param library 서재 Entity
+     * @param user    사용자 Entity
+     * @param novelId 소설 ID
      */
     @Transactional
-    public void unregisterInterest(UserNovel library) {
+    public void unregisterInterest(User user, Long novelId) {
+        UserNovel library = userNovelRepository.findByNovelIdAndUserForUpdate(novelId, user).orElse(null);
+
+        if (library == null) {
+            return;
+        }
+
         if (Boolean.FALSE.equals(library.getIsInterest())) {
             return;
         }
 
+        UserNovelStatistics before = UserNovelStatistics.from(library);
         library.unmarkAsInterested();
 
         if (library.isSafeToDelete()) {
             userNovelRepository.delete(library);
+            updateNovelStatistics(before, UserNovelStatistics.EMPTY, library.getNovel());
+            return;
         }
+
+        updateNovelStatistics(before, UserNovelStatistics.from(library), library.getNovel());
+    }
+
+    @Transactional
+    public void updateEvaluation(UserNovel library, Float userNovelRating, ReadStatus status, LocalDate startDate,
+                                 LocalDate endDate) {
+        UserNovelStatistics before = UserNovelStatistics.from(library);
+        library.updateUserNovel(userNovelRating, status, startDate, endDate);
+        updateNovelStatistics(before, UserNovelStatistics.from(library), library.getNovel());
+    }
+
+    @Transactional
+    public void deleteEvaluation(UserNovel library) {
+        UserNovelStatistics before = UserNovelStatistics.from(library);
+        library.deleteEvaluation();
+        updateNovelStatistics(before, UserNovelStatistics.from(library), library.getNovel());
     }
 
     @Transactional
     public void delete(UserNovel library) {
+        UserNovelStatistics before = UserNovelStatistics.from(library);
         userNovelRepository.delete(library);
+        updateNovelStatistics(before, UserNovelStatistics.EMPTY, library.getNovel());
+    }
+
+    /**
+     * UserNovel 변경 전후의 통계 기여분 차이를 계산해 작품의 역정규화 통계를 원자적으로 갱신한다.
+     * 평점 합, 평점 수, 인기도에 변화가 없으면 UPDATE 쿼리를 실행하지 않는다.
+     */
+    private void updateNovelStatistics(UserNovelStatistics before, UserNovelStatistics after, Novel novel) {
+        BigDecimal ratingSumDelta = after.ratingSum().subtract(before.ratingSum());
+        long ratingCountDelta = after.ratingCount() - before.ratingCount();
+        long popularityDelta = after.popularity() - before.popularity();
+
+        if (ratingSumDelta.signum() == 0
+                && ratingCountDelta == 0
+                && popularityDelta == 0) {
+            return;
+        }
+
+        userNovelRepository.flush();
+        userNovelRepository.updateNovelStatisticsByDelta(
+                novel.getNovelId(),
+                ratingSumDelta,
+                ratingCountDelta,
+                popularityDelta
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Long> getInterestCountsByNovelIds(List<Long> novelIds) {
+        if (novelIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return userNovelRepository.findInterestCountsByNovelIds(novelIds).stream()
+                .collect(Collectors.toMap(
+                        NovelInterestCount::novelId,
+                        NovelInterestCount::interestCount
+                ));
     }
 
     public int getRatingCount(Novel novel) {
@@ -146,4 +229,5 @@ public class LibraryService {
     public List<Long> getTodayPopularNovelIds(PageRequest pageRequest) {
         return userNovelRepository.findTodayPopularNovelsId(pageRequest);
     }
+
 }

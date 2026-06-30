@@ -13,6 +13,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.LockModeType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,7 +28,9 @@ import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.domain.common.UserNovelSortType;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 import org.websoso.WSSServer.library.repository.cursor.UserNovelCursor;
+import org.websoso.WSSServer.library.repository.projection.NovelInterestCount;
 import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.user.domain.User;
 
 @Repository
 @RequiredArgsConstructor
@@ -35,6 +38,35 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
 
     private static final long NO_CURSOR = 0L;
     private final JPAQueryFactory jpaQueryFactory;
+
+    @Override
+    public Optional<UserNovel> findByNovelIdAndUserForUpdate(Long novelId, User user) {
+        return Optional.ofNullable(jpaQueryFactory
+                .selectFrom(userNovel)
+                .where(
+                        userNovel.novel.novelId.eq(novelId),
+                        userNovel.user.eq(user)
+                )
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .fetchOne());
+    }
+
+    @Override
+    public List<NovelInterestCount> findInterestCountsByNovelIds(List<Long> novelIds) {
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        NovelInterestCount.class,
+                        userNovel.novel.novelId,
+                        userNovel.count()
+                ))
+                .from(userNovel)
+                .where(
+                        userNovel.novel.novelId.in(novelIds),
+                        userNovel.isInterest.isTrue()
+                )
+                .groupBy(userNovel.novel.novelId)
+                .fetch();
+    }
 
     @Override
     public UserNovelCountGetResponse findUserNovelStatistics(Long userId) {

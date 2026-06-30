@@ -93,9 +93,10 @@ public class LibraryEvaluationApplication {
      */
     @Transactional
     public void updateEvaluation(User user, Long novelId, UserNovelUpdateRequest request) {
-        UserNovel userNovel = libraryService.getLibraryOrException(user, novelId);
+        UserNovel userNovel = libraryService.getLibraryForUpdateOrException(user, novelId);
 
-        userNovel.updateUserNovel(request.userNovelRating(), request.status(), request.startDate(), request.endDate());
+        libraryService.updateEvaluation(userNovel, request.userNovelRating(), request.status(), request.startDate(),
+                request.endDate());
 
         updateAttractivePoints(userNovel, request.attractivePoints());
 
@@ -110,14 +111,14 @@ public class LibraryEvaluationApplication {
      */
     @Transactional
     public void deleteEvaluation(User user, Long novelId) {
-        UserNovel userNovel = libraryService.getLibraryOrException(user, novelId);
+        UserNovel userNovel = libraryService.getLibraryForUpdateOrException(user, novelId);
 
         if (userNovel.getStatus() == null) {
             throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
         }
 
         if (userNovel.getIsInterest()) {
-            userNovel.deleteEvaluation();
+            libraryService.deleteEvaluation(userNovel);
 
             attractivePointService.deleteUserNovelAttractivePoints(userNovel.getUserNovelAttractivePoints());
             keywordService.deleteUserNovelKeywords(userNovel.getUserNovelKeywords());
