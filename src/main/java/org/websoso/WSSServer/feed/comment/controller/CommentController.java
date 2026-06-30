@@ -23,7 +23,7 @@ import org.websoso.WSSServer.feed.comment.controller.dto.CommentUpdateRequest;
 import org.websoso.WSSServer.feed.comment.controller.dto.CommentsGetResponse;
 import org.websoso.WSSServer.user.domain.User;
 
-@RequestMapping("/feeds")
+@RequestMapping
 @RestController
 @RequiredArgsConstructor
 public class CommentController {
@@ -31,45 +31,68 @@ public class CommentController {
     private final CommentFindApplication commentFindApplication;
     private final CommentManagementApplication commentManagementApplication;
 
-    @PostMapping("/{feedId}/comments")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
-    public ResponseEntity<Void> createComment(@AuthenticationPrincipal User user, @PathVariable("feedId") Long feedId,
+    @PostMapping("/feeds/{feedId}/comments")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> createComment(@AuthenticationPrincipal User user,
+                                              @PathVariable Long feedId,
                                               @Valid @RequestBody CommentCreateRequest request) {
-        commentManagementApplication.createComment(user, feedId, request);
+        commentManagementApplication.create(user, feedId, request);
         return ResponseEntity.status(NO_CONTENT).build();
     }
 
-    @GetMapping("/{feedId}/comments")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
+    @GetMapping("/feeds/{feedId}/comments")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CommentsGetResponse> getComments(@AuthenticationPrincipal User user,
-                                                           @PathVariable("feedId") Long feedId) {
+                                                           @PathVariable Long feedId) {
         return ResponseEntity
                 .status(OK)
                 .body(commentFindApplication.getComments(user, feedId));
     }
 
-    @PutMapping("/{feedId}/comments/{commentId}")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user) "
-            + "and @authorizationService.validate(#commentId, #user, T(org.websoso.WSSServer.feed.comment.domain.Comment))")
+    @PutMapping("/comments/{commentId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> updateComment(@AuthenticationPrincipal User user,
-                                              @PathVariable("feedId") Long feedId,
-                                              @PathVariable("commentId") Long commentId,
+                                              @PathVariable Long commentId,
                                               @Valid @RequestBody CommentUpdateRequest request) {
-        commentManagementApplication.updateComment(user, feedId, commentId, request);
+        commentManagementApplication.update(user, commentId, request);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
     }
 
-    @DeleteMapping("/{feedId}/comments/{commentId}")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user) "
-            + "and @authorizationService.validate(#commentId, #user, T(org.websoso.WSSServer.feed.comment.domain.Comment))")
+    @DeleteMapping("/comments/{commentId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal User user,
-                                              @PathVariable("feedId") Long feedId,
-                                              @PathVariable("commentId") Long commentId) {
-        commentManagementApplication.deleteComment(user, feedId, commentId);
+                                              @PathVariable Long commentId) {
+        commentManagementApplication.delete(user, commentId);
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
     }
+
+    @PutMapping("/feeds/{feedId}/comments/{commentId}")
+    @PreAuthorize("isAuthenticated()")
+    @Deprecated(since = "PUT /comments/{commentId}으로 완벽 교체시")
+    public ResponseEntity<Void> updateComment(@AuthenticationPrincipal User user,
+                                              @PathVariable Long feedId,
+                                              @PathVariable Long commentId,
+                                              @Valid @RequestBody CommentUpdateRequest request) {
+        commentManagementApplication.update(user, feedId, commentId, request);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
+    @DeleteMapping("/feeds/{feedId}/comments/{commentId}")
+    @PreAuthorize("isAuthenticated()")
+    @Deprecated(since = "DELETE /comments/{commentId}으로 완벽 교체시")
+    public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal User user,
+                                              @PathVariable Long feedId,
+                                              @PathVariable Long commentId) {
+        commentManagementApplication.delete(user, feedId, commentId);
+        return ResponseEntity
+                .status(NO_CONTENT)
+                .build();
+    }
+
 }

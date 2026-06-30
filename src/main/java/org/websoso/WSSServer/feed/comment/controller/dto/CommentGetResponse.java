@@ -25,7 +25,7 @@ public record CommentGetResponse(
                 userBasicInfo.avatarImage(),
                 comment.getCommentId(),
                 TimeFormatUtil.formatRelativeDateTime(comment.getCreatedDate()),
-                comment.getCommentContent(),
+                comment.getContent(),
                 !comment.getCreatedDate().equals(comment.getModifiedDate()),
                 isMyComment,
                 isSpoiler,

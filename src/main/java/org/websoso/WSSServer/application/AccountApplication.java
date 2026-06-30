@@ -3,21 +3,21 @@ package org.websoso.WSSServer.application;
 import static org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessageType.WITHDRAW;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.feed.comment.service.CommentServiceImpl;
+import org.websoso.WSSServer.feed.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
 import org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessage;
 import org.websoso.WSSServer.dto.user.WithdrawalRequest;
-import org.websoso.WSSServer.feed.comment.repository.CommentRepository;
-import org.websoso.WSSServer.feed.feed.repository.FeedRepository;
+import org.websoso.WSSServer.feed.comment.application.CommentManagementApplication;
+import org.websoso.WSSServer.feed.feed.application.FeedManagementApplication;
 import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.oauth2.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.notification.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.domain.WithdrawalReason;
-import org.websoso.WSSServer.user.event.WithdrawUserEvent;
 import org.websoso.WSSServer.user.repository.UserRepository;
 import org.websoso.WSSServer.user.repository.WithdrawalReasonRepository;
 
@@ -31,13 +31,11 @@ public class AccountApplication {
     private final WithdrawalReasonRepository withdrawalReasonRepository;
     private final DiscordMessageClient discordMessageClient;
     private final AppleService appleService;
-    private final FeedRepository feedRepository;
     private final UserRepository userRepository;
-    private final CommentRepository commentRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final KakaoService kakaoService;
-
-    private final ApplicationEventPublisher eventPublisher;
+    private final CommentServiceImpl commentService;
+    private final FeedServiceImpl feedService;
 
     public void withdrawUser(User user, WithdrawalRequest withdrawalRequest) {
         unlinkSocialAccount(user);
@@ -51,10 +49,6 @@ public class AccountApplication {
                 DiscordWebhookMessage.of(messageContent, WITHDRAW));
 
         withdrawalReasonRepository.save(WithdrawalReason.create(withdrawalRequest.reason()));
-
-        eventPublisher.publishEvent(
-                WithdrawUserEvent.of(user.getUserId())
-        );
     }
 
     private void unlinkSocialAccount(User user) {
@@ -67,7 +61,8 @@ public class AccountApplication {
 
     private void cleanupUserData(Long userId) {
         refreshTokenRepository.deleteAll(refreshTokenRepository.findAllByUserId(userId));
-        commentRepository.updateUserToUnknown(userId);
+        commentService.updateWriterToUnknown(userId);
+        feedService.updateWriterToUnknown(userId);
         userRepository.deleteById(userId);
     }
 

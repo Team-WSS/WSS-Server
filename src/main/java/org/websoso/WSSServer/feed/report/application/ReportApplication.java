@@ -42,8 +42,8 @@ public class ReportApplication {
     @Transactional
     public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
         Feed feed = feedServiceImpl.getFeedOrException(feedId);
-        Comment comment = commentServiceImpl.findComment(commentId);
-        comment.validateFeedAssociation(feed);
+        Comment comment = commentServiceImpl.getCommentOrException(commentId);
+        comment.validateBelongsTo(feed);
 
         User commentCreatedUser = userRepository.findById(comment.getUserId())
                 .orElseThrow(() -> new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
@@ -63,9 +63,9 @@ public class ReportApplication {
 
         if (shouldHide) {
             if (reportedType.equals(SPOILER)) {
-                comment.spoiler();
+                comment.markSpoiler();
             } else if (reportedType.equals(IMPERTINENCE)) {
-                comment.hideComment();
+                comment.markHidden();
             }
         }
 

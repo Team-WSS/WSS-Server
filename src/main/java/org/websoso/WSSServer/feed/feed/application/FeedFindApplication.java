@@ -64,7 +64,7 @@ public class FeedFindApplication {
         UserBasicInfo feedUserBasicInfo = UserBasicInfo.of(feed.getUser().getUserId(), feed.getUser().getNickname(), avatarImageUrl);
 
         // 피드에 연결된 소설 정보 가져오기
-        Novel novel = getLinkedNovelOrNull(feed.getNovelId());
+        Novel novel = novelServiceImpl.findOptionalNovel(feed.getNovelId()).orElse(null);
 
         // 사용자가 현재 피드에 좋아요를 했는지 여부 체크
         boolean isLiked = feedLikeService.isUserLikedFeed(user.getUserId(), feed);
@@ -155,13 +155,6 @@ public class FeedFindApplication {
 
         return UserFeedsGetResponse.of(visibleFeeds.hasNext(), feedsCount, userFeedGetResponseList);
 
-    }
-
-    private Novel getLinkedNovelOrNull(Long linkedNovelId) {
-        if (linkedNovelId == null) {
-            return null;
-        }
-        return novelServiceImpl.getNovelOrException(linkedNovelId);
     }
 
 }
