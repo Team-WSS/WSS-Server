@@ -42,11 +42,9 @@ import org.websoso.WSSServer.library.domain.Keyword;
 import org.websoso.WSSServer.library.service.LibraryService;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.novel.domain.NovelGenre;
-import org.websoso.WSSServer.novel.domain.NovelStatistics;
 import org.websoso.WSSServer.novel.service.GenreServiceImpl;
 import org.websoso.WSSServer.novel.service.KeywordServiceImpl;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;
-import org.websoso.WSSServer.novel.service.NovelStatisticsService;
 import org.websoso.WSSServer.novel.service.PopularNovelService;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 
@@ -61,7 +59,6 @@ public class SearchNovelApplication {
     private final KeywordService libraryKeywordService;
     private final KeywordServiceImpl keywordService;
     private final LibraryService libraryService;
-    private final NovelStatisticsService novelStatisticsService;
     private final ApplicationEventPublisher eventPublisher;
 
     // TODO: 삭제될 레포지토리 의존성
@@ -232,12 +229,9 @@ public class SearchNovelApplication {
                 .map(Novel::getNovelId)
                 .toList();
         Map<Long, Long> interestCounts = libraryService.getInterestCountsByNovelIds(novelIds);
-        Map<Long, NovelStatistics> statistics = novelStatisticsService.getStatisticsByNovelIds(novelIds);
-
         return novels.stream()
                 .map(novel -> NovelSummaryResponse.of(
                         novel,
-                        statistics.get(novel.getNovelId()),
                         interestCounts.getOrDefault(novel.getNovelId(), 0L)
                 ))
                 .toList();

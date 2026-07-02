@@ -40,14 +40,14 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
         List<Novel> novelsByTitle = jpaQueryFactory
                 .selectFrom(novel)
-                .leftJoin(novelStatistics).on(novelStatistics.novelId.eq(novel.novelId))
+                .leftJoin(novel.novelStatistics, novelStatistics).fetchJoin()
                 .where(titleContainsQuery(searchQuery))
                 .orderBy(novelStatistics.popularity.desc(), novel.novelId.asc())
                 .fetch();
 
         List<Novel> novelsByAuthor = jpaQueryFactory
                 .selectFrom(novel)
-                .leftJoin(novelStatistics).on(novelStatistics.novelId.eq(novel.novelId))
+                .leftJoin(novel.novelStatistics, novelStatistics).fetchJoin()
                 .where(authorContainsQuery.and(titleContainsQuery(searchQuery).not()))
                 .orderBy(novelStatistics.popularity.desc(), novel.novelId.asc())
                 .fetch();
@@ -76,7 +76,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
         JPAQuery<Novel> query = jpaQueryFactory
                 .selectFrom(novel)
-                .leftJoin(novelStatistics).on(novelStatistics.novelId.eq(novel.novelId));
+                .leftJoin(novel.novelStatistics, novelStatistics).fetchJoin();
 
         boolean hasGenreFilter = genres != null && !genres.isEmpty();
         boolean hasPlatformFilter = platformNames != null && !platformNames.isEmpty();
@@ -120,7 +120,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     public List<Novel> findAutocompleteNovels(String searchQuery, int limitSize) {
         return jpaQueryFactory
                 .selectFrom(novel)
-                .leftJoin(novelStatistics).on(novelStatistics.novelId.eq(novel.novelId))
+                .leftJoin(novel.novelStatistics, novelStatistics)
                 .where(titleContainsQuery(searchQuery))
                 .orderBy(novelStatistics.popularity.desc(), novel.novelId.asc())
                 .limit(limitSize)

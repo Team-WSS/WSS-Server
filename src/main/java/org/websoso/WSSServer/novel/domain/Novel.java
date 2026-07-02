@@ -8,6 +8,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +42,10 @@ public class Novel {
 
     @Column(columnDefinition = "Boolean default false", nullable = false)
     private Boolean isCompleted;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @PrimaryKeyJoinColumn(name = "novel_id", referencedColumnName = "novel_id")
+    private NovelStatistics novelStatistics;
 
     @OneToMany(mappedBy = "novel", fetch = FetchType.LAZY)
     private List<UserNovel> userNovels = new ArrayList<>();

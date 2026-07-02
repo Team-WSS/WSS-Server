@@ -12,7 +12,11 @@ public record NovelSummaryResponse(
         float novelRating,
         long novelRatingCount
 ) {
-    public static NovelSummaryResponse of(Novel novel, NovelStatistics statistics, long interestCount) {
+    /**
+     * 작품과 연결된 통계로 검색 결과 요약 응답을 생성한다.
+     */
+    public static NovelSummaryResponse of(Novel novel, long interestCount) {
+        NovelStatistics statistics = novel.getNovelStatistics();
         float novelRating = statistics == null
                 ? 0.0f
                 : Math.round(statistics.getAverageRating().floatValue() * 10.0f) / 10.0f;

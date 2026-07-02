@@ -2,11 +2,7 @@ package org.websoso.WSSServer.novel.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import lombok.AccessLevel;
@@ -23,11 +19,6 @@ public class NovelStatistics {
     @Id
     @Column(name = "novel_id")
     private Long novelId;
-
-    @MapsId
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "novel_id", nullable = false)
-    private Novel novel;
 
     @Column(nullable = false, precision = 4, scale = 3)
     @Comment("작품 평균 평점")
