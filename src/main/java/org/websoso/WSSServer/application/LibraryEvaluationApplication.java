@@ -28,7 +28,9 @@ import org.websoso.WSSServer.library.service.AttractivePointService;
 import org.websoso.WSSServer.library.service.KeywordService;
 import org.websoso.WSSServer.library.service.LibraryService;
 import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.novel.domain.NovelStatisticsContribution;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;
+import org.websoso.WSSServer.novel.service.NovelStatisticsService;
 
 /**
  * 서재 평가는 서재와 매력 포인트, 키워드가 핵심 도메인이다.
@@ -39,6 +41,7 @@ public class LibraryEvaluationApplication {
 
     private final NovelServiceImpl novelService;
     private final LibraryService libraryService;
+    private final NovelStatisticsService novelStatisticsService;
     private final AttractivePointService attractivePointService;
     private final KeywordService keywordService;
 
@@ -55,6 +58,11 @@ public class LibraryEvaluationApplication {
         try {
             UserNovel userNovel = libraryService.createLibrary(request.status(), request.userNovelRating(),
                     request.startDate(), request.endDate(), user, novel);
+            novelStatisticsService.updateByDelta(
+                    novel.getNovelId(),
+                    NovelStatisticsContribution.EMPTY,
+                    NovelStatisticsContribution.from(userNovel)
+            );
 
             attractivePointService.createUserNovelAttractivePoints(userNovel, request.attractivePoints());
             keywordService.createNovelKeywords(userNovel, request.keywordIds());
@@ -94,9 +102,15 @@ public class LibraryEvaluationApplication {
     @Transactional
     public void updateEvaluation(User user, Long novelId, UserNovelUpdateRequest request) {
         UserNovel userNovel = libraryService.getLibraryForUpdateOrException(user, novelId);
+        NovelStatisticsContribution before = NovelStatisticsContribution.from(userNovel);
 
         libraryService.updateEvaluation(userNovel, request.userNovelRating(), request.status(), request.startDate(),
                 request.endDate());
+        novelStatisticsService.updateByDelta(
+                novelId,
+                before,
+                NovelStatisticsContribution.from(userNovel)
+        );
 
         updateAttractivePoints(userNovel, request.attractivePoints());
 
@@ -112,6 +126,7 @@ public class LibraryEvaluationApplication {
     @Transactional
     public void deleteEvaluation(User user, Long novelId) {
         UserNovel userNovel = libraryService.getLibraryForUpdateOrException(user, novelId);
+        NovelStatisticsContribution before = NovelStatisticsContribution.from(userNovel);
 
         if (userNovel.getStatus() == null) {
             throw new CustomUserNovelException(NOT_EVALUATED, "this novel has not been evaluated by the user");
@@ -119,11 +134,21 @@ public class LibraryEvaluationApplication {
 
         if (userNovel.getIsInterest()) {
             libraryService.deleteEvaluation(userNovel);
+            novelStatisticsService.updateByDelta(
+                    novelId,
+                    before,
+                    NovelStatisticsContribution.from(userNovel)
+            );
 
             attractivePointService.deleteUserNovelAttractivePoints(userNovel.getUserNovelAttractivePoints());
             keywordService.deleteUserNovelKeywords(userNovel.getUserNovelKeywords());
         } else {
             libraryService.delete(userNovel);
+            novelStatisticsService.updateByDelta(
+                    novelId,
+                    before,
+                    NovelStatisticsContribution.EMPTY
+            );
         }
     }
 

@@ -3,12 +3,7 @@ package org.websoso.WSSServer.library.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.never;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,83 +37,55 @@ class LibraryServiceTest {
     @Mock
     private Novel novel;
 
-    @DisplayName("평점과 상태 변경 시 기존값과 변경값의 차이만 작품 통계에 반영한다")
+    @DisplayName("평가 정보를 변경하면 UserNovel만 수정한다")
     @Test
-    void updatesStatisticsByDelta() {
-        given(novel.getNovelId()).willReturn(NOVEL_ID);
+    void updatesEvaluation() {
         UserNovel library = UserNovel.create(ReadStatus.QUIT, 2.0f, null, null, user, novel);
 
         libraryService.updateEvaluation(library, 4.0f, ReadStatus.WATCHING, null, null);
 
-        then(userNovelRepository).should().flush();
-        then(userNovelRepository).should()
-                .updateNovelStatisticsByDelta(NOVEL_ID, new BigDecimal("2.0"), 0L, 1L);
+        assertThat(library.getUserNovelRating()).isEqualTo(4.0f);
+        assertThat(library.getStatus()).isEqualTo(ReadStatus.WATCHING);
     }
 
-    @DisplayName("평점이 새로 생기면 평점 합과 평가 수를 각각 증가시킨다")
+    @DisplayName("관심 등록용 UserNovel이 없으면 생성한 뒤 잠금 조회한다")
     @Test
-    void addsRatingStatistics() {
+    void getsOrCreatesLibraryForInterest() {
+        given(user.getUserId()).willReturn(10L);
         given(novel.getNovelId()).willReturn(NOVEL_ID);
-        UserNovel library = UserNovel.create(ReadStatus.WATCHING, 0.0f, null, null, user, novel);
+        UserNovel library = UserNovel.create(null, 0.0f, null, null, user, novel);
+        given(userNovelRepository.findByNovelIdAndUserForUpdate(NOVEL_ID, user))
+                .willReturn(Optional.of(library));
 
-        libraryService.updateEvaluation(library, 3.5f, ReadStatus.WATCHING, null, null);
+        UserNovel result = libraryService.getOrCreateLibraryForInterest(user, novel);
 
-        then(userNovelRepository).should()
-                .updateNovelStatisticsByDelta(NOVEL_ID, new BigDecimal("3.5"), 1L, 0L);
-    }
-
-    @DisplayName("통계에 영향 없는 변경은 작품 통계 UPDATE를 실행하지 않는다")
-    @Test
-    void skipsStatisticsUpdateWhenDeltaIsZero() {
-        UserNovel library = UserNovel.create(ReadStatus.WATCHED, 4.0f, null, null, user, novel);
-
-        libraryService.updateEvaluation(
-                library,
-                4.0f,
-                ReadStatus.WATCHED,
-                LocalDate.of(2026, 1, 1),
-                LocalDate.of(2026, 1, 2)
+        assertThat(result).isSameAs(library);
+        then(userNovelRepository).should().insertLibraryIfAbsent(
+                10L,
+                NOVEL_ID,
+                UserNovel.DEFAULT_RATING,
+                UserNovel.DEFAULT_STATUS
         );
-
-        then(userNovelRepository).should(never()).flush();
-        then(userNovelRepository).should(never())
-                .updateNovelStatisticsByDelta(anyLong(), any(BigDecimal.class), anyLong(), anyLong());
     }
 
-    @DisplayName("서재 데이터 삭제 시 해당 데이터의 통계 기여분만 차감한다")
+    @DisplayName("관심 등록 시 UserNovel의 관심 상태만 변경한다")
     @Test
-    void subtractsStatisticsWhenDeletingLibrary() {
-        given(novel.getNovelId()).willReturn(NOVEL_ID);
+    void registersInterest() {
+        UserNovel library = UserNovel.create(null, 0.0f, null, null, user, novel);
+
+        libraryService.registerInterest(library);
+
+        assertThat(library.getIsInterest()).isTrue();
+    }
+
+    @DisplayName("UserNovel 삭제를 저장소에 위임한다")
+    @Test
+    void deletesLibrary() {
         UserNovel library = UserNovel.create(ReadStatus.WATCHED, 4.5f, null, null, user, novel);
 
         libraryService.delete(library);
 
         then(userNovelRepository).should().delete(library);
-        then(userNovelRepository).should()
-                .updateNovelStatisticsByDelta(NOVEL_ID, new BigDecimal("-4.5"), -1L, -1L);
-    }
-
-    @DisplayName("관심 서재 데이터가 새로 삽입되면 인기도만 증가시킨다")
-    @Test
-    void incrementsPopularityWhenInterestIsInserted() {
-        given(user.getUserId()).willReturn(10L);
-        given(novel.getNovelId()).willReturn(NOVEL_ID);
-        given(userNovelRepository.insertInterestIfAbsent(
-                10L,
-                NOVEL_ID,
-                UserNovel.DEFAULT_RATING,
-                UserNovel.DEFAULT_STATUS
-        )).willReturn(1);
-
-        UserNovel library = UserNovel.create(null, 0.0f, null, null, user, novel);
-        library.markAsInterested();
-        given(userNovelRepository.findByNovelIdAndUserForUpdate(NOVEL_ID, user))
-                .willReturn(Optional.of(library));
-
-        libraryService.registerInterest(user, novel);
-
-        then(userNovelRepository).should()
-                .updateNovelStatisticsByDelta(NOVEL_ID, BigDecimal.ZERO, 0L, 1L);
     }
 
     @DisplayName("작품별 관심 수를 한 번의 집계 조회 결과로 반환한다")

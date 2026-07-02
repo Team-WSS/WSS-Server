@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.dto.novel;
 
 import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.novel.domain.NovelStatistics;
 
 public record NovelSummaryResponse(
         long novelId,
@@ -11,8 +12,13 @@ public record NovelSummaryResponse(
         float novelRating,
         long novelRatingCount
 ) {
-    public static NovelSummaryResponse of(Novel novel, long interestCount) {
-        float novelRating = Math.round(novel.getAverageRating().floatValue() * 10.0f) / 10.0f;
+    public static NovelSummaryResponse of(Novel novel, NovelStatistics statistics, long interestCount) {
+        float novelRating = statistics == null
+                ? 0.0f
+                : Math.round(statistics.getAverageRating().floatValue() * 10.0f) / 10.0f;
+        long novelRatingCount = statistics == null
+                ? 0L
+                : statistics.getRatingCount();
 
         return new NovelSummaryResponse(
                 novel.getNovelId(),
@@ -21,7 +27,7 @@ public record NovelSummaryResponse(
                 novel.getAuthor(),
                 interestCount,
                 novelRating,
-                novel.getRatingCount()
+                novelRatingCount
         );
     }
 }
