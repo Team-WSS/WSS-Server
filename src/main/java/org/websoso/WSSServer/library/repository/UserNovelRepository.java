@@ -1,11 +1,11 @@
 package org.websoso.WSSServer.library.repository;
 
-import io.lettuce.core.dynamic.annotation.Param;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.user.domain.User;
@@ -32,23 +32,20 @@ public interface UserNovelRepository extends JpaRepository<UserNovel, Long>, Use
 
     Optional<UserNovel> findByNovel_NovelIdAndUser(Long novelId, User user);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Query(value = """
-        INSERT INTO user_novel (
+        INSERT IGNORE INTO user_novel (
             user_id, novel_id, is_interest, 
             user_novel_rating, status, 
             created_date, modified_date
         ) VALUES (
-            :userId, :novelId, true, 
+            :userId, :novelId, false,
             :defaultRating, 
             :#{#defaultStatus?.name()},
             NOW(), NOW()
         )
-        ON DUPLICATE KEY UPDATE
-            is_interest = true,
-            modified_date = NOW()
         """, nativeQuery = true)
-    void upsertInterest(
+    int insertLibraryIfAbsent(
             @Param("userId") Long userId,
             @Param("novelId") Long novelId,
             @Param("defaultRating") Float defaultRating,

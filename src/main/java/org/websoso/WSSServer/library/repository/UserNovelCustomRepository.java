@@ -2,15 +2,22 @@ package org.websoso.WSSServer.library.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.common.UserNovelSortType;
 import org.websoso.WSSServer.library.repository.cursor.UserNovelCursor;
+import org.websoso.WSSServer.library.repository.projection.NovelInterestCount;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
+import org.websoso.WSSServer.user.domain.User;
 
 public interface UserNovelCustomRepository {
+
+    Optional<UserNovel> findByNovelIdAndUserForUpdate(Long novelId, User user);
+
+    List<NovelInterestCount> findInterestCountsByNovelIds(List<Long> novelIds);
 
     UserNovelCountGetResponse findUserNovelStatistics(Long userId);
 

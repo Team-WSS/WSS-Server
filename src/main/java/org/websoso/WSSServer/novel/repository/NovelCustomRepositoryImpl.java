@@ -1,23 +1,20 @@
 package org.websoso.WSSServer.novel.repository;
 
 import static org.websoso.WSSServer.domain.QGenre.genre;
-import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
-import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
-import static org.websoso.WSSServer.library.domain.QUserNovel.userNovel;
 import static org.websoso.WSSServer.novel.domain.QNovel.novel;
 import static org.websoso.WSSServer.novel.domain.QNovelGenre.novelGenre;
 import static org.websoso.WSSServer.novel.domain.QNovelPlatform.novelPlatform;
+import static org.websoso.WSSServer.novel.domain.QNovelStatistics.novelStatistics;
 import static org.websoso.WSSServer.novel.domain.QPlatform.platform;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
-import com.querydsl.core.types.dsl.NumberTemplate;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
@@ -43,18 +40,16 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
         List<Novel> novelsByTitle = jpaQueryFactory
                 .selectFrom(novel)
-                .leftJoin(novel.userNovels, userNovel)
+                .leftJoin(novel.novelStatistics, novelStatistics).fetchJoin()
                 .where(titleContainsQuery(searchQuery))
-                .groupBy(novel.novelId)
-                .orderBy(getPopularity(novel).desc())
+                .orderBy(novelStatistics.popularity.desc(), novel.novelId.asc())
                 .fetch();
 
         List<Novel> novelsByAuthor = jpaQueryFactory
                 .selectFrom(novel)
-                .leftJoin(novel.userNovels, userNovel)
+                .leftJoin(novel.novelStatistics, novelStatistics).fetchJoin()
                 .where(authorContainsQuery.and(titleContainsQuery(searchQuery).not()))
-                .groupBy(novel.novelId)
-                .orderBy(getPopularity(novel).desc())
+                .orderBy(novelStatistics.popularity.desc(), novel.novelId.asc())
                 .fetch();
 
         List<Novel> result = Stream
@@ -79,33 +74,44 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     public Page<Novel> findFilteredNovels(Pageable pageable, List<Genre> genres, Boolean isCompleted, Float novelRatingStart,
                                           Float novelRatingEnd, List<Keyword> keywords, List<String> platformNames) {
 
-        NumberTemplate<Long> popularity = Expressions.numberTemplate(Long.class,
-                "(SELECT COUNT(un) FROM UserNovel un WHERE un.novel = {0} AND (un.isInterest = true OR un.status <> 'QUIT'))",
-                novel);
-
         JPAQuery<Novel> query = jpaQueryFactory
                 .selectFrom(novel)
-                .distinct()
-                .join(novel.novelGenres, novelGenre)
-                .leftJoin(novel.novelPlatforms, novelPlatform)
-                .leftJoin(novelPlatform.platform, platform)
+                .leftJoin(novel.novelStatistics, novelStatistics).fetchJoin();
+
+        boolean hasGenreFilter = genres != null && !genres.isEmpty();
+        boolean hasPlatformFilter = platformNames != null && !platformNames.isEmpty();
+
+        if (hasGenreFilter) {
+            query.join(novel.novelGenres, novelGenre);
+        }
+
+        if (hasPlatformFilter) {
+            query.join(novel.novelPlatforms, novelPlatform)
+                    .join(novelPlatform.platform, platform);
+        }
+
+        if (hasGenreFilter || hasPlatformFilter) {
+            query.distinct();
+        }
+
+        query
                 .where(
-                        genres.isEmpty()
-                                ? null
-                                : novelGenre.genre.in(genres),
+                        hasGenreFilter
+                                ? novelGenre.genre.in(genres)
+                                : null,
                         isCompleted == null
                                 ? null
                                 : novel.isCompleted.eq(isCompleted),
-                        getAverageRatingCondition(novel, novelRatingStart, novelRatingEnd),
+                        getAverageRatingCondition(novelRatingStart, novelRatingEnd),
                         keywords.isEmpty()
                                 ? null
                                 : getKeywordCount(novel, keywords).eq(keywords.size()),
-                        platformNames == null || platformNames.isEmpty()
-                                ? null
-                                : platform.platformName.in(platformNames)
+                        hasPlatformFilter
+                                ? platform.platformName.in(platformNames)
+                                : null
 
                 )
-                .orderBy(popularity.desc());
+                .orderBy(novelStatistics.popularity.desc(), novel.novelId.asc());
 
         return applyPagination(pageable, query);
     }
@@ -114,10 +120,9 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     public List<Novel> findAutocompleteNovels(String searchQuery, int limitSize) {
         return jpaQueryFactory
                 .selectFrom(novel)
-                .leftJoin(novel.userNovels, userNovel)
+                .leftJoin(novel.novelStatistics, novelStatistics)
                 .where(titleContainsQuery(searchQuery))
-                .groupBy(novel.novelId)
-                .orderBy(getPopularity(novel).desc())
+                .orderBy(novelStatistics.popularity.desc(), novel.novelId.asc())
                 .limit(limitSize)
                 .fetch();
     }
@@ -138,40 +143,26 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
     }
 
 
-    private NumberExpression<Double> getAverageRating(QNovel novel) {
-        return Expressions.numberTemplate(Double.class,
-                "(SELECT AVG(un.userNovelRating) FROM UserNovel un WHERE un.novel = {0} AND un.userNovelRating <> 0)",
-                novel);
-    }
-
-    private BooleanExpression getAverageRatingCondition(QNovel novel, Float novelRatingStart, Float novelRatingEnd) {
-        if (novelRatingStart == null) {
+    private BooleanExpression getAverageRatingCondition(Float novelRatingStart, Float novelRatingEnd) {
+        if (novelRatingStart == null || novelRatingEnd == null) {
             return null;
         }
 
-        NumberExpression<Double> averageRating = getAverageRating(novel);
-        BooleanExpression averageRatingBetween = averageRating.between(novelRatingStart, novelRatingEnd);
-
-        if (Float.compare(novelRatingStart, 0.0f) == 0) {
-            return averageRating.isNull().or(averageRatingBetween);
+        if (Float.compare(novelRatingStart, 0.0f) == 0
+                && Float.compare(novelRatingEnd, 5.0f) == 0) {
+            return null;
         }
 
-        return averageRatingBetween;
+        return novelStatistics.averageRating.coalesce(BigDecimal.ZERO).between(
+                new BigDecimal(Float.toString(novelRatingStart)),
+                new BigDecimal(Float.toString(novelRatingEnd))
+        );
     }
 
     private NumberExpression<Integer> getKeywordCount(QNovel novel, List<Keyword> keywords) {
         return Expressions.numberTemplate(Integer.class,
                 "(SELECT COUNT(unk.keyword) FROM UserNovelKeyword unk WHERE unk.userNovel.novel = {0} AND unk.keyword IN ({1}) GROUP BY unk.userNovel.novel.id)",
                 novel, keywords);
-    }
-
-    private NumberExpression<Long> getPopularity(QNovel novel) {
-        return new CaseBuilder()
-                .when(userNovel.isInterest.isTrue()
-                        .or(userNovel.status.in(WATCHING, WATCHED)))
-                .then(1L)
-                .otherwise(0L)
-                .sum();
     }
 
     private Page<Novel> applyPagination(Pageable pageable, JPAQuery<Novel> query) {
