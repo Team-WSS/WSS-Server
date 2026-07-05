@@ -330,19 +330,19 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                         .and(userNovel.userNovelId.lt(cursor.lastUserNovelId())));
     }
 
-    // 상태별 독서 날짜를 사용하고 날짜가 없으면 등록일 기준 다음 페이지 조건을 생성한다.
+    // 상태별 대표 날짜를 사용하고 날짜가 없으면 등록일 기준 다음 페이지 조건을 생성한다.
     private BooleanExpression readDateCursorCondition(UserNovelCursor cursor) {
-        DateExpression<LocalDate> readDate = readDateExpression();
+        DateExpression<LocalDate> representativeDate = readDateExpression();
 
-        if (cursor.lastReadDate() == null) {
-            return readDate.isNull()
+        if (cursor.lastRepresentativeDate() == null) {
+            return representativeDate.isNull()
                     .and(createdDescCursorCondition(cursor));
         }
 
-        return readDate.lt(cursor.lastReadDate())
-                .or(readDate.eq(cursor.lastReadDate())
+        return representativeDate.lt(cursor.lastRepresentativeDate())
+                .or(representativeDate.eq(cursor.lastRepresentativeDate())
                         .and(userNovel.userNovelId.lt(cursor.lastUserNovelId())))
-                .or(readDate.isNull());
+                .or(representativeDate.isNull());
     }
 
     private BooleanExpression ratingDescCursorCondition(UserNovelCursor cursor) {
