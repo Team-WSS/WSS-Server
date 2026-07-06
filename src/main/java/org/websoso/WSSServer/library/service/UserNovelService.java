@@ -215,13 +215,14 @@ public class UserNovelService {
                 .toList();
     }
 
+    // 조회 결과의 마지막 항목을 다음 페이지 조회용 커서로 변환한다.
     private UserNovelCursor toCursor(UserNovel userNovel) {
         return new UserNovelCursor(
                 userNovel.getUserNovelRating(),
                 userNovel.getCreatedDate(),
                 userNovel.getUserNovelId(),
                 Float.compare(userNovel.getUserNovelRating(), 0.0f) != 0,
-                userNovel.getStartDate(),
+                userNovel.getReadDate(),
                 userNovel.getNovel().getTitle()
         );
     }
