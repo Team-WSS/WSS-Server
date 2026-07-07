@@ -1,31 +1,28 @@
 package org.websoso.WSSServer.feed.report.application;
 
-import static org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessageType.REPORT;
 import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
 import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 import static org.websoso.WSSServer.feed.report.exception.CustomReportError.ALREADY_REPORTED_COMMENT;
 import static org.websoso.WSSServer.feed.report.exception.CustomReportError.ALREADY_REPORTED_FEED;
 import static org.websoso.WSSServer.feed.report.exception.CustomReportError.SELF_COMMENT_REPORT_NOT_ALLOWED;
 import static org.websoso.WSSServer.feed.report.exception.CustomReportError.SELF_FEED_REPORT_NOT_ALLOWED;
-import static org.websoso.WSSServer.exception.error.CustomUserError.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
-import org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.ReportedType;
-import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.comment.domain.Comment;
 import org.websoso.WSSServer.feed.feed.domain.Feed;
 import org.websoso.WSSServer.feed.comment.service.CommentServiceImpl;
 import org.websoso.WSSServer.feed.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.feed.report.exception.CustomReportException;
+import org.websoso.WSSServer.feed.report.event.ReportMessageCreatedEvent;
+import org.websoso.WSSServer.feed.report.message.ReportMessageFormatter;
 import org.websoso.WSSServer.feed.report.service.ReportServiceImpl;
-import org.websoso.WSSServer.notification.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.user.repository.UserRepository;
+import org.websoso.WSSServer.user.service.UserService;
 import org.websoso.WSSServer.user.service.BlockService;
 
 @Service
@@ -36,10 +33,9 @@ public class ReportApplication {
     private final CommentServiceImpl commentServiceImpl;
     private final ReportServiceImpl reportServiceImpl;
     private final BlockService blockService;
-    private final DiscordMessageClient discordMessageClient;
-
-    //ToDo : 의존성 제거 필요 부분
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final ReportMessageFormatter reportMessageFormatter;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void reportFeed(User user, Long feedId, ReportedType reportedType) {
@@ -74,8 +70,14 @@ public class ReportApplication {
             feed.hideFeed();
         }
 
-        discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
-                MessageFormatter.formatFeedReportMessage(user, feed, reportedType, reportedCount, shouldHide), REPORT));
+        String content = reportMessageFormatter.formatFeedReportMessage(
+                user,
+                feed,
+                reportedType,
+                reportedCount,
+                shouldHide
+        );
+        eventPublisher.publishEvent(ReportMessageCreatedEvent.of(content));
     }
 
     @Transactional
@@ -83,11 +85,9 @@ public class ReportApplication {
         Feed feed = feedServiceImpl.getFeedOrException(feedId);
         Comment comment = commentServiceImpl.getCommentOrException(commentId);
         comment.validateBelongsTo(feed);
+        User commentCreatedUser = userService.getUserOrException(comment.getUserId());
 
-        User commentCreatedUser = userRepository.findById(comment.getUserId())
-                .orElseThrow(() -> new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
-
-        if (commentCreatedUser.equals(user)) {
+        if (comment.getUserId().equals(user.getUserId())) {
             throw new CustomReportException(SELF_COMMENT_REPORT_NOT_ALLOWED, "cannot report own comment");
         }
 
@@ -112,12 +112,16 @@ public class ReportApplication {
             }
         }
 
-        discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
-                MessageFormatter.formatCommentReportMessage(user, feed, comment, reportedType, commentCreatedUser,
-                        reportedCount, shouldHide), REPORT));
+        String content = reportMessageFormatter.formatCommentReportMessage(
+                user,
+                feed,
+                comment,
+                reportedType,
+                commentCreatedUser,
+                reportedCount,
+                shouldHide
+        );
+        eventPublisher.publishEvent(ReportMessageCreatedEvent.of(content));
     }
 
-    private Boolean isUserFeedOwner(User createdUser, User user) {
-        return createdUser.equals(user);
-    }
 }
