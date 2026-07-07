@@ -7,6 +7,8 @@ import static org.websoso.WSSServer.exception.error.CustomUserNovelError.USER_NO
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.library.repository.UserNovelRepository;
+import org.websoso.WSSServer.library.repository.projection.NovelInterestCount;
 import org.websoso.WSSServer.novel.domain.Novel;
 
 @Service
@@ -26,9 +29,9 @@ public class LibraryService {
     private final UserNovelRepository userNovelRepository;
 
     // TODO: novelId로 불러옴
-    @Transactional(readOnly = true)
-    public UserNovel getLibraryOrException(User user, Long novelId) {
-        return userNovelRepository.findByNovel_NovelIdAndUser(novelId, user)
+    @Transactional
+    public UserNovel getLibraryForUpdateOrException(User user, Long novelId) {
+        return userNovelRepository.findByNovelIdAndUserForUpdate(novelId, user)
                 .orElseThrow(() -> new CustomUserNovelException(USER_NOVEL_NOT_FOUND,
                         "user novel with the given user and novel is not found"));
     }
@@ -56,7 +59,7 @@ public class LibraryService {
     @Transactional
     public UserNovel createLibrary(ReadStatus status, Float userNovelRating, LocalDate startDate, LocalDate endDate,
                                    User user, Novel novel) {
-        return userNovelRepository.save(UserNovel.create(
+        return userNovelRepository.saveAndFlush(UserNovel.create(
                 status,
                 userNovelRating,
                 startDate,
@@ -65,35 +68,31 @@ public class LibraryService {
                 novel));
     }
 
-    /**
-     * <p>관심있어요를 등록한다.</p>
-     * 서재 내역이 없다면, 서재 내역을 생성하면서 등록한다.
-     *
-     * @param user  사용자 Entity
-     * @param novel 서재 Entity
-     */
     @Transactional
-    public void registerInterest(User user, Novel novel) {
-        userNovelRepository.upsertInterest(
+    public UserNovel getOrCreateLibraryForInterest(User user, Novel novel) {
+        userNovelRepository.insertLibraryIfAbsent(
                 user.getUserId(),
                 novel.getNovelId(),
                 UserNovel.DEFAULT_RATING,
                 UserNovel.DEFAULT_STATUS
         );
+
+        return userNovelRepository.findByNovelIdAndUserForUpdate(novel.getNovelId(), user)
+                .orElseThrow(() -> new IllegalStateException("inserted user novel could not be found"));
     }
 
-    /**
-     * <p>관심있어요를 해제한다.</p>
-     * 만약, 서재 정보가 없다면 삭제한다.
-     *
-     * @param library 서재 Entity
-     */
+    @Transactional
+    public void registerInterest(UserNovel library) {
+        library.markAsInterested();
+    }
+
+    @Transactional
+    public UserNovel getLibraryForUpdateOrNull(User user, Long novelId) {
+        return userNovelRepository.findByNovelIdAndUserForUpdate(novelId, user).orElse(null);
+    }
+
     @Transactional
     public void unregisterInterest(UserNovel library) {
-        if (Boolean.FALSE.equals(library.getIsInterest())) {
-            return;
-        }
-
         library.unmarkAsInterested();
 
         if (library.isSafeToDelete()) {
@@ -102,8 +101,32 @@ public class LibraryService {
     }
 
     @Transactional
+    public void updateEvaluation(UserNovel library, Float userNovelRating, ReadStatus status, LocalDate startDate,
+                                 LocalDate endDate) {
+        library.updateUserNovel(userNovelRating, status, startDate, endDate);
+    }
+
+    @Transactional
+    public void deleteEvaluation(UserNovel library) {
+        library.deleteEvaluation();
+    }
+
+    @Transactional
     public void delete(UserNovel library) {
         userNovelRepository.delete(library);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Long> getInterestCountsByNovelIds(List<Long> novelIds) {
+        if (novelIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return userNovelRepository.findInterestCountsByNovelIds(novelIds).stream()
+                .collect(Collectors.toMap(
+                        NovelInterestCount::novelId,
+                        NovelInterestCount::interestCount
+                ));
     }
 
     public int getRatingCount(Novel novel) {
@@ -146,4 +169,5 @@ public class LibraryService {
     public List<Long> getTodayPopularNovelIds(PageRequest pageRequest) {
         return userNovelRepository.findTodayPopularNovelsId(pageRequest);
     }
+
 }

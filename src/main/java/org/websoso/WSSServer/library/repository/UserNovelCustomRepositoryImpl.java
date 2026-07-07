@@ -3,6 +3,7 @@ package org.websoso.WSSServer.library.repository;
 import static org.websoso.WSSServer.domain.common.ReadStatus.QUIT;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHED;
 import static org.websoso.WSSServer.domain.common.ReadStatus.WATCHING;
+import static org.websoso.WSSServer.domain.common.UserNovelSortType.readDateExpression;
 import static org.websoso.WSSServer.library.domain.QUserNovel.userNovel;
 import static org.websoso.WSSServer.novel.domain.QNovel.novel;
 import static org.websoso.WSSServer.novel.domain.QNovelGenre.novelGenre;
@@ -11,8 +12,10 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.LockModeType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,7 +30,9 @@ import org.websoso.WSSServer.domain.common.ReadStatus;
 import org.websoso.WSSServer.domain.common.UserNovelSortType;
 import org.websoso.WSSServer.dto.user.UserNovelCountGetResponse;
 import org.websoso.WSSServer.library.repository.cursor.UserNovelCursor;
+import org.websoso.WSSServer.library.repository.projection.NovelInterestCount;
 import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.user.domain.User;
 
 @Repository
 @RequiredArgsConstructor
@@ -35,6 +40,35 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
 
     private static final long NO_CURSOR = 0L;
     private final JPAQueryFactory jpaQueryFactory;
+
+    @Override
+    public Optional<UserNovel> findByNovelIdAndUserForUpdate(Long novelId, User user) {
+        return Optional.ofNullable(jpaQueryFactory
+                .selectFrom(userNovel)
+                .where(
+                        userNovel.novel.novelId.eq(novelId),
+                        userNovel.user.eq(user)
+                )
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .fetchOne());
+    }
+
+    @Override
+    public List<NovelInterestCount> findInterestCountsByNovelIds(List<Long> novelIds) {
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        NovelInterestCount.class,
+                        userNovel.novel.novelId,
+                        userNovel.count()
+                ))
+                .from(userNovel)
+                .where(
+                        userNovel.novel.novelId.in(novelIds),
+                        userNovel.isInterest.isTrue()
+                )
+                .groupBy(userNovel.novel.novelId)
+                .fetch();
+    }
 
     @Override
     public UserNovelCountGetResponse findUserNovelStatistics(Long userId) {
@@ -296,16 +330,19 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                         .and(userNovel.userNovelId.lt(cursor.lastUserNovelId())));
     }
 
+    // 상태별 대표 날짜를 사용하고 날짜가 없으면 등록일 기준 다음 페이지 조건을 생성한다.
     private BooleanExpression readDateCursorCondition(UserNovelCursor cursor) {
-        if (cursor.lastStartDate() == null) {
-            return userNovel.startDate.isNull()
-                    .and(userNovel.userNovelId.lt(cursor.lastUserNovelId()));
+        DateExpression<LocalDate> representativeDate = readDateExpression();
+
+        if (cursor.lastRepresentativeDate() == null) {
+            return representativeDate.isNull()
+                    .and(createdDescCursorCondition(cursor));
         }
 
-        return userNovel.startDate.lt(cursor.lastStartDate())
-                .or(userNovel.startDate.eq(cursor.lastStartDate())
+        return representativeDate.lt(cursor.lastRepresentativeDate())
+                .or(representativeDate.eq(cursor.lastRepresentativeDate())
                         .and(userNovel.userNovelId.lt(cursor.lastUserNovelId())))
-                .or(userNovel.startDate.isNull());
+                .or(representativeDate.isNull());
     }
 
     private BooleanExpression ratingDescCursorCondition(UserNovelCursor cursor) {

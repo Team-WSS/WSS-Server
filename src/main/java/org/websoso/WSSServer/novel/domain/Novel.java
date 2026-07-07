@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,9 @@ public class Novel {
 
     @Column(columnDefinition = "Boolean default false", nullable = false)
     private Boolean isCompleted;
+
+    @OneToOne(mappedBy = "novel", fetch = FetchType.LAZY)
+    private NovelStatistics novelStatistics;
 
     @OneToMany(mappedBy = "novel", fetch = FetchType.LAZY)
     private List<UserNovel> userNovels = new ArrayList<>();

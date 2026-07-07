@@ -90,6 +90,11 @@ public class UserNovel extends BaseEntity {
         return new UserNovel(status, userNovelRating, startDate, endDate, user, novel);
     }
 
+    // 상태별 날짜순 정렬에 사용할 독서 날짜를 반환한다.
+    public LocalDate getReadDate() {
+        return status == ReadStatus.WATCHING ? startDate : endDate;
+    }
+
     /**
      * 관심 상태 지정
      */

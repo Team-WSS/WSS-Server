@@ -39,7 +39,6 @@ import org.websoso.WSSServer.exception.exception.CustomGenreException;
 import org.websoso.WSSServer.feed.feed.domain.Feed;
 import org.websoso.WSSServer.feed.feed.repository.FeedRepository;
 import org.websoso.WSSServer.library.domain.Keyword;
-import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.library.service.LibraryService;
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.novel.domain.NovelGenre;
@@ -86,9 +85,7 @@ public class SearchNovelApplication {
 
         Page<Novel> novels = novelService.searchNovels(pageRequest, searchQuery);
 
-        List<NovelSummaryResponse> novelGetResponsePreviews = novels.stream()
-                .map(this::convertToDTO2)
-                .toList();
+        List<NovelSummaryResponse> novelGetResponsePreviews = convertToNovelSummaries(novels.getContent());
 
         // 로그인한 사용자이며, 검색어가 있는 경우에만 검색 기록에 저장한다.
         if (user != null && user.getUserId() != null && !searchQuery.isBlank()) {
@@ -115,9 +112,7 @@ public class SearchNovelApplication {
             novels = novelService.findFilteredNovels(pageRequest, genres, keywords, isCompleted, novelRating, novelRatingEnd, platformNames);
         }
 
-        List<NovelSummaryResponse> novelGetResponsePreviews = novels.stream()
-                .map(this::convertToDTO2)
-                .toList();
+        List<NovelSummaryResponse> novelGetResponsePreviews = convertToNovelSummaries(novels.getContent());
 
         return FilteredNovelsResponse.of(novelGetResponsePreviews, novels.getTotalElements(), novels.hasNext());
     }
@@ -229,31 +224,17 @@ public class SearchNovelApplication {
                 .replaceAll("[^a-zA-Z0-9가-힣]", "");
     }
 
-    private NovelSummaryResponse convertToDTO2(Novel novel) {
-        // TODO: Repository에서 NovelSummaryResponse에 맞게 데이터를 불러오는게 좋을듯
-        List<UserNovel> userNovels = novel.getUserNovels();
-
-        long interestCount = userNovels.stream()
-                .filter(UserNovel::getIsInterest)
-                .count();
-        long novelRatingCount = userNovels.stream()
-                .filter(un -> un.getUserNovelRating() != 0.0f)
-                .count();
-        double novelRatingSum = userNovels.stream()
-                .filter(un -> un.getUserNovelRating() != 0.0f)
-                .mapToDouble(UserNovel::getUserNovelRating)
-                .sum();
-
-        float novelRatingAverage = novelRatingCount == 0
-                ? 0.0f
-                : Math.round((float) (novelRatingSum / novelRatingCount) * 10.0f) / 10.0f;
-
-        return NovelSummaryResponse.of(
-                novel,
-                interestCount,
-                novelRatingAverage,
-                novelRatingCount
-        );
+    private List<NovelSummaryResponse> convertToNovelSummaries(List<Novel> novels) {
+        List<Long> novelIds = novels.stream()
+                .map(Novel::getNovelId)
+                .toList();
+        Map<Long, Long> interestCounts = libraryService.getInterestCountsByNovelIds(novelIds);
+        return novels.stream()
+                .map(novel -> NovelSummaryResponse.of(
+                        novel,
+                        interestCounts.getOrDefault(novel.getNovelId(), 0L)
+                ))
+                .toList();
     }
 
     private String getNovelGenreNames(List<NovelGenre> novelGenres) {
