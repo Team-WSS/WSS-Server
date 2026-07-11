@@ -38,9 +38,7 @@ public class FeedManagementApplication {
     public FeedCreateResponse create(User user, FeedCreateRequest request, FeedImageCreateRequest imagesRequest) {
 
         // 입력한 소설이 존재하는지만 체크 (트랜잭션을 여기서는 잠글 필요가 없음?)
-        if (request.novelId() != null) {
-            novelService.getNovelOrException(request.novelId());
-        }
+        novelService.validateNovelExistsIfPresent(request.novelId());
 
         // 이미지 업로드
         List<FeedImage> feedImages = feedImageService.processFeedImages(imagesRequest.images());
@@ -65,8 +63,8 @@ public class FeedManagementApplication {
         List<FeedImage> oldImages = new ArrayList<>(feed.getImages());
 
         // 소설이 변경된 경우 존재하는 소설인지 체크
-        if (request.novelId() != null && feed.isNovelChanged(request.novelId())) {
-            novelService.getNovelOrException(request.novelId());
+        if (feed.isNovelChanged(request.novelId())) {
+            novelService.validateNovelExistsIfPresent(request.novelId());
         }
 
         // 이미지 업로드
@@ -96,11 +94,6 @@ public class FeedManagementApplication {
 
         // 피드 삭제
         feedService.delete(feed);
-    }
-
-    @Transactional
-    public void updateFeedWriterToUnknown(Long userId) {
-        feedService.updateWriterToUnknown(userId);
     }
 
 }

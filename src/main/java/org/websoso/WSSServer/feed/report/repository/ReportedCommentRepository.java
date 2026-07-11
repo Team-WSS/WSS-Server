@@ -25,4 +25,6 @@ public interface ReportedCommentRepository extends JpaRepository<ReportedComment
     @Modifying
     @Query("DELETE FROM ReportedComment rc WHERE rc.comment.feed.feedId = :feedId")
     void deleteByFeedId(Long feedId);
+
+    void deleteByComment(Comment comment);
 }

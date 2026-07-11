@@ -89,6 +89,44 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
+    @Transactional
+    public Notification createFeedOwnerCommentNotification(Feed feed, Novel novel, String nickname, Long userId) {
+        NotificationType notificationType = notificationTypeRepository.findByNotificationTypeName("댓글");
+
+        String notificationTitle = createNotificationTitle(feed, novel);
+
+        String notificationBody = String.format("%s님이 내 글에 댓글을 남겼어요.", nickname);
+
+        Notification notification = Notification.createFeedNotification(
+                notificationTitle,
+                notificationBody,
+                userId,
+                feed.getFeedId(),
+                notificationType
+        );
+
+        return notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public Notification createCommenterCommentNotification(Feed feed, Novel novel, Long userId) {
+        NotificationType notificationType = notificationTypeRepository.findByNotificationTypeName("댓글");
+
+        String notificationTitle = createNotificationTitle(feed, novel);
+
+        String notificationBody = "내가 댓글 단 글에 또 다른 댓글이 달렸어요.";
+
+        Notification notification = Notification.createFeedNotification(
+                notificationTitle,
+                notificationBody,
+                userId,
+                feed.getFeedId(),
+                notificationType
+        );
+
+        return notificationRepository.save(notification);
+    }
+
     /**
      * 읽지 않은 알림이 존재하는지 확인한다.
      *
