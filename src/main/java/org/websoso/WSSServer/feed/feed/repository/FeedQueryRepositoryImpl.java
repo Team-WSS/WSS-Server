@@ -2,6 +2,7 @@ package org.websoso.WSSServer.feed.feed.repository;
 
 import static org.websoso.WSSServer.feed.feed.domain.QFeed.feed;
 import static org.websoso.WSSServer.novel.domain.QNovel.novel;
+import static org.websoso.WSSServer.novel.domain.QNovelStatistics.novelStatistics;
 import static org.websoso.WSSServer.user.domain.QAvatarProfile.avatarProfile;
 
 import com.querydsl.core.types.Expression;
@@ -55,8 +56,8 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
                         commentCount(),
                         feed.novelId,
                         novel.title,
-                        novelRatingCount(),
-                        novelRating(),
+                        novelStatistics.ratingCount,
+                        novelStatistics.averageRating,
                         feed.isSpoiler,
                         feed.createdDate.ne(feed.modifiedDate),
                         isMyFeed(userId),
@@ -71,6 +72,7 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
                 .join(feed.user)
                 .leftJoin(avatarProfile).on(feed.user.avatarProfileId.eq(avatarProfile.avatarProfileId))
                 .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
+                .leftJoin(novel.novelStatistics, novelStatistics)
                 .leftJoin(thumbnailImage).on(
                         thumbnailImage.feedId.eq(feed.feedId),
                         thumbnailImage.feedImageType.eq(FeedImageType.FEED_THUMBNAIL)

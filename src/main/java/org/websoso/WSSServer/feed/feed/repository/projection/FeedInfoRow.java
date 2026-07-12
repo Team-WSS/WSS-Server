@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.feed.feed.repository.projection;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.websoso.WSSServer.feed.feed.controller.dto.FeedInfo;
 import org.websoso.WSSServer.util.TimeFormatUtil;
@@ -17,7 +18,7 @@ public record FeedInfoRow(
         Long novelId,
         String title,
         Long novelRatingCount,
-        Double novelRating,
+        BigDecimal novelRating,
         Boolean isSpoiler,
         Boolean isModified,
         Boolean isMyFeed,
@@ -60,7 +61,7 @@ public record FeedInfoRow(
         return value == null ? 0 : value.intValue();
     }
 
-    private static Float roundToFirstDecimal(Double value) {
+    private static Float roundToFirstDecimal(BigDecimal value) {
         if (value == null) {
             return null;
         }
