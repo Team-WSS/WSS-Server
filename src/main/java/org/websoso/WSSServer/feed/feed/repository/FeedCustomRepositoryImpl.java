@@ -238,44 +238,16 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                                             List<Long> blockedUserIds) {
         List<Feed> feeds = jpaQueryFactory
                 .selectFrom(feed)
+                .distinct()
                 .join(feed.user).fetchJoin()
                 .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
                 .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
                 .leftJoin(genre).on(novelGenre.genre.eq(genre))
                 .where(
                         ltFeedId(lastFeedId),
-                        checkPopularFeed(),
-                        checkGenresAndNovels(genres, true),
+                        recommendedFeedCondition(userId, genres),
                         excludeBlockedUsers(blockedUserIds),
                         checkHidden(),
-                        checkVisible(userId)
-                )
-                .limit(pageRequest.getPageSize() + 1)
-                .orderBy(feed.feedId.desc())
-                .fetch();
-
-        boolean hasNext = feeds.size() > pageRequest.getPageSize();
-
-        if (hasNext) {
-            feeds.remove(feeds.size() - 1);
-        }
-
-        return new SliceImpl<>(feeds, pageRequest, hasNext);
-    }
-
-    @Override
-    public Slice<Feed> findInterestedNovelFeeds(Long lastFeedId, Long userId, PageRequest pageRequest,
-                                                List<Long> blockedUserIds) {
-        List<Feed> feeds = jpaQueryFactory
-                .selectFrom(feed)
-                .join(feed.user).fetchJoin()
-                .join(novel).on(feed.novelId.eq(novel.novelId))
-                .join(userNovel).on(novel.eq(userNovel.novel))
-                .where(
-                        ltFeedId(lastFeedId),
-                        excludeBlockedUsers(blockedUserIds),
-                        checkHidden(),
-                        checkInterestedNovels(userId),
                         checkVisible(userId)
                 )
                 .limit(pageRequest.getPageSize() + 1)
@@ -297,6 +269,46 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                 .from(like)
                 .where(like.feed.eq(feed))
                 .goe(POPULAR_FEED_LIKE_COUNT);
+    }
+
+    private BooleanExpression recommendedFeedCondition(Long userId, List<Genre> genres) {
+        BooleanExpression condition = checkPopularFeed();
+
+        BooleanExpression preferredGenreCondition = checkPreferredGenres(genres);
+        if (preferredGenreCondition != null) {
+            condition = condition.or(preferredGenreCondition);
+        }
+
+        BooleanExpression interestedNovelCondition = checkInterestedNovel(userId);
+        if (interestedNovelCondition != null) {
+            condition = condition.or(interestedNovelCondition);
+        }
+
+        return condition;
+    }
+
+    private BooleanExpression checkPreferredGenres(List<Genre> genres) {
+        if (genres == null || genres.isEmpty()) {
+            return null;
+        }
+
+        return genre.in(genres);
+    }
+
+    private BooleanExpression checkInterestedNovel(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+
+        return JPAExpressions
+                .selectOne()
+                .from(userNovel)
+                .where(
+                        userNovel.user.userId.eq(userId),
+                        userNovel.isInterest.isTrue(),
+                        userNovel.novel.novelId.eq(feed.novelId)
+                )
+                .exists();
     }
 
     private BooleanExpression checkGenresAndNovels(List<Genre> genres, boolean isNotNovelConnect) {
@@ -352,13 +364,6 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
         }
 
         return feed.isPublic.isTrue().or(feed.user.userId.eq(userId));
-    }
-
-    private BooleanExpression checkInterestedNovels(Long userId) {
-        if (userId != null) {
-            return userNovel.user.userId.eq(userId).and(userNovel.isInterest.isTrue());
-        }
-        return null;
     }
 
 }
