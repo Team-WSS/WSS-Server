@@ -101,4 +101,10 @@ public class FeedServiceImpl {
         return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres, blockedUserIds);
     }
 
+    @Transactional(readOnly = true)
+    public List<Feed> findPopularRecommendedFeeds(Long userId, int size, List<Genre> preferenceGenres,
+                                                  List<Long> blockedUserIds) {
+        return feedRepository.findPopularRecommendedFeeds(userId, size, preferenceGenres, blockedUserIds);
+    }
+
 }

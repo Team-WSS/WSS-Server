@@ -21,6 +21,8 @@ public interface FeedCustomRepository {
     Slice<Feed> findRecommendedFeeds(Long lastFeedId, Long userId, PageRequest pageRequest, List<Genre> genres,
                                      List<Long> blockedUserIds);
 
+    List<Feed> findPopularRecommendedFeeds(Long userId, int size, List<Genre> genres, List<Long> blockedUserIds);
+
     Long countVisibleFeeds(User owner, Boolean isVisible,
                            Boolean isUnVisible, List<Genre> genres,
                            Long visitorId, boolean includeEtc);

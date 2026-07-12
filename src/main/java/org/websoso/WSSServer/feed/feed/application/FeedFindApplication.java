@@ -37,6 +37,7 @@ import org.websoso.WSSServer.user.service.UserService;
 public class FeedFindApplication {
 
     private static final int DEFAULT_PAGE_NUMBER = 0;
+    private static final int POPULAR_FEED_CANDIDATE_SIZE = 20;
 
     private final GenreServiceImpl genreService;
     private final UserService userService;
@@ -106,13 +107,33 @@ public class FeedFindApplication {
     @Transactional(readOnly = true)
     public PopularFeedsGetResponse getPopularFeeds(User user, int size) {
 
+        Long userIdOrNull = user == null ? null : user.getUserId();
+
+        List<Genre> genres = user == null ? null : genreService.findUserPreferenceGenres(user);
+
         // 사용자의 차단 목록 조회
         List<Long> blockedUserIds = Optional.ofNullable(user)
                 .map(User::getUserId)
                 .map(blockService::findBlockRelationUserIds)
                 .orElseGet(Collections::emptyList);
 
-        return PopularFeedsGetResponse.of(feedQueryService.findPopularFeedRows(blockedUserIds, size));
+        int responseSize = Math.max(size, 0);
+        int candidateSize = Math.max(POPULAR_FEED_CANDIDATE_SIZE, responseSize);
+
+        List<Feed> candidates = feedServiceImpl.findPopularRecommendedFeeds(
+                userIdOrNull,
+                candidateSize,
+                genres,
+                blockedUserIds
+        );
+
+        Collections.shuffle(candidates);
+
+        List<Feed> selectedFeeds = candidates.stream()
+                .limit(responseSize)
+                .toList();
+
+        return PopularFeedsGetResponse.of(feedQueryService.findPopularFeedRows(selectedFeeds));
     }
 
     @Transactional(readOnly = true)

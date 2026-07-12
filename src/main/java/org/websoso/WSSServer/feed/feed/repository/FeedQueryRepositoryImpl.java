@@ -1,13 +1,11 @@
 package org.websoso.WSSServer.feed.feed.repository;
 
 import static org.websoso.WSSServer.feed.feed.domain.QFeed.feed;
-import static org.websoso.WSSServer.feed.feed.domain.QPopularFeed.popularFeed;
 import static org.websoso.WSSServer.novel.domain.QNovel.novel;
 import static org.websoso.WSSServer.user.domain.QAvatarProfile.avatarProfile;
 
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -123,7 +121,11 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
     }
 
     @Override
-    public List<PopularFeedInfoRow> findPopularFeedInfoRows(List<Long> blockedUserIds, int size) {
+    public List<PopularFeedInfoRow> findPopularFeedInfoRowsByFeedIds(List<Long> feedIds) {
+        if (feedIds.isEmpty()) {
+            return List.of();
+        }
+
         return jpaQueryFactory
                 .select(Projections.constructor(
                         PopularFeedInfoRow.class,
@@ -137,16 +139,9 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
                         novel.novelImage,
                         firstGenreName()
                 ))
-                .from(popularFeed)
-                .join(popularFeed.feed, feed)
+                .from(feed)
                 .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
-                .where(
-                        feed.isPublic.isTrue(),
-                        feed.isHidden.isFalse(),
-                        excludeBlockedUsers(blockedUserIds)
-                )
-                .orderBy(popularFeed.popularFeedId.desc())
-                .limit(size)
+                .where(feed.feedId.in(feedIds))
                 .fetch();
     }
 
@@ -266,11 +261,4 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
                 );
     }
 
-    private BooleanExpression excludeBlockedUsers(List<Long> blockedUserIds) {
-        if (blockedUserIds == null || blockedUserIds.isEmpty()) {
-            return null;
-        }
-
-        return feed.user.userId.notIn(blockedUserIds);
-    }
 }

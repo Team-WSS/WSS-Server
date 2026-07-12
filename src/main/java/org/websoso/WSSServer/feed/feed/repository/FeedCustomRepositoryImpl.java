@@ -263,6 +263,27 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
         return new SliceImpl<>(feeds, pageRequest, hasNext);
     }
 
+    @Override
+    public List<Feed> findPopularRecommendedFeeds(Long userId, int size, List<Genre> genres,
+                                                  List<Long> blockedUserIds) {
+        return jpaQueryFactory
+                .selectFrom(feed)
+                .distinct()
+                .join(feed.user).fetchJoin()
+                .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
+                .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
+                .leftJoin(genre).on(novelGenre.genre.eq(genre))
+                .where(
+                        recommendedFeedCondition(userId, genres),
+                        excludeBlockedUsers(blockedUserIds),
+                        checkHidden(),
+                        feed.isPublic.isTrue()
+                )
+                .orderBy(feed.feedId.desc())
+                .limit(size)
+                .fetch();
+    }
+
     private BooleanExpression checkPopularFeed() {
         return JPAExpressions
                 .select(like.count())
