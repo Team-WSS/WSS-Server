@@ -117,12 +117,9 @@ public class FeedFindApplication {
                 .map(blockService::findBlockRelationUserIds)
                 .orElseGet(Collections::emptyList);
 
-        int responseSize = Math.max(size, 0);
-        int candidateSize = Math.max(POPULAR_FEED_CANDIDATE_SIZE, responseSize);
-
         List<Feed> candidates = feedServiceImpl.findPopularRecommendedFeeds(
                 userIdOrNull,
-                candidateSize,
+                POPULAR_FEED_CANDIDATE_SIZE,
                 genres,
                 blockedUserIds
         );
@@ -130,7 +127,7 @@ public class FeedFindApplication {
         Collections.shuffle(candidates);
 
         List<Feed> selectedFeeds = candidates.stream()
-                .limit(responseSize)
+                .limit(size)
                 .toList();
 
         return PopularFeedsGetResponse.of(feedQueryService.findPopularFeedRows(selectedFeeds));
