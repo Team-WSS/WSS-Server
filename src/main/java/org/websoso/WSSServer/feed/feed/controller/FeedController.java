@@ -5,10 +5,13 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -41,6 +44,7 @@ import java.util.List;
 @RequestMapping
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class FeedController {
 
     private final FeedManagementApplication feedManagementApplication;
@@ -119,7 +123,7 @@ public class FeedController {
 
     @GetMapping("/feeds/popular")
     public ResponseEntity<PopularFeedsGetResponse> getPopularFeeds(@AuthenticationPrincipal User user,
-                                                                   @RequestParam(name = "size", defaultValue = "9") int size) {
+                                                                   @RequestParam(name = "size", defaultValue = "6") @Min(1) @Max(20) int size) {
         return ResponseEntity
                 .status(OK)
                 .body(feedFindApplication.getPopularFeeds(user, size));

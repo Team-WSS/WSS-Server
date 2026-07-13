@@ -2,12 +2,14 @@ package org.websoso.WSSServer.notification.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,11 +23,15 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
+import org.websoso.WSSServer.feed.feed.domain.Feed;
 import org.websoso.WSSServer.notification.domain.Notification;
 import org.websoso.WSSServer.notification.domain.NotificationType;
 import org.websoso.WSSServer.notification.dto.ReadNotificationDto;
 import org.websoso.WSSServer.notification.repository.NotificationRepository;
 import org.websoso.WSSServer.notification.repository.ReadNotificationRepository;
+import org.websoso.WSSServer.notification.repository.NotificationTypeRepository;
+import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.user.domain.User;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
@@ -35,6 +41,9 @@ class NotificationServiceTest {
 
     @Mock
     private NotificationRepository notificationRepository;
+
+    @Mock
+    private NotificationTypeRepository notificationTypeRepository;
 
     @Mock
     private ReadNotificationRepository readNotificationRepository;
@@ -156,6 +165,53 @@ class NotificationServiceTest {
     }
 
     @Nested
+    @DisplayName("추천글 등극 알림 생성 테스트")
+    class CreateBecamePopularFeedNotification {
+
+        @DisplayName("작품이 연결된 피드는 작품명을 포함한 알림을 생성한다")
+        @Test
+        void createsNotificationWithNovelTitleWhenFeedHasNovel() {
+            // given
+            User owner = createUser(1L, "작성자");
+            Feed feed = createFeed(100L, owner, "작품 연결 피드", 10L);
+            Novel novel = mock(Novel.class);
+            given(novel.getTitle()).willReturn("전지적 독자 시점");
+            givenPopularNotificationType();
+            given(notificationRepository.save(any(Notification.class)))
+                    .willAnswer(invocation -> invocation.getArgument(0));
+
+            // when
+            Notification result = notificationService.createBecamePopularFeedNotification(feed, novel);
+
+            // then
+            assertThat(result.getNotificationTitle()).isEqualTo("추천글 등극 🔥");
+            assertThat(result.getNotificationBody()).isEqualTo("내가 남긴 <전지적 독자 시점>글이 관심 받고 있어요!");
+            assertThat(result.getUserId()).isEqualTo(owner.getUserId());
+            assertThat(result.getFeedId()).isEqualTo(feed.getFeedId());
+        }
+
+        @DisplayName("작품이 연결되지 않은 피드는 게시글 앞 12자를 포함한 알림을 생성한다")
+        @Test
+        void createsNotificationWithFeedContentWhenFeedHasNoNovel() {
+            // given
+            User owner = createUser(1L, "작성자");
+            Feed feed = createFeed(100L, owner, "  1234567890이후내용", null);
+            givenPopularNotificationType();
+            given(notificationRepository.save(any(Notification.class)))
+                    .willAnswer(invocation -> invocation.getArgument(0));
+
+            // when
+            Notification result = notificationService.createBecamePopularFeedNotification(feed, null);
+
+            // then
+            assertThat(result.getNotificationTitle()).isEqualTo("추천글 등극 🔥");
+            assertThat(result.getNotificationBody()).isEqualTo("내가 남긴 '  1234567890...'글이 관심 받고 있어요!");
+            assertThat(result.getUserId()).isEqualTo(owner.getUserId());
+            assertThat(result.getFeedId()).isEqualTo(feed.getFeedId());
+        }
+    }
+
+    @Nested
     @DisplayName("알림 목록 조회 테스트")
     class GetNotifications {
 
@@ -182,6 +238,24 @@ class NotificationServiceTest {
             assertThat(result.notifications()).hasSize(1);
             assertThat(result.isLoadable()).isFalse();
         }
+    }
+
+    private void givenPopularNotificationType() {
+        NotificationType notificationType = mock(NotificationType.class);
+        given(notificationTypeRepository.findByNotificationTypeName("지금뜨는글"))
+                .willReturn(notificationType);
+    }
+
+    private User createUser(Long userId, String nickname) {
+        User user = User.createBySocial("social-" + userId, nickname, null);
+        ReflectionTestUtils.setField(user, "userId", userId);
+        return user;
+    }
+
+    private Feed createFeed(Long feedId, User owner, String content, Long novelId) {
+        Feed feed = Feed.create(content, novelId, false, true, owner, List.of());
+        ReflectionTestUtils.setField(feed, "feedId", feedId);
+        return feed;
     }
 
     private Notification createNotification(Long notificationId, Long userId, String title) {
