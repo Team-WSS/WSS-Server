@@ -102,7 +102,7 @@ class ReportApplicationTest {
         given(reporter.getUserId()).willReturn(USER_ID);
         given(feed.getWriterId()).willReturn(FEED_WRITER_ID);
         given(comment.getUserId()).willReturn(COMMENT_WRITER_ID);
-        given(feedService.getAccessFeedOrException(FEED_ID, USER_ID)).willReturn(feed);
+        given(comment.getFeed()).willReturn(feed);
         given(commentService.getCommentOrException(COMMENT_ID)).willReturn(comment);
         given(userService.getUserOrException(COMMENT_WRITER_ID)).willReturn(commentWriter);
         given(reportService.isExistsByCommentAndUserAndReportedType(comment, reporter, ReportedType.SPOILER))
@@ -118,12 +118,10 @@ class ReportApplicationTest {
                 false
         )).willReturn("report message");
 
-        reportApplication.reportComment(reporter, FEED_ID, COMMENT_ID, ReportedType.SPOILER);
+        reportApplication.reportComment(reporter, COMMENT_ID, ReportedType.SPOILER);
 
-        then(feedService).should().getAccessFeedOrException(FEED_ID, USER_ID);
-        then(feedService).should(never()).getFeedOrException(FEED_ID);
+        then(feedService).should().validateAccess(feed, USER_ID);
         then(blockService).should().validateNotBlocked(USER_ID, FEED_WRITER_ID);
-        then(comment).should().validateBelongsTo(feed);
         then(eventPublisher).should().publishEvent(ReportMessageCreatedEvent.of("report message"));
     }
 }

@@ -83,17 +83,18 @@ public class ReportApplication {
     }
 
     @Transactional
-    public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
-        Feed feed = feedServiceImpl.getAccessFeedOrException(feedId, user.getUserId());
-        blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
-
+    public void reportComment(User user, Long commentId, ReportedType reportedType) {
         Comment comment = commentServiceImpl.getCommentOrException(commentId);
-        comment.validateBelongsTo(feed);
-        User commentCreatedUser = userService.getUserOrException(comment.getUserId());
+        Feed feed = comment.getFeed();
+
+        feedServiceImpl.validateAccess(feed, user.getUserId());
+        blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
 
         if (comment.getUserId().equals(user.getUserId())) {
             throw new CustomReportException(SELF_COMMENT_REPORT_NOT_ALLOWED, "cannot report own comment");
         }
+
+        User commentCreatedUser = userService.getUserOrException(comment.getUserId());
 
         if (reportServiceImpl.isExistsByCommentAndUserAndReportedType(comment, user, reportedType)) {
             throw new CustomReportException(ALREADY_REPORTED_COMMENT, "comment has already been reported by the user");
@@ -126,6 +127,12 @@ public class ReportApplication {
                 shouldModerate
         );
         eventPublisher.publishEvent(ReportMessageCreatedEvent.of(content));
+    }
+
+    @Deprecated(since = "POST /comments/{commentId}/spoiler 또는 /impertinence로 완벽 교체시")
+    @Transactional
+    public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
+        reportComment(user, commentId, reportedType);
     }
 
 }

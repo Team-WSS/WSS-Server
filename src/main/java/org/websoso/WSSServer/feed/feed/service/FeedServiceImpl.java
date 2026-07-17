@@ -66,11 +66,16 @@ public class FeedServiceImpl {
     public Feed getAccessFeedOrException(Long feedId, Long userId) {
         Feed feed = getFeedOrException(feedId);
 
+        validateAccess(feed, userId);
+
+        return feed;
+    }
+
+    public void validateAccess(Feed feed, Long userId) {
+
         if (!feed.canAccess(userId)) {
             throw new CustomFeedException(HIDDEN_FEED_ACCESS, "Cannot access hidden feed.");
         }
-
-        return feed;
     }
 
     @Transactional(readOnly = true)

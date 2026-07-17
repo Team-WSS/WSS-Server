@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.feed.report.application.ReportApplication;
 import org.websoso.WSSServer.user.domain.User;
 
-@RequestMapping("/feeds")
+@RequestMapping
 @RestController
 @RequiredArgsConstructor
 public class ReportController {
 
     private final ReportApplication reportApplication;
 
-    @PostMapping("/{feedId}/spoiler")
+    @PostMapping("/feeds/{feedId}/spoiler")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> reportFeedSpoiler(@AuthenticationPrincipal User user,
                                                   @PathVariable("feedId") Long feedId) {
@@ -32,7 +32,7 @@ public class ReportController {
                 .build();
     }
 
-    @PostMapping("/{feedId}/impertinence")
+    @PostMapping("/feeds/{feedId}/impertinence")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> reportedFeedImpertinence(@AuthenticationPrincipal User user,
                                                          @PathVariable("feedId") Long feedId) {
@@ -42,8 +42,29 @@ public class ReportController {
                 .build();
     }
 
-    @PostMapping("/{feedId}/comments/{commentId}/spoiler")
+    @PostMapping("/comments/{commentId}/spoiler")
     @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> reportCommentSpoiler(@AuthenticationPrincipal User user,
+                                                     @PathVariable("commentId") Long commentId) {
+        reportApplication.reportComment(user, commentId, SPOILER);
+        return ResponseEntity
+                .status(CREATED)
+                .build();
+    }
+
+    @PostMapping("/comments/{commentId}/impertinence")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> reportCommentImpertinence(@AuthenticationPrincipal User user,
+                                                          @PathVariable("commentId") Long commentId) {
+        reportApplication.reportComment(user, commentId, IMPERTINENCE);
+        return ResponseEntity
+                .status(CREATED)
+                .build();
+    }
+
+    @PostMapping("/feeds/{feedId}/comments/{commentId}/spoiler")
+    @PreAuthorize("isAuthenticated()")
+    @Deprecated(since = "POST /comments/{commentId}/spoiler로 완벽 교체시")
     public ResponseEntity<Void> reportCommentSpoiler(@AuthenticationPrincipal User user,
                                                      @PathVariable("feedId") Long feedId,
                                                      @PathVariable("commentId") Long commentId) {
@@ -53,8 +74,9 @@ public class ReportController {
                 .build();
     }
 
-    @PostMapping("/{feedId}/comments/{commentId}/impertinence")
+    @PostMapping("/feeds/{feedId}/comments/{commentId}/impertinence")
     @PreAuthorize("isAuthenticated()")
+    @Deprecated(since = "POST /comments/{commentId}/impertinence로 완벽 교체시")
     public ResponseEntity<Void> reportCommentImpertinence(@AuthenticationPrincipal User user,
                                                           @PathVariable("feedId") Long feedId,
                                                           @PathVariable("commentId") Long commentId) {
