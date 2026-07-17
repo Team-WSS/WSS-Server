@@ -82,7 +82,9 @@ public class ReportApplication {
 
     @Transactional
     public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
-        Feed feed = feedServiceImpl.getFeedOrException(feedId);
+        Feed feed = feedServiceImpl.getAccessFeedOrException(feedId, user.getUserId());
+        blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
+
         Comment comment = commentServiceImpl.getCommentOrException(commentId);
         comment.validateBelongsTo(feed);
         User commentCreatedUser = userService.getUserOrException(comment.getUserId());

@@ -43,7 +43,7 @@ public class ReportController {
     }
 
     @PostMapping("/{feedId}/comments/{commentId}/spoiler")
-    @PreAuthorize("isAuthenticated() and @feedAccessValidator.canAccess(#feedId, #user)")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> reportCommentSpoiler(@AuthenticationPrincipal User user,
                                                      @PathVariable("feedId") Long feedId,
                                                      @PathVariable("commentId") Long commentId) {
