@@ -11,18 +11,18 @@ import org.websoso.WSSServer.user.domain.User;
 public class ReportMessageFormatter {
 
     public String formatFeedReportMessage(User reporter, Feed feed, ReportedType reportedType,
-                                          int reportedCount, boolean hidden) {
+                                          int reportedCount, boolean moderated) {
         return MessageFormatter.formatFeedReportMessage(
                 reporter,
                 feed,
                 reportedType,
                 reportedCount,
-                hidden
+                moderated
         );
     }
 
     public String formatCommentReportMessage(User reporter, Feed feed, Comment comment, ReportedType reportedType,
-                                             User commentCreatedUser, int reportedCount, boolean hidden) {
+                                             User commentCreatedUser, int reportedCount, boolean moderated) {
         return MessageFormatter.formatCommentReportMessage(
                 reporter,
                 feed,
@@ -30,7 +30,7 @@ public class ReportMessageFormatter {
                 reportedType,
                 commentCreatedUser,
                 reportedCount,
-                hidden
+                moderated
         );
     }
 }

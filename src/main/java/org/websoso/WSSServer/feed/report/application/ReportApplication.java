@@ -64,10 +64,14 @@ public class ReportApplication {
         }
 
         int reportedCount = reportServiceImpl.countByFeedAndReportedType(feed, reportedType);
-        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
+        boolean shouldModerate = reportedType.isExceedingLimit(reportedCount);
 
-        if (shouldHide) {
-            feed.hideFeed();
+        if (shouldModerate) {
+            if (reportedType.equals(SPOILER)) {
+                feed.markSpoiler();
+            } else if (reportedType.equals(IMPERTINENCE)) {
+                feed.hideFeed();
+            }
         }
 
         String content = reportMessageFormatter.formatFeedReportMessage(
@@ -75,7 +79,7 @@ public class ReportApplication {
                 feed,
                 reportedType,
                 reportedCount,
-                shouldHide
+                shouldModerate
         );
         eventPublisher.publishEvent(ReportMessageCreatedEvent.of(content));
     }
@@ -104,9 +108,9 @@ public class ReportApplication {
         }
 
         int reportedCount = reportServiceImpl.countByCommentAndReportedType(comment, reportedType);
-        boolean shouldHide = reportedType.isExceedingLimit(reportedCount);
+        boolean shouldModerate = reportedType.isExceedingLimit(reportedCount);
 
-        if (shouldHide) {
+        if (shouldModerate) {
             if (reportedType.equals(SPOILER)) {
                 comment.markSpoiler();
             } else if (reportedType.equals(IMPERTINENCE)) {
@@ -121,7 +125,7 @@ public class ReportApplication {
                 reportedType,
                 commentCreatedUser,
                 reportedCount,
-                shouldHide
+                shouldModerate
         );
         eventPublisher.publishEvent(ReportMessageCreatedEvent.of(content));
     }

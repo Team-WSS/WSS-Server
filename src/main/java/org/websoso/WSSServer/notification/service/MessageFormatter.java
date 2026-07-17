@@ -19,10 +19,17 @@ public class MessageFormatter {
     private MessageFormatter() {}
 
     public static String formatFeedReportMessage(User user, Feed feed, ReportedType reportedType, int reportedCount,
-                                                 boolean isHidden) {
-        String hiddenMessage = isHidden
-                ? "해당 글은 숨김 처리되었습니다."
-                : "해당 글은 숨김 처리되지 않았습니다.";
+                                                 boolean isModerated) {
+        String moderationMessage;
+        if (reportedType.equals(SPOILER)) {
+            moderationMessage = isModerated
+                    ? "해당 글은 스포일러 글로 지정되었습니다."
+                    : "해당 글은 스포일러 글로 지정되지 않았습니다.";
+        } else {
+            moderationMessage = isModerated
+                    ? "해당 글은 숨김 처리되었습니다."
+                    : "해당 글은 숨김 처리되지 않았습니다.";
+        }
         return String.format(
                 FEED_REPORT.getTemplate(),
                 DiscordMessageTemplate.getCurrentDateTime(),
@@ -33,7 +40,7 @@ public class MessageFormatter {
                 feed.getUser().getUserId(),
                 feed.getFeedContent(),
                 reportedCount,
-                hiddenMessage
+                moderationMessage
         );
     }
 

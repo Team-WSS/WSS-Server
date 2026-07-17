@@ -107,6 +107,10 @@ public class Feed {
         this.isHidden = true;
     }
 
+    public void markSpoiler() {
+        this.isSpoiler = true;
+    }
+
     public Long getWriterId() {
         return user.getUserId();
     }

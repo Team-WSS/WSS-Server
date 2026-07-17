@@ -19,20 +19,20 @@ class MessageFormatterTest {
     @DisplayName("피드 신고 메시지 포맷팅 테스트")
     class FormatFeedReportMessage {
 
-        @DisplayName("숨김 처리된 피드 신고 메시지를 포맷팅한다")
+        @DisplayName("스포일러 처리된 피드 신고 메시지를 포맷팅한다")
         @Test
-        void formatsHiddenFeedReportMessage() {
+        void formatsSpoilerFeedReportMessage() {
             // given
             User reporter = createUser(1L, "신고자");
             User feedOwner = createUser(2L, "글쓴이");
             Feed feed = createFeed(100L, feedOwner, "신고될 글 내용");
             ReportedType reportedType = ReportedType.SPOILER;
             int reportedCount = 5;
-            boolean isHidden = true;
+            boolean isModerated = true;
 
             // when
             String result = MessageFormatter.formatFeedReportMessage(
-                    reporter, feed, reportedType, reportedCount, isHidden);
+                    reporter, feed, reportedType, reportedCount, isModerated);
 
             // then
             assertThat(result)
@@ -40,28 +40,28 @@ class MessageFormatterTest {
                     .contains("신고자")
                     .contains("글쓴이")
                     .contains("신고될 글 내용")
-                    .contains("숨김 처리");
+                    .contains("스포일러 글로 지정");
         }
 
-        @DisplayName("숨김 처리되지 않은 피드 신고 메시지를 포맷팅한다")
+        @DisplayName("숨김 처리된 피드 신고 메시지를 포맷팅한다")
         @Test
-        void formatsNonHiddenFeedReportMessage() {
+        void formatsHiddenFeedReportMessage() {
             // given
             User reporter = createUser(1L, "신고자");
             User feedOwner = createUser(2L, "글쓴이");
             Feed feed = createFeed(100L, feedOwner, "신고될 글 내용");
             ReportedType reportedType = ReportedType.IMPERTINENCE;
             int reportedCount = 3;
-            boolean isHidden = false;
+            boolean isModerated = true;
 
             // when
             String result = MessageFormatter.formatFeedReportMessage(
-                    reporter, feed, reportedType, reportedCount, isHidden);
+                    reporter, feed, reportedType, reportedCount, isModerated);
 
             // then
             assertThat(result)
                     .contains("부적절한 표현")
-                    .contains("숨김 처리되지 않았습니다");
+                    .contains("숨김 처리되었습니다");
         }
     }
 

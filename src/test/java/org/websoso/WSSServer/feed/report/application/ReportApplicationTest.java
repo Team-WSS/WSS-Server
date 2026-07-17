@@ -68,6 +68,34 @@ class ReportApplicationTest {
     @Mock
     private Comment comment;
 
+    @DisplayName("스포일러 신고가 기준 횟수에 도달하면 피드를 스포일러 처리한다")
+    @Test
+    void marksFeedAsSpoilerWhenSpoilerReportReachesLimit() {
+        given(reporter.getUserId()).willReturn(USER_ID);
+        given(feed.getWriterId()).willReturn(FEED_WRITER_ID);
+        given(feedService.getAccessFeedOrException(FEED_ID, USER_ID)).willReturn(feed);
+        given(reportService.countByFeedAndReportedType(feed, ReportedType.SPOILER)).willReturn(3);
+
+        reportApplication.reportFeed(reporter, FEED_ID, ReportedType.SPOILER);
+
+        then(feed).should().markSpoiler();
+        then(feed).should(never()).hideFeed();
+    }
+
+    @DisplayName("부적절 신고가 기준 횟수에 도달하면 피드를 숨김 처리한다")
+    @Test
+    void hidesFeedWhenImpertinenceReportReachesLimit() {
+        given(reporter.getUserId()).willReturn(USER_ID);
+        given(feed.getWriterId()).willReturn(FEED_WRITER_ID);
+        given(feedService.getAccessFeedOrException(FEED_ID, USER_ID)).willReturn(feed);
+        given(reportService.countByFeedAndReportedType(feed, ReportedType.IMPERTINENCE)).willReturn(3);
+
+        reportApplication.reportFeed(reporter, FEED_ID, ReportedType.IMPERTINENCE);
+
+        then(feed).should().hideFeed();
+        then(feed).should(never()).markSpoiler();
+    }
+
     @DisplayName("댓글 신고 시 애플리케이션 계층에서 피드 접근 가능 여부를 검증한다")
     @Test
     void validatesFeedAccessWhenReportingComment() {

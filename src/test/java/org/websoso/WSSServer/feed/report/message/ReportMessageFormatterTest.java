@@ -29,7 +29,7 @@ class ReportMessageFormatterTest {
 
             String content = formatter.formatFeedReportMessage(reporter, feed, ReportedType.SPOILER, 3, true);
 
-            assertThat(content).contains("신고자", "작성자", "피드 내용", "총 3회");
+            assertThat(content).contains("신고자", "작성자", "피드 내용", "총 3회", "스포일러 글로 지정");
         }
     }
 
