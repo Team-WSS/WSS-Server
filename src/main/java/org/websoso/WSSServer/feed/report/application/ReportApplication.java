@@ -1,7 +1,5 @@
 package org.websoso.WSSServer.feed.report.application;
 
-import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
-import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 import static org.websoso.WSSServer.feed.report.exception.CustomReportError.ALREADY_REPORTED_COMMENT;
 import static org.websoso.WSSServer.feed.report.exception.CustomReportError.ALREADY_REPORTED_FEED;
 import static org.websoso.WSSServer.feed.report.exception.CustomReportError.SELF_COMMENT_REPORT_NOT_ALLOWED;
@@ -67,9 +65,9 @@ public class ReportApplication {
         boolean shouldModerate = reportedType.isExceedingLimit(reportedCount);
 
         if (shouldModerate) {
-            if (reportedType.equals(SPOILER)) {
+            if (reportedType.isSpoiler()) {
                 feed.markSpoiler();
-            } else if (reportedType.equals(IMPERTINENCE)) {
+            } else if (reportedType.isImpertinence()) {
                 feed.hideFeed();
             }
         }
@@ -111,9 +109,9 @@ public class ReportApplication {
         boolean shouldModerate = reportedType.isExceedingLimit(reportedCount);
 
         if (shouldModerate) {
-            if (reportedType.equals(SPOILER)) {
+            if (reportedType.isSpoiler()) {
                 comment.markSpoiler();
-            } else if (reportedType.equals(IMPERTINENCE)) {
+            } else if (reportedType.isImpertinence()) {
                 comment.markHidden();
             }
         }

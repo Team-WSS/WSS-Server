@@ -4,8 +4,6 @@ import static org.websoso.WSSServer.infrastructure.discord.DiscordMessageTemplat
 import static org.websoso.WSSServer.infrastructure.discord.DiscordMessageTemplate.FEED_REPORT;
 import static org.websoso.WSSServer.infrastructure.discord.DiscordMessageTemplate.USER_JOIN;
 import static org.websoso.WSSServer.infrastructure.discord.DiscordMessageTemplate.USER_WITHDRAW;
-import static org.websoso.WSSServer.domain.common.ReportedType.IMPERTINENCE;
-import static org.websoso.WSSServer.domain.common.ReportedType.SPOILER;
 
 import org.websoso.WSSServer.feed.comment.domain.Comment;
 import org.websoso.WSSServer.feed.feed.domain.Feed;
@@ -21,7 +19,7 @@ public class MessageFormatter {
     public static String formatFeedReportMessage(User user, Feed feed, ReportedType reportedType, int reportedCount,
                                                  boolean isModerated) {
         String moderationMessage;
-        if (reportedType.equals(SPOILER)) {
+        if (reportedType.isSpoiler()) {
             moderationMessage = isModerated
                     ? "해당 글은 스포일러 글로 지정되었습니다."
                     : "해당 글은 스포일러 글로 지정되지 않았습니다.";
@@ -49,9 +47,9 @@ public class MessageFormatter {
                                                     int reportedCount, boolean isHidden) {
         String hiddenMessage = "해당 댓글은 현재 숨김 처리되지 않은 상태입니다.";
         if (isHidden) {
-            if (reportedType.equals(SPOILER)) {
+            if (reportedType.isSpoiler()) {
                 hiddenMessage = "해당 댓글은 스포일러 댓글로 지정되었습니다.";
-            } else if (reportedType.equals(IMPERTINENCE)) {
+            } else if (reportedType.isImpertinence()) {
                 hiddenMessage = "해당 댓글은 부적절한 내용으로 인해 숨김 처리되었습니다.";
             }
         }
