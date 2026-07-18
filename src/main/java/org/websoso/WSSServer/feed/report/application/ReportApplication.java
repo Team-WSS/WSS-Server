@@ -1,11 +1,14 @@
 package org.websoso.WSSServer.feed.report.application;
 
+import static org.websoso.WSSServer.feed.report.domain.ReportConstraintName.UNIQUE_REPORTED_COMMENT;
+import static org.websoso.WSSServer.feed.report.domain.ReportConstraintName.UNIQUE_REPORTED_FEED;
 import static org.websoso.WSSServer.feed.report.exception.CustomReportError.ALREADY_REPORTED_COMMENT;
 import static org.websoso.WSSServer.feed.report.exception.CustomReportError.ALREADY_REPORTED_FEED;
 import static org.websoso.WSSServer.feed.report.exception.CustomReportError.SELF_COMMENT_REPORT_NOT_ALLOWED;
 import static org.websoso.WSSServer.feed.report.exception.CustomReportError.SELF_FEED_REPORT_NOT_ALLOWED;
 
 import lombok.RequiredArgsConstructor;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -48,14 +51,17 @@ public class ReportApplication {
         }
 
         // 이미 신고한 피드는 또 신고할 수 없다. (신고 정책)
-        if (reportServiceImpl.isExistsByFeedAndUserAndReportedType(feed, user, reportedType)) {
+        if (reportServiceImpl.existsByFeedAndUserAndReportedType(feed, user, reportedType)) {
             throw new CustomReportException(ALREADY_REPORTED_FEED, "feed has already been reported by the user");
         }
 
         try {
             reportServiceImpl.saveReportedFeed(feed, user, reportedType);
         } catch (DataIntegrityViolationException e) {
-            throw new CustomReportException(ALREADY_REPORTED_FEED, "feed has already been reported by the user");
+            if (isConstraintViolation(e, UNIQUE_REPORTED_FEED)) {
+                throw new CustomReportException(ALREADY_REPORTED_FEED, "feed has already been reported by the user");
+            }
+            throw e;
         }
 
         eventPublisher.publishEvent(FeedReportSavedEvent.of(user.getUserId(), feedId, reportedType));
@@ -76,14 +82,18 @@ public class ReportApplication {
             throw new CustomReportException(SELF_COMMENT_REPORT_NOT_ALLOWED, "cannot report own comment");
         }
 
-        if (reportServiceImpl.isExistsByCommentAndUserAndReportedType(comment, user, reportedType)) {
+        if (reportServiceImpl.existsByCommentAndUserAndReportedType(comment, user, reportedType)) {
             throw new CustomReportException(ALREADY_REPORTED_COMMENT, "comment has already been reported by the user");
         }
 
         try {
             reportServiceImpl.saveReportedComment(comment, user, reportedType);
         } catch (DataIntegrityViolationException e) {
-            throw new CustomReportException(ALREADY_REPORTED_COMMENT, "comment has already been reported by the user");
+            if (isConstraintViolation(e, UNIQUE_REPORTED_COMMENT)) {
+                throw new CustomReportException(ALREADY_REPORTED_COMMENT,
+                        "comment has already been reported by the user");
+            }
+            throw e;
         }
 
         eventPublisher.publishEvent(CommentReportSavedEvent.of(user.getUserId(), commentId, reportedType));
@@ -93,6 +103,19 @@ public class ReportApplication {
     @Transactional
     public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
         reportComment(user, commentId, reportedType);
+    }
+
+    private boolean isConstraintViolation(DataIntegrityViolationException exception, String constraintName) {
+        Throwable cause = exception;
+
+        while (cause != null) {
+            if (cause instanceof ConstraintViolationException constraintViolationException) {
+                return constraintName.equalsIgnoreCase(constraintViolationException.getConstraintName());
+            }
+            cause = cause.getCause();
+        }
+
+        return false;
     }
 
 }

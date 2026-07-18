@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -23,9 +24,16 @@ import org.websoso.WSSServer.domain.common.ReportedType;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"comment_id", "user_id", "reported_type"})
-})
+@Table(
+        uniqueConstraints = @UniqueConstraint(
+                name = ReportConstraintName.UNIQUE_REPORTED_COMMENT,
+                columnNames = {"comment_id", "user_id", "reported_type"}
+        ),
+        indexes = @Index(
+                name = "idx_reported_comment_comment_type",
+                columnList = "comment_id, reported_type"
+        )
+)
 public class ReportedComment {
 
     @Id

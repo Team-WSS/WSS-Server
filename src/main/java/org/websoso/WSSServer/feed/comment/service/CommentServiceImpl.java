@@ -32,13 +32,13 @@ public class CommentServiceImpl {
     }
 
     @Transactional
-    public void markSpoiler(Long commentId) {
-        commentRepository.markSpoiler(commentId);
+    public boolean markSpoilerIfNotMarked(Long commentId) {
+        return commentRepository.markSpoilerIfNotMarked(commentId);
     }
 
     @Transactional
-    public void hide(Long commentId) {
-        commentRepository.hide(commentId);
+    public boolean hideIfNotHidden(Long commentId) {
+        return commentRepository.hideIfNotHidden(commentId);
     }
 
     /**

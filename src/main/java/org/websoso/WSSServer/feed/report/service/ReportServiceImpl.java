@@ -54,7 +54,7 @@ public class ReportServiceImpl {
      * @return 이미 신고한 경우 true
      */
     @Transactional(readOnly = true)
-    public boolean isExistsByFeedAndUserAndReportedType(Feed feed, User user, ReportedType reportedType) {
+    public boolean existsByFeedAndUserAndReportedType(Feed feed, User user, ReportedType reportedType) {
         return reportedFeedRepository.existsByFeedAndUserAndReportedType(feed, user, reportedType);
     }
 
@@ -79,7 +79,7 @@ public class ReportServiceImpl {
      * @return 이미 신고한 경우 true
      */
     @Transactional(readOnly = true)
-    public boolean isExistsByCommentAndUserAndReportedType(Comment comment, User user, ReportedType reportedType) {
+    public boolean existsByCommentAndUserAndReportedType(Comment comment, User user, ReportedType reportedType) {
         return reportedCommentRepository.existsByCommentAndUserAndReportedType(comment, user, reportedType);
     }
 

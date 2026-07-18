@@ -38,6 +38,23 @@ class ReportMessageFormatterTest {
 
             assertThat(content).contains("신고자", "작성자", "피드 내용", "총 3회", "스포일러 글로 지정");
         }
+
+        @Test
+        void formatsAlreadyModeratedFeedReportMessage() {
+            User reporter = user(1L, "신고자");
+            User writer = user(2L, "작성자");
+            Feed feed = feed(10L, writer, "피드 내용");
+
+            String content = formatter.formatFeedReportMessage(
+                    reporter,
+                    feed,
+                    ReportedType.SPOILER,
+                    4,
+                    ReportModerationAction.ALREADY_MARKED_AS_SPOILER
+            );
+
+            assertThat(content).contains("총 4회", "이미 스포일러 글로 지정된 상태");
+        }
     }
 
     @Nested
@@ -64,6 +81,48 @@ class ReportMessageFormatterTest {
 
             assertThat(content)
                     .contains("신고자", "작성자", "댓글작성자", "댓글 내용", "총 3회", "숨김 처리");
+        }
+
+        @Test
+        void formatsAlreadyModeratedCommentReportMessage() {
+            User reporter = user(1L, "신고자");
+            User writer = user(2L, "작성자");
+            User commentWriter = user(3L, "댓글작성자");
+            Feed feed = feed(10L, writer, "피드 내용");
+            Comment comment = comment(30L, feed, commentWriter.getUserId(), "댓글 내용");
+
+            String content = formatter.formatCommentReportMessage(
+                    reporter,
+                    feed,
+                    comment,
+                    commentWriter,
+                    ReportedType.IMPERTINENCE,
+                    4,
+                    ReportModerationAction.ALREADY_HIDDEN
+            );
+
+            assertThat(content).contains("총 4회", "이미 숨김 처리된 상태");
+        }
+
+        @Test
+        void formatsBelowLimitSpoilerCommentReportMessage() {
+            User reporter = user(1L, "신고자");
+            User writer = user(2L, "작성자");
+            User commentWriter = user(3L, "댓글작성자");
+            Feed feed = feed(10L, writer, "피드 내용");
+            Comment comment = comment(30L, feed, commentWriter.getUserId(), "댓글 내용");
+
+            String content = formatter.formatCommentReportMessage(
+                    reporter,
+                    feed,
+                    comment,
+                    commentWriter,
+                    ReportedType.SPOILER,
+                    2,
+                    ReportModerationAction.NONE
+            );
+
+            assertThat(content).contains("총 2회", "스포일러 댓글로 지정되지 않았습니다");
         }
     }
 

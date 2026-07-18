@@ -3,7 +3,6 @@ package org.websoso.WSSServer.feed.report.repository;
 import static org.websoso.WSSServer.feed.report.domain.QReportedComment.reportedComment;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.websoso.WSSServer.feed.comment.domain.Comment;
 
@@ -17,18 +16,6 @@ public class ReportedCommentCustomRepositoryImpl implements ReportedCommentCusto
         jpaQueryFactory
                 .delete(reportedComment)
                 .where(reportedComment.comment.eq(comment))
-                .execute();
-    }
-
-    @Override
-    public void deleteByCommentIdsIn(List<Long> commentIds) {
-        if (commentIds.isEmpty()) {
-            return;
-        }
-
-        jpaQueryFactory
-                .delete(reportedComment)
-                .where(reportedComment.comment.commentId.in(commentIds))
                 .execute();
     }
 

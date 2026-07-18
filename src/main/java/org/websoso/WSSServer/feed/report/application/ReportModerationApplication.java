@@ -79,13 +79,15 @@ public class ReportModerationApplication {
         }
 
         if (reportedType.isSpoiler()) {
-            feedService.markSpoiler(feedId);
-            return ReportModerationAction.MARKED_AS_SPOILER;
+            return feedService.markSpoilerIfNotMarked(feedId)
+                    ? ReportModerationAction.MARKED_AS_SPOILER
+                    : ReportModerationAction.ALREADY_MARKED_AS_SPOILER;
         }
 
         if (reportedType.isImpertinence()) {
-            feedService.hide(feedId);
-            return ReportModerationAction.HIDDEN;
+            return feedService.hideIfNotHidden(feedId)
+                    ? ReportModerationAction.HIDDEN
+                    : ReportModerationAction.ALREADY_HIDDEN;
         }
 
         return ReportModerationAction.NONE;
@@ -97,13 +99,15 @@ public class ReportModerationApplication {
         }
 
         if (reportedType.isSpoiler()) {
-            commentService.markSpoiler(commentId);
-            return ReportModerationAction.MARKED_AS_SPOILER;
+            return commentService.markSpoilerIfNotMarked(commentId)
+                    ? ReportModerationAction.MARKED_AS_SPOILER
+                    : ReportModerationAction.ALREADY_MARKED_AS_SPOILER;
         }
 
         if (reportedType.isImpertinence()) {
-            commentService.hide(commentId);
-            return ReportModerationAction.HIDDEN;
+            return commentService.hideIfNotHidden(commentId)
+                    ? ReportModerationAction.HIDDEN
+                    : ReportModerationAction.ALREADY_HIDDEN;
         }
 
         return ReportModerationAction.NONE;

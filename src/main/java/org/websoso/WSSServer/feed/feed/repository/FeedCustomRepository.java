@@ -10,9 +10,9 @@ import org.websoso.WSSServer.domain.common.SortCriteria;
 
 public interface FeedCustomRepository {
 
-    void markSpoiler(Long feedId);
+    boolean markSpoilerIfNotMarked(Long feedId);
 
-    void hide(Long feedId);
+    boolean hideIfNotHidden(Long feedId);
 
     List<Feed> findPopularFeedsByNovelIds(List<Long> novelIds);
 

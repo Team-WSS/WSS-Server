@@ -71,11 +71,12 @@ class ReportModerationApplicationTest {
     void marksFeedAsSpoilerAfterCommit() {
         FeedReportSavedEvent event = FeedReportSavedEvent.of(REPORTER_ID, FEED_ID, ReportedType.SPOILER);
         givenFeedModeration(event, 3, ReportModerationAction.MARKED_AS_SPOILER, "spoiler message");
+        given(feedService.markSpoilerIfNotMarked(FEED_ID)).willReturn(true);
 
         reportModerationApplication.moderate(event);
 
-        then(feedService).should().markSpoiler(FEED_ID);
-        then(feedService).should(never()).hide(FEED_ID);
+        then(feedService).should().markSpoilerIfNotMarked(FEED_ID);
+        then(feedService).should(never()).hideIfNotHidden(FEED_ID);
         then(eventPublisher).should().publishEvent(ReportMessageCreatedEvent.of("spoiler message"));
     }
 
@@ -84,11 +85,12 @@ class ReportModerationApplicationTest {
     void hidesFeedAfterCommit() {
         FeedReportSavedEvent event = FeedReportSavedEvent.of(REPORTER_ID, FEED_ID, ReportedType.IMPERTINENCE);
         givenFeedModeration(event, 3, ReportModerationAction.HIDDEN, "hidden message");
+        given(feedService.hideIfNotHidden(FEED_ID)).willReturn(true);
 
         reportModerationApplication.moderate(event);
 
-        then(feedService).should().hide(FEED_ID);
-        then(feedService).should(never()).markSpoiler(FEED_ID);
+        then(feedService).should().hideIfNotHidden(FEED_ID);
+        then(feedService).should(never()).markSpoilerIfNotMarked(FEED_ID);
         then(eventPublisher).should().publishEvent(ReportMessageCreatedEvent.of("hidden message"));
     }
 
@@ -97,11 +99,12 @@ class ReportModerationApplicationTest {
     void marksCommentAsSpoilerAfterCommit() {
         CommentReportSavedEvent event = CommentReportSavedEvent.of(REPORTER_ID, COMMENT_ID, ReportedType.SPOILER);
         givenCommentModeration(event, 3, ReportModerationAction.MARKED_AS_SPOILER, "comment message");
+        given(commentService.markSpoilerIfNotMarked(COMMENT_ID)).willReturn(true);
 
         reportModerationApplication.moderate(event);
 
-        then(commentService).should().markSpoiler(COMMENT_ID);
-        then(commentService).should(never()).hide(COMMENT_ID);
+        then(commentService).should().markSpoilerIfNotMarked(COMMENT_ID);
+        then(commentService).should(never()).hideIfNotHidden(COMMENT_ID);
         then(eventPublisher).should().publishEvent(ReportMessageCreatedEvent.of("comment message"));
     }
 
@@ -113,9 +116,22 @@ class ReportModerationApplicationTest {
 
         reportModerationApplication.moderate(event);
 
-        then(feedService).should(never()).markSpoiler(FEED_ID);
-        then(feedService).should(never()).hide(FEED_ID);
+        then(feedService).should(never()).markSpoilerIfNotMarked(FEED_ID);
+        then(feedService).should(never()).hideIfNotHidden(FEED_ID);
         then(eventPublisher).should().publishEvent(ReportMessageCreatedEvent.of("not moderated message"));
+    }
+
+    @DisplayName("이미 처리된 피드가 임계치를 넘으면 중복 처리하지 않았음을 메시지에 반영한다")
+    @Test
+    void reportsAlreadyModeratedFeed() {
+        FeedReportSavedEvent event = FeedReportSavedEvent.of(REPORTER_ID, FEED_ID, ReportedType.SPOILER);
+        givenFeedModeration(event, 4, ReportModerationAction.ALREADY_MARKED_AS_SPOILER, "already moderated");
+        given(feedService.markSpoilerIfNotMarked(FEED_ID)).willReturn(false);
+
+        reportModerationApplication.moderate(event);
+
+        then(feedService).should().markSpoilerIfNotMarked(FEED_ID);
+        then(eventPublisher).should().publishEvent(ReportMessageCreatedEvent.of("already moderated"));
     }
 
     private void givenFeedModeration(FeedReportSavedEvent event, int reportedCount,

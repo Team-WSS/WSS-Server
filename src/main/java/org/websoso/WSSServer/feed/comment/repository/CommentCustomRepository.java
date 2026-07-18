@@ -2,9 +2,9 @@ package org.websoso.WSSServer.feed.comment.repository;
 
 public interface CommentCustomRepository {
 
-    void markSpoiler(Long commentId);
+    boolean markSpoilerIfNotMarked(Long commentId);
 
-    void hide(Long commentId);
+    boolean hideIfNotHidden(Long commentId);
 
     void updateUserToUnknown(Long userId);
 

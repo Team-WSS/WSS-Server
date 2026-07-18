@@ -11,21 +11,27 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public void markSpoiler(Long commentId) {
-        jpaQueryFactory
+    public boolean markSpoilerIfNotMarked(Long commentId) {
+        return jpaQueryFactory
                 .update(comment)
                 .set(comment.isSpoiler, true)
-                .where(comment.commentId.eq(commentId))
-                .execute();
+                .where(
+                        comment.commentId.eq(commentId),
+                        comment.isSpoiler.isFalse()
+                )
+                .execute() > 0;
     }
 
     @Override
-    public void hide(Long commentId) {
-        jpaQueryFactory
+    public boolean hideIfNotHidden(Long commentId) {
+        return jpaQueryFactory
                 .update(comment)
                 .set(comment.isHidden, true)
-                .where(comment.commentId.eq(commentId))
-                .execute();
+                .where(
+                        comment.commentId.eq(commentId),
+                        comment.isHidden.isFalse()
+                )
+                .execute() > 0;
     }
 
     @Override

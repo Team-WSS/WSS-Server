@@ -4,5 +4,7 @@ public enum ReportModerationAction {
 
     NONE,
     MARKED_AS_SPOILER,
-    HIDDEN
+    HIDDEN,
+    ALREADY_MARKED_AS_SPOILER,
+    ALREADY_HIDDEN
 }

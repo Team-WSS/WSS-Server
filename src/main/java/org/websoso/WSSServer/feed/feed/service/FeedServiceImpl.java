@@ -72,13 +72,13 @@ public class FeedServiceImpl {
     }
 
     @Transactional
-    public void markSpoiler(Long feedId) {
-        feedRepository.markSpoiler(feedId);
+    public boolean markSpoilerIfNotMarked(Long feedId) {
+        return feedRepository.markSpoilerIfNotMarked(feedId);
     }
 
     @Transactional
-    public void hide(Long feedId) {
-        feedRepository.hide(feedId);
+    public boolean hideIfNotHidden(Long feedId) {
+        return feedRepository.hideIfNotHidden(feedId);
     }
 
     public void validateAccess(Feed feed, Long userId) {

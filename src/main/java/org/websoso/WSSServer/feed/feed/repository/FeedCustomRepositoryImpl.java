@@ -39,21 +39,27 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public void markSpoiler(Long feedId) {
-        jpaQueryFactory
+    public boolean markSpoilerIfNotMarked(Long feedId) {
+        return jpaQueryFactory
                 .update(feed)
                 .set(feed.isSpoiler, true)
-                .where(feed.feedId.eq(feedId))
-                .execute();
+                .where(
+                        feed.feedId.eq(feedId),
+                        feed.isSpoiler.isFalse()
+                )
+                .execute() > 0;
     }
 
     @Override
-    public void hide(Long feedId) {
-        jpaQueryFactory
+    public boolean hideIfNotHidden(Long feedId) {
+        return jpaQueryFactory
                 .update(feed)
                 .set(feed.isHidden, true)
-                .where(feed.feedId.eq(feedId))
-                .execute();
+                .where(
+                        feed.feedId.eq(feedId),
+                        feed.isHidden.isFalse()
+                )
+                .execute() > 0;
     }
 
     @Override
