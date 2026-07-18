@@ -11,6 +11,7 @@ import org.websoso.WSSServer.domain.common.ReportedType;
 import org.websoso.WSSServer.feed.comment.domain.Comment;
 import org.websoso.WSSServer.feed.feed.domain.Feed;
 import org.websoso.WSSServer.feed.feed.domain.FeedImage;
+import org.websoso.WSSServer.feed.report.domain.ReportModerationAction;
 import org.websoso.WSSServer.user.domain.User;
 
 class ReportMessageFormatterTest {
@@ -27,7 +28,13 @@ class ReportMessageFormatterTest {
             User writer = user(2L, "작성자");
             Feed feed = feed(10L, writer, "피드 내용");
 
-            String content = formatter.formatFeedReportMessage(reporter, feed, ReportedType.SPOILER, 3, true);
+            String content = formatter.formatFeedReportMessage(
+                    reporter,
+                    feed,
+                    ReportedType.SPOILER,
+                    3,
+                    ReportModerationAction.MARKED_AS_SPOILER
+            );
 
             assertThat(content).contains("신고자", "작성자", "피드 내용", "총 3회", "스포일러 글로 지정");
         }
@@ -49,13 +56,14 @@ class ReportMessageFormatterTest {
                     reporter,
                     feed,
                     comment,
-                    ReportedType.IMPERTINENCE,
                     commentWriter,
-                    2,
-                    false
+                    ReportedType.IMPERTINENCE,
+                    3,
+                    ReportModerationAction.HIDDEN
             );
 
-            assertThat(content).contains("신고자", "작성자", "댓글작성자", "댓글 내용", "총 2회");
+            assertThat(content)
+                    .contains("신고자", "작성자", "댓글작성자", "댓글 내용", "총 3회", "숨김 처리");
         }
     }
 
@@ -66,7 +74,8 @@ class ReportMessageFormatterTest {
     }
 
     private Feed feed(Long feedId, User writer, String content) {
-        Feed feed = Feed.create(content, null, false, true, writer, List.of(FeedImage.createCommon("image.png", 1)));
+        Feed feed = Feed.create(content, null, false, true, writer,
+                List.of(FeedImage.createCommon("image.png", 1)));
         ReflectionTestUtils.setField(feed, "feedId", feedId);
         return feed;
     }

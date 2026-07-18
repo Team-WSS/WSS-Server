@@ -10,6 +10,10 @@ import org.websoso.WSSServer.domain.common.SortCriteria;
 
 public interface FeedCustomRepository {
 
+    void markSpoiler(Long feedId);
+
+    void hide(Long feedId);
+
     List<Feed> findPopularFeedsByNovelIds(List<Long> novelIds);
 
     Slice<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size, Boolean isVisible,

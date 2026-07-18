@@ -71,6 +71,16 @@ public class FeedServiceImpl {
         return feed;
     }
 
+    @Transactional
+    public void markSpoiler(Long feedId) {
+        feedRepository.markSpoiler(feedId);
+    }
+
+    @Transactional
+    public void hide(Long feedId) {
+        feedRepository.hide(feedId);
+    }
+
     public void validateAccess(Feed feed, Long userId) {
 
         if (!feed.canAccess(userId)) {

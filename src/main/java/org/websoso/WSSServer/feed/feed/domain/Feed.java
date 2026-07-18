@@ -20,12 +20,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import org.websoso.WSSServer.feed.comment.domain.Comment;
 import org.websoso.WSSServer.feed.report.domain.ReportedFeed;
 import org.websoso.WSSServer.user.domain.User;
 
 @Getter
 @DynamicInsert
+@DynamicUpdate
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Feed {

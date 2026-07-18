@@ -4,12 +4,29 @@ import static org.websoso.WSSServer.feed.comment.domain.QComment.comment;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 public class CommentCustomRepositoryImpl implements CommentCustomRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
+
+    @Override
+    public void markSpoiler(Long commentId) {
+        jpaQueryFactory
+                .update(comment)
+                .set(comment.isSpoiler, true)
+                .where(comment.commentId.eq(commentId))
+                .execute();
+    }
+
+    @Override
+    public void hide(Long commentId) {
+        jpaQueryFactory
+                .update(comment)
+                .set(comment.isHidden, true)
+                .where(comment.commentId.eq(commentId))
+                .execute();
+    }
 
     @Override
     public void updateUserToUnknown(Long userId) {
