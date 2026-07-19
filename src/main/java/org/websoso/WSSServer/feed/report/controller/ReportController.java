@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.websoso.WSSServer.feed.report.application.ReportApplication;
+import org.websoso.WSSServer.feed.report.exception.DuplicateReportException;
 import org.websoso.WSSServer.user.domain.User;
 
 @RequestMapping
@@ -84,5 +85,45 @@ public class ReportController {
         return ResponseEntity
                 .status(CREATED)
                 .build();
+    }
+
+    @PostMapping("/feeds/{feedId}/spoiler/v2")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> reportFeedSpoilerV2(@AuthenticationPrincipal User user,
+                                                    @PathVariable("feedId") Long feedId) {
+        reportIdempotently(() -> reportApplication.reportFeed(user, feedId, SPOILER));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/feeds/{feedId}/impertinence/v2")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> reportFeedImpertinenceV2(@AuthenticationPrincipal User user,
+                                                         @PathVariable("feedId") Long feedId) {
+        reportIdempotently(() -> reportApplication.reportFeed(user, feedId, IMPERTINENCE));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/comments/{commentId}/spoiler/v2")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> reportCommentSpoilerV2(@AuthenticationPrincipal User user,
+                                                       @PathVariable("commentId") Long commentId) {
+        reportIdempotently(() -> reportApplication.reportComment(user, commentId, SPOILER));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/comments/{commentId}/impertinence/v2")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> reportCommentImpertinenceV2(@AuthenticationPrincipal User user,
+                                                            @PathVariable("commentId") Long commentId) {
+        reportIdempotently(() -> reportApplication.reportComment(user, commentId, IMPERTINENCE));
+        return ResponseEntity.noContent().build();
+    }
+
+    private void reportIdempotently(Runnable reportAction) {
+        try {
+            reportAction.run();
+        } catch (DuplicateReportException ignored) {
+            // v2 API는 중복 신고를 이미 요청 목적이 달성된 것으로 처리한다.
+        }
     }
 }

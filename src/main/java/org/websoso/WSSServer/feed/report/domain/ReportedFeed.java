@@ -26,7 +26,7 @@ import org.websoso.WSSServer.domain.common.ReportedType;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         uniqueConstraints = @UniqueConstraint(
-                name = ReportConstraintName.UNIQUE_REPORTED_FEED,
+                name = ReportedFeed.UNIQUE_CONSTRAINT_NAME,
                 columnNames = {"feed_id", "user_id", "reported_type"}
         ),
         indexes = @Index(
@@ -35,6 +35,8 @@ import org.websoso.WSSServer.domain.common.ReportedType;
         )
 )
 public class ReportedFeed {
+
+    public static final String UNIQUE_CONSTRAINT_NAME = "uk_reported_feed_feed_user_type";
 
     @Id
     @GeneratedValue(strategy = IDENTITY)

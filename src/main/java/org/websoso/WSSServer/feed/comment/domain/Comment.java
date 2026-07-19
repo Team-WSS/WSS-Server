@@ -86,6 +86,13 @@ public class Comment extends BaseEntity {
     }
 
     /**
+     * 댓글 작성자인지 확인합니다.
+     */
+    public boolean isMine(Long userId) {
+        return Objects.equals(this.userId, userId);
+    }
+
+    /**
      * 댓글이 지정한 피드에 속하는지 검증합니다.
      *
      * @throws CustomCommentException 다른 피드의 댓글인 경우
