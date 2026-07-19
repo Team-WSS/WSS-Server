@@ -116,9 +116,8 @@ class ReportApplicationTest {
     void rejectsOwnCommentReport() {
         given(reporter.getUserId()).willReturn(USER_ID);
         given(feed.getWriterId()).willReturn(FEED_WRITER_ID);
-        given(comment.getUserId()).willReturn(USER_ID);
         given(comment.getFeed()).willReturn(feed);
-        given(comment.isMine(USER_ID)).willReturn(true);
+        given(comment.isWrittenBy(USER_ID)).willReturn(true);
         given(commentService.getCommentOrException(COMMENT_ID)).willReturn(comment);
 
         assertThatThrownBy(() -> reportApplication.reportComment(reporter, COMMENT_ID, ReportedType.SPOILER))

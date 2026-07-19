@@ -117,16 +117,16 @@ public class Feed {
         return user.getUserId();
     }
 
-    public boolean isMine(Long userId) {
+    public boolean isWrittenBy(Long userId) {
         return this.getWriterId().equals(userId);
     }
 
     public boolean isVisibleTo(Long userId) {
-        return this.isPublic || this.isMine(userId);
+        return this.isPublic || this.isWrittenBy(userId);
     }
 
     public boolean canAccess(Long userId) {
-        if (isMine(userId)) {
+        if (isWrittenBy(userId)) {
             return true;
         }
 

@@ -55,7 +55,7 @@ public class FeedServiceImpl {
     public Feed getOwnedFeedOrException(Long feedId, Long userId) {
         Feed feed = getFeedOrException(feedId);
 
-        if (!feed.isMine(userId)) {
+        if (!feed.isWrittenBy(userId)) {
             throw new CustomUserException(INVALID_AUTHORIZED, "User with ID " + userId + " is not the owner of feed " + feed.getFeedId());
         }
 
