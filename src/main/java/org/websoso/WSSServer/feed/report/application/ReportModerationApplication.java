@@ -1,7 +1,5 @@
 package org.websoso.WSSServer.feed.report.application;
 
-import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -12,8 +10,6 @@ import org.websoso.WSSServer.feed.comment.service.CommentServiceImpl;
 import org.websoso.WSSServer.feed.feed.domain.Feed;
 import org.websoso.WSSServer.feed.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.feed.report.domain.ReportModerationAction;
-import org.websoso.WSSServer.feed.report.event.CommentReportSavedEvent;
-import org.websoso.WSSServer.feed.report.event.FeedReportSavedEvent;
 import org.websoso.WSSServer.feed.report.event.ReportMessageCreatedEvent;
 import org.websoso.WSSServer.feed.report.message.ReportMessageFormatter;
 import org.websoso.WSSServer.feed.report.service.ReportServiceImpl;
@@ -31,59 +27,77 @@ public class ReportModerationApplication {
     private final ReportMessageFormatter reportMessageFormatter;
     private final ApplicationEventPublisher eventPublisher;
 
-    @Transactional(propagation = REQUIRES_NEW)
-    public void moderate(FeedReportSavedEvent event) {
-        Feed feed = feedService.getFeedOrException(event.feedId());
-        User reporter = userService.getUserOrException(event.reporterId());
-        int reportedCount = reportService.countByFeedAndReportedType(feed, event.reportedType());
-        ReportModerationAction moderationAction = moderateFeed(event.feedId(), event.reportedType(), reportedCount);
+    @Transactional
+    public void moderateFeed(Long reporterId, Long feedId, ReportedType reportedType) {
 
+        // 비동기 처리 시점의 피드와 신고자 조회
+        Feed feed = feedService.getFeedOrException(feedId);
+        User reporter = userService.getUserOrException(reporterId);
+
+        // 신고 유형별 누적 신고 수 조회 및 자동 처리
+        int reportedCount = reportService.countByFeedAndReportedType(feed, reportedType);
+        ReportModerationAction moderationAction = applyFeedModeration(feedId, reportedType, reportedCount);
+
+        // 신고 처리 결과를 포함한 운영 메시지 생성
         String content = reportMessageFormatter.formatFeedReportMessage(
                 reporter,
                 feed,
-                event.reportedType(),
+                reportedType,
                 reportedCount,
                 moderationAction
         );
+
+        // 운영 메시지 전송 이벤트 발행
         eventPublisher.publishEvent(ReportMessageCreatedEvent.of(content));
     }
 
-    @Transactional(propagation = REQUIRES_NEW)
-    public void moderate(CommentReportSavedEvent event) {
-        Comment comment = commentService.getCommentOrException(event.commentId());
+    @Transactional
+    public void moderateComment(Long reporterId, Long commentId, ReportedType reportedType) {
+
+        // 비동기 처리 시점의 댓글, 피드 및 사용자 조회
+        Comment comment = commentService.getCommentOrException(commentId);
         Feed feed = comment.getFeed();
-        User reporter = userService.getUserOrException(event.reporterId());
+        User reporter = userService.getUserOrException(reporterId);
         User commentWriter = userService.getUserOrException(comment.getUserId());
-        int reportedCount = reportService.countByCommentAndReportedType(comment, event.reportedType());
-        ReportModerationAction moderationAction = moderateComment(
-                event.commentId(),
-                event.reportedType(),
+
+        // 신고 유형별 누적 신고 수 조회 및 자동 처리
+        int reportedCount = reportService.countByCommentAndReportedType(comment, reportedType);
+        ReportModerationAction moderationAction = applyCommentModeration(
+                commentId,
+                reportedType,
                 reportedCount
         );
 
+        // 신고 처리 결과를 포함한 운영 메시지 생성
         String content = reportMessageFormatter.formatCommentReportMessage(
                 reporter,
                 feed,
                 comment,
                 commentWriter,
-                event.reportedType(),
+                reportedType,
                 reportedCount,
                 moderationAction
         );
+
+        // 운영 메시지 전송 이벤트 발행
         eventPublisher.publishEvent(ReportMessageCreatedEvent.of(content));
     }
 
-    private ReportModerationAction moderateFeed(Long feedId, ReportedType reportedType, int reportedCount) {
+    private ReportModerationAction applyFeedModeration(Long feedId, ReportedType reportedType, int reportedCount) {
+
+        // 신고 임계치 미만이면 상태를 변경하지 않음
         if (!reportedType.isExceedingLimit(reportedCount)) {
             return ReportModerationAction.NONE;
         }
 
+        // 스포일러 신고인 경우 피드를 스포일러 처리
         if (reportedType.isSpoiler()) {
             return feedService.markSpoilerIfNotMarked(feedId)
                     ? ReportModerationAction.MARKED_AS_SPOILER
                     : ReportModerationAction.ALREADY_MARKED_AS_SPOILER;
         }
 
+        // 부적절한 표현 신고인 경우 피드를 숨김 처리
         if (reportedType.isImpertinence()) {
             return feedService.hideIfNotHidden(feedId)
                     ? ReportModerationAction.HIDDEN
@@ -93,17 +107,21 @@ public class ReportModerationApplication {
         return ReportModerationAction.NONE;
     }
 
-    private ReportModerationAction moderateComment(Long commentId, ReportedType reportedType, int reportedCount) {
+    private ReportModerationAction applyCommentModeration(Long commentId, ReportedType reportedType, int reportedCount) {
+
+        // 신고 임계치 미만이면 상태를 변경하지 않음
         if (!reportedType.isExceedingLimit(reportedCount)) {
             return ReportModerationAction.NONE;
         }
 
+        // 스포일러 신고인 경우 댓글을 스포일러 처리
         if (reportedType.isSpoiler()) {
             return commentService.markSpoilerIfNotMarked(commentId)
                     ? ReportModerationAction.MARKED_AS_SPOILER
                     : ReportModerationAction.ALREADY_MARKED_AS_SPOILER;
         }
 
+        // 부적절한 표현 신고인 경우 댓글을 숨김 처리
         if (reportedType.isImpertinence()) {
             return commentService.hideIfNotHidden(commentId)
                     ? ReportModerationAction.HIDDEN

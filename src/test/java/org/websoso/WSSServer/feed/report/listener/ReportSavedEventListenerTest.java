@@ -29,7 +29,7 @@ class ReportSavedEventListenerTest {
 
         listener.handle(event);
 
-        then(reportModerationApplication).should().moderate(event);
+        then(reportModerationApplication).should().moderateFeed(1L, 10L, ReportedType.SPOILER);
     }
 
     @DisplayName("댓글 신고 저장 커밋 후 moderation을 요청한다")
@@ -39,6 +39,6 @@ class ReportSavedEventListenerTest {
 
         listener.handle(event);
 
-        then(reportModerationApplication).should().moderate(event);
+        then(reportModerationApplication).should().moderateComment(1L, 20L, ReportedType.IMPERTINENCE);
     }
 }

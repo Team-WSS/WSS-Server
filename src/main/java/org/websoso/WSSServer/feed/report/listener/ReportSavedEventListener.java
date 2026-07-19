@@ -18,12 +18,12 @@ public class ReportSavedEventListener {
     @Async("asyncExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(FeedReportSavedEvent event) {
-        reportModerationApplication.moderate(event);
+        reportModerationApplication.moderateFeed(event.reporterId(), event.feedId(), event.reportedType());
     }
 
     @Async("asyncExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(CommentReportSavedEvent event) {
-        reportModerationApplication.moderate(event);
+        reportModerationApplication.moderateComment(event.reporterId(), event.commentId(), event.reportedType());
     }
 }

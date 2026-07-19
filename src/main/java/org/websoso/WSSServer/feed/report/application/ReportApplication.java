@@ -31,40 +31,58 @@ public class ReportApplication {
 
     @Transactional
     public void reportFeed(User user, Long feedId, ReportedType reportedType) {
+
+        // 접근 가능한 피드인지 체크하고 조회
         Feed feed = feedService.getAccessFeedOrException(feedId, user.getUserId());
 
+        // 신고자와 피드 작성자가 차단 관계인지 체크
         blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
 
+        // 본인이 작성한 피드인지 체크
         if (feed.isMine(user.getUserId())) {
             throw new CustomReportException(SELF_FEED_REPORT_NOT_ALLOWED, "cannot report own feed");
         }
 
+        // 피드 신고 저장
         reportService.saveReportedFeed(feed, user, reportedType);
+
+        // 신고 집계 및 자동 처리를 위한 이벤트 발행
         eventPublisher.publishEvent(FeedReportSavedEvent.of(user.getUserId(), feedId, reportedType));
     }
 
     @Transactional
     public void reportComment(User user, Long commentId, ReportedType reportedType) {
+
+        // commentId로 댓글과 소속 피드 조회
         Comment comment = commentService.getCommentOrException(commentId);
         Feed feed = comment.getFeed();
 
+        // 소속 피드에 접근 가능한지 체크
         feedService.validateAccess(feed, user.getUserId());
+
+        // 신고자와 피드 작성자 및 댓글 작성자가 차단 관계인지 체크
         blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
         if (!comment.getUserId().equals(feed.getWriterId())) {
             blockService.validateNotBlocked(user.getUserId(), comment.getUserId());
         }
 
+        // 본인이 작성한 댓글인지 체크
         if (comment.isMine(user.getUserId())) {
             throw new CustomReportException(SELF_COMMENT_REPORT_NOT_ALLOWED, "cannot report own comment");
         }
 
+        // 댓글 신고 저장
         reportService.saveReportedComment(comment, user, reportedType);
+
+        // 신고 집계 및 자동 처리를 위한 이벤트 발행
         eventPublisher.publishEvent(CommentReportSavedEvent.of(user.getUserId(), commentId, reportedType));
     }
 
     @Deprecated(since = "POST /comments/{commentId}/spoiler 또는 /impertinence로 완벽 교체시")
     @Transactional
     public void reportComment(User user, Long feedId, Long commentId, ReportedType reportedType) {
+
+        // 기존 API 호환을 위해 feedId를 제외한 댓글 신고 로직으로 위임
         reportComment(user, commentId, reportedType);
     }
 }
