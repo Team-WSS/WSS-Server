@@ -56,13 +56,13 @@ public class FeedQueryService {
     }
 
     @Transactional(readOnly = true)
-    public List<PopularFeedGetResponse> findPopularFeedRows(List<Feed> feeds) {
+    public List<PopularFeedGetResponse> findPopularFeedRows(List<Feed> feeds, Long userId) {
         List<Long> feedIds = feeds.stream()
                 .map(Feed::getFeedId)
                 .toList();
 
         Map<Long, PopularFeedInfoRow> popularFeedInfoRowMap = feedQueryRepository
-                .findPopularFeedInfoRowsByFeedIds(feedIds).stream()
+                .findPopularFeedInfoRowsByFeedIds(feedIds, userId).stream()
                 .collect(Collectors.toMap(PopularFeedInfoRow::feedId, Function.identity()));
 
         return feedIds.stream()

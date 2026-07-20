@@ -12,6 +12,6 @@ public interface FeedQueryRepository {
 
     List<UserFeedInfoRow> findUserFeedInfoRows(List<Long> feedIds, Long visitorId);
 
-    List<PopularFeedInfoRow> findPopularFeedInfoRowsByFeedIds(List<Long> feedIds);
+    List<PopularFeedInfoRow> findPopularFeedInfoRowsByFeedIds(List<Long> feedIds, Long userId);
 
 }
