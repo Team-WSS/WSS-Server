@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.auth.validator;
 
-import static org.websoso.WSSServer.feed.feed.exception.CustomFeedError.BLOCKED_USER_ACCESS;
 import static org.websoso.WSSServer.feed.feed.exception.CustomFeedError.FEED_NOT_FOUND;
 import static org.websoso.WSSServer.feed.feed.exception.CustomFeedError.HIDDEN_FEED_ACCESS;
 
@@ -30,10 +29,7 @@ public class FeedAccessValidator {
             throw new CustomFeedException(HIDDEN_FEED_ACCESS, "Cannot access hidden feed.");
         }
 
-        if (blockService.exists(user.getUserId(), feed.getWriterId())) {
-            throw new CustomFeedException(BLOCKED_USER_ACCESS,
-                    "cannot access this feed because either you or the feed author has blocked the other.");
-        }
+        blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
 
         return true;
     }

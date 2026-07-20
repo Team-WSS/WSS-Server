@@ -45,8 +45,10 @@ public class UserBlockApplication {
         blockService.createBlock(blocker, blockedUser);
     }
 
-    public void deleteBlock(Long blockId) {
-        blockService.unblock(blockId);
+    public void deleteBlock(User user, Long blockId) {
+        Block block = blockService.getBlockOrException(blockId);
+        block.validateOwner(user.getUserId());
+        blockService.unblock(block);
     }
 
     @Transactional(readOnly = true)

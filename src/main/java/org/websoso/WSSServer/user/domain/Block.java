@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.user.domain;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
+import static org.websoso.WSSServer.user.exception.CustomBlockError.INVALID_AUTHORIZED_BLOCK;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +12,7 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.websoso.WSSServer.user.exception.CustomBlockException;
 
 @Entity
 @Getter
@@ -41,5 +43,14 @@ public class Block {
 
     public static Block create(Long blockingId, Long blockedId) {
         return new Block(blockingId, blockedId);
+    }
+
+    public void validateOwner(Long userId) {
+        if (!blockingId.equals(userId)) {
+            throw new CustomBlockException(
+                    INVALID_AUTHORIZED_BLOCK,
+                    "only the user who created the block can delete it"
+            );
+        }
     }
 }
