@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.feed.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.user.domain.Block;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.exception.CustomBlockException;
@@ -25,6 +24,7 @@ public class BlockService {
     private final BlockRepository blockRepository;
     private final BlockConstraintViolationDetector constraintViolationDetector;
 
+    @Deprecated(since = "PUT /blocks/users/{blockedUserId}/v2로 완벽 교체시")
     public void createBlock(User blocker, User blocked) {
         try {
             Block block = Block.create(blocker.getUserId(), blocked.getUserId());
@@ -34,8 +34,16 @@ public class BlockService {
         }
     }
 
-    public void unblock(Long blockId) {
-        blockRepository.deleteById(blockId);
+    public void createBlockV2(User blocker, User blocked) {
+        try {
+            Block block = Block.create(blocker.getUserId(), blocked.getUserId());
+            blockRepository.saveAndFlush(block);
+        } catch (DataIntegrityViolationException exception) {
+            if (constraintViolationDetector.isDuplicateBlock(exception)) {
+                throw new DuplicateBlockException(ALREADY_BLOCKED, "user has already blocked the target user");
+            }
+            throw exception;
+        }
     }
 
     public void unblock(Block block) {

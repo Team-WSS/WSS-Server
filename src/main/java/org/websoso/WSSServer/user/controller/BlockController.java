@@ -40,6 +40,14 @@ public class BlockController {
                 .build();
     }
 
+    @PutMapping("/users/{blockedUserId}/v2")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> blockV2(@AuthenticationPrincipal User blocker,
+                                        @PathVariable("blockedUserId") @Positive Long blockedUserId) {
+        blockIdempotently(() -> userBlockApplication.blockV2(blocker, blockedUserId));
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<BlocksGetResponse> getBlockList(@AuthenticationPrincipal User user) {
@@ -56,5 +64,13 @@ public class BlockController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
+    }
+
+    private void blockIdempotently(Runnable blockAction) {
+        try {
+            blockAction.run();
+        } catch (DuplicateBlockException ignored) {
+            // 동일한 차단 관계가 이미 존재하면 요청 목적이 달성된 것으로 처리한다.
+        }
     }
 }
