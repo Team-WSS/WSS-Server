@@ -248,10 +248,11 @@ public class UserController {
 
     @GetMapping("/{userId}/user-novel-stats")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserNovelCountGetResponse> getUserNovelStatistics(@PathVariable("userId") Long userId) {
+    public ResponseEntity<UserNovelCountGetResponse> getUserNovelStatistics(@AuthenticationPrincipal User visitor,
+                                                                            @PathVariable("userId") Long userId) {
         return ResponseEntity
                 .status(OK)
-                .body(userNovelService.getUserNovelStatistics(userId));
+                .body(userNovelService.getUserNovelStatistics(visitor, userId));
     }
 
     @GetMapping("/info")

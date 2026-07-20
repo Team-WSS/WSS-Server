@@ -2,7 +2,6 @@ package org.websoso.WSSServer.library.service;
 
 import static org.websoso.WSSServer.domain.common.Gender.M;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
-import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -39,7 +38,6 @@ import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelsGetResponseLegacy;
 import org.websoso.WSSServer.dto.userNovel.UserNovelsV2GetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserTasteAttractivePointPreferencesAndKeywordsGetResponse;
 import org.websoso.WSSServer.exception.exception.CustomGenreException;
-import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.feed.repository.FeedRepository;
 import org.websoso.WSSServer.library.util.CursorCodec;
 import org.websoso.WSSServer.library.repository.cursor.UserNovelCursor;
@@ -69,7 +67,11 @@ public class UserNovelService {
     );
 
     @Transactional(readOnly = true)
-    public UserNovelCountGetResponse getUserNovelStatistics(Long ownerId) {
+    public UserNovelCountGetResponse getUserNovelStatistics(User visitor, Long ownerId) {
+        User owner = userService.getUserOrException(ownerId);
+        Long visitorId = visitor == null ? null : visitor.getUserId();
+        userService.validateProfileAccessible(owner, visitorId);
+
         return userNovelRepository.findUserNovelStatistics(ownerId);
     }
 
@@ -80,10 +82,8 @@ public class UserNovelService {
                                                                 String query, Long lastUserNovelId, int size,
                                                                 SortCriteria sortCriteria, LocalDateTime updatedSince) {
         User owner = userService.getUserOrException(ownerId);
-
-        if (isProfileInaccessible(visitor, ownerId, owner)) {
-            throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
-        }
+        Long visitorId = visitor == null ? null : visitor.getUserId();
+        userService.validateProfileAccessible(owner, visitorId);
 
         boolean isOwner = isOwner(visitor, ownerId);
         boolean isAscending = sortCriteria.isOld();
@@ -110,10 +110,8 @@ public class UserNovelService {
                                                             Boolean unratedOnly, List<String> attractivePoints,
                                                             List<String> keywords) {
         User owner = userService.getUserOrException(ownerId);
-
-        if (isProfileInaccessible(visitor, ownerId, owner)) {
-            throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
-        }
+        Long visitorId = visitor == null ? null : visitor.getUserId();
+        userService.validateProfileAccessible(owner, visitorId);
 
         boolean isOwner = isOwner(visitor, ownerId);
         UserNovelSortType userNovelSortType = UserNovelSortType.of(sortType);
@@ -147,10 +145,8 @@ public class UserNovelService {
     @Transactional(readOnly = true)
     public KeywordPopularGetResponse getUserNovelKeywordsV2(User visitor, Long ownerId) {
         User owner = userService.getUserOrException(ownerId);
-
-        if (isProfileInaccessible(visitor, ownerId, owner)) {
-            throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
-        }
+        Long visitorId = visitor == null ? null : visitor.getUserId();
+        userService.validateProfileAccessible(owner, visitorId);
 
         List<KeywordGetResponse> keywords = userNovelKeywordRepository.findKeywordsByUserIdOrderByCountDesc(ownerId)
                 .stream()
@@ -166,10 +162,8 @@ public class UserNovelService {
                                                                             Long lastUserNovelId, int size,
                                                                             SortCriteria sortCriteria) {
         User owner = userService.getUserOrException(ownerId);
-
-        if (isProfileInaccessible(visitor, ownerId, owner)) {
-            throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
-        }
+        Long visitorId = visitor == null ? null : visitor.getUserId();
+        userService.validateProfileAccessible(owner, visitorId);
 
         boolean isAscending = sortCriteria.isOld();
         List<String> readStatuses = null;
@@ -250,10 +244,8 @@ public class UserNovelService {
     @Transactional(readOnly = true)
     public UserGenrePreferencesGetResponse getUserGenrePreferences(User visitor, Long ownerId) {
         User owner = userService.getUserOrException(ownerId);
-
-        if (isProfileInaccessible(visitor, ownerId, owner)) {
-            throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
-        }
+        Long visitorId = visitor == null ? null : visitor.getUserId();
+        userService.validateProfileAccessible(owner, visitorId);
 
         //TODO genreMap은 Genre의 변화가 없다면 매번 repository에서 가져올 필요가 없음 -> 캐싱하여 사용하도록 리팩터링
         List<Genre> allGenres = genreRepository.findAll();
@@ -304,10 +296,8 @@ public class UserNovelService {
     public UserTasteAttractivePointPreferencesAndKeywordsGetResponse getUserAttractivePointsAndKeywords(User visitor,
                                                                                                         Long ownerId) {
         User owner = userService.getUserOrException(ownerId);
-
-        if (isProfileInaccessible(visitor, ownerId, owner)) {
-            throw new CustomUserException(PRIVATE_PROFILE_STATUS, "the profile status of the user is set to private");
-        }
+        Long visitorId = visitor == null ? null : visitor.getUserId();
+        userService.validateProfileAccessible(owner, visitorId);
 
         List<UserNovel> ownerUserNovels = userNovelRepository.findUserNovelByUser(owner);
 
@@ -347,7 +337,4 @@ public class UserNovelService {
                 top3OwnerAttractivePointNames, tasteKeywordGetResponses);
     }
 
-    private static boolean isProfileInaccessible(User visitor, Long ownerId, User owner) {
-        return !owner.getIsProfilePublic() && !isOwner(visitor, ownerId);
-    }
 }
