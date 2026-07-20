@@ -26,6 +26,7 @@ import org.websoso.WSSServer.feed.report.service.ReportServiceImpl;
 import org.websoso.WSSServer.notification.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.repository.UserRepository;
+import org.websoso.WSSServer.user.service.BlockService;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +36,7 @@ public class ReportApplication {
     private final CommentServiceImpl commentServiceImpl;
     private final ReportServiceImpl reportServiceImpl;
     private final DiscordMessageClient discordMessageClient;
+    private final BlockService blockService;
 
     //ToDo : 의존성 제거 필요 부분
     private final UserRepository userRepository;
@@ -44,6 +46,11 @@ public class ReportApplication {
         Feed feed = feedServiceImpl.getFeedOrException(feedId);
         Comment comment = commentServiceImpl.getCommentOrException(commentId);
         comment.validateBelongsTo(feed);
+
+        blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
+        if (!comment.getUserId().equals(feed.getWriterId())) {
+            blockService.validateNotBlocked(user.getUserId(), comment.getUserId());
+        }
 
         User commentCreatedUser = userRepository.findById(comment.getUserId())
                 .orElseThrow(() -> new CustomUserException(USER_NOT_FOUND, "user with the given id was not found"));
@@ -77,6 +84,8 @@ public class ReportApplication {
     @Transactional
     public void reportFeed(User user, Long feedId, ReportedType reportedType) {
         Feed feed = feedServiceImpl.getFeedOrException(feedId);
+
+        blockService.validateNotBlocked(user.getUserId(), feed.getWriterId());
 
         if (isUserFeedOwner(feed.getUser(), user)) {
             throw new CustomFeedException(SELF_REPORT_NOT_ALLOWED, "cannot report own feed");
