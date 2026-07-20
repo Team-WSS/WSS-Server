@@ -55,10 +55,6 @@ public class AvatarService {
 
     }
 
-    public List<AvatarProfile> findAllByIds(List<Long> avatarProfileIds) {
-        return avatarProfileRepository.findAllById(avatarProfileIds);
-    }
-
     private static AvatarProfileLine getRandomAvatarProfileLine(List<AvatarProfileLine> avatarLines) {
         final int avatarLineSize = avatarLines.size();
         return avatarLines.get(random.nextInt(avatarLineSize));
