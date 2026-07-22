@@ -17,4 +17,12 @@ public enum ReportedType {
     public boolean isExceedingLimit(int reportedCount) {
         return reportedCount >= reportLimit;
     }
+
+    public boolean isSpoiler() {
+        return this == SPOILER;
+    }
+
+    public boolean isImpertinence() {
+        return this == IMPERTINENCE;
+    }
 }

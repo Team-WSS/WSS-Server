@@ -15,9 +15,9 @@ import org.websoso.WSSServer.feed.feed.application.FeedManagementApplication;
 import org.websoso.WSSServer.oauth2.service.AppleService;
 import org.websoso.WSSServer.oauth2.service.KakaoService;
 import org.websoso.WSSServer.oauth2.repository.RefreshTokenRepository;
-import org.websoso.WSSServer.notification.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.domain.WithdrawalReason;
+import org.websoso.WSSServer.user.message.UserDiscordMessageFormatter;
 import org.websoso.WSSServer.user.repository.UserRepository;
 import org.websoso.WSSServer.user.repository.WithdrawalReasonRepository;
 
@@ -40,8 +40,11 @@ public class AccountApplication {
     public void withdrawUser(User user, WithdrawalRequest withdrawalRequest) {
         unlinkSocialAccount(user);
 
-        String messageContent = MessageFormatter.formatUserWithdrawMessage(user.getUserId(), user.getNickname(),
-                withdrawalRequest.reason());
+        String messageContent = UserDiscordMessageFormatter.formatUserWithdrawMessage(
+                user.getUserId(),
+                user.getNickname(),
+                withdrawalRequest.reason()
+        );
 
         cleanupUserData(user.getUserId());
 

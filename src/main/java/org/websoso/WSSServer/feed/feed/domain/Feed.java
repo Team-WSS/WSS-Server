@@ -20,12 +20,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import org.websoso.WSSServer.feed.comment.domain.Comment;
 import org.websoso.WSSServer.feed.report.domain.ReportedFeed;
 import org.websoso.WSSServer.user.domain.User;
 
 @Getter
 @DynamicInsert
+@DynamicUpdate
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Feed {
@@ -107,20 +109,24 @@ public class Feed {
         this.isHidden = true;
     }
 
+    public void markSpoiler() {
+        this.isSpoiler = true;
+    }
+
     public Long getWriterId() {
         return user.getUserId();
     }
 
-    public boolean isMine(Long userId) {
+    public boolean isWrittenBy(Long userId) {
         return this.getWriterId().equals(userId);
     }
 
     public boolean isVisibleTo(Long userId) {
-        return this.isPublic || this.isMine(userId);
+        return this.isPublic || this.isWrittenBy(userId);
     }
 
     public boolean canAccess(Long userId) {
-        if (isMine(userId)) {
+        if (isWrittenBy(userId)) {
             return true;
         }
 

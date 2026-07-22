@@ -24,7 +24,6 @@ import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.user.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
-import org.websoso.WSSServer.notification.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
@@ -47,6 +46,7 @@ import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
+import org.websoso.WSSServer.user.message.UserDiscordMessageFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -156,7 +156,10 @@ public class UserService {
         genrePreferenceRepository.saveAll(preferGenres);
 
         discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
-                MessageFormatter.formatUserJoinMessage(user, SocialLoginType.fromSocialId(user.getSocialId())), JOIN));
+                UserDiscordMessageFormatter.formatUserJoinMessage(
+                        user,
+                        SocialLoginType.fromSocialId(user.getSocialId())
+                ), JOIN));
     }
 
     @Transactional(readOnly = true)

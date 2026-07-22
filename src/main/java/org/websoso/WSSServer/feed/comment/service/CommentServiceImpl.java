@@ -31,6 +31,16 @@ public class CommentServiceImpl {
                 () -> new CustomCommentException(COMMENT_NOT_FOUND, "comment with the given id was not found"));
     }
 
+    @Transactional
+    public boolean markSpoilerIfNotMarked(Long commentId) {
+        return commentRepository.markSpoilerIfNotMarked(commentId);
+    }
+
+    @Transactional
+    public boolean hideIfNotHidden(Long commentId) {
+        return commentRepository.hideIfNotHidden(commentId);
+    }
+
     /**
      * 댓글을 삭제한다.
      * 신고된 댓글이 Comment를 참조하므로, FK 제약을 피하기 위해 신고 내역을 먼저 삭제한다.

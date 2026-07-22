@@ -73,7 +73,7 @@ public class FeedFindApplication {
         boolean isLiked = feedLikeService.isUserLikedFeed(user.getUserId(), feed);
 
         // 피드가 본인 피드인지 체크
-        boolean isMyFeed = feed.isMine(user.getUserId());
+        boolean isMyFeed = feed.isWrittenBy(user.getUserId());
 
         List<Long> blockedUserIds = blockService.findBlockRelationUserIds(user.getUserId());
         int commentCount = commentQueryService.countVisibleComments(feedId, blockedUserIds);
