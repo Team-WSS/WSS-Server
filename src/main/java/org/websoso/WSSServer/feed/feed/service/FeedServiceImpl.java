@@ -52,7 +52,7 @@ public class FeedServiceImpl {
     public Feed getOwnedFeedOrException(Long feedId, Long userId) {
         Feed feed = getFeedOrException(feedId);
 
-        if (!feed.isMine(userId)) {
+        if (!feed.isWrittenBy(userId)) {
             throw new CustomUserException(INVALID_AUTHORIZED, "User with ID " + userId + " is not the owner of feed " + feed.getFeedId());
         }
 
@@ -63,11 +63,26 @@ public class FeedServiceImpl {
     public Feed getAccessFeedOrException(Long feedId, Long userId) {
         Feed feed = getFeedOrException(feedId);
 
+        validateAccess(feed, userId);
+
+        return feed;
+    }
+
+    @Transactional
+    public boolean markSpoilerIfNotMarked(Long feedId) {
+        return feedRepository.markSpoilerIfNotMarked(feedId);
+    }
+
+    @Transactional
+    public boolean hideIfNotHidden(Long feedId) {
+        return feedRepository.hideIfNotHidden(feedId);
+    }
+
+    public void validateAccess(Feed feed, Long userId) {
+
         if (!feed.canAccess(userId)) {
             throw new CustomFeedException(HIDDEN_FEED_ACCESS, "Cannot access hidden feed.");
         }
-
-        return feed;
     }
 
     @Transactional(readOnly = true)

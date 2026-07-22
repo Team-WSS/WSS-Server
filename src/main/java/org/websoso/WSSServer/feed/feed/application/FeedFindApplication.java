@@ -71,7 +71,7 @@ public class FeedFindApplication {
         boolean isLiked = feedLikeService.isUserLikedFeed(user.getUserId(), feed);
 
         // 피드가 본인 피드인지 체크
-        boolean isMyFeed = feed.isMine(user.getUserId());
+        boolean isMyFeed = feed.isWrittenBy(user.getUserId());
 
         return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, isMyFeed);
     }

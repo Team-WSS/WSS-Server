@@ -9,8 +9,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +24,19 @@ import org.websoso.WSSServer.domain.common.ReportedType;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+        uniqueConstraints = @UniqueConstraint(
+                name = ReportedFeed.UNIQUE_CONSTRAINT_NAME,
+                columnNames = {"feed_id", "user_id", "reported_type"}
+        ),
+        indexes = @Index(
+                name = "idx_reported_feed_feed_type",
+                columnList = "feed_id, reported_type"
+        )
+)
 public class ReportedFeed {
+
+    public static final String UNIQUE_CONSTRAINT_NAME = "uk_reported_feed_feed_user_type";
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
