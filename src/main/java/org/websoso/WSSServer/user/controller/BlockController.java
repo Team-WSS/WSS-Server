@@ -23,13 +23,13 @@ import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.exception.DuplicateBlockException;
 
 @RestController
-@RequestMapping("/blocks")
+@RequestMapping
 @RequiredArgsConstructor
 public class BlockController {
 
     private final UserBlockApplication userBlockApplication;
 
-    @PostMapping
+    @PostMapping("/blocks")
     @PreAuthorize("isAuthenticated()")
     @Deprecated(since = "PUT /blocks/users/{blockedUserId}/v2로 완벽 교체시")
     public ResponseEntity<Void> block(@AuthenticationPrincipal User blocker,
@@ -40,7 +40,7 @@ public class BlockController {
                 .build();
     }
 
-    @PutMapping("/users/{blockedUserId}/v2")
+    @PutMapping("/blocks/users/{blockedUserId}/v2")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> blockV2(@AuthenticationPrincipal User blocker,
                                         @PathVariable("blockedUserId") @Positive Long blockedUserId) {
@@ -48,7 +48,7 @@ public class BlockController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
+    @GetMapping("/blocks")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<BlocksGetResponse> getBlockList(@AuthenticationPrincipal User user) {
         return ResponseEntity
@@ -56,7 +56,7 @@ public class BlockController {
                 .body(userBlockApplication.getBlockList(user));
     }
 
-    @DeleteMapping("/{blockId}")
+    @DeleteMapping("/blocks/{blockId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteBlock(@AuthenticationPrincipal User user,
                                             @PathVariable("blockId") @Positive Long blockId) {
