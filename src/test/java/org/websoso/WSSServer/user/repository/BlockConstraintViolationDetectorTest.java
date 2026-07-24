@@ -7,16 +7,22 @@ import java.sql.SQLException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.dao.DataIntegrityViolationException;
 
 class BlockConstraintViolationDetectorTest {
 
     private final BlockConstraintViolationDetector detector = new BlockConstraintViolationDetector();
 
-    @DisplayName("차단 유니크 키 위반을 중복 차단으로 판별한다")
-    @Test
-    void detectsDuplicateBlock() {
-        DataIntegrityViolationException exception = dataIntegrityViolation(UNIQUE_CONSTRAINT_NAME);
+    @DisplayName("테이블명 포함 여부와 관계없이 차단 유니크 키 위반을 중복 차단으로 판별한다")
+    @ParameterizedTest
+    @ValueSource(strings = {
+            UNIQUE_CONSTRAINT_NAME,
+            "block." + UNIQUE_CONSTRAINT_NAME
+    })
+    void detectsDuplicateBlock(String constraintName) {
+        DataIntegrityViolationException exception = dataIntegrityViolation(constraintName);
 
         assertThat(detector.isDuplicateBlock(exception)).isTrue();
     }

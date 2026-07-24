@@ -13,13 +13,29 @@ public class BlockConstraintViolationDetector {
 
         while (cause != null) {
             if (cause instanceof ConstraintViolationException constraintViolationException) {
-                return Block.UNIQUE_CONSTRAINT_NAME.equalsIgnoreCase(
+                String constraintName = normalizeConstraintName(
                         constraintViolationException.getConstraintName()
+                );
+                return Block.UNIQUE_CONSTRAINT_NAME.equalsIgnoreCase(
+                        constraintName
                 );
             }
             cause = cause.getCause();
         }
 
         return false;
+    }
+
+    private String normalizeConstraintName(String constraintName) {
+        if (constraintName == null) {
+            return null;
+        }
+
+        int tableNameSeparatorIndex = constraintName.lastIndexOf('.');
+        if (tableNameSeparatorIndex < 0) {
+            return constraintName;
+        }
+
+        return constraintName.substring(tableNameSeparatorIndex + 1);
     }
 }
