@@ -22,11 +22,27 @@ public class ReportConstraintViolationDetector {
 
         while (cause != null) {
             if (cause instanceof ConstraintViolationException constraintViolationException) {
-                return constraintName.equalsIgnoreCase(constraintViolationException.getConstraintName());
+                String detectedConstraintName = normalizeConstraintName(
+                        constraintViolationException.getConstraintName()
+                );
+                return constraintName.equalsIgnoreCase(detectedConstraintName);
             }
             cause = cause.getCause();
         }
 
         return false;
+    }
+
+    private String normalizeConstraintName(String constraintName) {
+        if (constraintName == null) {
+            return null;
+        }
+
+        int tableNameSeparatorIndex = constraintName.lastIndexOf('.');
+        if (tableNameSeparatorIndex < 0) {
+            return constraintName;
+        }
+
+        return constraintName.substring(tableNameSeparatorIndex + 1);
     }
 }
