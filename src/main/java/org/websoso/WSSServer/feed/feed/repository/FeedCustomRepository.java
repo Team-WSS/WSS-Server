@@ -14,7 +14,7 @@ public interface FeedCustomRepository {
 
     boolean hideIfNotHidden(Long feedId);
 
-    List<Feed> findPopularFeedsByNovelIds(List<Long> novelIds);
+    List<Feed> findPopularFeedsByNovelIds(List<Long> novelIds, List<Long> blockedUserIds);
 
     Slice<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size, Boolean isVisible,
                                               Boolean isUnVisible, SortCriteria sortCriteria, List<Genre> genres,

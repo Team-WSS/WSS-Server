@@ -63,7 +63,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
     }
 
     @Override
-    public List<Feed> findPopularFeedsByNovelIds(List<Long> novelIds) {
+    public List<Feed> findPopularFeedsByNovelIds(List<Long> novelIds, List<Long> blockedUserIds) {
         return novelIds.stream()
                 .map(novelId -> jpaQueryFactory
                         .selectFrom(feed)
@@ -71,7 +71,8 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                         .where(
                                 feed.novelId.eq(novelId),
                                 feed.isPublic.isTrue(),
-                                feed.isSpoiler.isFalse()
+                                feed.isSpoiler.isFalse(),
+                                excludeBlockedUsers(blockedUserIds)
                         )
                         .groupBy(feed.feedId)
                         .orderBy(like.count().desc())

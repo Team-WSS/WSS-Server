@@ -18,8 +18,7 @@ public enum CustomFeedError implements ICustomError {
     ALREADY_LIKED("FEED-002", "이미 해당 피드에 좋아요를 눌렀습니다.", CONFLICT),
     NOT_LIKED("FEED-003", "해당 사용자가 이 피드에 좋아요를 누르지 않았습니다.", NOT_FOUND),
     INVALID_LIKE_COUNT("FEED-004", "좋아요 수가 유효하지 않습니다.", BAD_REQUEST),
-    HIDDEN_FEED_ACCESS("FEED-005", "이 피드는 숨겨져 있어 접근할 수 없습니다.", FORBIDDEN),
-    BLOCKED_USER_ACCESS("FEED-006", "해당 사용자와 피드 작성자가 차단 상태이므로 이 피드에 접근할 수 없습니다.", FORBIDDEN);
+    HIDDEN_FEED_ACCESS("FEED-005", "이 피드는 숨겨져 있어 접근할 수 없습니다.", FORBIDDEN);
 
     private final String code;
     private final String description;

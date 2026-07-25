@@ -1,8 +1,7 @@
-package org.websoso.WSSServer.exception.exception;
+package org.websoso.WSSServer.user.exception;
 
 import lombok.Getter;
 import org.websoso.common.exception.AbstractCustomException;
-import org.websoso.WSSServer.exception.error.CustomBlockError;
 
 @Getter
 public class CustomBlockException extends AbstractCustomException {

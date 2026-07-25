@@ -1,17 +1,20 @@
 package org.websoso.WSSServer.user.service;
 
-import java.util.List;
+import static org.websoso.WSSServer.user.exception.CustomBlockError.ALREADY_BLOCKED;
+import static org.websoso.WSSServer.user.exception.CustomBlockError.BLOCKED_USER_ACCESS;
+import static org.websoso.WSSServer.user.exception.CustomBlockError.BLOCK_NOT_FOUND;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.feed.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.user.domain.Block;
 import org.websoso.WSSServer.user.domain.User;
+import org.websoso.WSSServer.user.exception.CustomBlockException;
+import org.websoso.WSSServer.user.exception.DuplicateBlockException;
+import org.websoso.WSSServer.user.repository.BlockConstraintViolationDetector;
 import org.websoso.WSSServer.user.repository.BlockRepository;
-
-import static org.websoso.WSSServer.feed.feed.exception.CustomFeedError.BLOCKED_USER_ACCESS;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +22,9 @@ import static org.websoso.WSSServer.feed.feed.exception.CustomFeedError.BLOCKED_
 public class BlockService {
 
     private final BlockRepository blockRepository;
+    private final BlockConstraintViolationDetector constraintViolationDetector;
 
+    @Deprecated(since = "PUT /blocks/users/{blockedUserId}/v2로 완벽 교체시")
     public void createBlock(User blocker, User blocked) {
         try {
             Block block = Block.create(blocker.getUserId(), blocked.getUserId());
@@ -29,29 +34,49 @@ public class BlockService {
         }
     }
 
-    public void unblock(Long blockId) {
-        blockRepository.deleteById(blockId);
+    public void createBlockV2(User blocker, User blocked) {
+        try {
+            Block block = Block.create(blocker.getUserId(), blocked.getUserId());
+            blockRepository.saveAndFlush(block);
+        } catch (DataIntegrityViolationException exception) {
+            if (constraintViolationDetector.isDuplicateBlock(exception)) {
+                throw new DuplicateBlockException(ALREADY_BLOCKED, "user has already blocked the target user");
+            }
+            throw exception;
+        }
+    }
+
+    public void unblock(Block block) {
+        blockRepository.delete(block);
     }
 
     @Transactional(readOnly = true)
-    public boolean exists(Long blockingId, Long blockedId) {
-        return blockRepository.existsByBlockingIdAndBlockedId(blockingId, blockedId);
+    public Block getBlockOrException(Long blockId) {
+        return blockRepository.findById(blockId)
+                .orElseThrow(() -> new CustomBlockException(
+                        BLOCK_NOT_FOUND,
+                        "block with the given blockId was not found"
+                ));
+    }
+
+    @Transactional(readOnly = true)
+    public boolean hasBlockRelation(Long userId, Long targetUserId) {
+        if (userId == null || targetUserId == null || userId.equals(targetUserId)) {
+            return false;
+        }
+
+        return blockRepository.existsBlockRelation(userId, targetUserId);
     }
 
     @Transactional(readOnly = true)
     public void validateNotBlocked(Long userId, Long targetUserId) {
 
-        if (userId.equals(targetUserId)) return;
-
-        if (blockRepository.existsBlockRelation(userId, targetUserId)) {
-            throw new CustomFeedException(BLOCKED_USER_ACCESS,
-                    "cannot access this feed because either you or the feed author has blocked the other.");
+        if (hasBlockRelation(userId, targetUserId)) {
+            throw new CustomBlockException(
+                    BLOCKED_USER_ACCESS,
+                    "cannot access content because either user has blocked the other"
+            );
         }
-    }
-
-    @Transactional(readOnly = true)
-    public List<Block> findByBlockerId(Long blockingId) {
-        return blockRepository.findByBlockingId(blockingId);
     }
 
     @Transactional(readOnly = true)

@@ -57,6 +57,7 @@ public class UserService {
     private final AvatarProfileRepository avatarProfileRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final GenreRepository genreRepository;
+    private final BlockService blockService;
 
     // TODO: 상위 레이어에서 분리 예정
     private final DiscordMessageClient discordMessageClient;
@@ -168,6 +169,9 @@ public class UserService {
                     "The profile for this user is inaccessible: unknown");
         }
         User owner = getUserOrException(ownerId);
+        Long visitorId = visitor == null ? null : visitor.getUserId();
+        validateProfileAccessible(owner, visitorId);
+
         Long avatarId = owner.getAvatarProfileId();
         AvatarProfile avatar = findAvatarProfileByIdOrThrow(avatarId);
         List<GenrePreference> genrePreferences = genrePreferenceRepository.findByUser(owner);
@@ -263,13 +267,9 @@ public class UserService {
         user.updateTermsSetting(serviceAgreed, privacyAgreed, marketingAgreed);
     }
 
-    @Transactional(readOnly = true)
-    public List<User> findAllByIds(List<Long> blockUserIds) {
-        return userRepository.findAllById(blockUserIds);
-    }
-
-
     public void validateProfileAccessible(User owner, Long visitorId) {
+        blockService.validateNotBlocked(visitorId, owner.getUserId());
+
         if (!owner.canBeViewedBy(visitorId)) {
             throw new CustomUserException(
                     PRIVATE_PROFILE_STATUS,

@@ -21,7 +21,7 @@ public class FeedOwnerCommentNotificationPolicy {
             return Optional.empty();
         }
 
-        if (blockService.exists(feedOwnerId, commentWriterId)) {
+        if (blockService.hasBlockRelation(feedOwnerId, commentWriterId)) {
             return Optional.empty();
         }
 

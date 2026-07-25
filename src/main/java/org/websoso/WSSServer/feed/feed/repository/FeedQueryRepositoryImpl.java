@@ -7,6 +7,7 @@ import static org.websoso.WSSServer.user.domain.QAvatarProfile.avatarProfile;
 
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -27,6 +28,7 @@ import org.websoso.WSSServer.feed.feed.repository.projection.PopularFeedInfoRow;
 import org.websoso.WSSServer.feed.feed.repository.projection.UserFeedInfoRow;
 import org.websoso.WSSServer.library.domain.QUserNovel;
 import org.websoso.WSSServer.novel.domain.QNovelGenre;
+import org.websoso.WSSServer.user.domain.QBlock;
 
 @Repository
 @RequiredArgsConstructor
@@ -53,7 +55,7 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
                         feed.feedContent,
                         likeCount(),
                         isLiked(userId),
-                        commentCount(),
+                        commentCount(userId),
                         feed.novelId,
                         novel.title,
                         novelStatistics.ratingCount,
@@ -99,7 +101,7 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
                         feed.createdDate.ne(feed.modifiedDate),
                         isLiked(visitorId),
                         likeCount(),
-                        commentCount(),
+                        commentCount(visitorId),
                         feed.novelId,
                         novel.title,
                         novelRating(),
@@ -123,7 +125,7 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
     }
 
     @Override
-    public List<PopularFeedInfoRow> findPopularFeedInfoRowsByFeedIds(List<Long> feedIds) {
+    public List<PopularFeedInfoRow> findPopularFeedInfoRowsByFeedIds(List<Long> feedIds, Long userId) {
         if (feedIds.isEmpty()) {
             return List.of();
         }
@@ -134,7 +136,7 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
                         feed.feedId,
                         feed.feedContent,
                         likeCount(),
-                        commentCount(),
+                        commentCount(userId),
                         feed.isSpoiler,
                         feed.isPublic,
                         novel.title,
@@ -156,13 +158,33 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
                 .where(likeSub.feed.eq(feed));
     }
 
-    private JPQLQuery<Long> commentCount() {
+    private JPQLQuery<Long> commentCount(Long userId) {
         QComment commentSub = new QComment("commentCountSub");
+        BooleanExpression condition = commentSub.feed.eq(feed);
+
+        if (userId != null) {
+            QBlock blockingRelation = new QBlock("commentCountBlockingRelation");
+            QBlock blockedRelation = new QBlock("commentCountBlockedRelation");
+
+            condition = condition
+                    .and(commentSub.userId.notIn(
+                            JPAExpressions
+                                    .select(blockingRelation.blockedId)
+                                    .from(blockingRelation)
+                                    .where(blockingRelation.blockingId.eq(userId))
+                    ))
+                    .and(commentSub.userId.notIn(
+                            JPAExpressions
+                                    .select(blockedRelation.blockingId)
+                                    .from(blockedRelation)
+                                    .where(blockedRelation.blockedId.eq(userId))
+                    ));
+        }
 
         return JPAExpressions
                 .select(commentSub.commentId.count())
                 .from(commentSub)
-                .where(commentSub.feed.eq(feed));
+                .where(condition);
     }
 
     private JPQLQuery<Long> imageCount() {

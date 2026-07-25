@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.exception.error;
+package org.websoso.WSSServer.user.exception;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
@@ -19,7 +19,8 @@ public enum CustomBlockError implements ICustomError {
     BLOCK_NOT_FOUND("BLOCK-003", "해당 ID에 해당하는 차단을 찾을 수 없습니다.", NOT_FOUND),
     INVALID_BLOCK_ID("BLOCK-004", "유효하지 않은 ID입니다.", BAD_REQUEST),
     INVALID_AUTHORIZED_BLOCK("BLOCK-005", "해당 유저의 차단이 아닙니다.", FORBIDDEN),
-    CANNOT_ADMIN_BLOCK("BLOCK-006", "관리자는 차단할 수 없습니다.", FORBIDDEN);
+    CANNOT_ADMIN_BLOCK("BLOCK-006", "관리자는 차단할 수 없습니다.", FORBIDDEN),
+    BLOCKED_USER_ACCESS("BLOCK-007", "차단 관계인 사용자에게 접근할 수 없습니다.", FORBIDDEN);
 
     private final String code;
     private final String description;

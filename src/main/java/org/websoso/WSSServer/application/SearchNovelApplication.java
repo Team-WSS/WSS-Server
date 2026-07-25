@@ -47,6 +47,7 @@ import org.websoso.WSSServer.novel.service.KeywordServiceImpl;
 import org.websoso.WSSServer.novel.service.NovelServiceImpl;
 import org.websoso.WSSServer.novel.service.PopularNovelService;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
+import org.websoso.WSSServer.user.service.BlockService;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +61,7 @@ public class SearchNovelApplication {
     private final KeywordServiceImpl keywordService;
     private final LibraryService libraryService;
     private final ApplicationEventPublisher eventPublisher;
+    private final BlockService blockService;
 
     // TODO: 삭제될 레포지토리 의존성
     private final FeedRepository feedRepository;
@@ -173,12 +175,17 @@ public class SearchNovelApplication {
     }
 
     @Transactional(readOnly = true)
-    public PopularNovelsGetResponse getTodayPopularNovels(Integer keywordSize) {
+    public PopularNovelsGetResponse getTodayPopularNovels(User user, Integer keywordSize) {
         List<Long> novelIdsFromPopularNovel = popularNovelService.getNovelIdsFromPopularNovel();
         List<Long> selectedNovelIdsFromPopularNovel = getSelectedNovelIdsFromPopularNovel(novelIdsFromPopularNovel);
         List<Novel> popularNovels = novelService.getSelectedPopularNovels(selectedNovelIdsFromPopularNovel);
+        List<Long> blockedUserIds = user == null
+                ? List.of()
+                : blockService.findBlockRelationUserIds(user.getUserId());
         List<Feed> popularFeedsFromPopularNovels = feedRepository.findPopularFeedsByNovelIds(
-                selectedNovelIdsFromPopularNovel);
+                selectedNovelIdsFromPopularNovel,
+                blockedUserIds
+        );
 
         Map<Long, List<Keyword>> keywordMap = popularNovels.stream()
                 .collect(Collectors.toMap(

@@ -12,6 +12,7 @@ import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.feed.feed.controller.dto.UserFeedGetResponse;
 import org.websoso.WSSServer.feed.feed.controller.dto.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
+import org.websoso.WSSServer.feed.comment.service.CommentQueryService;
 import org.websoso.WSSServer.feed.feed.service.FeedLikeService;
 import org.websoso.WSSServer.feed.feed.service.FeedQueryService;
 import org.websoso.WSSServer.novel.service.GenreServiceImpl;
@@ -47,6 +48,7 @@ public class FeedFindApplication {
     private final AvatarService avatarService;
     private final FeedLikeService feedLikeService;
     private final BlockService blockService;
+    private final CommentQueryService commentQueryService;
 
     @Transactional(readOnly = true)
     public FeedGetResponse getFeedById(User user, Long feedId) {
@@ -73,7 +75,10 @@ public class FeedFindApplication {
         // 피드가 본인 피드인지 체크
         boolean isMyFeed = feed.isWrittenBy(user.getUserId());
 
-        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, isMyFeed);
+        List<Long> blockedUserIds = blockService.findBlockRelationUserIds(user.getUserId());
+        int commentCount = commentQueryService.countVisibleComments(feedId, blockedUserIds);
+
+        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, isMyFeed, commentCount);
     }
 
     @Transactional(readOnly = true)
@@ -130,7 +135,7 @@ public class FeedFindApplication {
                 .limit(size)
                 .toList();
 
-        return PopularFeedsGetResponse.of(feedQueryService.findPopularFeedRows(selectedFeeds));
+        return PopularFeedsGetResponse.of(feedQueryService.findPopularFeedRows(selectedFeeds, userIdOrNull));
     }
 
     @Transactional(readOnly = true)
