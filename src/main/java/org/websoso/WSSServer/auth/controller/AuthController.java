@@ -62,6 +62,11 @@ public class AuthController {
                 .body(authApplication.loginApple(request.authorizationCode(), request.idToken()));
     }
 
+    /**
+     * @deprecated Apple 토큰 유실 대응을 위해 임시로 추가한 API입니다.
+     * 클라이언트 미사용 확인 후 별도 이슈에서 제거합니다.
+     */
+    @Deprecated
     @PatchMapping("/auth/apple/sync")
     public ResponseEntity<Void> updateAppleSocialId(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String bearerToken,
