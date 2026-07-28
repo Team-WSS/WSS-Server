@@ -12,6 +12,10 @@ import org.websoso.WSSServer.auth.validator.ResourceAuthorizationValidator;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.exception.exception.CustomAuthorizationException;
 
+/**
+ * @deprecated 리소스 접근 검증은 각 도메인의 Application 또는 Service 계층에서 처리한다.
+ */
+@Deprecated
 @Component
 public class ResourceAuthorizationHandler {
 

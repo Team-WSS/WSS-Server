@@ -13,6 +13,10 @@ import org.websoso.WSSServer.exception.exception.CustomUserNovelException;
 import org.websoso.WSSServer.novel.repository.NovelRepository;
 import org.websoso.WSSServer.library.repository.UserNovelRepository;
 
+/**
+ * @deprecated 리소스 접근 검증은 Library Application 또는 Service 계층에서 처리한다.
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class UserNovelAuthorizationValidator implements ResourceAuthorizationValidator {

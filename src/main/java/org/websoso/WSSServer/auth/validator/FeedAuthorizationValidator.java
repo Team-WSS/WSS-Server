@@ -11,6 +11,10 @@ import org.websoso.WSSServer.feed.feed.exception.CustomFeedException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.feed.repository.FeedRepository;
 
+/**
+ * @deprecated 리소스 접근 검증은 Feed Application 또는 Service 계층에서 처리한다.
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class FeedAuthorizationValidator implements ResourceAuthorizationValidator {

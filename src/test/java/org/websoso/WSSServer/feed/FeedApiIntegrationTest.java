@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
-import org.websoso.WSSServer.oauth2.repository.RefreshTokenRepository;
+import org.websoso.WSSServer.auth.repository.RefreshTokenRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
