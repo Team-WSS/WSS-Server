@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.auth.service;
+package org.websoso.WSSServer.auth.client;
 
 import static org.websoso.WSSServer.exception.error.CustomKakaoError.INVALID_KAKAO_ACCESS_TOKEN;
 import static org.websoso.WSSServer.exception.error.CustomKakaoError.KAKAO_SERVER_ERROR;
@@ -12,12 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
-import org.websoso.WSSServer.auth.controller.dto.AuthResponse;
-import org.websoso.WSSServer.auth.controller.dto.KakaoUserInfo;
-import org.websoso.WSSServer.auth.domain.RefreshToken;
-import org.websoso.WSSServer.auth.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.auth.jwt.JwtProvider;
 import org.websoso.WSSServer.auth.repository.RefreshTokenRepository;
+import org.websoso.WSSServer.auth.client.dto.KakaoUserInfo;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.exception.exception.CustomKakaoException;
 import org.websoso.WSSServer.user.repository.UserRepository;

@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.auth.controller.dto;
+package org.websoso.WSSServer.auth.client.dto;
 
 public record AppleTokenResponse(
         String access_token,

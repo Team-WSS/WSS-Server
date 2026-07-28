@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.auth.service;
+package org.websoso.WSSServer.auth.client;
 
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.CLIENT_SECRET_CREATION_FAILED;
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.INVALID_APPLE_KEY;
@@ -29,8 +29,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
-import org.websoso.WSSServer.auth.controller.dto.ApplePublicKey;
-import org.websoso.WSSServer.auth.controller.dto.ApplePublicKeys;
+import org.websoso.WSSServer.auth.client.dto.ApplePublicKey;
+import org.websoso.WSSServer.auth.client.dto.ApplePublicKeys;
 import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
 
 @Component

@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.auth.controller.dto;
+package org.websoso.WSSServer.auth.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

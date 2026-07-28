@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.auth.controller.dto;
+package org.websoso.WSSServer.auth.client.dto;
 
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.INVALID_APPLE_KEY;
 

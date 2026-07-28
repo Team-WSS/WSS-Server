@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.auth.service;
+package org.websoso.WSSServer.auth.client;
 
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.TOKEN_REQUEST_FAILED;
 
@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
-import org.websoso.WSSServer.auth.controller.dto.ApplePublicKeys;
-import org.websoso.WSSServer.auth.controller.dto.AppleTokenResponse;
+import org.websoso.WSSServer.auth.client.dto.AppleTokenResponse;
+import org.websoso.WSSServer.auth.client.dto.ApplePublicKeys;
 import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
 
 @Component
