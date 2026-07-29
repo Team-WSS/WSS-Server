@@ -21,7 +21,7 @@ import org.websoso.WSSServer.auth.controller.dto.AuthResponse;
 import org.websoso.WSSServer.auth.controller.dto.LogoutRequest;
 import org.websoso.WSSServer.auth.controller.dto.ReissueRequest;
 import org.websoso.WSSServer.auth.controller.dto.ReissueResponse;
-import org.websoso.WSSServer.auth.jwt.JwtProvider;
+import org.websoso.WSSServer.auth.jwt.JWTUtil;
 import org.websoso.WSSServer.auth.service.AppleService;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.user.WithdrawalRequest;
@@ -37,7 +37,7 @@ public class AuthController {
     private final AccountApplication accountApplication;
 
     // 애플 로그인 토큰 만료로 인한 임시 의존성 주입
-    private final JwtProvider jwtProvider;
+    private final JWTUtil jwtUtil;
     private final UserRepository userRepository;
 
     // Access Token 재발급
@@ -72,7 +72,7 @@ public class AuthController {
             @RequestHeader(HttpHeaders.AUTHORIZATION) String bearerToken,
             @Valid @RequestBody AppleIdUpdateRequest request
     ) {
-        Long userId = jwtProvider.getUserIdFromToken(bearerToken);
+        Long userId = jwtUtil.getUserIdFromToken(bearerToken);
 
         User user = userRepository.findById(userId).orElse(null);
 
