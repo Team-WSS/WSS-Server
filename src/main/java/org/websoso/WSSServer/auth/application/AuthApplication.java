@@ -3,8 +3,6 @@ package org.websoso.WSSServer.auth.application;
 import static org.websoso.WSSServer.exception.error.CustomAuthError.INVALID_TOKEN;
 
 import io.jsonwebtoken.Claims;
-import java.security.PublicKey;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,11 +17,11 @@ import org.websoso.WSSServer.auth.jwt.JwtProvider;
 import org.websoso.WSSServer.auth.jwt.JwtValidationType;
 import org.websoso.WSSServer.auth.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.auth.client.AppleClient;
+import org.websoso.WSSServer.auth.client.AppleIdTokenVerifier;
 import org.websoso.WSSServer.auth.client.AppleKeyGenerator;
 import org.websoso.WSSServer.auth.service.AppleService;
 import org.websoso.WSSServer.auth.client.KakaoService;
 import org.websoso.WSSServer.auth.service.TokenService;
-import org.websoso.WSSServer.auth.client.dto.ApplePublicKeys;
 import org.websoso.WSSServer.auth.client.dto.KakaoUserInfo;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
@@ -47,6 +45,7 @@ public class AuthApplication {
     private static final String KAKAO_PREFIX = "kakao";
     private static final String APPLE_PREFIX = "apple";
     private final AppleKeyGenerator appleKeyGenerator;
+    private final AppleIdTokenVerifier appleIdTokenVerifier;
 
     @Transactional
     public ReissueResponse reissue(String refreshToken) {
@@ -93,36 +92,31 @@ public class AuthApplication {
 
     @Transactional
     public AuthResponse loginApple(String authorizationCode, String appleToken) {
-        // 1. 공개키 가져오기 & 헤더 파싱
-        ApplePublicKeys applePublicKeys = appleClient.getApplePublicKeys();
-        Map<String, String> headers = jwtProvider.parseAppleTokenHeader(appleToken);
+        // 1. Apple ID Token 검증 (헤더 파싱 + 공개키 조회 + 서명 검증)
+        Claims claims = appleIdTokenVerifier.verify(appleToken);
 
-        // 2. 공개키 생성 및 검증 (서명 확인)
-        PublicKey publicKey = appleKeyGenerator.generatePublicKey(headers, applePublicKeys);
-        Claims claims = jwtProvider.extractClaims(appleToken, publicKey);
-
-        // 3. 애플 서버에서 Refresh Token 받아오기
+        // 2. 애플 서버에서 Refresh Token 받아오기
         String clientSecret = appleKeyGenerator.createClientSecret();
         AppleTokenResponse appleTokenResponse = appleClient.requestAppleToken(authorizationCode, clientSecret);
 
-        // 4. 유저 정보 추출
+        // 3. 유저 정보 추출
         String email = claims.get("email", String.class);
         String userIdentifier = claims.get("sub", String.class);
         String customSocialId = APPLE_PREFIX + "_" + userIdentifier;
         String defaultNickname = APPLE_PREFIX.charAt(0) + "*" + userIdentifier.substring(7, 15);
 
-        // 5. 유저 처리
+        // 4. 유저 처리
         User user = userService.getOrCreateAppleUser(customSocialId, email, defaultNickname);
 
-        // 6. 애플 Refresh Token 저장
+        // 5. 애플 Refresh Token 저장
         appleService.upsertRefreshToken(user, appleTokenResponse.getRefreshToken());
 
-        // 7. Access / Refresh Token 생성
+        // 6. Access / Refresh Token 생성
         CustomAuthenticationToken customAuthenticationToken = CustomAuthenticationToken.create(user.getUserId());
         String accessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
         String refreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
 
-        // 8. Refresh Token 저장
+        // 7. Refresh Token 저장
         tokenService.saveRefreshToken(user, refreshToken);
 
         boolean isRegister = !user.isTemporaryNickname();
