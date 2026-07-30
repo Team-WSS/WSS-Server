@@ -36,4 +36,11 @@ public class TokenService {
         return refreshTokenRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new CustomAuthException(INVALID_TOKEN, "given token is invalid token for reissue"));
     }
+
+    // 리프레시 토큰을 삭제한다. 존재하지 않아도 예외를 던지지 않는다.
+    @Transactional
+    public void deleteRefreshToken(String refreshToken) {
+        refreshTokenRepository.findByRefreshToken(refreshToken)
+                .ifPresent(refreshTokenRepository::delete);
+    }
 }
