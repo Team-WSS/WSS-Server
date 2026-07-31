@@ -20,7 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.websoso.WSSServer.auth.client.AppleClient;
 import org.websoso.WSSServer.auth.client.AppleIdTokenVerifier;
 import org.websoso.WSSServer.auth.client.AppleKeyGenerator;
-import org.websoso.WSSServer.auth.client.KakaoService;
+import org.websoso.WSSServer.auth.client.KakaoClient;
 import org.websoso.WSSServer.auth.controller.dto.ReissueResponse;
 import org.websoso.WSSServer.auth.domain.RefreshToken;
 import org.websoso.WSSServer.auth.jwt.CustomAuthenticationToken;
@@ -61,7 +61,7 @@ class AuthApplicationReissueRotationTest {
     private UserService userService;
 
     @Mock
-    private KakaoService kakaoService;
+    private KakaoClient kakaoClient;
 
     @Mock
     private AppleService appleService;
@@ -98,7 +98,7 @@ class AuthApplicationReissueRotationTest {
 
         tokenService = new TokenService(refreshTokenRepository);
         authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceRepository,
-                userService, kakaoService, appleService, appleClient, appleKeyGenerator, appleIdTokenVerifier);
+                userService, kakaoClient, appleService, appleClient, appleKeyGenerator, appleIdTokenVerifier);
     }
 
     @DisplayName("재발급에 성공하면 기존 리프레시 토큰은 저장소에서 사라져 다시 재발급에 사용할 수 없다")

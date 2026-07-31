@@ -19,7 +19,7 @@ import org.websoso.WSSServer.auth.client.AppleClient;
 import org.websoso.WSSServer.auth.client.AppleIdTokenVerifier;
 import org.websoso.WSSServer.auth.client.AppleKeyGenerator;
 import org.websoso.WSSServer.auth.service.AppleService;
-import org.websoso.WSSServer.auth.client.KakaoService;
+import org.websoso.WSSServer.auth.client.KakaoClient;
 import org.websoso.WSSServer.auth.service.TokenService;
 import org.websoso.WSSServer.auth.client.dto.KakaoUserInfo;
 import org.websoso.WSSServer.dto.user.LoginResponse;
@@ -37,7 +37,7 @@ public class AuthApplication {
     private final JWTUtil jwtUtil;
     private final UserDeviceRepository userDeviceRepository;
     private final UserService userService;
-    private final KakaoService kakaoService;
+    private final KakaoClient kakaoClient;
     private final AppleService appleService;
     private final AppleClient appleClient;
     private static final String KAKAO_PREFIX = "kakao";
@@ -71,7 +71,7 @@ public class AuthApplication {
     @Transactional
     public AuthResponse loginKakao(String kakaoAccessToken) {
         // 1. 카카오 로그인 인증
-        KakaoUserInfo kakaoUserInfo = kakaoService.getUserInfo(kakaoAccessToken);
+        KakaoUserInfo kakaoUserInfo = kakaoClient.getUserInfo(kakaoAccessToken);
 
         // 2. 사용자 정보 불러오기 / 생성
         User user = userService.getOrCreateKakaoUser(kakaoUserInfo);
@@ -141,7 +141,11 @@ public class AuthApplication {
         userDeviceRepository.deleteByUserAndDeviceIdentifier(user, request.deviceIdentifier());
 
         if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
-            kakaoService.kakaoLogout(user);
+            kakaoClient.logout(extractKakaoUserId(user.getSocialId()));
         }
+    }
+
+    private String extractKakaoUserId(String socialId) {
+        return socialId.replaceFirst(KAKAO_PREFIX + "_", "");
     }
 }
