@@ -23,6 +23,7 @@ import org.websoso.WSSServer.auth.controller.dto.ReissueRequest;
 import org.websoso.WSSServer.auth.controller.dto.ReissueResponse;
 import org.websoso.WSSServer.auth.jwt.JWTUtil;
 import org.websoso.WSSServer.auth.service.AppleService;
+import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.dto.user.WithdrawalRequest;
 import org.websoso.WSSServer.application.AccountApplication;
@@ -46,6 +47,14 @@ public class AuthController {
         return ResponseEntity
                 .status(OK)
                 .body(authApplication.reissue(reissueRequest.refreshToken()));
+    }
+
+    @PostMapping("/users/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody String userId) {
+        LoginResponse response = authApplication.login(Long.valueOf(userId));
+        return ResponseEntity
+                .status(OK)
+                .body(response);
     }
 
     @PostMapping("/auth/login/kakao")
