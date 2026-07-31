@@ -32,7 +32,7 @@ import org.websoso.WSSServer.auth.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.auth.service.AppleService;
 import org.websoso.WSSServer.auth.service.TokenService;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
-import org.websoso.WSSServer.notification.repository.UserDeviceRepository;
+import org.websoso.WSSServer.notification.service.UserDeviceService;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.service.UserService;
 
@@ -55,7 +55,7 @@ class AuthApplicationReissueRotationTest {
     private RefreshTokenRepository refreshTokenRepository;
 
     @Mock
-    private UserDeviceRepository userDeviceRepository;
+    private UserDeviceService userDeviceService;
 
     @Mock
     private UserService userService;
@@ -97,7 +97,7 @@ class AuthApplicationReissueRotationTest {
                 .given(refreshTokenRepository).delete(any(RefreshToken.class));
 
         tokenService = new TokenService(refreshTokenRepository);
-        authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceRepository,
+        authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceService,
                 userService, kakaoClient, appleService, appleClient, appleKeyGenerator, appleIdTokenVerifier);
     }
 

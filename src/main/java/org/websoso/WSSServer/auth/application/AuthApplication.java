@@ -25,7 +25,7 @@ import org.websoso.WSSServer.auth.client.dto.KakaoUserInfo;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
 import org.websoso.WSSServer.user.domain.User;
-import org.websoso.WSSServer.notification.repository.UserDeviceRepository;
+import org.websoso.WSSServer.notification.service.UserDeviceService;
 import org.websoso.WSSServer.user.service.UserService;
 
 @Service
@@ -35,7 +35,7 @@ public class AuthApplication {
     private final TokenService tokenService;
     private final JwtProvider jwtProvider;
     private final JWTUtil jwtUtil;
-    private final UserDeviceRepository userDeviceRepository;
+    private final UserDeviceService userDeviceService;
     private final UserService userService;
     private final KakaoClient kakaoClient;
     private final AppleService appleService;
@@ -138,7 +138,7 @@ public class AuthApplication {
     public void logout(User user, LogoutRequest request) {
         tokenService.deleteRefreshToken(request.refreshToken());
 
-        userDeviceRepository.deleteByUserAndDeviceIdentifier(user, request.deviceIdentifier());
+        userDeviceService.deleteDeviceIdentifier(user, request.deviceIdentifier());
 
         if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
             kakaoClient.logout(extractKakaoUserId(user.getSocialId()));

@@ -29,7 +29,7 @@ import org.websoso.WSSServer.auth.jwt.TestTokenFactory;
 import org.websoso.WSSServer.auth.service.AppleService;
 import org.websoso.WSSServer.auth.service.TokenService;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
-import org.websoso.WSSServer.notification.repository.UserDeviceRepository;
+import org.websoso.WSSServer.notification.service.UserDeviceService;
 import org.websoso.WSSServer.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,7 +47,7 @@ class AuthApplicationReissueTest {
     private TokenService tokenService;
 
     @Mock
-    private UserDeviceRepository userDeviceRepository;
+    private UserDeviceService userDeviceService;
 
     @Mock
     private UserService userService;
@@ -71,7 +71,7 @@ class AuthApplicationReissueTest {
 
     @BeforeEach
     void setUp() {
-        authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceRepository,
+        authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceService,
                 userService, kakaoClient, appleService, appleClient, appleKeyGenerator, appleIdTokenVerifier);
     }
 
