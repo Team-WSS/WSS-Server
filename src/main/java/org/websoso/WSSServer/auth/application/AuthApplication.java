@@ -15,7 +15,6 @@ import org.websoso.WSSServer.auth.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.auth.jwt.JWTUtil;
 import org.websoso.WSSServer.auth.jwt.JwtProvider;
 import org.websoso.WSSServer.auth.jwt.JwtValidationType;
-import org.websoso.WSSServer.auth.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.auth.client.AppleClient;
 import org.websoso.WSSServer.auth.client.AppleIdTokenVerifier;
 import org.websoso.WSSServer.auth.client.AppleKeyGenerator;
@@ -36,7 +35,6 @@ public class AuthApplication {
     private final TokenService tokenService;
     private final JwtProvider jwtProvider;
     private final JWTUtil jwtUtil;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final UserDeviceRepository userDeviceRepository;
     private final UserService userService;
     private final KakaoService kakaoService;
@@ -138,8 +136,7 @@ public class AuthApplication {
 
     @Transactional
     public void logout(User user, LogoutRequest request) {
-        refreshTokenRepository.findByRefreshToken(request.refreshToken())
-                .ifPresent(refreshTokenRepository::delete);
+        tokenService.deleteRefreshToken(request.refreshToken());
 
         userDeviceRepository.deleteByUserAndDeviceIdentifier(user, request.deviceIdentifier());
 

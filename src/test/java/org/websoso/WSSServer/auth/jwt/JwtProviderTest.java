@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -38,6 +40,42 @@ class JwtProviderTest {
 
         assertThat(claims.getSubject()).isEqualTo("refresh");
         assertThat(claims.get(JwtProvider.CLAIM_USER_ID).toString()).isEqualTo(USER_ID.toString());
+    }
+
+    @DisplayName("같은 사용자의 Refresh Token을 연속으로 발급해도 서로 다른 문자열이 나온다")
+    @Test
+    void generateRefreshToken_consecutiveCalls_produceDistinctTokens() {
+        CustomAuthenticationToken authentication = CustomAuthenticationToken.create(USER_ID);
+
+        Set<String> tokens = new HashSet<>();
+        for (int i = 0; i < 100; i++) {
+            tokens.add(jwtProvider.generateRefreshToken(authentication));
+        }
+
+        assertThat(tokens).hasSize(100);
+    }
+
+    @DisplayName("Refresh Token 발급 시 jti 클레임에 발급마다 다른 값이 담긴다")
+    @Test
+    void generateRefreshToken_hasUniqueJtiClaim() {
+        CustomAuthenticationToken authentication = CustomAuthenticationToken.create(USER_ID);
+
+        Claims first = parseClaims(jwtProvider.generateRefreshToken(authentication));
+        Claims second = parseClaims(jwtProvider.generateRefreshToken(authentication));
+
+        assertThat(first.getId()).isNotBlank();
+        assertThat(second.getId()).isNotBlank();
+        assertThat(second.getId()).isNotEqualTo(first.getId());
+    }
+
+    @DisplayName("Access Token 발급 시에는 jti 클레임을 추가하지 않는다")
+    @Test
+    void generateAccessToken_hasNoJtiClaim() {
+        CustomAuthenticationToken authentication = CustomAuthenticationToken.create(USER_ID);
+
+        Claims claims = parseClaims(jwtProvider.generateAccessToken(authentication));
+
+        assertThat(claims.getId()).isNull();
     }
 
     @DisplayName("만료 시간이 지난 토큰도 정상적으로 발급되고 클레임에 만료시간이 반영된다")

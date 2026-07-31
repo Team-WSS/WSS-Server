@@ -3,6 +3,7 @@ package org.websoso.WSSServer.auth.jwt;
 public class TestTokenFactory {
 
     public static final String TEST_SECRET = "test-only-jwt-secret-never-used-in-production-0123456789";
+    private static final String OTHER_SECRET = "a-completely-different-test-secret-not-matching-the-real-one-987654";
     public static final long ACCESS_TOKEN_EXPIRATION = 3_600_000L;
     public static final long REFRESH_TOKEN_EXPIRATION = 1_209_600_000L;
 
@@ -32,8 +33,11 @@ public class TestTokenFactory {
         return jwtProvider.generateJWT(CustomAuthenticationToken.create(userId), -1_000L, TokenType.REFRESH);
     }
 
-    public String createTokenWithInvalidSignature(Long userId) {
-        return new TestTokenFactory("a-completely-different-test-secret-not-matching-the-real-one-987654")
-                .createAccessToken(userId);
+    public String createAccessTokenWithInvalidSignature(Long userId) {
+        return new TestTokenFactory(OTHER_SECRET).createAccessToken(userId);
+    }
+
+    public String createRefreshTokenWithInvalidSignature(Long userId) {
+        return new TestTokenFactory(OTHER_SECRET).createRefreshToken(userId);
     }
 }

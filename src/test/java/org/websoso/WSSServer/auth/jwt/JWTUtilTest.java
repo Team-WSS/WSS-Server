@@ -45,10 +45,18 @@ class JWTUtilTest {
         assertThat(jwtUtil.validateJWT(token)).isEqualTo(JwtValidationType.EXPIRED_REFRESH);
     }
 
-    @DisplayName("다른 시크릿으로 서명된 토큰은 INVALID_SIGNATURE를 반환한다")
+    @DisplayName("다른 시크릿으로 서명된 Access Token은 INVALID_SIGNATURE를 반환한다")
     @Test
-    void validateJWT_wrongSignature_returnsInvalidSignature() {
-        String token = testTokenFactory.createTokenWithInvalidSignature(USER_ID);
+    void validateJWT_wrongSignatureAccessToken_returnsInvalidSignature() {
+        String token = testTokenFactory.createAccessTokenWithInvalidSignature(USER_ID);
+
+        assertThat(jwtUtil.validateJWT(token)).isEqualTo(JwtValidationType.INVALID_SIGNATURE);
+    }
+
+    @DisplayName("다른 시크릿으로 서명된 Refresh Token은 INVALID_SIGNATURE를 반환한다")
+    @Test
+    void validateJWT_wrongSignatureRefreshToken_returnsInvalidSignature() {
+        String token = testTokenFactory.createRefreshTokenWithInvalidSignature(USER_ID);
 
         assertThat(jwtUtil.validateJWT(token)).isEqualTo(JwtValidationType.INVALID_SIGNATURE);
     }
