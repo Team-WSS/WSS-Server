@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.auth.client;
 
 import static org.websoso.WSSServer.exception.error.CustomKakaoError.INVALID_KAKAO_ACCESS_TOKEN;
+import static org.websoso.WSSServer.exception.error.CustomKakaoError.KAKAO_REQUEST_FAILED;
 import static org.websoso.WSSServer.exception.error.CustomKakaoError.KAKAO_SERVER_ERROR;
 
 import lombok.RequiredArgsConstructor;
@@ -70,6 +71,10 @@ public class KakaoClient {
                 .header(HttpHeaders.AUTHORIZATION, ADMIN_KEY_PREFIX + kakaoAdminKey)
                 .body(createTargetIdParams(providerUserId))
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, (request, response) -> {
+                    throw new CustomKakaoException(KAKAO_REQUEST_FAILED,
+                            "kakao request failed during " + operation);
+                })
                 .onStatus(HttpStatusCode::is5xxServerError, (request, response) -> {
                     throw new CustomKakaoException(KAKAO_SERVER_ERROR,
                             "kakao server error during " + operation);

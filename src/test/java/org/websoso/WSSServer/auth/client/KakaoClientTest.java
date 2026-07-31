@@ -10,6 +10,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.websoso.WSSServer.exception.error.CustomKakaoError.INVALID_KAKAO_ACCESS_TOKEN;
+import static org.websoso.WSSServer.exception.error.CustomKakaoError.KAKAO_REQUEST_FAILED;
 import static org.websoso.WSSServer.exception.error.CustomKakaoError.KAKAO_SERVER_ERROR;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -113,6 +114,20 @@ class KakaoClientTest {
         mockServer.verify();
     }
 
+    @DisplayName("로그아웃 요청이 4xx로 실패하면 외부 요청 실패 예외가 발생한다")
+    @Test
+    void logout_clientError() {
+        mockServer.expect(requestTo(LOGOUT_URL))
+                .andRespond(withStatus(HttpStatus.BAD_REQUEST));
+
+        assertThatThrownBy(() -> kakaoClient.logout(PROVIDER_USER_ID))
+                .isInstanceOf(CustomKakaoException.class)
+                .hasMessage("kakao request failed during logout")
+                .extracting(throwable -> ((CustomKakaoException) throwable).getICustomError())
+                .isEqualTo(KAKAO_REQUEST_FAILED);
+        mockServer.verify();
+    }
+
     @DisplayName("로그아웃 요청이 5xx로 실패하면 카카오 서버 오류 예외가 발생한다")
     @Test
     void logout_serverError() {
@@ -139,6 +154,20 @@ class KakaoClientTest {
 
         kakaoClient.unlink(PROVIDER_USER_ID);
 
+        mockServer.verify();
+    }
+
+    @DisplayName("연결 해제 요청이 4xx로 실패하면 외부 요청 실패 예외가 발생한다")
+    @Test
+    void unlink_clientError() {
+        mockServer.expect(requestTo(UNLINK_URL))
+                .andRespond(withStatus(HttpStatus.BAD_REQUEST));
+
+        assertThatThrownBy(() -> kakaoClient.unlink(PROVIDER_USER_ID))
+                .isInstanceOf(CustomKakaoException.class)
+                .hasMessage("kakao request failed during unlink")
+                .extracting(throwable -> ((CustomKakaoException) throwable).getICustomError())
+                .isEqualTo(KAKAO_REQUEST_FAILED);
         mockServer.verify();
     }
 
