@@ -5,6 +5,7 @@ import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Date;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -49,6 +50,11 @@ public class JwtProvider {
                 .setIssuedAt(new Date(now))
                 .setExpiration(new Date(now + expirationTime));
         claims.put(CLAIM_USER_ID, authentication.getPrincipal());
+
+        // iat/exp는 초 단위로 잘리므로, 회전 대상인 Refresh Token은 jti로 발급마다 문자열 유일성을 보장한다.
+        if (tokenType == TokenType.REFRESH) {
+            claims.setId(UUID.randomUUID().toString());
+        }
 
         return claims;
     }

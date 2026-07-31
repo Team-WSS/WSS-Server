@@ -94,6 +94,18 @@ class AuthApplicationReissueTest {
         assertThat(newRefreshTokenCaptor.getValue()).isEqualTo(response.refreshToken());
     }
 
+    @DisplayName("재발급된 리프레시 토큰은 요청에 사용한 기존 리프레시 토큰과 다른 값이다")
+    @Test
+    void reissue_returnsRefreshTokenDifferentFromOldOne() {
+        String oldRefreshToken = testTokenFactory.createRefreshToken(USER_ID);
+        given(tokenService.findRefreshTokenOrThrow(oldRefreshToken))
+                .willReturn(new RefreshToken(oldRefreshToken, USER_ID));
+
+        ReissueResponse response = authApplication.reissue(oldRefreshToken);
+
+        assertThat(response.refreshToken()).isNotEqualTo(oldRefreshToken);
+    }
+
     @DisplayName("만료된 리프레시 토큰이면 재발급을 거부한다")
     @Test
     void reissue_expiredRefreshToken_throwsInvalidToken() {
@@ -110,7 +122,7 @@ class AuthApplicationReissueTest {
     @DisplayName("변조된(서명이 다른) 리프레시 토큰이면 재발급을 거부한다")
     @Test
     void reissue_tamperedRefreshToken_throwsInvalidToken() {
-        String tamperedRefreshToken = testTokenFactory.createTokenWithInvalidSignature(USER_ID);
+        String tamperedRefreshToken = testTokenFactory.createRefreshTokenWithInvalidSignature(USER_ID);
 
         assertThatThrownBy(() -> authApplication.reissue(tamperedRefreshToken))
                 .isInstanceOf(CustomAuthException.class)
