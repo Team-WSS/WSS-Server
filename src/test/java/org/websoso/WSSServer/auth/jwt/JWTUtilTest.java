@@ -45,6 +45,22 @@ class JWTUtilTest {
         assertThat(jwtUtil.validateJWT(token)).isEqualTo(JwtValidationType.EXPIRED_REFRESH);
     }
 
+    @DisplayName("서명이 유효해도 subject가 access/refresh가 아니면 UNSUPPORTED_SUBJECT를 반환한다")
+    @Test
+    void validateJWT_unknownSubjectToken_returnsUnsupportedSubject() {
+        String token = testTokenFactory.createTokenWithSubject(USER_ID, "unknown");
+
+        assertThat(jwtUtil.validateJWT(token)).isEqualTo(JwtValidationType.UNSUPPORTED_SUBJECT);
+    }
+
+    @DisplayName("만료된 토큰이어도 subject가 access/refresh가 아니면 UNSUPPORTED_SUBJECT를 반환한다")
+    @Test
+    void validateJWT_expiredUnknownSubjectToken_returnsUnsupportedSubject() {
+        String token = testTokenFactory.createExpiredTokenWithSubject(USER_ID, "unknown");
+
+        assertThat(jwtUtil.validateJWT(token)).isEqualTo(JwtValidationType.UNSUPPORTED_SUBJECT);
+    }
+
     @DisplayName("다른 시크릿으로 서명된 Access Token은 INVALID_SIGNATURE를 반환한다")
     @Test
     void validateJWT_wrongSignatureAccessToken_returnsInvalidSignature() {

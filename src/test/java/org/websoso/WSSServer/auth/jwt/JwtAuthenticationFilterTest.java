@@ -97,6 +97,18 @@ class JwtAuthenticationFilterTest {
         }
     }
 
+    @DisplayName("지원하지 않는 subject 토큰이면 401과 AUTH-001을 응답하고 체인을 중단한다")
+    @Test
+    void unsupportedSubjectToken_returnsInvalidTokenAndStopsChain() throws Exception {
+        given(jwtUtil.validateJWT(TOKEN)).willReturn(JwtValidationType.UNSUPPORTED_SUBJECT);
+
+        MockHttpServletResponse response = doFilter(bearerRequest(TOKEN));
+
+        assertThat(response.getStatus()).isEqualTo(401);
+        assertThat(response.getContentAsString()).contains("AUTH-001");
+        verify(filterChain, never()).doFilter(any(), any());
+    }
+
     @DisplayName("Authorization 헤더가 없으면 익명 인증으로 설정하고 필터 체인을 계속 진행한다")
     @Test
     void noToken_setsAnonymousAuthenticationAndContinues() throws Exception {

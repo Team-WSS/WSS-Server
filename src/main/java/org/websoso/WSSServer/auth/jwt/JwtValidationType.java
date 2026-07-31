@@ -8,5 +8,6 @@ public enum JwtValidationType {
     EXPIRED_ACCESS,
     EXPIRED_REFRESH,
     UNSUPPORTED_TOKEN,
-    EMPTY_TOKEN
+    EMPTY_TOKEN,
+    UNSUPPORTED_SUBJECT
 }

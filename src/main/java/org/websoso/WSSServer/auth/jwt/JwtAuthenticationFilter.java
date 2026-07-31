@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     writeError(response, CustomAuthError.WRONG_TOKEN_TYPE);
                     return;
                 }
-                case INVALID_TOKEN, INVALID_SIGNATURE, UNSUPPORTED_TOKEN, EMPTY_TOKEN -> {
+                case INVALID_TOKEN, INVALID_SIGNATURE, UNSUPPORTED_TOKEN, UNSUPPORTED_SUBJECT, EMPTY_TOKEN -> {
                     writeError(response, CustomAuthError.INVALID_TOKEN);
                     return;
                 }

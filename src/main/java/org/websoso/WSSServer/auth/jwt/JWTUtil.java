@@ -44,19 +44,27 @@ public class JWTUtil {
     public JwtValidationType validateJWT(String token) {
         try {
             final Claims claims = getClaim(token);
-            if (TokenType.from(claims.getSubject()) == TokenType.ACCESS) {
+            final TokenType tokenType = TokenType.from(claims.getSubject());
+            if (tokenType == TokenType.ACCESS) {
                 return JwtValidationType.VALID_ACCESS;
             }
-            return JwtValidationType.VALID_REFRESH;
+            if (tokenType == TokenType.REFRESH) {
+                return JwtValidationType.VALID_REFRESH;
+            }
+            return JwtValidationType.UNSUPPORTED_SUBJECT;
         } catch (SignatureException ex) {
             return JwtValidationType.INVALID_SIGNATURE;
         } catch (MalformedJwtException ex) {
             return JwtValidationType.INVALID_TOKEN;
         } catch (ExpiredJwtException ex) {
-            if (TokenType.from(ex.getClaims().getSubject()) == TokenType.ACCESS) {
+            final TokenType tokenType = TokenType.from(ex.getClaims().getSubject());
+            if (tokenType == TokenType.ACCESS) {
                 return JwtValidationType.EXPIRED_ACCESS;
             }
-            return JwtValidationType.EXPIRED_REFRESH;
+            if (tokenType == TokenType.REFRESH) {
+                return JwtValidationType.EXPIRED_REFRESH;
+            }
+            return JwtValidationType.UNSUPPORTED_SUBJECT;
         } catch (UnsupportedJwtException ex) {
             return JwtValidationType.UNSUPPORTED_TOKEN;
         } catch (IllegalArgumentException ex) {
