@@ -49,6 +49,12 @@ public class AuthController {
                 .body(authApplication.reissue(reissueRequest.refreshToken()));
     }
 
+    /**
+     * @deprecated 기존 클라이언트 호환을 위해 사용자 ID로 Access Token만 발급하는 API입니다.
+     * 신규 클라이언트는 소셜 로그인 후 Access Token 만료 시 {@code POST /reissue}를 사용해야 합니다.
+     * 기존 클라이언트의 미사용이 확인되면 별도 이슈에서 제거합니다.
+     */
+    @Deprecated
     @PostMapping("/users/login")
     public ResponseEntity<LoginResponse> login(@RequestBody String userId) {
         LoginResponse response = authApplication.login(Long.valueOf(userId));

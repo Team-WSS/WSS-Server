@@ -123,6 +123,11 @@ public class AuthApplication {
     }
 
     // TODO: getUserOrException -> existUserOrException 변경
+    /**
+     * @deprecated 기존 클라이언트 호환을 위해 사용자 ID로 Access Token만 발급합니다.
+     * 신규 클라이언트는 소셜 로그인 후 Access Token 만료 시 {@code POST /reissue}를 사용해야 합니다.
+     */
+    @Deprecated
     @Transactional(readOnly = true)
     public LoginResponse login(Long userId) {
         User user = userService.getUserOrException(userId);
