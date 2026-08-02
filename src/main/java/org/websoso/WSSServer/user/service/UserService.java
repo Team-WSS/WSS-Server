@@ -18,13 +18,12 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.oauth2.dto.KakaoUserInfo;
+import org.websoso.WSSServer.auth.client.dto.KakaoUserInfo;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.user.repository.AvatarProfileRepository;
 import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
-import org.websoso.WSSServer.notification.service.MessageFormatter;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessage;
 import org.websoso.WSSServer.domain.common.SocialLoginType;
@@ -47,6 +46,7 @@ import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.repository.GenrePreferenceRepository;
 import org.websoso.WSSServer.repository.GenreRepository;
 import org.websoso.WSSServer.user.repository.UserRepository;
+import org.websoso.WSSServer.user.message.UserDiscordMessageFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +57,7 @@ public class UserService {
     private final AvatarProfileRepository avatarProfileRepository;
     private final GenrePreferenceRepository genrePreferenceRepository;
     private final GenreRepository genreRepository;
+    private final BlockService blockService;
 
     // TODO: 상위 레이어에서 분리 예정
     private final DiscordMessageClient discordMessageClient;
@@ -155,7 +156,10 @@ public class UserService {
         genrePreferenceRepository.saveAll(preferGenres);
 
         discordMessageClient.sendDiscordWebhookMessage(DiscordWebhookMessage.of(
-                MessageFormatter.formatUserJoinMessage(user, SocialLoginType.fromSocialId(user.getSocialId())), JOIN));
+                UserDiscordMessageFormatter.formatUserJoinMessage(
+                        user,
+                        SocialLoginType.fromSocialId(user.getSocialId())
+                ), JOIN));
     }
 
     @Transactional(readOnly = true)
@@ -165,6 +169,9 @@ public class UserService {
                     "The profile for this user is inaccessible: unknown");
         }
         User owner = getUserOrException(ownerId);
+        Long visitorId = visitor == null ? null : visitor.getUserId();
+        validateProfileAccessible(owner, visitorId);
+
         Long avatarId = owner.getAvatarProfileId();
         AvatarProfile avatar = findAvatarProfileByIdOrThrow(avatarId);
         List<GenrePreference> genrePreferences = genrePreferenceRepository.findByUser(owner);
@@ -260,13 +267,9 @@ public class UserService {
         user.updateTermsSetting(serviceAgreed, privacyAgreed, marketingAgreed);
     }
 
-    @Transactional(readOnly = true)
-    public List<User> findAllByIds(List<Long> blockUserIds) {
-        return userRepository.findAllById(blockUserIds);
-    }
-
-
     public void validateProfileAccessible(User owner, Long visitorId) {
+        blockService.validateNotBlocked(visitorId, owner.getUserId());
+
         if (!owner.canBeViewedBy(visitorId)) {
             throw new CustomUserException(
                     PRIVATE_PROFILE_STATUS,

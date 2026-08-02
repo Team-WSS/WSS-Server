@@ -11,6 +11,10 @@ import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.exception.exception.CustomNotificationException;
 import org.websoso.WSSServer.notification.repository.NotificationRepository;
 
+/**
+ * @deprecated 리소스 접근 검증은 Notification Application 또는 Service 계층에서 처리한다.
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class NotificationAuthorizationValidator implements ResourceAuthorizationValidator {

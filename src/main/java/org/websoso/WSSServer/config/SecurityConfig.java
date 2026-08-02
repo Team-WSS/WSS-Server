@@ -12,9 +12,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.websoso.WSSServer.config.jwt.CustomAccessDeniedHandler;
-import org.websoso.WSSServer.config.jwt.CustomJwtAuthenticationEntryPoint;
-import org.websoso.WSSServer.config.jwt.JwtAuthenticationFilter;
+import org.websoso.WSSServer.auth.jwt.CustomAccessDeniedHandler;
+import org.websoso.WSSServer.auth.jwt.CustomJwtAuthenticationEntryPoint;
+import org.websoso.WSSServer.auth.jwt.JwtAuthenticationFilter;
 
 @Configuration
 @RequiredArgsConstructor

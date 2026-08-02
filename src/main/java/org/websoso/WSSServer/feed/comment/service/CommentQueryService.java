@@ -20,4 +20,9 @@ public class CommentQueryService {
                 .map(CommentInfoRow::toResponse)
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public int countVisibleComments(Long feedId, List<Long> blockedUserIds) {
+        return Math.toIntExact(commentQueryRepository.countVisibleComments(feedId, blockedUserIds));
+    }
 }

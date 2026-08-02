@@ -34,7 +34,7 @@ public record FeedGetResponse(
         String novelDescription
 ) {
     public static FeedGetResponse of(Feed feed, UserBasicInfo feedUserBasicInfo, Novel novel, Boolean isLiked,
-                                     Boolean isMyFeed) {
+                                     Boolean isMyFeed, Integer commentCount) {
         String title = null;
         Integer novelRatingCount = null;
         Float novelRating = null;
@@ -75,7 +75,7 @@ public record FeedGetResponse(
                 feed.getFeedContent(),
                 feed.getLikes().size(),
                 isLiked,
-                feed.getComments().size(),
+                commentCount,
                 feed.getNovelId(),
                 title,
                 novelRatingCount,

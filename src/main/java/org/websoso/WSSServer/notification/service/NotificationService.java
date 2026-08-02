@@ -30,6 +30,7 @@ public class NotificationService {
     private static final int DEFAULT_PAGE_NUMBER = 0;
     private static final int NOTIFICATION_TITLE_MAX_LENGTH = 12;
     private static final int NOTIFICATION_TITLE_MIN_LENGTH = 0;
+    private static final String BECAME_POPULAR_NOTIFICATION_TITLE = "추천글 등극 🔥";
 
     private final NotificationRepository notificationRepository;
     private final NotificationTypeRepository notificationTypeRepository;
@@ -74,7 +75,7 @@ public class NotificationService {
 
         Long feedId = feed.getFeedId();
 
-        String notificationTitle = "지금 뜨는 글 등극\uD83D\uDE4C";
+        String notificationTitle = BECAME_POPULAR_NOTIFICATION_TITLE;
 
         String notificationBody = createNotificationBody(feed, novel);
 
@@ -238,11 +239,11 @@ public class NotificationService {
     }
 
     private String createNotificationBody(Feed feed, Novel novel) {
-        return String.format("내가 남긴 %s 글이 관심 받고 있어요!", generateNotificationBodyFragment(feed, novel));
+        return String.format("내가 남긴 %s글이 관심 받고 있어요!", generateNotificationBodyFragment(feed, novel));
     }
 
     private String generateNotificationBodyFragment(Feed feed, Novel novel) {
-        if (feed.getNovelId() == null) {
+        if (feed.getNovelId() == null || novel == null) {
             String feedContent = feed.getFeedContent();
             feedContent = feedContent.length() <= 12
                     ? feedContent

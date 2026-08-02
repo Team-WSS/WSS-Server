@@ -10,7 +10,11 @@ import org.websoso.WSSServer.domain.common.SortCriteria;
 
 public interface FeedCustomRepository {
 
-    List<Feed> findPopularFeedsByNovelIds(List<Long> novelIds);
+    boolean markSpoilerIfNotMarked(Long feedId);
+
+    boolean hideIfNotHidden(Long feedId);
+
+    List<Feed> findPopularFeedsByNovelIds(List<Long> novelIds, List<Long> blockedUserIds);
 
     Slice<Feed> findFeedsByNoOffsetPagination(User owner, Long lastFeedId, int size, Boolean isVisible,
                                               Boolean isUnVisible, SortCriteria sortCriteria, List<Genre> genres,
@@ -21,8 +25,7 @@ public interface FeedCustomRepository {
     Slice<Feed> findRecommendedFeeds(Long lastFeedId, Long userId, PageRequest pageRequest, List<Genre> genres,
                                      List<Long> blockedUserIds);
 
-    Slice<Feed> findInterestedNovelFeeds(Long lastFeedId, Long userId, PageRequest pageRequest,
-                                         List<Long> blockedUserIds);
+    List<Feed> findPopularRecommendedFeeds(Long userId, int size, List<Genre> genres, List<Long> blockedUserIds);
 
     Long countVisibleFeeds(User owner, Boolean isVisible,
                            Boolean isUnVisible, List<Genre> genres,

@@ -48,6 +48,20 @@ public class CommentQueryRepositoryImpl implements CommentQueryRepository {
                 .fetch();
     }
 
+    @Override
+    public long countVisibleComments(Long feedId, List<Long> blockedUserIds) {
+        Long count = jpaQueryFactory
+                .select(comment.commentId.count())
+                .from(comment)
+                .where(
+                        comment.feed.feedId.eq(feedId),
+                        excludeBlockedUsers(blockedUserIds)
+                )
+                .fetchOne();
+
+        return count == null ? 0L : count;
+    }
+
     private Expression<Boolean> isMyComment(Long userId) {
         if (userId == null) {
             return Expressions.FALSE;

@@ -1,6 +1,8 @@
 package org.websoso.WSSServer.notification.policy;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.feed.comment.domain.Comment;
@@ -17,13 +19,13 @@ public class CommenterCommentNotificationPolicy {
     public List<Long> resolveRecipients(User commentWriter, Feed feed) {
         Long commentWriterId = commentWriter.getUserId();
         Long feedOwnerId = feed.getWriterId();
+        Set<Long> blockedUserIds = new HashSet<>(blockService.findBlockRelationUserIds(commentWriterId));
 
         return feed.getComments().stream()
                 .map(Comment::getUserId)
                 .filter(userId -> !userId.equals(commentWriterId))
                 .filter(userId -> !userId.equals(feedOwnerId))
-                .filter(userId -> !blockService.exists(userId, commentWriterId))
-                .filter(userId -> !blockService.exists(userId, feedOwnerId))
+                .filter(userId -> !blockedUserIds.contains(userId))
                 .distinct()
                 .toList();
     }

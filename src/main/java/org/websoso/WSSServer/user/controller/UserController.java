@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.application.AuthApplication;
+import org.websoso.WSSServer.auth.application.AuthApplication;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.keyword.KeywordPopularGetResponse;
@@ -248,10 +248,11 @@ public class UserController {
 
     @GetMapping("/{userId}/user-novel-stats")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserNovelCountGetResponse> getUserNovelStatistics(@PathVariable("userId") Long userId) {
+    public ResponseEntity<UserNovelCountGetResponse> getUserNovelStatistics(@AuthenticationPrincipal User visitor,
+                                                                            @PathVariable("userId") Long userId) {
         return ResponseEntity
                 .status(OK)
-                .body(userNovelService.getUserNovelStatistics(userId));
+                .body(userNovelService.getUserNovelStatistics(visitor, userId));
     }
 
     @GetMapping("/info")

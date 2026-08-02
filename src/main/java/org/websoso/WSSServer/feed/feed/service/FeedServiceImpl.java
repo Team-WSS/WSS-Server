@@ -4,14 +4,11 @@ import static org.websoso.WSSServer.feed.feed.exception.CustomFeedError.FEED_NOT
 import static org.websoso.WSSServer.feed.feed.exception.CustomFeedError.HIDDEN_FEED_ACCESS;
 import static org.websoso.WSSServer.exception.error.CustomUserError.INVALID_AUTHORIZED;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.domain.Genre;
@@ -55,7 +52,7 @@ public class FeedServiceImpl {
     public Feed getOwnedFeedOrException(Long feedId, Long userId) {
         Feed feed = getFeedOrException(feedId);
 
-        if (!feed.isMine(userId)) {
+        if (!feed.isWrittenBy(userId)) {
             throw new CustomUserException(INVALID_AUTHORIZED, "User with ID " + userId + " is not the owner of feed " + feed.getFeedId());
         }
 
@@ -66,11 +63,26 @@ public class FeedServiceImpl {
     public Feed getAccessFeedOrException(Long feedId, Long userId) {
         Feed feed = getFeedOrException(feedId);
 
+        validateAccess(feed, userId);
+
+        return feed;
+    }
+
+    @Transactional
+    public boolean markSpoilerIfNotMarked(Long feedId) {
+        return feedRepository.markSpoilerIfNotMarked(feedId);
+    }
+
+    @Transactional
+    public boolean hideIfNotHidden(Long feedId) {
+        return feedRepository.hideIfNotHidden(feedId);
+    }
+
+    public void validateAccess(Feed feed, Long userId) {
+
         if (!feed.canAccess(userId)) {
             throw new CustomFeedException(HIDDEN_FEED_ACCESS, "Cannot access hidden feed.");
         }
-
-        return feed;
     }
 
     @Transactional(readOnly = true)
@@ -101,27 +113,13 @@ public class FeedServiceImpl {
 
     @Transactional(readOnly = true)
     public Slice<Feed> findRecommendedFeeds(Long lastFeedId, Long userId, PageRequest pageRequest, List<Genre> preferenceGenres, List<Long> blockedUserIds) {
-        Slice<Feed> recommendedFeeds = feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres, blockedUserIds);
-        Slice<Feed> interestedNovelFeeds = feedRepository.findInterestedNovelFeeds(lastFeedId, userId, pageRequest, blockedUserIds);
+        return feedRepository.findRecommendedFeeds(lastFeedId, userId, pageRequest, preferenceGenres, blockedUserIds);
+    }
 
-        int pageSize = pageRequest.getPageSize();
-        List<Feed> combinedFeeds = Stream.concat(
-                        recommendedFeeds.getContent().stream(),
-                        interestedNovelFeeds.getContent().stream()
-                )
-                .distinct()
-                .sorted(Comparator.comparing(Feed::getFeedId).reversed())
-                .toList();
-
-        List<Feed> resultFeeds = combinedFeeds.stream()
-                .limit(pageSize)
-                .toList();
-
-        boolean hasNext = combinedFeeds.size() > pageSize
-                || recommendedFeeds.hasNext()
-                || interestedNovelFeeds.hasNext();
-
-        return new SliceImpl<>(resultFeeds, pageRequest, hasNext);
+    @Transactional(readOnly = true)
+    public List<Feed> findPopularRecommendedFeeds(Long userId, int size, List<Genre> preferenceGenres,
+                                                  List<Long> blockedUserIds) {
+        return feedRepository.findPopularRecommendedFeeds(userId, size, preferenceGenres, blockedUserIds);
     }
 
 }

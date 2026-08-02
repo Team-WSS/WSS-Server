@@ -17,6 +17,7 @@ import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 import org.websoso.WSSServer.feed.comment.exception.CustomCommentException;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
 import org.websoso.WSSServer.feed.feed.domain.Feed;
@@ -24,6 +25,7 @@ import org.websoso.common.entity.BaseEntity;
 
 @Entity
 @Getter
+@DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment extends BaseEntity {
 
@@ -77,10 +79,17 @@ public class Comment extends BaseEntity {
      * @throws CustomUserException 작성자가 아닌 경우
      */
     public void validateOwner(Long userId) {
-        if (!Objects.equals(this.userId, userId)) {
+        if (!isWrittenBy(userId)) {
             throw new CustomUserException(INVALID_AUTHORIZED,
                     "only the author can modify the comment");
         }
+    }
+
+    /**
+     * 댓글 작성자인지 확인합니다.
+     */
+    public boolean isWrittenBy(Long userId) {
+        return Objects.equals(this.userId, userId);
     }
 
     /**

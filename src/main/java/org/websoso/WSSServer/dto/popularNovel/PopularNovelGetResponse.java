@@ -28,7 +28,7 @@ public record PopularNovelGetResponse(
                     novel.getNovelImage(),
                     null,
                     null,
-                    null,
+                    novel.getNovelDescription(),
                     keywords,
                     novel.getAuthor(),
                     novel.getFirstGenreName(),

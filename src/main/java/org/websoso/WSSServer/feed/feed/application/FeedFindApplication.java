@@ -12,6 +12,7 @@ import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.feed.feed.controller.dto.UserFeedGetResponse;
 import org.websoso.WSSServer.feed.feed.controller.dto.UserFeedsGetResponse;
 import org.websoso.WSSServer.dto.novel.NovelGetResponseFeedTab;
+import org.websoso.WSSServer.feed.comment.service.CommentQueryService;
 import org.websoso.WSSServer.feed.feed.service.FeedLikeService;
 import org.websoso.WSSServer.feed.feed.service.FeedQueryService;
 import org.websoso.WSSServer.novel.service.GenreServiceImpl;
@@ -37,6 +38,7 @@ import org.websoso.WSSServer.user.service.UserService;
 public class FeedFindApplication {
 
     private static final int DEFAULT_PAGE_NUMBER = 0;
+    private static final int POPULAR_FEED_CANDIDATE_SIZE = 20;
 
     private final GenreServiceImpl genreService;
     private final UserService userService;
@@ -46,6 +48,7 @@ public class FeedFindApplication {
     private final AvatarService avatarService;
     private final FeedLikeService feedLikeService;
     private final BlockService blockService;
+    private final CommentQueryService commentQueryService;
 
     @Transactional(readOnly = true)
     public FeedGetResponse getFeedById(User user, Long feedId) {
@@ -70,9 +73,12 @@ public class FeedFindApplication {
         boolean isLiked = feedLikeService.isUserLikedFeed(user.getUserId(), feed);
 
         // 피드가 본인 피드인지 체크
-        boolean isMyFeed = feed.isMine(user.getUserId());
+        boolean isMyFeed = feed.isWrittenBy(user.getUserId());
 
-        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, isMyFeed);
+        List<Long> blockedUserIds = blockService.findBlockRelationUserIds(user.getUserId());
+        int commentCount = commentQueryService.countVisibleComments(feedId, blockedUserIds);
+
+        return FeedGetResponse.of(feed, feedUserBasicInfo, novel, isLiked, isMyFeed, commentCount);
     }
 
     @Transactional(readOnly = true)
@@ -106,13 +112,30 @@ public class FeedFindApplication {
     @Transactional(readOnly = true)
     public PopularFeedsGetResponse getPopularFeeds(User user, int size) {
 
+        Long userIdOrNull = user == null ? null : user.getUserId();
+
+        List<Genre> genres = user == null ? null : genreService.findUserPreferenceGenres(user);
+
         // 사용자의 차단 목록 조회
         List<Long> blockedUserIds = Optional.ofNullable(user)
                 .map(User::getUserId)
                 .map(blockService::findBlockRelationUserIds)
                 .orElseGet(Collections::emptyList);
 
-        return PopularFeedsGetResponse.of(feedQueryService.findPopularFeedRows(blockedUserIds, size));
+        List<Feed> candidates = feedServiceImpl.findPopularRecommendedFeeds(
+                userIdOrNull,
+                POPULAR_FEED_CANDIDATE_SIZE,
+                genres,
+                blockedUserIds
+        );
+
+        Collections.shuffle(candidates);
+
+        List<Feed> selectedFeeds = candidates.stream()
+                .limit(size)
+                .toList();
+
+        return PopularFeedsGetResponse.of(feedQueryService.findPopularFeedRows(selectedFeeds, userIdOrNull));
     }
 
     @Transactional(readOnly = true)
