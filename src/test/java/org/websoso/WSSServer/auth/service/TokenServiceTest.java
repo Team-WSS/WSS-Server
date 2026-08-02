@@ -4,9 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willAnswer;
 import static org.mockito.Mockito.never;
 import static org.websoso.WSSServer.exception.error.CustomAuthError.INVALID_TOKEN;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,6 +28,7 @@ import org.websoso.WSSServer.user.domain.User;
 class TokenServiceTest {
 
     private static final Long USER_ID = 1L;
+    private static final Long OTHER_USER_ID = 2L;
     private static final String REFRESH_TOKEN = "refresh-token-value";
 
     @InjectMocks
@@ -105,5 +109,36 @@ class TokenServiceTest {
         tokenService.deleteRefreshToken(REFRESH_TOKEN);
 
         then(refreshTokenRepository).should(never()).delete(ArgumentMatchers.any());
+    }
+
+    @DisplayName("대상 사용자의 리프레시 토큰만 모두 삭제하고 다른 사용자의 토큰은 유지한다")
+    @Test
+    void deletesAllRefreshTokensOfGivenUserOnly() {
+        RefreshToken firstDeviceToken = new RefreshToken(REFRESH_TOKEN, USER_ID);
+        RefreshToken secondDeviceToken = new RefreshToken("another-device-token", USER_ID);
+        RefreshToken otherUserToken = new RefreshToken("other-user-token", OTHER_USER_ID);
+        List<RefreshToken> stored = new ArrayList<>(List.of(firstDeviceToken, secondDeviceToken, otherUserToken));
+        given(refreshTokenRepository.findAllByUserId(USER_ID)).willAnswer(invocation -> stored.stream()
+                .filter(token -> token.getUserId().equals(invocation.getArgument(0)))
+                .toList());
+        willAnswer(invocation -> {
+            Iterable<RefreshToken> deleted = invocation.getArgument(0);
+            deleted.forEach(stored::remove);
+            return null;
+        }).given(refreshTokenRepository).deleteAll(ArgumentMatchers.any());
+
+        tokenService.deleteAllRefreshTokensByUserId(USER_ID);
+
+        assertThat(stored).containsExactly(otherUserToken);
+    }
+
+    @DisplayName("리프레시 토큰이 없는 사용자의 전체 삭제 요청도 예외 없이 처리한다")
+    @Test
+    void ignoresDeletingAllRefreshTokensOfUserWithoutToken() {
+        given(refreshTokenRepository.findAllByUserId(USER_ID)).willReturn(List.of());
+
+        tokenService.deleteAllRefreshTokensByUserId(USER_ID);
+
+        then(refreshTokenRepository).should().deleteAll(List.of());
     }
 }
