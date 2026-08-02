@@ -45,6 +45,7 @@ public class TokenService {
     }
 
     // 해당 사용자의 모든 리프레시 토큰을 삭제한다. 존재하지 않아도 예외를 던지지 않는다.
+    @Transactional
     public void deleteAllRefreshTokensByUserId(Long userId) {
         refreshTokenRepository.deleteAll(refreshTokenRepository.findAllByUserId(userId));
     }
