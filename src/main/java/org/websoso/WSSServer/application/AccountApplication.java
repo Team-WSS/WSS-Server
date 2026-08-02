@@ -12,7 +12,7 @@ import org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessage;
 import org.websoso.WSSServer.dto.user.WithdrawalRequest;
 import org.websoso.WSSServer.auth.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.auth.service.AppleService;
-import org.websoso.WSSServer.auth.client.KakaoService;
+import org.websoso.WSSServer.auth.client.KakaoClient;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.domain.WithdrawalReason;
 import org.websoso.WSSServer.user.message.UserDiscordMessageFormatter;
@@ -31,7 +31,7 @@ public class AccountApplication {
     private final AppleService appleService;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final KakaoService kakaoService;
+    private final KakaoClient kakaoClient;
     private final CommentServiceImpl commentService;
     private final FeedServiceImpl feedService;
 
@@ -54,10 +54,14 @@ public class AccountApplication {
 
     private void unlinkSocialAccount(User user) {
         if (user.getSocialId().startsWith(KAKAO_PREFIX)) {
-            kakaoService.unlinkFromKakao(user);
+            kakaoClient.unlink(extractKakaoUserId(user.getSocialId()));
         } else if (user.getSocialId().startsWith(APPLE_PREFIX)) {
             appleService.unlinkFromApple(user);
         }
+    }
+
+    private String extractKakaoUserId(String socialId) {
+        return socialId.replaceFirst(KAKAO_PREFIX + "_", "");
     }
 
     private void cleanupUserData(Long userId) {

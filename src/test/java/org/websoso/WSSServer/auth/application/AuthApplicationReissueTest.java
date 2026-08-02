@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.websoso.WSSServer.auth.client.AppleClient;
 import org.websoso.WSSServer.auth.client.AppleIdTokenVerifier;
 import org.websoso.WSSServer.auth.client.AppleKeyGenerator;
-import org.websoso.WSSServer.auth.client.KakaoService;
+import org.websoso.WSSServer.auth.client.KakaoClient;
 import org.websoso.WSSServer.auth.controller.dto.ReissueResponse;
 import org.websoso.WSSServer.auth.domain.RefreshToken;
 import org.websoso.WSSServer.auth.jwt.JWTUtil;
@@ -29,7 +29,7 @@ import org.websoso.WSSServer.auth.jwt.TestTokenFactory;
 import org.websoso.WSSServer.auth.service.AppleService;
 import org.websoso.WSSServer.auth.service.TokenService;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
-import org.websoso.WSSServer.notification.repository.UserDeviceRepository;
+import org.websoso.WSSServer.notification.service.UserDeviceService;
 import org.websoso.WSSServer.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,13 +47,13 @@ class AuthApplicationReissueTest {
     private TokenService tokenService;
 
     @Mock
-    private UserDeviceRepository userDeviceRepository;
+    private UserDeviceService userDeviceService;
 
     @Mock
     private UserService userService;
 
     @Mock
-    private KakaoService kakaoService;
+    private KakaoClient kakaoClient;
 
     @Mock
     private AppleService appleService;
@@ -71,8 +71,8 @@ class AuthApplicationReissueTest {
 
     @BeforeEach
     void setUp() {
-        authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceRepository,
-                userService, kakaoService, appleService, appleClient, appleKeyGenerator, appleIdTokenVerifier);
+        authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceService,
+                userService, kakaoClient, appleService, appleClient, appleKeyGenerator, appleIdTokenVerifier);
     }
 
     @DisplayName("유효한 리프레시 토큰이면 Access/Refresh Token을 모두 재발급하고 기존 토큰을 회전한다")

@@ -20,7 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.websoso.WSSServer.auth.client.AppleClient;
 import org.websoso.WSSServer.auth.client.AppleIdTokenVerifier;
 import org.websoso.WSSServer.auth.client.AppleKeyGenerator;
-import org.websoso.WSSServer.auth.client.KakaoService;
+import org.websoso.WSSServer.auth.client.KakaoClient;
 import org.websoso.WSSServer.auth.controller.dto.ReissueResponse;
 import org.websoso.WSSServer.auth.domain.RefreshToken;
 import org.websoso.WSSServer.auth.jwt.CustomAuthenticationToken;
@@ -32,7 +32,7 @@ import org.websoso.WSSServer.auth.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.auth.service.AppleService;
 import org.websoso.WSSServer.auth.service.TokenService;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
-import org.websoso.WSSServer.notification.repository.UserDeviceRepository;
+import org.websoso.WSSServer.notification.service.UserDeviceService;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.service.UserService;
 
@@ -55,13 +55,13 @@ class AuthApplicationReissueRotationTest {
     private RefreshTokenRepository refreshTokenRepository;
 
     @Mock
-    private UserDeviceRepository userDeviceRepository;
+    private UserDeviceService userDeviceService;
 
     @Mock
     private UserService userService;
 
     @Mock
-    private KakaoService kakaoService;
+    private KakaoClient kakaoClient;
 
     @Mock
     private AppleService appleService;
@@ -97,8 +97,8 @@ class AuthApplicationReissueRotationTest {
                 .given(refreshTokenRepository).delete(any(RefreshToken.class));
 
         tokenService = new TokenService(refreshTokenRepository);
-        authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceRepository,
-                userService, kakaoService, appleService, appleClient, appleKeyGenerator, appleIdTokenVerifier);
+        authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceService,
+                userService, kakaoClient, appleService, appleClient, appleKeyGenerator, appleIdTokenVerifier);
     }
 
     @DisplayName("재발급에 성공하면 기존 리프레시 토큰은 저장소에서 사라져 다시 재발급에 사용할 수 없다")
