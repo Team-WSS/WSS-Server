@@ -11,6 +11,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.util.List;
@@ -130,6 +131,11 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
             return List.of();
         }
 
+        return popularFeedInfoRowsQuery(feedIds, userId).fetch();
+    }
+
+    // 소설과 장르가 모두 연결된 피드만 조회해 소설 제목, 이미지, 장르가 비지 않도록 한다.
+    private JPAQuery<PopularFeedInfoRow> popularFeedInfoRowsQuery(List<Long> feedIds, Long userId) {
         return jpaQueryFactory
                 .select(Projections.constructor(
                         PopularFeedInfoRow.class,
@@ -144,9 +150,24 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
                         firstGenreName()
                 ))
                 .from(feed)
-                .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
-                .where(feed.feedId.in(feedIds))
-                .fetch();
+                .join(novel).on(feed.novelId.eq(novel.novelId))
+                .where(
+                        feed.feedId.in(feedIds),
+                        hasGenre()
+                );
+    }
+
+    // 장르가 연결되지 않은 소설의 피드를 제외한다.
+    private BooleanExpression hasGenre() {
+        QNovelGenre novelGenreSub = new QNovelGenre("genreExistsSub");
+        QGenre genreSub = new QGenre("genreExistsGenreSub");
+
+        return JPAExpressions
+                .selectOne()
+                .from(novelGenreSub)
+                .join(novelGenreSub.genre, genreSub)
+                .where(novelGenreSub.novel.eq(novel))
+                .exists();
     }
 
     private JPQLQuery<Long> likeCount() {
