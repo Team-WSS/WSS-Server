@@ -4,6 +4,7 @@ import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.CLIENT
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.INVALID_APPLE_KEY;
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.PRIVATE_KEY_READ_FAILED;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
@@ -24,6 +25,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -33,6 +35,7 @@ import org.websoso.WSSServer.auth.client.dto.ApplePublicKey;
 import org.websoso.WSSServer.auth.client.dto.ApplePublicKeys;
 import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AppleKeyGenerator {
@@ -93,7 +96,8 @@ public class AppleKeyGenerator {
             signJwt(jwt);
 
             return jwt.serialize();
-        } catch (Exception e) {
+        } catch (IllegalStateException e) {
+            log.error("apple client secret creation failed: error={}", e.getMessage(), e);
             throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "failed to generate client secret");
         }
     }
@@ -111,6 +115,7 @@ public class AppleKeyGenerator {
         return claimsSet;
     }
 
+    // 프라이빗 키 읽기 실패(PRIVATE_KEY_READ_FAILED)도 기존 계약대로 클라이언트 시크릿 생성 실패로 응답한다.
     private void signJwt(SignedJWT jwt) {
         try {
             PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(readPrivateKey(appleKeyPath));
@@ -118,7 +123,9 @@ public class AppleKeyGenerator {
             ECPrivateKey ecPrivateKey = (ECPrivateKey) keyFactory.generatePrivate(spec);
             JWSSigner signer = new ECDSASigner(ecPrivateKey.getS());
             jwt.sign(signer);
-        } catch (Exception e) {
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException | JOSEException | ClassCastException
+                 | CustomAppleLoginException e) {
+            log.error("apple client secret signing failed: error={}", e.getMessage(), e);
             throw new CustomAppleLoginException(CLIENT_SECRET_CREATION_FAILED, "failed to create client secret");
         }
     }
