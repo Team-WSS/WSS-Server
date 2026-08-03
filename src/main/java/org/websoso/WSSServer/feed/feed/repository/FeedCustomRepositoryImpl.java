@@ -13,6 +13,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.util.List;
@@ -291,13 +292,19 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
     @Override
     public List<Feed> findPopularRecommendedFeeds(Long userId, int size, List<Genre> genres,
                                                   List<Long> blockedUserIds) {
+        return popularRecommendedFeedsQuery(userId, size, genres, blockedUserIds).fetch();
+    }
+
+    // 소설과 장르가 모두 연결된 피드만 지금 뜨는 글 후보로 선정한다.
+    private JPAQuery<Feed> popularRecommendedFeedsQuery(Long userId, int size, List<Genre> genres,
+                                                        List<Long> blockedUserIds) {
         return jpaQueryFactory
                 .selectFrom(feed)
                 .distinct()
                 .join(feed.user).fetchJoin()
-                .leftJoin(novel).on(feed.novelId.eq(novel.novelId))
-                .leftJoin(novelGenre).on(novel.eq(novelGenre.novel))
-                .leftJoin(genre).on(novelGenre.genre.eq(genre))
+                .join(novel).on(feed.novelId.eq(novel.novelId))
+                .join(novelGenre).on(novel.eq(novelGenre.novel))
+                .join(genre).on(novelGenre.genre.eq(genre))
                 .where(
                         recommendedFeedCondition(userId, genres),
                         excludeBlockedUsers(blockedUserIds),
@@ -305,8 +312,7 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
                         feed.isPublic.isTrue()
                 )
                 .orderBy(feed.feedId.desc())
-                .limit(size)
-                .fetch();
+                .limit(size);
     }
 
     private BooleanExpression checkPopularFeed() {
