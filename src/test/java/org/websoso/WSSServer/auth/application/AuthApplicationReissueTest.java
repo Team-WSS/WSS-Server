@@ -16,9 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.websoso.WSSServer.auth.client.AppleClient;
-import org.websoso.WSSServer.auth.client.AppleIdTokenVerifier;
-import org.websoso.WSSServer.auth.client.AppleKeyGenerator;
 import org.websoso.WSSServer.auth.client.KakaoClient;
 import org.websoso.WSSServer.auth.controller.dto.ReissueResponse;
 import org.websoso.WSSServer.auth.domain.RefreshToken;
@@ -58,21 +55,12 @@ class AuthApplicationReissueTest {
     @Mock
     private AppleService appleService;
 
-    @Mock
-    private AppleClient appleClient;
-
-    @Mock
-    private AppleKeyGenerator appleKeyGenerator;
-
-    @Mock
-    private AppleIdTokenVerifier appleIdTokenVerifier;
-
     private AuthApplication authApplication;
 
     @BeforeEach
     void setUp() {
         authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceService,
-                userService, kakaoClient, appleService, appleClient, appleKeyGenerator, appleIdTokenVerifier);
+                userService, kakaoClient, appleService);
     }
 
     @DisplayName("유효한 리프레시 토큰이면 Access/Refresh Token을 모두 재발급하고 기존 토큰을 회전한다")
