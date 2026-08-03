@@ -101,6 +101,7 @@ public class LibraryEvaluationApplication {
      */
     @Transactional
     public void updateEvaluation(User user, Long novelId, UserNovelUpdateRequest request) {
+        novelService.getNovelOrException(novelId);
         UserNovel userNovel = libraryService.getLibraryForUpdateOrException(user, novelId);
         NovelStatisticsContribution before = NovelStatisticsContribution.from(userNovel);
 
@@ -125,6 +126,7 @@ public class LibraryEvaluationApplication {
      */
     @Transactional
     public void deleteEvaluation(User user, Long novelId) {
+        novelService.getNovelOrException(novelId);
         UserNovel userNovel = libraryService.getLibraryForUpdateOrException(user, novelId);
         NovelStatisticsContribution before = NovelStatisticsContribution.from(userNovel);
 

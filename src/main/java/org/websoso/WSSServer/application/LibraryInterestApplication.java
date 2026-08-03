@@ -47,9 +47,10 @@ public class LibraryInterestApplication {
      */
     @Transactional
     public void unregisterAsInterest(User user, Long novelId) {
-        UserNovel library = libraryService.getLibraryForUpdateOrNull(user, novelId);
+        novelService.getNovelOrException(novelId);
+        UserNovel library = libraryService.getLibraryForUpdateOrException(user, novelId);
 
-        if (library == null || Boolean.FALSE.equals(library.getIsInterest())) {
+        if (Boolean.FALSE.equals(library.getIsInterest())) {
             return;
         }
 
