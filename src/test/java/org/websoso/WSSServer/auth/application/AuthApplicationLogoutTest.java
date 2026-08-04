@@ -14,6 +14,7 @@ import org.websoso.WSSServer.auth.controller.dto.LogoutRequest;
 import org.websoso.WSSServer.auth.jwt.JWTUtil;
 import org.websoso.WSSServer.auth.jwt.JwtProvider;
 import org.websoso.WSSServer.auth.service.AppleService;
+import org.websoso.WSSServer.auth.service.RefreshTokenLockService;
 import org.websoso.WSSServer.auth.service.TokenService;
 import org.websoso.WSSServer.notification.service.UserDeviceService;
 import org.websoso.WSSServer.user.domain.User;
@@ -27,6 +28,9 @@ class AuthApplicationLogoutTest {
 
     @Mock
     private TokenService tokenService;
+
+    @Mock
+    private RefreshTokenLockService refreshTokenLockService;
 
     @Mock
     private JwtProvider jwtProvider;
@@ -53,8 +57,8 @@ class AuthApplicationLogoutTest {
 
     @BeforeEach
     void setUp() {
-        authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceService,
-                userService, kakaoClient, appleService);
+        authApplication = new AuthApplication(tokenService, refreshTokenLockService, jwtProvider, jwtUtil,
+                userDeviceService, userService, kakaoClient, appleService);
     }
 
     @DisplayName("로그아웃하면 요청에 담긴 리프레시 토큰을 삭제하고 UserDeviceService로 디바이스 식별자를 삭제한다")

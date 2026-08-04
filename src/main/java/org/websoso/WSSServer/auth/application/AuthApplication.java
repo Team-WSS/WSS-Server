@@ -2,6 +2,7 @@ package org.websoso.WSSServer.auth.application;
 
 import static org.websoso.WSSServer.exception.error.CustomAuthError.INVALID_TOKEN;
 
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import org.websoso.WSSServer.auth.jwt.JwtProvider;
 import org.websoso.WSSServer.auth.jwt.JwtValidationType;
 import org.websoso.WSSServer.auth.service.AppleService;
 import org.websoso.WSSServer.auth.client.KakaoClient;
+import org.websoso.WSSServer.auth.service.RefreshTokenLockService;
 import org.websoso.WSSServer.auth.service.TokenService;
 import org.websoso.WSSServer.auth.service.dto.AppleAuthResult;
 import org.websoso.WSSServer.auth.client.dto.KakaoUserInfo;
@@ -29,6 +31,7 @@ import org.websoso.WSSServer.user.service.UserService;
 public class AuthApplication {
 
     private final TokenService tokenService;
+    private final RefreshTokenLockService refreshTokenLockService;
     private final JwtProvider jwtProvider;
     private final JWTUtil jwtUtil;
     private final UserDeviceService userDeviceService;
@@ -45,17 +48,31 @@ public class AuthApplication {
             throw new CustomAuthException(INVALID_TOKEN, "given token is invalid token for reissue");
         }
 
-        // 2. 저장된 토큰 조회
+        // 2. 동일 리프레시 토큰의 동시 재발급 차단
+        String lockOwner = UUID.randomUUID().toString();
+        if (!refreshTokenLockService.tryLock(refreshToken, lockOwner)) {
+            throw new CustomAuthException(INVALID_TOKEN, "given token is already being reissued");
+        }
+
+        try {
+            return rotateTokens(refreshToken);
+        } finally {
+            refreshTokenLockService.unlock(refreshToken, lockOwner);
+        }
+    }
+
+    private ReissueResponse rotateTokens(String refreshToken) {
+        // 1. 잠금 획득 후 저장된 토큰 재조회 (먼저 회전한 요청이 이미 삭제했다면 여기서 거부된다)
         RefreshToken storedRefreshToken = tokenService.findRefreshTokenOrThrow(refreshToken);
 
-        // 3. 새로운 토큰 생성
+        // 2. 새로운 토큰 생성
         Long userId = jwtUtil.getUserIdFromJwt(refreshToken);
         CustomAuthenticationToken customAuthenticationToken = new CustomAuthenticationToken(userId, null, null);
 
         String newAccessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
         String newRefreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
 
-        // 4. 리프레시 토큰 교체
+        // 3. 리프레시 토큰 교체
         tokenService.rotateRefreshToken(storedRefreshToken, newRefreshToken, userId);
 
         return ReissueResponse.of(newAccessToken, newRefreshToken);

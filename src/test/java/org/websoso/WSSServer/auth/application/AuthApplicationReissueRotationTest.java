@@ -27,6 +27,8 @@ import org.websoso.WSSServer.auth.jwt.JwtProvider;
 import org.websoso.WSSServer.auth.jwt.TestTokenFactory;
 import org.websoso.WSSServer.auth.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.auth.service.AppleService;
+import org.websoso.WSSServer.auth.service.InMemoryRefreshTokenLockService;
+import org.websoso.WSSServer.auth.service.RefreshTokenLockService;
 import org.websoso.WSSServer.auth.service.TokenService;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
 import org.websoso.WSSServer.notification.service.UserDeviceService;
@@ -47,6 +49,7 @@ class AuthApplicationReissueRotationTest {
             TestTokenFactory.ACCESS_TOKEN_EXPIRATION, TestTokenFactory.REFRESH_TOKEN_EXPIRATION);
     private final JWTUtil jwtUtil = new JWTUtil(jwtKeyProvider);
     private final Map<String, RefreshToken> refreshTokenStore = new HashMap<>();
+    private final RefreshTokenLockService refreshTokenLockService = new InMemoryRefreshTokenLockService();
 
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
@@ -85,8 +88,8 @@ class AuthApplicationReissueRotationTest {
                 .given(refreshTokenRepository).delete(any(RefreshToken.class));
 
         tokenService = new TokenService(refreshTokenRepository);
-        authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceService,
-                userService, kakaoClient, appleService);
+        authApplication = new AuthApplication(tokenService, refreshTokenLockService, jwtProvider, jwtUtil,
+                userDeviceService, userService, kakaoClient, appleService);
     }
 
     @DisplayName("재발급에 성공하면 기존 리프레시 토큰은 저장소에서 사라져 다시 재발급에 사용할 수 없다")

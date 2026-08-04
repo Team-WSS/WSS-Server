@@ -24,6 +24,8 @@ import org.websoso.WSSServer.auth.jwt.JwtKeyProvider;
 import org.websoso.WSSServer.auth.jwt.JwtProvider;
 import org.websoso.WSSServer.auth.jwt.TestTokenFactory;
 import org.websoso.WSSServer.auth.service.AppleService;
+import org.websoso.WSSServer.auth.service.InMemoryRefreshTokenLockService;
+import org.websoso.WSSServer.auth.service.RefreshTokenLockService;
 import org.websoso.WSSServer.auth.service.TokenService;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
 import org.websoso.WSSServer.notification.service.UserDeviceService;
@@ -39,6 +41,7 @@ class AuthApplicationReissueTest {
     private final JwtProvider jwtProvider = new JwtProvider(jwtKeyProvider,
             TestTokenFactory.ACCESS_TOKEN_EXPIRATION, TestTokenFactory.REFRESH_TOKEN_EXPIRATION);
     private final JWTUtil jwtUtil = new JWTUtil(jwtKeyProvider);
+    private final RefreshTokenLockService refreshTokenLockService = new InMemoryRefreshTokenLockService();
 
     @Mock
     private TokenService tokenService;
@@ -59,8 +62,8 @@ class AuthApplicationReissueTest {
 
     @BeforeEach
     void setUp() {
-        authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceService,
-                userService, kakaoClient, appleService);
+        authApplication = new AuthApplication(tokenService, refreshTokenLockService, jwtProvider, jwtUtil,
+                userDeviceService, userService, kakaoClient, appleService);
     }
 
     @DisplayName("유효한 리프레시 토큰이면 Access/Refresh Token을 모두 재발급하고 기존 토큰을 회전한다")

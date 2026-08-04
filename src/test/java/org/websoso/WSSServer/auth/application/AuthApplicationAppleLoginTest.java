@@ -19,6 +19,7 @@ import org.websoso.WSSServer.auth.controller.dto.AuthResponse;
 import org.websoso.WSSServer.auth.jwt.JWTUtil;
 import org.websoso.WSSServer.auth.jwt.JwtProvider;
 import org.websoso.WSSServer.auth.service.AppleService;
+import org.websoso.WSSServer.auth.service.RefreshTokenLockService;
 import org.websoso.WSSServer.auth.service.TokenService;
 import org.websoso.WSSServer.auth.service.dto.AppleAuthResult;
 import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
@@ -41,6 +42,9 @@ class AuthApplicationAppleLoginTest {
 
     @Mock
     private TokenService tokenService;
+
+    @Mock
+    private RefreshTokenLockService refreshTokenLockService;
 
     @Mock
     private JwtProvider jwtProvider;
@@ -67,8 +71,8 @@ class AuthApplicationAppleLoginTest {
 
     @BeforeEach
     void setUp() {
-        authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceService,
-                userService, kakaoClient, appleService);
+        authApplication = new AuthApplication(tokenService, refreshTokenLockService, jwtProvider, jwtUtil,
+                userDeviceService, userService, kakaoClient, appleService);
     }
 
     @DisplayName("애플 로그인에 성공하면 Apple 인증 결과로 유저를 조회·생성하고 토큰을 발급한다")
