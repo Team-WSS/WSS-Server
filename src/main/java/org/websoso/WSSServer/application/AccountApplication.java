@@ -10,8 +10,8 @@ import org.websoso.WSSServer.feed.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
 import org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessage;
 import org.websoso.WSSServer.dto.user.WithdrawalRequest;
-import org.websoso.WSSServer.auth.repository.RefreshTokenRepository;
 import org.websoso.WSSServer.auth.service.AppleService;
+import org.websoso.WSSServer.auth.service.TokenService;
 import org.websoso.WSSServer.auth.client.KakaoClient;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.domain.WithdrawalReason;
@@ -30,7 +30,7 @@ public class AccountApplication {
     private final DiscordMessageClient discordMessageClient;
     private final AppleService appleService;
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final TokenService tokenService;
     private final KakaoClient kakaoClient;
     private final CommentServiceImpl commentService;
     private final FeedServiceImpl feedService;
@@ -65,7 +65,7 @@ public class AccountApplication {
     }
 
     private void cleanupUserData(Long userId) {
-        refreshTokenRepository.deleteAll(refreshTokenRepository.findAllByUserId(userId));
+        tokenService.deleteAllRefreshTokensByUserId(userId);
         commentService.updateWriterToUnknown(userId);
         feedService.updateWriterToUnknown(userId);
         userRepository.deleteById(userId);
