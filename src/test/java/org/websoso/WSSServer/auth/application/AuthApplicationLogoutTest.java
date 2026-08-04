@@ -9,9 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.websoso.WSSServer.auth.client.AppleClient;
-import org.websoso.WSSServer.auth.client.AppleIdTokenVerifier;
-import org.websoso.WSSServer.auth.client.AppleKeyGenerator;
 import org.websoso.WSSServer.auth.client.KakaoClient;
 import org.websoso.WSSServer.auth.controller.dto.LogoutRequest;
 import org.websoso.WSSServer.auth.jwt.JWTUtil;
@@ -50,15 +47,6 @@ class AuthApplicationLogoutTest {
     private AppleService appleService;
 
     @Mock
-    private AppleClient appleClient;
-
-    @Mock
-    private AppleKeyGenerator appleKeyGenerator;
-
-    @Mock
-    private AppleIdTokenVerifier appleIdTokenVerifier;
-
-    @Mock
     private User user;
 
     private AuthApplication authApplication;
@@ -66,7 +54,7 @@ class AuthApplicationLogoutTest {
     @BeforeEach
     void setUp() {
         authApplication = new AuthApplication(tokenService, jwtProvider, jwtUtil, userDeviceService,
-                userService, kakaoClient, appleService, appleClient, appleKeyGenerator, appleIdTokenVerifier);
+                userService, kakaoClient, appleService);
     }
 
     @DisplayName("로그아웃하면 요청에 담긴 리프레시 토큰을 삭제하고 UserDeviceService로 디바이스 식별자를 삭제한다")

@@ -2,11 +2,9 @@ package org.websoso.WSSServer.auth.application;
 
 import static org.websoso.WSSServer.exception.error.CustomAuthError.INVALID_TOKEN;
 
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.auth.client.dto.AppleTokenResponse;
 import org.websoso.WSSServer.auth.controller.dto.AuthResponse;
 import org.websoso.WSSServer.auth.controller.dto.LogoutRequest;
 import org.websoso.WSSServer.auth.controller.dto.ReissueResponse;
@@ -15,12 +13,10 @@ import org.websoso.WSSServer.auth.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.auth.jwt.JWTUtil;
 import org.websoso.WSSServer.auth.jwt.JwtProvider;
 import org.websoso.WSSServer.auth.jwt.JwtValidationType;
-import org.websoso.WSSServer.auth.client.AppleClient;
-import org.websoso.WSSServer.auth.client.AppleIdTokenVerifier;
-import org.websoso.WSSServer.auth.client.AppleKeyGenerator;
 import org.websoso.WSSServer.auth.service.AppleService;
 import org.websoso.WSSServer.auth.client.KakaoClient;
 import org.websoso.WSSServer.auth.service.TokenService;
+import org.websoso.WSSServer.auth.service.dto.AppleAuthResult;
 import org.websoso.WSSServer.auth.client.dto.KakaoUserInfo;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.exception.exception.CustomAuthException;
@@ -39,11 +35,8 @@ public class AuthApplication {
     private final UserService userService;
     private final KakaoClient kakaoClient;
     private final AppleService appleService;
-    private final AppleClient appleClient;
     private static final String KAKAO_PREFIX = "kakao";
     private static final String APPLE_PREFIX = "apple";
-    private final AppleKeyGenerator appleKeyGenerator;
-    private final AppleIdTokenVerifier appleIdTokenVerifier;
 
     @Transactional
     public ReissueResponse reissue(String refreshToken) {
@@ -90,31 +83,26 @@ public class AuthApplication {
 
     @Transactional
     public AuthResponse loginApple(String authorizationCode, String appleToken) {
-        // 1. Apple ID Token 검증 (헤더 파싱 + 공개키 조회 + 서명 검증)
-        Claims claims = appleIdTokenVerifier.verify(appleToken);
+        // 1. Apple 인증 (ID Token 검증 + Authorization Code 교환)
+        AppleAuthResult appleAuthResult = appleService.authenticate(authorizationCode, appleToken);
 
-        // 2. 애플 서버에서 Refresh Token 받아오기
-        String clientSecret = appleKeyGenerator.createClientSecret();
-        AppleTokenResponse appleTokenResponse = appleClient.requestAppleToken(authorizationCode, clientSecret);
-
-        // 3. 유저 정보 추출
-        String email = claims.get("email", String.class);
-        String userIdentifier = claims.get("sub", String.class);
+        // 2. 유저 정보 추출
+        String userIdentifier = appleAuthResult.userIdentifier();
         String customSocialId = APPLE_PREFIX + "_" + userIdentifier;
         String defaultNickname = APPLE_PREFIX.charAt(0) + "*" + userIdentifier.substring(7, 15);
 
-        // 4. 유저 처리
-        User user = userService.getOrCreateAppleUser(customSocialId, email, defaultNickname);
+        // 3. 유저 처리
+        User user = userService.getOrCreateAppleUser(customSocialId, appleAuthResult.email(), defaultNickname);
 
-        // 5. 애플 Refresh Token 저장
-        appleService.upsertRefreshToken(user, appleTokenResponse.getRefreshToken());
+        // 4. 애플 Refresh Token 저장
+        appleService.upsertRefreshToken(user, appleAuthResult.appleRefreshToken());
 
-        // 6. Access / Refresh Token 생성
+        // 5. Access / Refresh Token 생성
         CustomAuthenticationToken customAuthenticationToken = CustomAuthenticationToken.create(user.getUserId());
         String accessToken = jwtProvider.generateAccessToken(customAuthenticationToken);
         String refreshToken = jwtProvider.generateRefreshToken(customAuthenticationToken);
 
-        // 7. Refresh Token 저장
+        // 6. Refresh Token 저장
         tokenService.saveRefreshToken(user, refreshToken);
 
         boolean isRegister = !user.isTemporaryNickname();
