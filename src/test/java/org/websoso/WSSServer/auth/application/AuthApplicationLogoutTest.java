@@ -78,4 +78,14 @@ class AuthApplicationLogoutTest {
         then(userDeviceService).should().deleteDeviceIdentifier(user, DEVICE_IDENTIFIER);
         then(kakaoClient).should().logout("1234567890");
     }
+
+    @DisplayName("애플 사용자가 로그아웃하면 카카오 외부 로그아웃을 호출하지 않는다")
+    @Test
+    void logout_appleUser_doesNotCallKakaoLogout() {
+        given(user.getSocialId()).willReturn("apple_001234.abcdefghijklmn.1234");
+
+        authApplication.logout(user, new LogoutRequest(REFRESH_TOKEN, DEVICE_IDENTIFIER));
+
+        then(kakaoClient).shouldHaveNoInteractions();
+    }
 }

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.TOKEN_REQUEST_FAILED;
 
@@ -12,10 +13,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.websoso.WSSServer.auth.client.KakaoClient;
 import org.websoso.WSSServer.auth.controller.dto.AuthResponse;
+import org.websoso.WSSServer.auth.jwt.CustomAuthenticationToken;
 import org.websoso.WSSServer.auth.jwt.JWTUtil;
 import org.websoso.WSSServer.auth.jwt.JwtProvider;
 import org.websoso.WSSServer.auth.service.AppleService;
@@ -38,6 +43,7 @@ class AuthApplicationAppleLoginTest {
     private static final String EXPECTED_DEFAULT_NICKNAME = "a*" + "abcdefgh";
     private static final String ACCESS_TOKEN = "access-token-value";
     private static final String REFRESH_TOKEN = "refresh-token-value";
+    private static final Long USER_ID = 42L;
 
     @Mock
     private TokenService tokenService;
@@ -62,6 +68,9 @@ class AuthApplicationAppleLoginTest {
 
     @Mock
     private User user;
+
+    @Captor
+    private ArgumentCaptor<CustomAuthenticationToken> authenticationTokenCaptor;
 
     private AuthApplication authApplication;
 
@@ -89,6 +98,48 @@ class AuthApplicationAppleLoginTest {
         assertThat(response.isRegister()).isTrue();
         then(appleService).should().upsertRefreshToken(user, APPLE_REFRESH_TOKEN);
         then(tokenService).should().saveRefreshToken(user, REFRESH_TOKEN);
+    }
+
+    @DisplayName("임시 닉네임인 신규 애플 사용자는 isRegister가 false인 토큰 쌍을 받는다")
+    @Test
+    void loginApple_newUserWithTemporaryNickname_returnsIsRegisterFalse() {
+        given(appleService.authenticate(AUTHORIZATION_CODE, ID_TOKEN))
+                .willReturn(AppleAuthResult.of(USER_IDENTIFIER, EMAIL, APPLE_REFRESH_TOKEN));
+        given(userService.getOrCreateAppleUser(EXPECTED_SOCIAL_ID, EMAIL, EXPECTED_DEFAULT_NICKNAME))
+                .willReturn(user);
+        given(jwtProvider.generateAccessToken(any())).willReturn(ACCESS_TOKEN);
+        given(jwtProvider.generateRefreshToken(any())).willReturn(REFRESH_TOKEN);
+        given(user.isTemporaryNickname()).willReturn(true);
+
+        AuthResponse response = authApplication.loginApple(AUTHORIZATION_CODE, ID_TOKEN);
+
+        assertThat(response.isRegister()).isFalse();
+        then(appleService).should().upsertRefreshToken(user, APPLE_REFRESH_TOKEN);
+        then(tokenService).should().saveRefreshToken(user, REFRESH_TOKEN);
+    }
+
+    @DisplayName("애플 로그인은 애플 Refresh Token을 저장한 뒤 조회·생성한 사용자 식별자로 서비스 토큰 쌍을 발급한다")
+    @Test
+    void loginApple_storesAppleRefreshTokenBeforeIssuingServiceTokenPair() {
+        given(appleService.authenticate(AUTHORIZATION_CODE, ID_TOKEN))
+                .willReturn(AppleAuthResult.of(USER_IDENTIFIER, EMAIL, APPLE_REFRESH_TOKEN));
+        given(userService.getOrCreateAppleUser(EXPECTED_SOCIAL_ID, EMAIL, EXPECTED_DEFAULT_NICKNAME))
+                .willReturn(user);
+        given(user.getUserId()).willReturn(USER_ID);
+        given(jwtProvider.generateAccessToken(any())).willReturn(ACCESS_TOKEN);
+        given(jwtProvider.generateRefreshToken(any())).willReturn(REFRESH_TOKEN);
+
+        authApplication.loginApple(AUTHORIZATION_CODE, ID_TOKEN);
+
+        InOrder inOrder = inOrder(appleService, jwtProvider, tokenService);
+        inOrder.verify(appleService).authenticate(AUTHORIZATION_CODE, ID_TOKEN);
+        inOrder.verify(appleService).upsertRefreshToken(user, APPLE_REFRESH_TOKEN);
+        inOrder.verify(jwtProvider).generateAccessToken(authenticationTokenCaptor.capture());
+        inOrder.verify(jwtProvider).generateRefreshToken(authenticationTokenCaptor.capture());
+        inOrder.verify(tokenService).saveRefreshToken(user, REFRESH_TOKEN);
+        assertThat(authenticationTokenCaptor.getAllValues())
+                .extracting(CustomAuthenticationToken::getPrincipal)
+                .containsExactly(USER_ID, USER_ID);
     }
 
     @DisplayName("Apple 인증이 실패하면 유저 처리와 토큰 저장을 수행하지 않고 예외를 전파한다")
