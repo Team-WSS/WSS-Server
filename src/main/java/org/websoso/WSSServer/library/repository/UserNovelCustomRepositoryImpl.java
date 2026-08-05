@@ -7,6 +7,7 @@ import static org.websoso.WSSServer.domain.common.UserNovelSortType.readDateExpr
 import static org.websoso.WSSServer.library.domain.QUserNovel.userNovel;
 import static org.websoso.WSSServer.novel.domain.QNovel.novel;
 import static org.websoso.WSSServer.novel.domain.QNovelGenre.novelGenre;
+import static org.websoso.WSSServer.novel.domain.QNovelStatistics.novelStatistics;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -19,6 +20,7 @@ import jakarta.persistence.LockModeType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,7 @@ import org.websoso.WSSServer.user.domain.User;
 public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository {
 
     private static final long NO_CURSOR = 0L;
+    private static final long TASTE_NOVEL_LIMIT = 10L;
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
@@ -121,20 +124,34 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .fetch();
     }
 
+    // 선호 장르의 최신 평가 작품 10건과 통계를 조회한다.
     @Override
     public List<Novel> findTasteNovels(List<Genre> preferGenres) {
-        return jpaQueryFactory
-                .select(userNovel.novel, userNovel.userNovelId)
+        List<Long> tasteNovelIds = jpaQueryFactory
+                .select(novel.novelId)
                 .from(userNovel)
                 .join(userNovel.novel, novel)
                 .join(novelGenre).on(novelGenre.novel.eq(novel))
                 .where(novelGenre.genre.in(preferGenres))
-                .orderBy(userNovel.userNovelId.desc())
+                .groupBy(novel.novelId)
+                .orderBy(userNovel.userNovelId.max().desc())
+                .limit(TASTE_NOVEL_LIMIT)
+                .fetch();
+
+        if (tasteNovelIds.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, Novel> tasteNovelsById = jpaQueryFactory
+                .selectFrom(novel)
+                .leftJoin(novel.novelStatistics, novelStatistics).fetchJoin()
+                .where(novel.novelId.in(tasteNovelIds))
                 .fetch()
                 .stream()
-                .map(tuple -> tuple.get(userNovel.novel))
-                .distinct()
-                .limit(10)
+                .collect(Collectors.toMap(Novel::getNovelId, tasteNovel -> tasteNovel));
+
+        return tasteNovelIds.stream()
+                .map(tasteNovelsById::get)
                 .toList();
     }
 
