@@ -157,6 +157,7 @@ public class SearchNovelApplication {
         );
     }
 
+    // 선호 장르의 추천 작품과 집계 통계를 조회한다.
     @Transactional(readOnly = true)
     public TasteNovelsGetResponse getTasteNovels(User user) {
         // TODO: 선호하는 장르 리스트는 유저에서 가져오도록 해야함
@@ -166,9 +167,16 @@ public class SearchNovelApplication {
                 .toList();
 
         List<Novel> tasteNovels = libraryService.getTasteNovels(preferGenres);
+        List<Long> tasteNovelIds = tasteNovels.stream()
+                .map(Novel::getNovelId)
+                .toList();
+        Map<Long, Long> interestCounts = libraryService.getInterestCountsByNovelIds(tasteNovelIds);
 
         List<TasteNovelGetResponse> tasteNovelGetResponses = tasteNovels.stream()
-                .map(TasteNovelGetResponse::of)
+                .map(tasteNovel -> TasteNovelGetResponse.of(
+                        tasteNovel,
+                        interestCounts.getOrDefault(tasteNovel.getNovelId(), 0L)
+                ))
                 .toList();
 
         return TasteNovelsGetResponse.of(tasteNovelGetResponses);
