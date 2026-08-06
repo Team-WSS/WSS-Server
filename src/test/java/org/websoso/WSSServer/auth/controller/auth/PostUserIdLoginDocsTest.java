@@ -1,4 +1,4 @@
-package org.websoso.WSSServer.auth.controller;
+package org.websoso.WSSServer.auth.controller.auth;
 
 import static com.epages.restdocs.apispec.ResourceDocumentation.resource;
 import static org.mockito.BDDMockito.given;
@@ -30,6 +30,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.websoso.WSSServer.application.AccountApplication;
 import org.websoso.WSSServer.auth.application.AuthApplication;
+import org.websoso.WSSServer.auth.controller.AuthController;
 import org.websoso.WSSServer.auth.service.AppleService;
 import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.exception.exception.CustomUserException;
@@ -58,7 +59,7 @@ import org.websoso.WSSServer.user.service.UserService;
  */
 @AutoConfigureRestDocs
 @AuthenticatedControllerTest(AuthController.class)
-class AuthControllerLoginDocsTest {
+class PostUserIdLoginDocsTest {
 
     private static final Long USER_ID = 42L;
     private static final String ACCESS_TOKEN = "<Access Token>";
