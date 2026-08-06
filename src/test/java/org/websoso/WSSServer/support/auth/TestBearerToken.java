@@ -28,6 +28,10 @@ public final class TestBearerToken {
         return bearer(TOKEN_FACTORY.createRefreshToken(userId));
     }
 
+    public static RequestPostProcessor expiredAccessToken(Long userId) {
+        return bearer(TOKEN_FACTORY.createExpiredAccessToken(userId));
+    }
+
     public static RequestPostProcessor tamperedAccessToken(Long userId) {
         return bearer(TOKEN_FACTORY.createAccessToken(userId) + "tampered");
     }

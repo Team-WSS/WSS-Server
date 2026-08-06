@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
+    id 'com.epages.restdocs-api-spec'
 }
 
 dependencyManagement {
@@ -92,8 +93,9 @@ dependencies {
     // S3 Mapping Library
     api "com.github.Team-WSS:WSS-Server-S3:${wssS3Version}"
 
-    // Swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+    // Swagger UI (WebJar로 번들을 직접 제공한다. API 명세는 REST Docs 산출물만 사용한다)
+    implementation "org.webjars:swagger-ui:${swaggerUiVersion}"
+    implementation 'org.webjars:webjars-locator-core'
 
     // ============== Project Modules ==============
     implementation project(':wss-service-support')
@@ -102,8 +104,86 @@ dependencies {
     // ============== Test ==============
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+
+    // REST Docs (문서 테스트 결과를 OpenAPI 3 명세로 변환)
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    testImplementation "com.epages:restdocs-api-spec-mockmvc:${restdocsApiSpecVersion}"
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// ============== API 문서 (Spring REST Docs -> OpenAPI 3) ==============
+// 문서 산출물은 모두 build 디렉터리 안에서만 생성하고 Git으로 추적하지 않는다.
+ext {
+    restDocsSnippetsDir = layout.buildDirectory.dir('generated-snippets')
+    openApiSpecDir = layout.buildDirectory.dir('api-spec')
+    // Swagger UI가 classpath:/swagger-ui/openapi3.json 으로 읽도록 리소스 형태로 담아 두는 디렉터리.
+    openApiResourcesDir = layout.buildDirectory.dir('api-docs-resources')
+    openApiSwaggerUiDir = layout.buildDirectory.dir('api-docs-resources/swagger-ui')
+}
+
+openapi3 {
+    // 명세를 제공하는 origin을 그대로 쓰도록 상대 URL로 둔다.
+    server = '/'
+    title = 'WSS-Server API'
+    description = 'Spring REST Docs 문서 테스트로 생성한 OpenAPI 3 명세'
+    version = "${applicationVersion}"
+    format = 'json'
+    snippetsDirectory = 'build/generated-snippets'
+    outputDirectory = 'build/api-spec'
+    outputFileNamePrefix = 'openapi3'
+}
+
+// 문서 테스트가 실패했을 때 이전 실행의 snippet과 명세가 남아 성공으로 오인되지 않도록 생성 전에 지운다.
+tasks.register('cleanApiSpec', Delete) {
+    delete restDocsSnippetsDir, openApiSpecDir, openApiResourcesDir
+}
+
+// 명세 생성은 MockMvc 문서 테스트(*DocsTest)에만 의존한다.
+// 전체 test task에 의존하면 외부 DB, Redis가 필요한 통합 테스트까지 통과해야 명세를 만들 수 있다.
+tasks.register('restDocsTest', Test) {
+    group = 'verification'
+    description = 'REST Docs 문서 테스트(*DocsTest)만 실행한다'
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    filter {
+        includeTestsMatching '*DocsTest'
+    }
+    // snippet 디렉터리를 출력으로 선언해, 산출물이 지워지면 UP-TO-DATE로 건너뛰지 않게 한다.
+    outputs.dir restDocsSnippetsDir
+    mustRunAfter tasks.named('cleanApiSpec')
+}
+
+// openapi3 task는 restdocs-api-spec 플러그인이 프로젝트 평가 이후에 등록하고 check에 의존하게 만든다.
+// 전체 테스트(check) 대신 문서 테스트에만 의존하도록 평가 이후에 의존 관계를 교체한다.
+afterEvaluate {
+    tasks.named('openapi3') {
+        setDependsOn([tasks.named('cleanApiSpec'), tasks.named('restDocsTest')])
+    }
+}
+
+tasks.register('apiDocs', Copy) {
+    group = 'documentation'
+    description = 'REST Docs 문서 테스트를 실행하고 OpenAPI 3 명세를 생성한다'
+    dependsOn 'openapi3'
+    from openApiSpecDir
+    into openApiSwaggerUiDir
+}
+
+// apiDocs를 함께 실행하면 생성된 명세를 classpath:/swagger-ui 로 패키징한다.
+// apiDocs 없이 빌드하면 명세가 없는 상태로 패키징되고, 이전 실행의 명세가 섞이지 않는다.
+tasks.named('bootJar') {
+    mustRunAfter tasks.named('apiDocs')
+    from(openApiResourcesDir) {
+        into 'BOOT-INF/classes'
+    }
+}
+
+// 로컬에서 bootRun으로 Swagger UI를 확인할 때도 생성된 명세를 classpath에서 읽게 한다.
+tasks.named('bootRun') {
+    mustRunAfter tasks.named('apiDocs')
+    classpath += files(openApiResourcesDir)
 }
