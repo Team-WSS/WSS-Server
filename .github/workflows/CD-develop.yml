@@ -37,7 +37,7 @@ jobs:
           DEV_APPLE_KEY_NAME: ${{ secrets.DEV_APPLE_KEY_NAME }}
           S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
           S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
-        run: ./gradlew build -x test -Dspring.profiles.active=dev
+        run: ./gradlew clean apiDocs build -x test -Dspring.profiles.active=dev
         shell: bash
 
       - name: Docker build Setting

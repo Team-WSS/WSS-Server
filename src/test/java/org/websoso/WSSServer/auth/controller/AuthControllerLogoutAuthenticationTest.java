@@ -6,10 +6,13 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.websoso.WSSServer.exception.error.CustomAuthError.INVALID_TOKEN;
 import static org.websoso.WSSServer.support.auth.TestBearerToken.accessToken;
 import static org.websoso.WSSServer.support.auth.TestBearerToken.refreshToken;
 import static org.websoso.WSSServer.support.auth.TestBearerToken.tamperedAccessToken;
@@ -80,11 +83,26 @@ class AuthControllerLogoutAuthenticationTest {
         then(authApplication).should().logout(loginUser, LOGOUT_REQUEST);
     }
 
-    @DisplayName("Authorization 헤더가 없으면 401로 거부된다")
+    @DisplayName("Authorization 헤더가 없으면 401과 INVALID_TOKEN 본문으로 거부된다")
     @Test
     void logoutWithoutAuthorizationHeader() throws Exception {
         mockMvc.perform(logoutRequest())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getCode()))
+                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getDescription()));
+
+        then(authApplication).should(never()).logout(any(), any());
+    }
+
+    @DisplayName("Authorization 헤더가 Bearer 형식이 아니면 401과 INVALID_TOKEN 본문으로 거부된다")
+    @Test
+    void logoutWithNonBearerAuthorizationHeader() throws Exception {
+        mockMvc.perform(logoutRequest().header(AUTHORIZATION, "Basic dXNlcjpwYXNzd29yZA=="))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getCode()))
+                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getDescription()));
 
         then(authApplication).should(never()).logout(any(), any());
     }

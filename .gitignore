@@ -43,6 +43,11 @@ out/
 ## QClass ##
 **/generated/
 
+## API 문서 산출물 ##
+# REST Docs snippet(build/generated-snippets), OpenAPI 명세(build/api-spec),
+# Swagger UI 제공용 리소스(build/api-docs-resources)는 모두 build/ 아래에 생성되어 위 규칙으로 제외된다.
+# 산출물은 Git으로 추적하지 않고 `./gradlew apiDocs`로 항상 다시 생성한다.
+
 ## Log ##
 /logs
 
