@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.notification.controller.novelnotification;
 
 import static com.epages.restdocs.apispec.ResourceDocumentation.parameterWithName;
+import static org.springframework.restdocs.snippet.Attributes.key;
 import static com.epages.restdocs.apispec.ResourceDocumentation.resource;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -35,6 +36,8 @@ import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.erro
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.epages.restdocs.apispec.ResourceSnippetParametersBuilder;
 import com.epages.restdocs.apispec.Schema;
+import com.epages.restdocs.apispec.SimpleType;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -70,6 +73,8 @@ class GetMyNovelNotificationsDocsTest {
     private static final String TAG = "Novel Notification";
     private static final String SUMMARY = "작품 알림 구독 목록 조회";
     private static final Schema RESPONSE_SCHEMA = Schema.schema("NovelNotificationPageResponse");
+    private static final List<String> NOTIFICATION_TYPE_VALUES =
+            Arrays.stream(NovelNotificationType.values()).map(Enum::name).toList();
     private static final String NOTIFICATION_TYPE_REQUIRED_MESSAGE = "필수 요청 파라미터가 없습니다: notificationType";
     private static final String NOTIFICATION_TYPE_MISMATCH_MESSAGE = "요청 값의 형식이 올바르지 않습니다: notificationType";
 
@@ -280,15 +285,25 @@ class GetMyNovelNotificationsDocsTest {
                 .description(DESCRIPTION);
     }
 
+    /**
+     * enumValues 속성을 주면 생성 명세의 파라미터 스키마에 enum이 붙어
+     * Swagger UI가 자유 입력 대신 선택 상자를 띄운다.
+     */
     private ResourceSnippetParametersBuilder subscriptions() {
         return withoutQueryParameters()
                 .queryParameters(
                         parameterWithName("notificationType")
-                                .description("조회할 알림 유형. COMPLETION 또는 HIATUS_RETURN."),
+                                .type(SimpleType.STRING)
+                                .attributes(key("enumValues").value(NOTIFICATION_TYPE_VALUES))
+                                .description("조회할 알림 유형"),
                         parameterWithName("lastSubscriptionId").optional()
-                                .description("이전 페이지 마지막 구독 ID. 첫 페이지는 생략하거나 0을 보낸다. 기본값 0."),
+                                .type(SimpleType.INTEGER)
+                                .defaultValue(0)
+                                .description("이전 페이지 마지막 구독 ID. 첫 페이지는 생략하거나 0을 보낸다."),
                         parameterWithName("size").optional()
-                                .description("조회 개수. 1 이상 50 이하. 기본값 10."));
+                                .type(SimpleType.INTEGER)
+                                .defaultValue(10)
+                                .description("조회 개수. 1 이상 50 이하."));
     }
 
     private List<FieldDescriptor> subscriptionsResponseFields() {
