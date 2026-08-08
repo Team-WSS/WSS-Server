@@ -2,11 +2,14 @@ package org.websoso.WSSServer.collection.repository.projection;
 
 import java.util.List;
 import org.websoso.WSSServer.collection.controller.dto.CollectionGetResponse;
-import org.websoso.WSSServer.collection.controller.dto.CollectionNovelGetResponse;
+import org.websoso.WSSServer.collection.controller.dto.CollectionNovelSummaryGetResponse;
+import org.websoso.WSSServer.collection.controller.dto.CollectionOwnerGetResponse;
 
 /**
  * 컬렉션 상세의 컬렉션 자체 정보 한 행. 공개 여부와 소유자는 접근 정책 판단에 쓰이므로
  * 포함 작품을 읽기 전에 먼저 조회한다.
+ * <p>
+ * 아바타는 모든 사용자가 반드시 가지므로 {@code ownerAvatarImage}는 비어 있지 않다.
  */
 public record CollectionDetailRow(
         Long collectionId,
@@ -23,19 +26,21 @@ public record CollectionDetailRow(
         return userId != null && userId.equals(ownerId);
     }
 
-    public CollectionGetResponse toResponse(Long viewerId, List<CollectionNovelGetResponse> novels) {
+    public CollectionGetResponse toResponse(Long viewerId, List<CollectionNovelSummaryGetResponse> novels) {
         return new CollectionGetResponse(
                 collectionId,
                 name,
                 description,
                 isPublic,
                 isOwnedBy(viewerId),
-                ownerId,
-                ownerNickname,
-                ownerAvatarImage,
+                toOwner(),
                 representativeNovelId,
                 novels.size(),
                 novels
         );
+    }
+
+    private CollectionOwnerGetResponse toOwner() {
+        return new CollectionOwnerGetResponse(ownerId, ownerNickname, ownerAvatarImage);
     }
 }

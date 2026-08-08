@@ -11,8 +11,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.websoso.WSSServer.collection.controller.dto.CollectionNovelGetResponse;
-import org.websoso.WSSServer.collection.controller.dto.CollectionNovelPreviewGetResponse;
+import org.websoso.WSSServer.collection.controller.dto.CollectionNovelSummaryGetResponse;
 import org.websoso.WSSServer.collection.domain.CollectionCursor;
 import org.websoso.WSSServer.collection.exception.CustomCollectionException;
 import org.websoso.WSSServer.collection.repository.CollectionQueryRepository;
@@ -51,7 +50,7 @@ public class CollectionQueryService {
      * 미리보기가 하나도 없는 컬렉션은 결과에 들어 있지 않으므로 호출하는 쪽에서 빈 목록으로 다룬다.
      */
     @Transactional(readOnly = true)
-    public Map<Long, List<CollectionNovelPreviewGetResponse>> findRecentNovelPreviews(List<Long> collectionIds,
+    public Map<Long, List<CollectionNovelSummaryGetResponse>> findRecentNovelPreviews(List<Long> collectionIds,
                                                                                       int previewSize) {
         return collectionQueryRepository.findRecentNovelPreviewRows(collectionIds, previewSize).stream()
                 .collect(groupingBy(
@@ -71,7 +70,7 @@ public class CollectionQueryService {
     }
 
     @Transactional(readOnly = true)
-    public List<CollectionNovelGetResponse> findCollectionNovels(Long collectionId, SortCriteria sortCriteria) {
+    public List<CollectionNovelSummaryGetResponse> findCollectionNovels(Long collectionId, SortCriteria sortCriteria) {
         return collectionQueryRepository.findCollectionNovelRows(collectionId, sortCriteria).stream()
                 .map(CollectionNovelRow::toResponse)
                 .toList();

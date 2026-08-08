@@ -33,8 +33,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.websoso.WSSServer.collection.controller.dto.CollectionGetResponse;
-import org.websoso.WSSServer.collection.controller.dto.CollectionNovelGetResponse;
-import org.websoso.WSSServer.collection.controller.dto.CollectionNovelPreviewGetResponse;
+import org.websoso.WSSServer.collection.controller.dto.CollectionNovelSummaryGetResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionPreviewGetResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionsGetResponse;
 import org.websoso.WSSServer.collection.domain.CollectionCursor;
@@ -261,12 +260,12 @@ class CollectionFindApplicationTest {
     void fillsRecentNovelPreviewsWithSingleQuery() {
         givenPage(List.of(row(11L, FIRST_CREATED), row(12L, SECOND_CREATED)));
         given(collectionQueryService.findRecentNovelPreviews(List.of(11L, 12L), NOVEL_PREVIEW_SIZE))
-                .willReturn(Map.of(11L, List.of(novelPreview(7L))));
+                .willReturn(Map.of(11L, List.of(novelSummary(7L))));
 
         CollectionsGetResponse response = application.getUserCollections(user(OWNER_ID), OWNER_ID, null, SIZE);
 
         assertThat(response.collections().get(0).recentNovels())
-                .extracting(CollectionNovelPreviewGetResponse::novelId)
+                .extracting(CollectionNovelSummaryGetResponse::novelId)
                 .containsExactly(7L);
         assertThat(response.collections().get(1).recentNovels()).isEmpty();
         then(collectionQueryService).should().findRecentNovelPreviews(List.of(11L, 12L), NOVEL_PREVIEW_SIZE);
@@ -294,19 +293,65 @@ class CollectionFindApplicationTest {
         assertThat(card.novelCount()).isEqualTo(12L);
     }
 
+    @DisplayName("대표 작품도 최근 추가 작품과 같은 작품 요약으로 내보낸다")
+    @Test
+    void representativeNovelUsesSharedNovelSummary() {
+        givenPage(List.of(row(11L, FIRST_CREATED)));
+
+        CollectionsGetResponse response = application.getUserCollections(user(OWNER_ID), OWNER_ID, null, SIZE);
+
+        assertThat(response.collections().get(0).representativeNovel())
+                .isEqualTo(new CollectionNovelSummaryGetResponse(
+                        5L, "대표 작품", "https://image/5.png", "대표 작가"));
+    }
+
+    /**
+     * 대표 작품과 최근 추가 작품은 서로 독립적인 값이다. 대표 작품이 최근에 추가된 작품이면 두 곳에 같은 작품이
+     * 함께 나가며, 이는 정상 응답이다.
+     */
+    @DisplayName("대표 작품이 최근 추가 작품에 포함돼도 그대로 함께 내보낸다")
+    @Test
+    void keepsRepresentativeNovelDuplicatedInRecentNovels() {
+        givenPage(List.of(row(11L, FIRST_CREATED)));
+        given(collectionQueryService.findRecentNovelPreviews(List.of(11L), NOVEL_PREVIEW_SIZE))
+                .willReturn(Map.of(11L, List.of(novelSummary(5L), novelSummary(7L))));
+
+        CollectionsGetResponse response = application.getUserCollections(user(OWNER_ID), OWNER_ID, null, SIZE);
+
+        CollectionPreviewGetResponse card = response.collections().get(0);
+        assertThat(card.representativeNovel().novelId()).isEqualTo(5L);
+        assertThat(card.recentNovels()).extracting(CollectionNovelSummaryGetResponse::novelId)
+                .containsExactly(5L, 7L);
+    }
+
+    @DisplayName("최근 추가 작품은 컬렉션당 최대 5개까지만 조회한다")
+    @Test
+    void previewsAtMostFiveRecentNovelsPerCollection() {
+        givenPage(List.of(row(11L, FIRST_CREATED)));
+        given(collectionQueryService.findRecentNovelPreviews(List.of(11L), NOVEL_PREVIEW_SIZE))
+                .willReturn(Map.of(11L, List.of(novelSummary(1L), novelSummary(2L), novelSummary(3L),
+                        novelSummary(4L), novelSummary(5L))));
+
+        CollectionsGetResponse response = application.getUserCollections(user(OWNER_ID), OWNER_ID, null, SIZE);
+
+        assertThat(NOVEL_PREVIEW_SIZE).isEqualTo(5);
+        assertThat(response.collections().get(0).recentNovels()).hasSize(NOVEL_PREVIEW_SIZE);
+        then(collectionQueryService).should().findRecentNovelPreviews(List.of(11L), NOVEL_PREVIEW_SIZE);
+    }
+
     // 상세 조회
 
     @DisplayName("소유자는 자신의 비공개 컬렉션 상세를 조회할 수 있다")
     @Test
     void ownerReadsPrivateCollection() {
         givenDetail(detailRow(false));
-        givenNovels(List.of(novel(7L)));
+        givenNovels(List.of(novelSummary(7L)));
 
         CollectionGetResponse response = application.getCollection(user(OWNER_ID), COLLECTION_ID, null);
 
         assertThat(response.isMyCollection()).isTrue();
         assertThat(response.isPublic()).isFalse();
-        assertThat(response.novels()).extracting(CollectionNovelGetResponse::novelId).containsExactly(7L);
+        assertThat(response.novels()).extracting(CollectionNovelSummaryGetResponse::novelId).containsExactly(7L);
     }
 
     @DisplayName("다른 사용자는 비공개 컬렉션 상세를 조회할 수 없다")
@@ -326,7 +371,7 @@ class CollectionFindApplicationTest {
     @Test
     void anonymousReadsPublicCollection() {
         givenDetail(detailRow(true));
-        givenNovels(List.of(novel(7L)));
+        givenNovels(List.of(novelSummary(7L)));
 
         CollectionGetResponse response = application.getCollection(null, COLLECTION_ID, null);
 
@@ -407,11 +452,51 @@ class CollectionFindApplicationTest {
         then(collectionQueryService).should().findCollectionNovels(COLLECTION_ID, null);
     }
 
+    @DisplayName("상세는 소유자 정보를 owner 객체로 묶어 내보낸다")
+    @Test
+    void detailNestsOwnerInformation() {
+        givenDetail(detailRow(true));
+        givenNovels(List.of());
+
+        CollectionGetResponse response = application.getCollection(user(OWNER_ID), COLLECTION_ID, null);
+
+        assertThat(response.owner().userId()).isEqualTo(OWNER_ID);
+        assertThat(response.owner().nickname()).isEqualTo("웹소소");
+        assertThat(response.owner().avatarImage()).isEqualTo("https://image/avatar.png");
+    }
+
+    /**
+     * 아바타는 도메인상 필수이므로 상세 조회 쿼리가 아바타를 inner join으로 읽는다. 따라서 상세 응답의
+     * {@code owner.avatarImage}는 비어 있지 않다.
+     */
+    @DisplayName("상세 응답의 소유자 아바타는 비어 있지 않다")
+    @Test
+    void detailAlwaysCarriesOwnerAvatar() {
+        givenDetail(detailRow(true));
+        givenNovels(List.of());
+
+        CollectionGetResponse response = application.getCollection(null, COLLECTION_ID, null);
+
+        assertThat(response.owner().avatarImage()).isNotBlank();
+    }
+
+    @DisplayName("상세 포함 작품은 목록 카드와 같은 작품 요약으로 내보낸다")
+    @Test
+    void detailNovelsUseSharedNovelSummary() {
+        givenDetail(detailRow(true));
+        givenNovels(List.of(novelSummary(7L)));
+
+        CollectionGetResponse response = application.getCollection(user(OWNER_ID), COLLECTION_ID, null);
+
+        assertThat(response.novels()).containsExactly(new CollectionNovelSummaryGetResponse(
+                7L, "작품", "https://image/novel.png", "작가"));
+    }
+
     @DisplayName("상세는 작품 수를 조회한 작품 목록에서 그대로 계산한다")
     @Test
     void detailCountsNovelsFromLoadedList() {
         givenDetail(detailRow(true));
-        givenNovels(List.of(novel(7L), novel(8L)));
+        givenNovels(List.of(novelSummary(7L), novelSummary(8L)));
 
         CollectionGetResponse response = application.getCollection(user(OWNER_ID), COLLECTION_ID, null);
 
@@ -427,13 +512,13 @@ class CollectionFindApplicationTest {
         given(collectionQueryService.getCollectionDetailRowOrException(COLLECTION_ID)).willReturn(detail);
     }
 
-    private void givenNovels(List<CollectionNovelGetResponse> novels) {
+    private void givenNovels(List<CollectionNovelSummaryGetResponse> novels) {
         given(collectionQueryService.findCollectionNovels(eq(COLLECTION_ID), any())).willReturn(novels);
     }
 
     private CollectionPreviewRow row(Long collectionId, LocalDateTime createdDate) {
         return new CollectionPreviewRow(collectionId, "취향 저격 로판", "여주가 강한 로맨스 판타지", true,
-                createdDate, 12L, 5L, "대표 작품", "https://image/5.png");
+                createdDate, 12L, 5L, "대표 작품", "https://image/5.png", "대표 작가");
     }
 
     private CollectionDetailRow detailRow(boolean isPublic) {
@@ -441,12 +526,8 @@ class CollectionFindApplicationTest {
                 OWNER_ID, "웹소소", "https://image/avatar.png", 5L);
     }
 
-    private CollectionNovelPreviewGetResponse novelPreview(Long novelId) {
-        return new CollectionNovelPreviewGetResponse(novelId, "작품", "https://image/novel.png");
-    }
-
-    private CollectionNovelGetResponse novel(Long novelId) {
-        return new CollectionNovelGetResponse(novelId, "작품", "작가", "https://image/novel.png", true, 4.5f, 10L);
+    private CollectionNovelSummaryGetResponse novelSummary(Long novelId) {
+        return new CollectionNovelSummaryGetResponse(novelId, "작품", "https://image/novel.png", "작가");
     }
 
     private User user(Long userId) {

@@ -9,8 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.collection.controller.dto.CollectionGetResponse;
-import org.websoso.WSSServer.collection.controller.dto.CollectionNovelGetResponse;
-import org.websoso.WSSServer.collection.controller.dto.CollectionNovelPreviewGetResponse;
+import org.websoso.WSSServer.collection.controller.dto.CollectionNovelSummaryGetResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionPreviewGetResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionsGetResponse;
 import org.websoso.WSSServer.collection.domain.CollectionCursor;
@@ -72,7 +71,7 @@ public class CollectionFindApplication {
         List<CollectionPreviewRow> pageRows = hasNext ? rows.subList(0, size) : rows;
 
         // 6. 이번 페이지 컬렉션의 최근 추가 작품을 한 번의 조회로 모두 가져온다.
-        Map<Long, List<CollectionNovelPreviewGetResponse>> recentNovels = collectionQueryService
+        Map<Long, List<CollectionNovelSummaryGetResponse>> recentNovels = collectionQueryService
                 .findRecentNovelPreviews(toCollectionIds(pageRows), NOVEL_PREVIEW_SIZE);
 
         List<CollectionPreviewGetResponse> collections = pageRows.stream()
@@ -106,7 +105,7 @@ public class CollectionFindApplication {
         validateVisible(detail, viewerId);
 
         // 4. 포함 작품을 추가된 시점 기준으로 정렬해 읽는다.
-        List<CollectionNovelGetResponse> novels = collectionQueryService.findCollectionNovels(
+        List<CollectionNovelSummaryGetResponse> novels = collectionQueryService.findCollectionNovels(
                 collectionId,
                 sortCriteria
         );

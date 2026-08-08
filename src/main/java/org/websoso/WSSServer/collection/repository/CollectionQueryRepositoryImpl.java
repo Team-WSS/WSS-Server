@@ -3,7 +3,6 @@ package org.websoso.WSSServer.collection.repository;
 import static org.websoso.WSSServer.collection.domain.QCollection.collection;
 import static org.websoso.WSSServer.collection.domain.QCollectionNovel.collectionNovel;
 import static org.websoso.WSSServer.novel.domain.QNovel.novel;
-import static org.websoso.WSSServer.novel.domain.QNovelStatistics.novelStatistics;
 import static org.websoso.WSSServer.user.domain.QAvatarProfile.avatarProfile;
 import static org.websoso.WSSServer.user.domain.QUser.user;
 
@@ -49,7 +48,8 @@ public class CollectionQueryRepositoryImpl implements CollectionQueryRepository 
                         novelCount(),
                         representativeNovel.novelId,
                         representativeNovel.title,
-                        representativeNovel.novelImage
+                        representativeNovel.novelImage,
+                        representativeNovel.author
                 ))
                 .from(collection)
                 .leftJoin(representativeNovel)
@@ -90,7 +90,8 @@ public class CollectionQueryRepositoryImpl implements CollectionQueryRepository 
                         collectionNovel.collection.collectionId,
                         novel.novelId,
                         novel.title,
-                        novel.novelImage
+                        novel.novelImage,
+                        novel.author
                 ))
                 .from(collectionNovel)
                 .join(collectionNovel.novel, novel)
@@ -122,7 +123,7 @@ public class CollectionQueryRepositoryImpl implements CollectionQueryRepository 
                 ))
                 .from(collection)
                 .join(collection.user, user)
-                .leftJoin(avatarProfile).on(user.avatarProfileId.eq(avatarProfile.avatarProfileId))
+                .join(avatarProfile).on(user.avatarProfileId.eq(avatarProfile.avatarProfileId))
                 .where(collection.collectionId.eq(collectionId))
                 .fetchOne());
     }
@@ -134,15 +135,11 @@ public class CollectionQueryRepositoryImpl implements CollectionQueryRepository 
                         CollectionNovelRow.class,
                         novel.novelId,
                         novel.title,
-                        novel.author,
                         novel.novelImage,
-                        novel.isCompleted,
-                        novelStatistics.averageRating,
-                        novelStatistics.ratingCount
+                        novel.author
                 ))
                 .from(collectionNovel)
                 .join(collectionNovel.novel, novel)
-                .leftJoin(novel.novelStatistics, novelStatistics)
                 .where(collectionNovel.collection.collectionId.eq(collectionId))
                 .orderBy(addedDateOrder(sortCriteria), addedIdOrder(sortCriteria))
                 .fetch();

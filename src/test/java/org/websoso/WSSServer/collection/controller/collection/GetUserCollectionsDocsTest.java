@@ -51,7 +51,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.websoso.WSSServer.collection.application.CollectionFindApplication;
 import org.websoso.WSSServer.collection.application.CollectionManagementApplication;
 import org.websoso.WSSServer.collection.controller.CollectionController;
-import org.websoso.WSSServer.collection.controller.dto.CollectionNovelPreviewGetResponse;
+import org.websoso.WSSServer.collection.controller.dto.CollectionNovelSummaryGetResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionPreviewGetResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionsGetResponse;
 import org.websoso.WSSServer.collection.exception.CustomCollectionException;
@@ -90,6 +90,16 @@ class GetUserCollectionsDocsTest {
             "무한 스크롤은 커서로 이어 갑니다. 첫 요청은 `cursor` 없이 보내고, 이후에는 직전 응답의",
             "`nextCursor`를 그대로 넘깁니다. `hasNext`가 false면 `nextCursor`는 내려가지 않습니다.",
             "커서 값은 서버가 발급한 문자열이며 클라이언트가 만들거나 해석하지 않습니다.",
+            "",
+            "응답은 페이지 정보(`collectionsCount`, `hasNext`, `nextCursor`)와 컬렉션 카드 배열(`collections`)로",
+            "나뉩니다. 카드 하나는 컬렉션 자체의 값과 작품 요약 두 종류(`representativeNovel`, `recentNovels[]`)를 담고,",
+            "두 작품 요약은 컬렉션 상세의 `novels[]`와 같은 구조(`novelId`, `title`, `novelImage`, `author`)입니다.",
+            "",
+            "`representativeNovel`과 `recentNovels`는 서로 독립적인 값입니다.",
+            "`representativeNovel`은 카드 표지로 쓰는 대표 작품 하나이고, `recentNovels`는 최근 추가된 작품부터",
+            "최대 5개입니다. 대표 작품이 최근에 추가된 작품이면 두 곳에 같은 작품이 함께 내려갑니다.",
+            "따라서 클라이언트는 `recentNovels`에서 대표 작품을 걸러 내지 않아도 되며, 걸러 낼지는 화면이 정합니다.",
+            "아래 성공 응답 예시는 대표 작품이 `recentNovels`에 포함된 5개짜리 카드입니다.",
             "",
             "Try it out으로 호출하려면 상단 Authorize에 실제 Access Token을 입력해야 합니다.",
             "",
@@ -134,7 +144,10 @@ class GetUserCollectionsDocsTest {
                 .andExpect(jsonPath("$.collectionsCount").value(12))
                 .andExpect(jsonPath("$.hasNext").value(true))
                 .andExpect(jsonPath("$.nextCursor").value(NEXT_CURSOR))
-                .andExpect(jsonPath("$.collections[0].recentNovels.length()").value(2))
+                .andExpect(jsonPath("$.collections[0].recentNovels.length()").value(5))
+                .andExpect(jsonPath("$.collections[0].representativeNovel.novelId").value(5))
+                .andExpect(jsonPath("$.collections[0].representativeNovel.author").value("알파타르트"))
+                .andExpect(jsonPath("$.collections[0].recentNovels[1].novelId").value(5))
                 .andDo(document("user-collections-get",
                         resource(collection()
                                 .queryParameters(queryParameters())
@@ -272,39 +285,53 @@ class GetUserCollectionsDocsTest {
                         .description("한 번에 가져올 컬렉션 수. 생략하면 10이고 1 이상 100 이하여야 한다."));
     }
 
+    /**
+     * 응답은 페이지 정보와 컬렉션 카드 배열, 카드 안의 작품 요약이라는 세 겹으로 되어 있다.
+     * 생성기가 중첩 객체에 독립 스키마 이름을 붙이지 않으므로(정책 12.3절), 각 겹이 무엇이고 어디에 쓰이는지는
+     * 필드 서술이 대신 담는다. 특히 두 작품 요약은 상세의 {@code novels[]}와 같은 구조임을 서술에 명시한다.
+     */
     private List<FieldDescriptor> responseFields() {
         return List.of(
                 fieldWithPath("collectionsCount").type(NUMBER)
-                        .description("조회자가 볼 수 있는 전체 컬렉션 개수. 이번 페이지 개수가 아니다."),
-                fieldWithPath("hasNext").type(BOOLEAN).description("다음 페이지가 더 있는지 여부"),
+                        .description("[페이지 정보] 조회자가 볼 수 있는 전체 컬렉션 개수. 이번 페이지 개수가 아니다."),
+                fieldWithPath("hasNext").type(BOOLEAN).description("[페이지 정보] 다음 페이지가 더 있는지 여부"),
                 fieldWithPath("nextCursor").type(STRING).optional()
-                        .description("다음 요청에 그대로 넘길 커서. 다음 페이지가 없으면 null이다."),
-                fieldWithPath("collections").type(ARRAY).description("컬렉션 목록. 최초 생성 시점 최신순이다."),
-                fieldWithPath("collections[].collectionId").type(NUMBER).description("컬렉션 ID"),
-                fieldWithPath("collections[].collectionName").type(STRING).description("컬렉션 이름"),
+                        .description("[페이지 정보] 다음 요청에 그대로 넘길 커서. 다음 페이지가 없으면 null이다."),
+                fieldWithPath("collections").type(ARRAY)
+                        .description("컬렉션 카드 배열. 최초 생성 시점 최신순이며 이번 페이지 분량만 담는다."),
+                fieldWithPath("collections[].collectionId").type(NUMBER).description("[컬렉션 카드] 컬렉션 ID"),
+                fieldWithPath("collections[].collectionName").type(STRING).description("[컬렉션 카드] 컬렉션 이름"),
                 fieldWithPath("collections[].collectionDescription").type(STRING).optional()
-                        .description("컬렉션 설명. 없으면 null이다."),
-                fieldWithPath("collections[].isPublic").type(BOOLEAN).description("공개 여부"),
-                fieldWithPath("collections[].novelCount").type(NUMBER).description("컬렉션에 포함된 전체 작품 수"),
+                        .description("[컬렉션 카드] 컬렉션 설명. 없으면 null이다."),
+                fieldWithPath("collections[].isPublic").type(BOOLEAN).description("[컬렉션 카드] 공개 여부"),
+                fieldWithPath("collections[].novelCount").type(NUMBER)
+                        .description("[컬렉션 카드] 컬렉션에 포함된 전체 작품 수. recentNovels의 개수가 아니다."),
                 fieldWithPath("collections[].representativeNovel").type(OBJECT)
-                        .description("카드 표지로 쓰는 대표 작품"),
-                fieldWithPath("collections[].representativeNovel.novelId").type(NUMBER).description("대표 작품 ID"),
-                fieldWithPath("collections[].representativeNovel.title").type(STRING).description("대표 작품 제목"),
+                        .description("[작품 요약] 카드 표지로 쓰는 대표 작품 하나. recentNovels와 독립적인 값이며 "
+                                + "대표 작품이 최근 추가 작품이면 recentNovels에도 같은 작품이 함께 내려간다. "
+                                + "상세의 novels[]와 같은 구조다."),
+                fieldWithPath("collections[].representativeNovel.novelId").type(NUMBER).description("작품 ID"),
+                fieldWithPath("collections[].representativeNovel.title").type(STRING).description("작품 제목"),
                 fieldWithPath("collections[].representativeNovel.novelImage").type(STRING)
-                        .description("대표 작품 표지 이미지 URL"),
+                        .description("작품 표지 이미지 URL"),
+                fieldWithPath("collections[].representativeNovel.author").type(STRING).description("작가"),
                 fieldWithPath("collections[].recentNovels").type(ARRAY)
-                        .description("최근 추가된 작품부터 최대 5개"),
+                        .description("[작품 요약] 카드 안 미리보기 줄. 최근 추가된 작품부터 최대 5개다. "
+                                + "대표 작품을 제외하지 않으므로 representativeNovel과 같은 작품이 포함될 수 있다. "
+                                + "상세의 novels[]와 같은 구조다."),
                 fieldWithPath("collections[].recentNovels[].novelId").type(NUMBER).description("작품 ID"),
                 fieldWithPath("collections[].recentNovels[].title").type(STRING).description("작품 제목"),
                 fieldWithPath("collections[].recentNovels[].novelImage").type(STRING)
-                        .description("작품 표지 이미지 URL"));
+                        .description("작품 표지 이미지 URL"),
+                fieldWithPath("collections[].recentNovels[].author").type(STRING).description("작가"));
     }
 
+    /**
+     * 성공 응답 예시는 최대치인 5개짜리 {@code recentNovels}로 만들고, 대표 작품을 그 안에 함께 넣는다.
+     * 예시를 두 개만 담으면 최대 개수도, 대표 작품이 중복될 수 있다는 사실도 예시에서 읽히지 않는다.
+     */
     private CollectionsGetResponse collectionsResponse() {
-        CollectionNovelPreviewGetResponse first =
-                new CollectionNovelPreviewGetResponse(5L, "재혼 황후", "https://image.websoso/novel/5.png");
-        CollectionNovelPreviewGetResponse second =
-                new CollectionNovelPreviewGetResponse(9L, "전지적 독자 시점", "https://image.websoso/novel/9.png");
+        CollectionNovelSummaryGetResponse representative = novelSummary(5L, "재혼 황후", "알파타르트");
 
         return CollectionsGetResponse.of(12L, true, NEXT_CURSOR, List.of(
                 new CollectionPreviewGetResponse(
@@ -313,8 +340,18 @@ class GetUserCollectionsDocsTest {
                         "여주가 강한 로맨스 판타지 모음",
                         true,
                         24L,
-                        first,
-                        List.of(second, first))));
+                        representative,
+                        List.of(
+                                novelSummary(9L, "전지적 독자 시점", "싱숑"),
+                                representative,
+                                novelSummary(14L, "데뷔 못 하면 죽는 병 걸림", "백덕수"),
+                                novelSummary(21L, "악녀는 두 번 산다", "한민트"),
+                                novelSummary(28L, "폐하, 이만 저를 버려주세요", "여운")))));
+    }
+
+    private CollectionNovelSummaryGetResponse novelSummary(Long novelId, String title, String author) {
+        return new CollectionNovelSummaryGetResponse(
+                novelId, title, "https://image.websoso/novel/%d.png".formatted(novelId), author);
     }
 
     private MockHttpServletRequestBuilder listRequest() {

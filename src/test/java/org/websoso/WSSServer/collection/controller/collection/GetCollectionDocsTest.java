@@ -14,6 +14,7 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.payload.JsonFieldType.ARRAY;
 import static org.springframework.restdocs.payload.JsonFieldType.BOOLEAN;
 import static org.springframework.restdocs.payload.JsonFieldType.NUMBER;
+import static org.springframework.restdocs.payload.JsonFieldType.OBJECT;
 import static org.springframework.restdocs.payload.JsonFieldType.STRING;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -55,7 +56,8 @@ import org.websoso.WSSServer.collection.application.CollectionFindApplication;
 import org.websoso.WSSServer.collection.application.CollectionManagementApplication;
 import org.websoso.WSSServer.collection.controller.CollectionController;
 import org.websoso.WSSServer.collection.controller.dto.CollectionGetResponse;
-import org.websoso.WSSServer.collection.controller.dto.CollectionNovelGetResponse;
+import org.websoso.WSSServer.collection.controller.dto.CollectionNovelSummaryGetResponse;
+import org.websoso.WSSServer.collection.controller.dto.CollectionOwnerGetResponse;
 import org.websoso.WSSServer.collection.exception.CustomCollectionException;
 import org.websoso.WSSServer.support.auth.AuthenticatedControllerTest;
 import org.websoso.WSSServer.user.domain.User;
@@ -89,6 +91,14 @@ class GetCollectionDocsTest {
             "",
             "포함 작품은 컬렉션에 추가된 시점을 기준으로 정렬합니다.",
             "`sortCriteria=RECENT`이면 최근에 추가한 작품부터, `OLD`이면 먼저 추가한 작품부터 반환합니다.",
+            "포함 작품에는 페이지네이션이 없습니다. 컬렉션의 작품 수가 최대 100개로 제한되므로 한 번에 모두 반환합니다.",
+            "",
+            "응답은 컬렉션 자체의 값, 소유자 정보(`owner`), 포함 작품 배열(`novels`)로 나뉩니다.",
+            "`novels[]`는 컬렉션 목록의 `representativeNovel`·`recentNovels[]`와 같은 구조",
+            "(`novelId`, `title`, `novelImage`, `author`)입니다. 완결 여부와 평점은 이 응답에 포함되지 않으며",
+            "필요하면 작품 상세 API에서 조회합니다.",
+            "",
+            "`owner.avatarImage`는 항상 내려갑니다. 아바타는 모든 사용자가 반드시 가지는 값입니다.",
             "",
             "Try it out으로 로그인 상태를 재현하려면 상단 Authorize에 실제 Access Token을 입력해야 합니다.",
             "",
@@ -133,6 +143,13 @@ class GetCollectionDocsTest {
                 .andExpect(jsonPath("$.collectionId").value(COLLECTION_ID))
                 .andExpect(jsonPath("$.isMyCollection").value(true))
                 .andExpect(jsonPath("$.novels.length()").value(2))
+                .andExpect(jsonPath("$.owner.userId").value(7))
+                .andExpect(jsonPath("$.owner.nickname").value("웹소소"))
+                .andExpect(jsonPath("$.owner.avatarImage").value("https://image.websoso/avatar/1.png"))
+                .andExpect(jsonPath("$.novels[0].author").value("싱숑"))
+                .andExpect(jsonPath("$.novels[0].isCompleted").doesNotExist())
+                .andExpect(jsonPath("$.novels[0].novelRating").doesNotExist())
+                .andExpect(jsonPath("$.novels[0].novelRatingCount").doesNotExist())
                 .andDo(document("collections-get",
                         resource(collection()
                                 .queryParameters(queryParameters())
@@ -271,6 +288,11 @@ class GetCollectionDocsTest {
                 .description("포함 작품 정렬 기준. RECENT는 최근 추가순, OLD는 오래된 추가순이며 생략하면 RECENT다."));
     }
 
+    /**
+     * 응답은 컬렉션 자체의 값, 소유자 정보, 포함 작품이라는 세 겹으로 되어 있다.
+     * 생성기가 중첩 객체에 독립 스키마 이름을 붙이지 않으므로(정책 12.3절), 각 겹이 무엇이고 어디에 쓰이는지는
+     * 필드 서술이 대신 담는다. 특히 {@code novels[]}는 목록 카드의 작품 요약과 같은 구조임을 서술에 명시한다.
+     */
     private List<FieldDescriptor> responseFields() {
         return List.of(
                 fieldWithPath("collectionId").type(NUMBER).description("컬렉션 ID"),
@@ -280,22 +302,24 @@ class GetCollectionDocsTest {
                 fieldWithPath("isPublic").type(BOOLEAN).description("공개 여부"),
                 fieldWithPath("isMyCollection").type(BOOLEAN)
                         .description("조회자가 소유자인지 여부. 비로그인 조회는 항상 false다."),
-                fieldWithPath("userId").type(NUMBER).description("컬렉션을 만든 사용자 ID"),
-                fieldWithPath("nickname").type(STRING).description("컬렉션을 만든 사용자 닉네임"),
-                fieldWithPath("avatarImage").type(STRING).optional()
-                        .description("컬렉션을 만든 사용자 아바타 이미지 URL"),
+                fieldWithPath("owner").type(OBJECT)
+                        .description("[소유자] 컬렉션을 만든 사용자. 공유 링크로 들어온 조회자에게 "
+                                + "누가 만든 컬렉션인지 보여 주기 위해 함께 준다."),
+                fieldWithPath("owner.userId").type(NUMBER).description("소유자 사용자 ID"),
+                fieldWithPath("owner.nickname").type(STRING).description("소유자 닉네임"),
+                fieldWithPath("owner.avatarImage").type(STRING)
+                        .description("소유자 아바타 이미지 URL. 아바타는 모든 사용자가 반드시 가지므로 항상 내려간다."),
                 fieldWithPath("representativeNovelId").type(NUMBER)
                         .description("대표 작품 ID. novels에 포함된 작품 중 하나다."),
-                fieldWithPath("novelCount").type(NUMBER).description("컬렉션에 포함된 작품 수"),
-                fieldWithPath("novels").type(ARRAY).description("포함 작품. 요청한 추가 시점 정렬 기준을 따른다."),
+                fieldWithPath("novelCount").type(NUMBER)
+                        .description("컬렉션에 포함된 작품 수. novels의 길이와 같다."),
+                fieldWithPath("novels").type(ARRAY)
+                        .description("[작품 요약] 포함 작품 전체. 요청한 추가 시점 정렬 기준을 따르며 페이지네이션은 없다. "
+                                + "목록의 representativeNovel·recentNovels[]와 같은 구조다."),
                 fieldWithPath("novels[].novelId").type(NUMBER).description("작품 ID"),
                 fieldWithPath("novels[].title").type(STRING).description("작품 제목"),
-                fieldWithPath("novels[].author").type(STRING).description("작가"),
                 fieldWithPath("novels[].novelImage").type(STRING).description("작품 표지 이미지 URL"),
-                fieldWithPath("novels[].isCompleted").type(BOOLEAN).description("완결 여부"),
-                fieldWithPath("novels[].novelRating").type(NUMBER)
-                        .description("작품 평균 평점. 평점이 없으면 0이다."),
-                fieldWithPath("novels[].novelRatingCount").type(NUMBER).description("작품 평점 등록 수"));
+                fieldWithPath("novels[].author").type(STRING).description("작가"));
     }
 
     private CollectionGetResponse collectionResponse(boolean isMyCollection) {
@@ -305,16 +329,14 @@ class GetCollectionDocsTest {
                 "여주가 강한 로맨스 판타지 모음",
                 true,
                 isMyCollection,
-                7L,
-                "웹소소",
-                "https://image.websoso/avatar/1.png",
+                new CollectionOwnerGetResponse(7L, "웹소소", "https://image.websoso/avatar/1.png"),
                 5L,
                 2,
                 List.of(
-                        new CollectionNovelGetResponse(9L, "전지적 독자 시점", "싱숑",
-                                "https://image.websoso/novel/9.png", true, 4.7f, 1204L),
-                        new CollectionNovelGetResponse(5L, "재혼 황후", "알파타르트",
-                                "https://image.websoso/novel/5.png", false, 4.5f, 980L)));
+                        new CollectionNovelSummaryGetResponse(9L, "전지적 독자 시점",
+                                "https://image.websoso/novel/9.png", "싱숑"),
+                        new CollectionNovelSummaryGetResponse(5L, "재혼 황후",
+                                "https://image.websoso/novel/5.png", "알파타르트")));
     }
 
     private MockHttpServletRequestBuilder detailRequest() {

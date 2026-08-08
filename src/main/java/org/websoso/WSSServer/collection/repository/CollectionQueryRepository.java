@@ -40,12 +40,17 @@ public interface CollectionQueryRepository {
     /**
      * 컬렉션 상세의 컬렉션 자체 정보를 읽는다. 공개 여부와 소유자가 포함되므로 포함 작품을 읽기 전에
      * 접근 정책을 판단할 수 있다.
+     * <p>
+     * 소유자의 아바타는 도메인상 필수이므로 아바타를 inner join으로 읽는다. outer join으로 읽으면
+     * 아바타가 없는 사용자를 정상으로 취급해 응답의 {@code owner.avatarImage}가 조용히 비게 된다.
      */
     Optional<CollectionDetailRow> findCollectionDetailRow(Long collectionId);
 
     /**
      * 컬렉션에 포함된 작품을 컬렉션에 추가된 시점 기준으로 정렬해 읽는다.
      * 같은 시각에 추가된 작품이 있어도 순서가 흔들리지 않도록 식별자를 보조 정렬 기준으로 쓴다.
+     * <p>
+     * 목록 카드와 같은 작품 요약만 내보내므로 작품 통계는 읽지 않는다.
      */
     List<CollectionNovelRow> findCollectionNovelRows(Long collectionId, SortCriteria sortCriteria);
 }

@@ -8,12 +8,17 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.websoso.WSSServer.collection.domain.QCollectionNovel.collectionNovel;
 import static org.websoso.WSSServer.domain.common.SortCriteria.OLD;
 import static org.websoso.WSSServer.domain.common.SortCriteria.RECENT;
+import static org.websoso.WSSServer.novel.domain.QNovel.novel;
+import static org.websoso.WSSServer.user.domain.QAvatarProfile.avatarProfile;
 
+import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -214,6 +219,32 @@ class CollectionQueryRepositoryImplTest {
         assertThat(repository.findCollectionDetailRow(COLLECTION_ID)).isEmpty();
     }
 
+    /**
+     * 아바타는 도메인상 필수이므로 outer join으로 읽으면 안 된다. outer join은 아바타가 없는 사용자를 정상으로
+     * 취급해 응답의 {@code owner.avatarImage}를 조용히 비우고, 그 상태를 클라이언트가 처리해야 할 값으로 만든다.
+     */
+    @DisplayName("상세는 소유자 아바타를 inner join으로 읽는다")
+    @Test
+    void detailJoinsAvatarProfileWithInnerJoin() {
+        JPAQuery<Object> query = givenSelectQuery(detailRow());
+
+        repository.findCollectionDetailRow(COLLECTION_ID);
+
+        then(query).should().join(avatarProfile);
+        then(query).should(never()).leftJoin(any(EntityPath.class));
+    }
+
+    @DisplayName("상세 작품은 작품 통계를 조인하지 않는다")
+    @Test
+    void detailNovelsDoNotJoinStatistics() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findCollectionNovelRows(COLLECTION_ID, RECENT);
+
+        then(query).should().join(collectionNovel.novel, novel);
+        then(query).should(never()).leftJoin(any(EntityPath.class), any(Path.class));
+    }
+
     @DisplayName("상세 작품은 기본적으로 추가된 시점 최신순으로 읽는다")
     @Test
     void detailNovelsDefaultToNewestFirst() {
@@ -247,7 +278,8 @@ class CollectionQueryRepositoryImplTest {
     }
 
     private CollectionDetailRow detailRow() {
-        return new CollectionDetailRow(COLLECTION_ID, "취향 저격 로판", null, true, OWNER_ID, "웹소소", null, 5L);
+        return new CollectionDetailRow(COLLECTION_ID, "취향 저격 로판", null, true, OWNER_ID, "웹소소",
+                "https://image/avatar.png", 5L);
     }
 
     private JPAQuery<Object> givenSelectQuery(List<Object> rows) {

@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.collection.repository.projection;
 
 import java.time.LocalDateTime;
-import org.websoso.WSSServer.collection.controller.dto.CollectionNovelPreviewGetResponse;
+import org.websoso.WSSServer.collection.controller.dto.CollectionNovelSummaryGetResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionPreviewGetResponse;
 import org.websoso.WSSServer.collection.domain.CollectionCursor;
 
@@ -20,14 +20,15 @@ public record CollectionPreviewRow(
         Long novelCount,
         Long representativeNovelId,
         String representativeNovelTitle,
-        String representativeNovelImage
+        String representativeNovelImage,
+        String representativeNovelAuthor
 ) {
 
     public CollectionCursor toCursor() {
         return CollectionCursor.of(createdDate, collectionId);
     }
 
-    public CollectionPreviewGetResponse toResponse(List<CollectionNovelPreviewGetResponse> recentNovels) {
+    public CollectionPreviewGetResponse toResponse(List<CollectionNovelSummaryGetResponse> recentNovels) {
         return new CollectionPreviewGetResponse(
                 collectionId,
                 name,
@@ -43,15 +44,16 @@ public record CollectionPreviewRow(
      * 대표 작품은 컬렉션에 포함된 작품이므로 정상적으로는 항상 존재한다. 작품이 지워진 컬렉션까지 조회가
      * 실패하지 않도록 조인 결과가 비면 대표 작품 없이 카드를 돌려준다.
      */
-    private CollectionNovelPreviewGetResponse toRepresentativeNovel() {
+    private CollectionNovelSummaryGetResponse toRepresentativeNovel() {
         if (representativeNovelId == null) {
             return null;
         }
 
-        return new CollectionNovelPreviewGetResponse(
+        return new CollectionNovelSummaryGetResponse(
                 representativeNovelId,
                 representativeNovelTitle,
-                representativeNovelImage
+                representativeNovelImage,
+                representativeNovelAuthor
         );
     }
 }
