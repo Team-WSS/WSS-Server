@@ -47,6 +47,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.websoso.WSSServer.collection.application.CollectionFindApplication;
 import org.websoso.WSSServer.collection.application.CollectionManagementApplication;
 import org.websoso.WSSServer.collection.controller.CollectionController;
 import org.websoso.WSSServer.collection.controller.dto.CollectionCreateRequest;
@@ -118,6 +119,12 @@ class PostCollectionDocsTest {
 
     @MockBean
     private CollectionManagementApplication collectionManagementApplication;
+
+    /**
+     * 같은 Controller가 조회 유스케이스도 함께 의존하므로 슬라이스 테스트에서 대역으로 둔다.
+     */
+    @MockBean
+    private CollectionFindApplication collectionFindApplication;
 
     @BeforeEach
     void setUp() {
