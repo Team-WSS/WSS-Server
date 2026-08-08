@@ -138,7 +138,7 @@ DB 기본값은 실제로 쓰이지 않으면서 "기본 공개"라는 정책을
 
 - 컬렉션은 소유자가 반드시 있어야 하므로(`collection.user_id`가 NOT NULL) 사용자를 지우기 전에 소유자를 옮긴다.
 - 알 수 없는 사용자 `-1`이 존재한다는 전제는 기존 피드·댓글 익명화와 같다. 새로 만들지 않는다.
-- 참고 DDL의 `fk_collection_user`에는 `ON DELETE CASCADE`를 걸지 않는다.
+- `collection.user_id`의 외래 키(`fk_collection_user`)에는 `ON DELETE CASCADE`를 걸지 않는다.
   정리 책임은 DB가 아니라 애플리케이션에 둔다. 탈퇴 흐름에서 어떤 데이터가 어떻게 처리되는지
   코드에서 드러나야 하고, 기존 탈퇴 정리(리프레시 토큰 삭제, 피드·댓글 작성자 익명화)도 같은 방식이기 때문이다.
 - `AccountApplication`의 탈퇴 정리에서 피드·댓글 작성자 익명화와 나란히, 사용자 삭제 전에 소유자를 넘긴다.
@@ -225,8 +225,10 @@ DB 기본값은 실제로 쓰이지 않으면서 "기본 공개"라는 정책을
 
 ## 11. 테이블과 제약조건
 
-이 저장소에는 마이그레이션 도구가 없다. 따라서 신규 DDL은 엔티티의 `@Table`/`@UniqueConstraint`/`@Index` 선언과
-이 문서로 관리하고, 실제 개발·운영 DB에는 아래 스크립트를 별도로 적용한다.
+이 저장소에는 마이그레이션 도구가 없다. 따라서 테이블 구조는 엔티티의 `@Table`/`@UniqueConstraint`/`@Index` 선언과
+이 문서의 표로 관리하고, 실제 개발·운영 DB에는 같은 정의를 별도로 반영한다.
+실행 가능한 스크립트는 이 문서에 싣지 않는다. 적용 시점의 스키마와 `user`·`novel` 테이블의 실제 이름은
+반영 담당자가 확인해야 하며, 문서에 박아 둔 스크립트는 그 확인 없이 그대로 실행될 수 있기 때문이다.
 
 ### 11.1 `collection`
 
@@ -244,6 +246,10 @@ DB 기본값은 실제로 쓰이지 않으면서 "기본 공개"라는 정책을
 인덱스: `idx_collection_user_created (user_id, created_date, collection_id)`
 — #561의 사용자별 컬렉션 목록을 최초 생성 시점 기준으로 커서 페이지네이션하기 위한 인덱스다.
 
+외래 키 `fk_collection_user (user_id → user)`에는 `ON DELETE CASCADE`를 걸지 않는다(6.1).
+`is_public`에는 DB `DEFAULT`를 두지 않는다(3절). 이미 `DEFAULT TRUE`로 만들어진 DB가 있다면
+기존 행의 값은 그대로 두고 컬럼 기본값만 제거한다.
+
 ### 11.2 `collection_novel`
 
 | 컬럼 | 타입 | 제약 | 설명 |
@@ -259,48 +265,9 @@ DB 기본값은 실제로 쓰이지 않으면서 "기본 공개"라는 정책을
 — #561의 추가 시점 기준 정렬과 최근 추가 작품 미리보기를 위한 인덱스다. 같은 요청으로 여러 작품을 동시에 추가하면
 `created_date`가 같을 수 있으므로 `collection_novel_id`를 함께 정렬 기준으로 사용해 순서를 결정적으로 만든다.
 
-### 11.3 참고 DDL
-
-`user`와 `novel` 테이블의 실제 이름과 PK 이름은 적용 전에 확인한다.
-
-외래 키에 `ON DELETE CASCADE`를 걸지 않는다. 회원 탈퇴 시 소유 컬렉션 정리는 6.1처럼 애플리케이션이 담당한다.
-
-`is_public`에 DB `DEFAULT`를 두지 않는다. 3절에서 정한 대로 기본 공개는 애플리케이션 생성자가 적용하며,
-값 없이 INSERT되는 경로가 없으므로 DB 기본값은 쓰이지 않는다.
-이미 `DEFAULT TRUE`로 만든 DB가 있다면 아래로 기본값만 제거한다. 기존 행의 값은 바뀌지 않는다.
-
-```sql
-ALTER TABLE collection ALTER COLUMN is_public DROP DEFAULT;
-```
-
-```sql
-CREATE TABLE collection (
-    collection_id           BIGINT       NOT NULL AUTO_INCREMENT,
-    user_id                 BIGINT       NOT NULL,
-    name                    VARCHAR(20)  NOT NULL,
-    description             VARCHAR(60)  NULL,
-    is_public               BOOLEAN      NOT NULL,
-    representative_novel_id BIGINT       NOT NULL,
-    created_date            DATETIME(6)  NOT NULL,
-    modified_date           DATETIME(6)  NOT NULL,
-    PRIMARY KEY (collection_id),
-    KEY idx_collection_user_created (user_id, created_date, collection_id),
-    CONSTRAINT fk_collection_user FOREIGN KEY (user_id) REFERENCES user (user_id)
-);
-
-CREATE TABLE collection_novel (
-    collection_novel_id BIGINT      NOT NULL AUTO_INCREMENT,
-    collection_id       BIGINT      NOT NULL,
-    novel_id            BIGINT      NOT NULL,
-    created_date        DATETIME(6) NOT NULL,
-    modified_date       DATETIME(6) NOT NULL,
-    PRIMARY KEY (collection_novel_id),
-    UNIQUE KEY uk_collection_novel_collection_novel (collection_id, novel_id),
-    KEY idx_collection_novel_collection_created (collection_id, created_date, collection_novel_id),
-    CONSTRAINT fk_collection_novel_collection FOREIGN KEY (collection_id) REFERENCES collection (collection_id),
-    CONSTRAINT fk_collection_novel_novel      FOREIGN KEY (novel_id)      REFERENCES novel (novel_id)
-);
-```
+외래 키 `fk_collection_novel_collection (collection_id → collection)`과
+`fk_collection_novel_novel (novel_id → novel)`에도 `ON DELETE CASCADE`를 걸지 않는다.
+컬렉션 삭제 시 포함 작품 정리는 DB가 아니라 애그리거트의 `cascade`/`orphanRemoval`이 담당한다(6절).
 
 ## 12. 테스트로 검증한 범위와 한계
 
@@ -341,7 +308,7 @@ CREATE TABLE collection_novel (
 
 실제 DB에서만 확인할 수 있는 것
 
-- 위 DDL이 적용된 뒤 `uk_collection_novel_collection_novel`이 실제로 중복 저장을 막는지
+- 11절의 유니크 제약조건 `uk_collection_novel_collection_novel`이 실제 DB에서 중복 저장을 막는지
 - 컬렉션 삭제 시 `collection_novel`이 실제로 함께 삭제되는지
 - 동시에 같은 작품을 추가하는 요청에서 제약조건 위반이 `COLLECTION-003`으로 변환되는지
 - 인덱스가 #561 조회 쿼리에 실제로 사용되는지
