@@ -93,8 +93,7 @@ class GetCollectionDocsTest {
             "`sortCriteria=RECENT`이면 최근에 추가한 작품부터, `OLD`이면 먼저 추가한 작품부터 반환합니다.",
             "포함 작품에는 페이지네이션이 없습니다. 컬렉션의 작품 수가 최대 100개로 제한되므로 한 번에 모두 반환합니다.",
             "",
-            "응답은 컬렉션 자체의 값, 소유자 정보(`owner`), 포함 작품 배열(`novels`)로 나뉩니다.",
-            "`novels[]`는 컬렉션 목록의 `representativeNovel`·`recentNovels[]`와 같은 구조",
+            "`novels[]`는 컬렉션 목록의 `representativeNovel`·`recentNovels[]`와 같은 작품 요약 구조",
             "(`novelId`, `title`, `novelImage`, `author`)입니다. 완결 여부와 평점은 이 응답에 포함되지 않으며",
             "필요하면 작품 상세 API에서 조회합니다.",
             "",
@@ -289,9 +288,8 @@ class GetCollectionDocsTest {
     }
 
     /**
-     * 응답은 컬렉션 자체의 값, 소유자 정보, 포함 작품이라는 세 겹으로 되어 있다.
-     * 생성기가 중첩 객체에 독립 스키마 이름을 붙이지 않으므로(정책 12.3절), 각 겹이 무엇이고 어디에 쓰이는지는
-     * 필드 서술이 대신 담는다. 특히 {@code novels[]}는 목록 카드의 작품 요약과 같은 구조임을 서술에 명시한다.
+     * 생성기가 중첩 객체에 독립 스키마 이름을 붙이지 않으므로(정책 12.3절), 값만으로는 읽히지 않는 계약은
+     * 부모 필드 서술이 대신 담는다. 하위 필드는 값 자체만 짧게 설명한다.
      */
     private List<FieldDescriptor> responseFields() {
         return List.of(
@@ -303,8 +301,7 @@ class GetCollectionDocsTest {
                 fieldWithPath("isMyCollection").type(BOOLEAN)
                         .description("조회자가 소유자인지 여부. 비로그인 조회는 항상 false다."),
                 fieldWithPath("owner").type(OBJECT)
-                        .description("[소유자] 컬렉션을 만든 사용자. 공유 링크로 들어온 조회자에게 "
-                                + "누가 만든 컬렉션인지 보여 주기 위해 함께 준다."),
+                        .description("컬렉션을 만든 사용자. 공유 링크로 들어온 비로그인 조회자에게도 내려간다."),
                 fieldWithPath("owner.userId").type(NUMBER).description("소유자 사용자 ID"),
                 fieldWithPath("owner.nickname").type(STRING).description("소유자 닉네임"),
                 fieldWithPath("owner.avatarImage").type(STRING)
@@ -314,8 +311,7 @@ class GetCollectionDocsTest {
                 fieldWithPath("novelCount").type(NUMBER)
                         .description("컬렉션에 포함된 작품 수. novels의 길이와 같다."),
                 fieldWithPath("novels").type(ARRAY)
-                        .description("[작품 요약] 포함 작품 전체. 요청한 추가 시점 정렬 기준을 따르며 페이지네이션은 없다. "
-                                + "목록의 representativeNovel·recentNovels[]와 같은 구조다."),
+                        .description("포함 작품 전체. 요청한 추가 시점 정렬 기준을 따르며 페이지네이션은 없다."),
                 fieldWithPath("novels[].novelId").type(NUMBER).description("작품 ID"),
                 fieldWithPath("novels[].title").type(STRING).description("작품 제목"),
                 fieldWithPath("novels[].novelImage").type(STRING).description("작품 표지 이미지 URL"),

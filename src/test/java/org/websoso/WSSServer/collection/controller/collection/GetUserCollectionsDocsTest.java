@@ -91,13 +91,11 @@ class GetUserCollectionsDocsTest {
             "`nextCursor`를 그대로 넘깁니다. `hasNext`가 false면 `nextCursor`는 내려가지 않습니다.",
             "커서 값은 서버가 발급한 문자열이며 클라이언트가 만들거나 해석하지 않습니다.",
             "",
-            "응답은 페이지 정보(`collectionsCount`, `hasNext`, `nextCursor`)와 컬렉션 카드 배열(`collections`)로",
-            "나뉩니다. 카드 하나는 컬렉션 자체의 값과 작품 요약 두 종류(`representativeNovel`, `recentNovels[]`)를 담고,",
-            "두 작품 요약은 컬렉션 상세의 `novels[]`와 같은 구조(`novelId`, `title`, `novelImage`, `author`)입니다.",
+            "컬렉션 카드의 `representativeNovel`과 `recentNovels[]`는 컬렉션 상세의 `novels[]`와 같은",
+            "작품 요약 구조(`novelId`, `title`, `novelImage`, `author`)입니다.",
             "",
-            "`representativeNovel`과 `recentNovels`는 서로 독립적인 값입니다.",
             "`representativeNovel`은 카드 표지로 쓰는 대표 작품 하나이고, `recentNovels`는 최근 추가된 작품부터",
-            "최대 5개입니다. 대표 작품이 최근에 추가된 작품이면 두 곳에 같은 작품이 함께 내려갑니다.",
+            "최대 5개입니다. 둘은 서로 독립적인 값이라 대표 작품이 최근에 추가된 작품이면 두 곳에 함께 내려갑니다.",
             "따라서 클라이언트는 `recentNovels`에서 대표 작품을 걸러 내지 않아도 되며, 걸러 낼지는 화면이 정합니다.",
             "아래 성공 응답 예시는 대표 작품이 `recentNovels`에 포함된 5개짜리 카드입니다.",
             "",
@@ -286,39 +284,36 @@ class GetUserCollectionsDocsTest {
     }
 
     /**
-     * 응답은 페이지 정보와 컬렉션 카드 배열, 카드 안의 작품 요약이라는 세 겹으로 되어 있다.
-     * 생성기가 중첩 객체에 독립 스키마 이름을 붙이지 않으므로(정책 12.3절), 각 겹이 무엇이고 어디에 쓰이는지는
-     * 필드 서술이 대신 담는다. 특히 두 작품 요약은 상세의 {@code novels[]}와 같은 구조임을 서술에 명시한다.
+     * 생성기가 중첩 객체에 독립 스키마 이름을 붙이지 않으므로(정책 12.3절), 값만으로는 읽히지 않는 계약은
+     * 부모 필드 서술이 대신 담는다. 하위 필드는 값 자체만 짧게 설명한다.
      */
     private List<FieldDescriptor> responseFields() {
         return List.of(
                 fieldWithPath("collectionsCount").type(NUMBER)
-                        .description("[페이지 정보] 조회자가 볼 수 있는 전체 컬렉션 개수. 이번 페이지 개수가 아니다."),
-                fieldWithPath("hasNext").type(BOOLEAN).description("[페이지 정보] 다음 페이지가 더 있는지 여부"),
+                        .description("조회자가 볼 수 있는 전체 컬렉션 개수. 이번 페이지 개수가 아니다."),
+                fieldWithPath("hasNext").type(BOOLEAN).description("다음 페이지가 더 있는지 여부"),
                 fieldWithPath("nextCursor").type(STRING).optional()
-                        .description("[페이지 정보] 다음 요청에 그대로 넘길 커서. 다음 페이지가 없으면 null이다."),
+                        .description("다음 요청에 그대로 넘길 커서. 다음 페이지가 없으면 null이다."),
                 fieldWithPath("collections").type(ARRAY)
                         .description("컬렉션 카드 배열. 최초 생성 시점 최신순이며 이번 페이지 분량만 담는다."),
-                fieldWithPath("collections[].collectionId").type(NUMBER).description("[컬렉션 카드] 컬렉션 ID"),
-                fieldWithPath("collections[].collectionName").type(STRING).description("[컬렉션 카드] 컬렉션 이름"),
+                fieldWithPath("collections[].collectionId").type(NUMBER).description("컬렉션 ID"),
+                fieldWithPath("collections[].collectionName").type(STRING).description("컬렉션 이름"),
                 fieldWithPath("collections[].collectionDescription").type(STRING).optional()
-                        .description("[컬렉션 카드] 컬렉션 설명. 없으면 null이다."),
-                fieldWithPath("collections[].isPublic").type(BOOLEAN).description("[컬렉션 카드] 공개 여부"),
+                        .description("컬렉션 설명. 없으면 null이다."),
+                fieldWithPath("collections[].isPublic").type(BOOLEAN).description("공개 여부"),
                 fieldWithPath("collections[].novelCount").type(NUMBER)
-                        .description("[컬렉션 카드] 컬렉션에 포함된 전체 작품 수. recentNovels의 개수가 아니다."),
+                        .description("컬렉션에 포함된 전체 작품 수. recentNovels의 개수가 아니다."),
                 fieldWithPath("collections[].representativeNovel").type(OBJECT)
-                        .description("[작품 요약] 카드 표지로 쓰는 대표 작품 하나. recentNovels와 독립적인 값이며 "
-                                + "대표 작품이 최근 추가 작품이면 recentNovels에도 같은 작품이 함께 내려간다. "
-                                + "상세의 novels[]와 같은 구조다."),
+                        .description("카드 표지로 쓰는 대표 작품 하나. recentNovels와 독립적인 값이며 "
+                                + "대표 작품이 최근 추가 작품이면 recentNovels에도 같은 작품이 함께 내려간다."),
                 fieldWithPath("collections[].representativeNovel.novelId").type(NUMBER).description("작품 ID"),
                 fieldWithPath("collections[].representativeNovel.title").type(STRING).description("작품 제목"),
                 fieldWithPath("collections[].representativeNovel.novelImage").type(STRING)
                         .description("작품 표지 이미지 URL"),
                 fieldWithPath("collections[].representativeNovel.author").type(STRING).description("작가"),
                 fieldWithPath("collections[].recentNovels").type(ARRAY)
-                        .description("[작품 요약] 카드 안 미리보기 줄. 최근 추가된 작품부터 최대 5개다. "
-                                + "대표 작품을 제외하지 않으므로 representativeNovel과 같은 작품이 포함될 수 있다. "
-                                + "상세의 novels[]와 같은 구조다."),
+                        .description("카드 안 미리보기 줄. 최근 추가된 작품부터 최대 5개다. "
+                                + "대표 작품을 제외하지 않으므로 representativeNovel과 같은 작품이 포함될 수 있다."),
                 fieldWithPath("collections[].recentNovels[].novelId").type(NUMBER).description("작품 ID"),
                 fieldWithPath("collections[].recentNovels[].title").type(STRING).description("작품 제목"),
                 fieldWithPath("collections[].recentNovels[].novelImage").type(STRING)
