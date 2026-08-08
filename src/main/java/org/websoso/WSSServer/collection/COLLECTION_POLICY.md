@@ -312,7 +312,7 @@ CREATE TABLE collection_novel (
 - 작품 수 경계값(0/1/2/99/100/101), 중복 작품, 대표 작품 포함 여부, 대표 작품 `null`
 - 설명 정규화와 이름 앞뒤 공백 유지
 - 생성 시 공개 여부 생략의 기본값 처리와 명시적 `false` 유지, 수정으로 공개 여부를 양방향으로 바꾸는 것
-- 엔티티의 공개 여부가 원시 타입 `boolean`이고 `nullable = false`인 것, 수정 DTO가 `null`을 거부하는 것
+- 수정 DTO가 공개 여부의 `null`을 거부하는 것
 - 수정 시 유지되는 작품의 `CollectionNovel` 인스턴스가 교체되지 않고 `createdDate`가 보존되는 것
 - 제거된 작품만 빠지고 새 작품만 추가되는 delta 결과
 - 소유자·비소유자 판정과 상태 코드
@@ -322,7 +322,6 @@ CREATE TABLE collection_novel (
 - 응답 상태 코드와 생성 응답의 `collectionId`
 - 요청 DTO Bean Validation 메시지
 - 유니크 제약조건 위반 판별기의 이름 매칭과 테이블명 접두 정규화
-- 엔티티 매핑 메타데이터(테이블명, 유니크 제약조건, 인덱스, cascade와 orphanRemoval, 컬럼 길이와 nullable)
 - 포함 작품만 바뀌는 수정과 아무것도 바뀌지 않는 수정이 모두 `modified_date`를 갱신하는 것,
   실패한 수정은 갱신하지 않는 것
 - 수정·삭제 대상 조회가 잠금 쿼리를, 조회 전용 경로가 잠금 없는 쿼리를 사용하는 것
@@ -333,10 +332,12 @@ CREATE TABLE collection_novel (
   컬렉션을 조회하거나 삭제하지 않는 것
 - 회원 탈퇴 시 소유자 이관이 사용자 삭제보다 먼저, 피드·댓글 작성자 익명화와 나란히 일어나는 것과,
   이관 실패 시 사용자를 지우지 않는 것
-- 엔티티가 공개 여부에 DB 기본값(`columnDefinition`)을 선언하지 않는 것
-- 컬렉션 리포지토리가 `@Query`를 쓰지 않는 것, `CollectionService`의 public 메서드가 모두 트랜잭션 속성을
-  명시하고 조회 전용 메서드만 `readOnly`이며 전파 속성이 기본값인 것,
-  유스케이스 트랜잭션 경계를 Application 계층이 가지고 있는 것
+
+자동 테스트로 강제하지 않는 것
+
+엔티티 매핑 메타데이터(테이블명, 유니크 제약조건, 인덱스, cascade와 orphanRemoval, 컬럼 길이와 nullable,
+공개 여부의 원시 타입과 `columnDefinition` 부재)와 리포지토리·트랜잭션 구조 규약(`@Query` 미사용,
+트랜잭션 속성 명시와 경계 위치)은 3·9·10·11절과 `CLAUDE.md` 코드 컨벤션이 정의하고 코드 리뷰로 지킨다.
 
 실제 DB에서만 확인할 수 있는 것
 
