@@ -5,6 +5,7 @@ import static org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessage
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.websoso.WSSServer.collection.service.CollectionService;
 import org.websoso.WSSServer.feed.comment.service.CommentServiceImpl;
 import org.websoso.WSSServer.feed.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
@@ -34,6 +35,7 @@ public class AccountApplication {
     private final KakaoClient kakaoClient;
     private final CommentServiceImpl commentService;
     private final FeedServiceImpl feedService;
+    private final CollectionService collectionService;
 
     public void withdrawUser(User user, WithdrawalRequest withdrawalRequest) {
         unlinkSocialAccount(user);
@@ -68,6 +70,8 @@ public class AccountApplication {
         tokenService.deleteAllRefreshTokensByUserId(userId);
         commentService.updateWriterToUnknown(userId);
         feedService.updateWriterToUnknown(userId);
+        // 컬렉션은 소유자가 반드시 있어야 하므로 사용자 삭제 전에 소유자를 알 수 없는 사용자로 넘긴다.
+        collectionService.updateOwnerToUnknown(userId);
         userRepository.deleteById(userId);
     }
 
