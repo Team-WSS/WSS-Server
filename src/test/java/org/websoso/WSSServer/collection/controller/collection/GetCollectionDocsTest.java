@@ -17,6 +17,7 @@ import static org.springframework.restdocs.payload.JsonFieldType.NUMBER;
 import static org.springframework.restdocs.payload.JsonFieldType.OBJECT;
 import static org.springframework.restdocs.payload.JsonFieldType.STRING;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -90,14 +91,14 @@ class GetCollectionDocsTest {
             "Authorization 헤더 없이 호출하면 비로그인 조회로 처리되고, 비공개 컬렉션에는 접근할 수 없습니다.",
             "",
             "포함 작품은 컬렉션에 추가된 시점을 기준으로 정렬합니다.",
-            "`sortCriteria=RECENT`이면 최근에 추가한 작품부터, `OLD`이면 먼저 추가한 작품부터 반환합니다.",
+            "sortCriteria=RECENT이면 최근에 추가한 작품부터, OLD이면 먼저 추가한 작품부터 반환합니다.",
             "포함 작품에는 페이지네이션이 없습니다. 컬렉션의 작품 수가 최대 100개로 제한되므로 한 번에 모두 반환합니다.",
             "",
-            "`novels[]`는 컬렉션 목록의 `representativeNovel`·`recentNovels[]`와 같은 작품 요약 구조",
-            "(`novelId`, `title`, `novelImage`, `author`)입니다. 완결 여부와 평점은 이 응답에 포함되지 않으며",
+            "novels 배열은 컬렉션 목록의 representativeNovel·recentNovels 배열과 같은 작품 요약 구조",
+            "(novelId, title, novelImage, author)입니다. 완결 여부와 평점은 이 응답에 포함되지 않으며",
             "필요하면 작품 상세 API에서 조회합니다.",
             "",
-            "`owner.avatarImage`는 항상 내려갑니다. 아바타는 모든 사용자가 반드시 가지는 값입니다.",
+            "owner.avatarImage는 항상 내려갑니다. 아바타는 모든 사용자가 반드시 가지는 값입니다.",
             "",
             "Try it out으로 로그인 상태를 재현하려면 상단 Authorize에 실제 Access Token을 입력해야 합니다.",
             "",
@@ -282,8 +283,15 @@ class GetCollectionDocsTest {
                         .description("조회할 컬렉션 ID"));
     }
 
+    /**
+     * Swagger UI에서 직접 입력 대신 값을 고르게 하려면 생성 명세의 파라미터 스키마에 enum이 있어야 한다.
+     * restdocs-api-spec은 {@code enumValues} 속성을 읽어 스키마 enum으로 옮기므로 허용 값을 그 속성으로 넘긴다.
+     * 생략하면 서버가 최근 추가순으로 정렬하므로 같은 값을 스키마 default로 남긴다.
+     */
     private List<ParameterDescriptorWithType> queryParameters() {
         return List.of(parameterWithName("sortCriteria").type(SimpleType.STRING).optional()
+                .defaultValue(RECENT.name())
+                .attributes(key("enumValues").value(List.of(RECENT.name(), OLD.name())))
                 .description("포함 작품 정렬 기준. RECENT는 최근 추가순, OLD는 오래된 추가순이며 생략하면 RECENT다."));
     }
 
