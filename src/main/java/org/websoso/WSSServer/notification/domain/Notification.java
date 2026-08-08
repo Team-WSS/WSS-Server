@@ -46,37 +46,50 @@ public class Notification extends BaseEntity {
     @Comment("관련 피드 ID (댓글/좋아요 등 피드 이동 시 사용)")
     private Long feedId;
 
+    @Column
+    @Comment("관련 작품 ID (완결/휴재 복귀 알림에서 작품 이동 시 사용)")
+    private Long novelId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notification_type_id", nullable = false)
     @Comment("알림 유형 (1:공지, 2:이벤트, 3:인기글, 4:댓글, 5:좋아요)")
     private NotificationType notificationType;
 
-    private Notification(String title, String body, String detail, Long userId, Long feedId, NotificationType type) {
+    private Notification(
+            String title,
+            String body,
+            String detail,
+            Long userId,
+            Long feedId,
+            Long novelId,
+            NotificationType type
+    ) {
         this.notificationTitle = title;
         this.notificationBody = body;
         this.notificationDetail = detail;
         this.userId = userId;
         this.feedId = feedId;
+        this.novelId = novelId;
         this.notificationType = type;
     }
 
     @Deprecated
     public static Notification create(String title, String body, String detail, Long userId, Long feedId, NotificationType type) {
-        return new Notification(title, body, detail, userId, feedId, type);
+        return new Notification(title, body, detail, userId, feedId, null, type);
     }
 
     /**
      * 피드 관련 알림 생성 (댓글, 좋아요 등)
      */
     public static Notification createFeedNotification(String title, String body, Long userId, Long feedId, NotificationType type) {
-        return new Notification(title, body, null, userId, feedId, type);
+        return new Notification(title, body, null, userId, feedId, null, type);
     }
 
     /**
      * 공지사항 알림 생성 (전체 또는 개인)
      */
     public static Notification createNoticeNotification(String title, String body, String detail, Long userId, NotificationType type) {
-        return new Notification(title, body, detail, userId, null, type);
+        return new Notification(title, body, detail, userId, null, null, type);
     }
 
 }
