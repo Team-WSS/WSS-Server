@@ -34,7 +34,7 @@ public class CollectionFindApplication {
     public static final int MAX_PAGE_SIZE = 100;
 
     /**
-     * 컬렉션 카드에 보여 주는 최근 추가 작품 수.
+     * 컬렉션 카드의 미리보기 줄에 보여 주는 작품 수.
      */
     public static final int NOVEL_PREVIEW_SIZE = 5;
 
@@ -72,7 +72,7 @@ public class CollectionFindApplication {
         boolean hasNext = rows.size() > size;
         List<CollectionPreviewRow> pageRows = hasNext ? rows.subList(0, size) : rows;
 
-        // 6. 이번 페이지 컬렉션의 최근 추가 작품을 한 번의 조회로 모두 가져온다.
+        // 6. 이번 페이지 컬렉션의 미리보기 작품을 한 번의 조회로 모두 가져온다.
         Map<Long, List<CollectionNovelSummaryGetResponse>> recentNovels = collectionQueryService
                 .findRecentNovelPreviews(toCollectionIds(pageRows), NOVEL_PREVIEW_SIZE);
 
@@ -106,7 +106,7 @@ public class CollectionFindApplication {
         // 3. 비공개 컬렉션은 소유자만 볼 수 있다. 비로그인 조회자는 소유자가 될 수 없다.
         validateVisible(detail, viewerId);
 
-        // 4. 포함 작품을 추가된 시점 기준으로 정렬해 읽는다.
+        // 4. 포함 작품을 클라이언트가 저장해 둔 표시 순서 기준으로 정렬해 읽는다.
         List<CollectionNovelSummaryGetResponse> novels = collectionQueryService.findCollectionNovels(
                 collectionId,
                 sortCriteria

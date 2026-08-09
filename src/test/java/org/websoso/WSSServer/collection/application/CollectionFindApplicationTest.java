@@ -260,7 +260,7 @@ class CollectionFindApplicationTest {
         assertThat(response.collectionsCount()).isEqualTo(37L);
     }
 
-    @DisplayName("이번 페이지 컬렉션의 최근 추가 작품을 한 번의 조회로 가져와 카드에 채운다")
+    @DisplayName("이번 페이지 컬렉션의 표시 순서 앞쪽 미리보기 작품을 한 번의 조회로 가져와 카드에 채운다")
     @Test
     void fillsRecentNovelPreviewsWithSingleQuery() {
         givenPage(List.of(row(11L, FIRST_CREATED), row(12L, SECOND_CREATED)));
@@ -298,7 +298,7 @@ class CollectionFindApplicationTest {
         assertThat(card.novelCount()).isEqualTo(12L);
     }
 
-    @DisplayName("대표 작품도 최근 추가 작품과 같은 작품 요약으로 내보낸다")
+    @DisplayName("대표 작품도 미리보기 작품과 같은 작품 요약으로 내보낸다")
     @Test
     void representativeNovelUsesSharedNovelSummary() {
         givenPage(List.of(row(11L, FIRST_CREATED)));
@@ -311,10 +311,10 @@ class CollectionFindApplicationTest {
     }
 
     /**
-     * 대표 작품과 최근 추가 작품은 서로 독립적인 값이다. 대표 작품이 최근에 추가된 작품이면 두 곳에 같은 작품이
+     * 대표 작품과 미리보기 작품은 서로 독립적인 값이다. 대표 작품이 표시 순서 앞쪽 작품이면 두 곳에 같은 작품이
      * 함께 나가며, 이는 정상 응답이다.
      */
-    @DisplayName("대표 작품이 최근 추가 작품에 포함돼도 그대로 함께 내보낸다")
+    @DisplayName("대표 작품이 미리보기 작품에 포함돼도 그대로 함께 내보낸다")
     @Test
     void keepsRepresentativeNovelDuplicatedInRecentNovels() {
         givenPage(List.of(row(11L, FIRST_CREATED)));
@@ -329,7 +329,7 @@ class CollectionFindApplicationTest {
                 .containsExactly(5L, 7L);
     }
 
-    @DisplayName("최근 추가 작품은 컬렉션당 최대 5개까지만 조회한다")
+    @DisplayName("미리보기 작품은 컬렉션당 표시 순서 앞에서부터 최대 5개까지만 조회한다")
     @Test
     void previewsAtMostFiveRecentNovelsPerCollection() {
         givenPage(List.of(row(11L, FIRST_CREATED)));
@@ -433,7 +433,7 @@ class CollectionFindApplicationTest {
                 .isEqualTo(COLLECTION_NOT_FOUND);
     }
 
-    @DisplayName("상세 작품은 요청한 추가 시점 정렬 기준으로 조회한다")
+    @DisplayName("상세 작품은 요청한 표시 순서 정렬 기준으로 조회한다")
     @ParameterizedTest
     @ValueSource(strings = {"RECENT", "OLD"})
     void detailAppliesRequestedSortCriteria(String criteria) {

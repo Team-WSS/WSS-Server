@@ -46,7 +46,7 @@ public class CollectionQueryService {
     }
 
     /**
-     * 여러 컬렉션의 최근 추가 작품 미리보기를 컬렉션별로 묶어 돌려준다.
+     * 여러 컬렉션의 미리보기 작품을 표시 순서 앞에서부터 컬렉션별로 묶어 돌려준다.
      * 미리보기가 하나도 없는 컬렉션은 결과에 들어 있지 않으므로 호출하는 쪽에서 빈 목록으로 다룬다.
      */
     @Transactional(readOnly = true)

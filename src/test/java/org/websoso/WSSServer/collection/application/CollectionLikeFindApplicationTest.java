@@ -235,7 +235,7 @@ class CollectionLikeFindApplicationTest {
         assertThat(response.collections().get(0).likeCount()).isEqualTo(24L);
     }
 
-    @DisplayName("카드는 컬렉션별 최근 추가 작품 미리보기를 채운다")
+    @DisplayName("카드는 컬렉션별 표시 순서 앞쪽 미리보기 작품을 채운다")
     @Test
     void cardCarriesRecentNovelPreview() {
         givenPage(List.of(row(11L, FIRST_LIKED)));

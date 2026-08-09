@@ -332,7 +332,8 @@ class PutCollectionDocsTest {
                         .description("공개 여부. 필수이며 생략할 수 없다."),
                 fieldWithPath("novelIds").type(ARRAY)
                         .attributes(key("itemsType").value("number"))
-                        .description("컬렉션에 포함할 작품 ID 목록. 필수이며 1개 이상 100개 이하이고 중복될 수 없다."),
+                        .description("컬렉션에 포함할 작품 ID 목록. 필수이며 1개 이상 100개 이하이고 중복될 수 없다. "
+                                + "배열 순서가 그대로 표시 순서로 저장되므로, 포함 작품을 바꾸지 않고 순서만 재배치해 보내도 된다."),
                 fieldWithPath("representativeNovelId").type(NUMBER)
                         .description("대표 작품 ID. 필수이며 novelIds에 포함된 작품이어야 한다."));
     }
