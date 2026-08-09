@@ -167,6 +167,21 @@ public class Collection extends BaseEntity {
         return userId != null && userId.equals(user.getUserId());
     }
 
+    /**
+     * 접근 정책 판단에 필요한 값만 뽑아 낸다. 판정 자체는 {@link CollectionAccess}가 소유한다.
+     * <p>
+     * 검증 결과를 다음 트랜잭션까지 들고 가야 하는 경로는 엔티티가 아니라 이 값을 넘긴다.
+     * 엔티티를 넘기면 조회 트랜잭션이 닫힌 뒤 지연 로딩이 깨지거나, 바깥 영속성 컨텍스트가 관리하던
+     * 인스턴스가 다음 트랜잭션의 저장 대상에 딸려 들어간다.
+     */
+    public CollectionAccess toAccess() {
+        return new CollectionAccess(collectionId, getOwnerId(), isPublic);
+    }
+
+    public Long getOwnerId() {
+        return user.getUserId();
+    }
+
     public List<Long> toCollectionNovelIds() {
         return collectionNovels.stream()
                 .map(CollectionNovel::getNovelId)

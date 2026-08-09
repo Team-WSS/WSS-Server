@@ -9,6 +9,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.collection.domain.Collection;
+import org.websoso.WSSServer.collection.domain.CollectionAccess;
 import org.websoso.WSSServer.collection.exception.CustomCollectionException;
 import org.websoso.WSSServer.collection.exception.DuplicateCollectionNovelException;
 import org.websoso.WSSServer.collection.repository.CollectionNovelConstraintViolationDetector;
@@ -83,6 +84,23 @@ public class CollectionService {
                         COLLECTION_NOT_FOUND,
                         "collection with the given id is not found"
                 ));
+    }
+
+    /**
+     * 접근 정책 판단에 필요한 값만 조회한다. 좋아요 등록·취소처럼 컬렉션의 공개 여부와 소유자만 필요한
+     * 경로에서 사용한다. 포함 작품을 함께 읽으면 쓰지 않을 작품 행을 최대 100개까지 가져오게 된다.
+     * <p>
+     * 엔티티가 아니라 값을 돌려주므로, 이 조회 트랜잭션이 닫힌 뒤에 검증하거나 다음 트랜잭션으로
+     * 넘겨도 지연 로딩이 깨지거나 준영속 엔티티가 딸려 들어가지 않는다.
+     */
+    @Transactional(readOnly = true)
+    public CollectionAccess getCollectionAccessOrException(Long collectionId) {
+        return collectionRepository.findById(collectionId)
+                .orElseThrow(() -> new CustomCollectionException(
+                        COLLECTION_NOT_FOUND,
+                        "collection with the given id is not found"
+                ))
+                .toAccess();
     }
 
     /**

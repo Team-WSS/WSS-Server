@@ -312,6 +312,20 @@ class CollectionTest {
         assertThat(collection.isOwnedBy(null)).isFalse();
     }
 
+    /**
+     * 접근 정책 판단에 필요한 값만 뽑아 두면 조회 트랜잭션이 닫힌 뒤에도 검증할 수 있고,
+     * 다음 트랜잭션에 준영속 엔티티가 딸려 들어가지 않는다.
+     */
+    @DisplayName("접근 정책 판단에 필요한 식별자·소유자·공개 여부만 값으로 뽑아 낸다")
+    @Test
+    void extractsAccessValues() {
+        Collection collection = Collection.create(owner, "이름", null, false, novels(List.of(1L)), 1L);
+        ReflectionTestUtils.setField(collection, "collectionId", 100L);
+
+        assertThat(collection.toAccess())
+                .isEqualTo(new CollectionAccess(100L, OWNER_ID, false));
+    }
+
     private Collection create(List<Long> novelIds, Long representativeNovelId) {
         return Collection.create(owner, "이름", "설명", true, novels(novelIds), representativeNovelId);
     }

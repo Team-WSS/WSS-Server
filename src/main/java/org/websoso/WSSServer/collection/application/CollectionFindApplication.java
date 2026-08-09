@@ -16,6 +16,7 @@ import org.websoso.WSSServer.collection.domain.CollectionCursor;
 import org.websoso.WSSServer.collection.exception.CustomCollectionException;
 import org.websoso.WSSServer.collection.repository.projection.CollectionDetailRow;
 import org.websoso.WSSServer.collection.repository.projection.CollectionPreviewRow;
+import org.websoso.WSSServer.collection.service.CollectionLikeService;
 import org.websoso.WSSServer.collection.service.CollectionQueryService;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.user.domain.User;
@@ -40,6 +41,7 @@ public class CollectionFindApplication {
     private final UserService userService;
     private final BlockService blockService;
     private final CollectionQueryService collectionQueryService;
+    private final CollectionLikeService collectionLikeService;
 
     /**
      * 사용자별 컬렉션 목록을 커서 기반으로 조회한다. 마이페이지 미리보기는 이 API를 {@code size=3}으로 호출한다.
@@ -110,7 +112,11 @@ public class CollectionFindApplication {
                 sortCriteria
         );
 
-        return detail.toResponse(viewerId, novels);
+        // 5. 좋아요 수는 컬렉션 자체의 값이라 상세 쿼리가 함께 읽고, 조회자가 좋아요했는지만 따로 확인한다.
+        //    비로그인 조회는 좋아요를 누를 수 없으므로 조회 없이 false다.
+        boolean isLiked = collectionLikeService.isLikedBy(viewerId, collectionId);
+
+        return detail.toResponse(viewerId, isLiked, novels);
     }
 
     private void validatePageSize(int size) {
