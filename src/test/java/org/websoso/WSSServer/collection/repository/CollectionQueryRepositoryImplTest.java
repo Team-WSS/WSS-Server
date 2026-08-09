@@ -279,7 +279,7 @@ class CollectionQueryRepositoryImplTest {
 
     private CollectionDetailRow detailRow() {
         return new CollectionDetailRow(COLLECTION_ID, "취향 저격 로판", null, true, OWNER_ID, "웹소소",
-                "https://image/avatar.png", 5L);
+                "https://image/avatar.png", 5L, 3L);
     }
 
     private JPAQuery<Object> givenSelectQuery(List<Object> rows) {

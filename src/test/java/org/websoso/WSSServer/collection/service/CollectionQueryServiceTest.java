@@ -130,7 +130,7 @@ class CollectionQueryServiceTest {
     @Test
     void returnsDetailRow() {
         CollectionDetailRow row = new CollectionDetailRow(COLLECTION_ID, "취향 저격 로판", null, true,
-                7L, "웹소소", "https://image/avatar.png", 5L);
+                7L, "웹소소", "https://image/avatar.png", 5L, 3L);
         given(collectionQueryRepository.findCollectionDetailRow(COLLECTION_ID)).willReturn(Optional.of(row));
 
         assertThat(service.getCollectionDetailRowOrException(COLLECTION_ID)).isEqualTo(row);

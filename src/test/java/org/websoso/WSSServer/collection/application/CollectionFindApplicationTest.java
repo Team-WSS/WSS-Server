@@ -40,6 +40,7 @@ import org.websoso.WSSServer.collection.domain.CollectionCursor;
 import org.websoso.WSSServer.collection.exception.CustomCollectionException;
 import org.websoso.WSSServer.collection.repository.projection.CollectionDetailRow;
 import org.websoso.WSSServer.collection.repository.projection.CollectionPreviewRow;
+import org.websoso.WSSServer.collection.service.CollectionLikeService;
 import org.websoso.WSSServer.collection.service.CollectionQueryService;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.user.domain.User;
@@ -54,6 +55,7 @@ class CollectionFindApplicationTest {
     private static final long VISITOR_ID = 2L;
     private static final long COLLECTION_ID = 100L;
     private static final int SIZE = 2;
+    private static final long LIKE_COUNT = 128L;
 
     private static final LocalDateTime FIRST_CREATED = LocalDateTime.of(2025, 1, 3, 0, 0);
     private static final LocalDateTime SECOND_CREATED = LocalDateTime.of(2025, 1, 2, 0, 0);
@@ -70,6 +72,9 @@ class CollectionFindApplicationTest {
 
     @Mock
     private CollectionQueryService collectionQueryService;
+
+    @Mock
+    private CollectionLikeService collectionLikeService;
 
     // 목록 조회: 공개 범위
 
@@ -503,6 +508,69 @@ class CollectionFindApplicationTest {
         assertThat(response.novelCount()).isEqualTo(2);
     }
 
+    // 상세 조회: 좋아요
+
+    @DisplayName("상세는 컬렉션이 받은 전체 좋아요 수를 함께 내보낸다")
+    @Test
+    void detailCarriesLikeCount() {
+        givenDetail(detailRow(true));
+        givenNovels(List.of());
+
+        CollectionGetResponse response = application.getCollection(user(VISITOR_ID), COLLECTION_ID, null);
+
+        assertThat(response.likeCount()).isEqualTo(LIKE_COUNT);
+    }
+
+    /**
+     * 좋아요 수는 컬렉션 자체의 값이므로 상세 쿼리가 함께 읽는다. 상세를 그리는 데 쓰는 쿼리 수가
+     * 좋아요 때문에 늘지 않아야 한다.
+     */
+    @DisplayName("상세는 좋아요 수를 따로 조회하지 않는다")
+    @Test
+    void detailDoesNotQueryLikeCountSeparately() {
+        givenDetail(detailRow(true));
+        givenNovels(List.of());
+
+        application.getCollection(user(VISITOR_ID), COLLECTION_ID, null);
+
+        then(collectionLikeService).should(never()).countByCollectionId(anyLong());
+    }
+
+    @DisplayName("상세는 조회자가 좋아요했는지를 함께 내보낸다")
+    @Test
+    void detailCarriesViewerLikedFlag() {
+        givenDetail(detailRow(true));
+        givenNovels(List.of());
+        given(collectionLikeService.isLikedBy(VISITOR_ID, COLLECTION_ID)).willReturn(true);
+
+        CollectionGetResponse response = application.getCollection(user(VISITOR_ID), COLLECTION_ID, null);
+
+        assertThat(response.isLiked()).isTrue();
+    }
+
+    @DisplayName("좋아요하지 않은 조회자의 상세는 isLiked가 false다")
+    @Test
+    void detailIsNotLikedWhenViewerHasNotLiked() {
+        givenDetail(detailRow(true));
+        givenNovels(List.of());
+        given(collectionLikeService.isLikedBy(VISITOR_ID, COLLECTION_ID)).willReturn(false);
+
+        CollectionGetResponse response = application.getCollection(user(VISITOR_ID), COLLECTION_ID, null);
+
+        assertThat(response.isLiked()).isFalse();
+    }
+
+    @DisplayName("비로그인 상세 조회의 isLiked는 false다")
+    @Test
+    void detailIsNotLikedForAnonymousViewer() {
+        givenDetail(detailRow(true));
+        givenNovels(List.of());
+
+        CollectionGetResponse response = application.getCollection(null, COLLECTION_ID, null);
+
+        assertThat(response.isLiked()).isFalse();
+    }
+
     private void givenPage(List<CollectionPreviewRow> rows) {
         given(collectionQueryService.findCollectionPreviewRows(anyLong(), anyBoolean(), any(), anyInt()))
                 .willReturn(rows);
@@ -523,7 +591,7 @@ class CollectionFindApplicationTest {
 
     private CollectionDetailRow detailRow(boolean isPublic) {
         return new CollectionDetailRow(COLLECTION_ID, "취향 저격 로판", "여주가 강한 로맨스 판타지", isPublic,
-                OWNER_ID, "웹소소", "https://image/avatar.png", 5L);
+                OWNER_ID, "웹소소", "https://image/avatar.png", 5L, LIKE_COUNT);
     }
 
     private CollectionNovelSummaryGetResponse novelSummary(Long novelId) {

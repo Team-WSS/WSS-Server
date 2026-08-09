@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.COLLECTION_NOT_FOUND;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,6 +35,7 @@ import org.websoso.WSSServer.collection.controller.dto.CollectionCreateResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionUpdateRequest;
 import org.websoso.WSSServer.collection.domain.Collection;
 import org.websoso.WSSServer.collection.exception.CustomCollectionException;
+import org.websoso.WSSServer.collection.service.CollectionLikeService;
 import org.websoso.WSSServer.collection.service.CollectionService;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.novel.domain.Novel;
@@ -50,6 +53,9 @@ class CollectionManagementApplicationTest {
 
     @Mock
     private CollectionService collectionService;
+
+    @Mock
+    private CollectionLikeService collectionLikeService;
 
     @Mock
     private NovelServiceImpl novelService;
@@ -209,6 +215,34 @@ class CollectionManagementApplicationTest {
         assertThatThrownBy(() -> application.delete(owner, COLLECTION_ID))
                 .isInstanceOf(CustomCollectionException.class);
         then(collectionService).should(never()).delete(any());
+    }
+
+    /**
+     * 컬렉션 좋아요는 컬렉션과 별도 애그리거트라 cascade로 따라 지워지지 않는다. 좋아요 행이 컬렉션을
+     * 외래 키로 참조하므로 남아 있으면 컬렉션 삭제 자체가 실패한다. 따라서 순서까지 확인한다.
+     */
+    @DisplayName("컬렉션을 삭제하면 그 컬렉션의 좋아요를 컬렉션보다 먼저 지운다")
+    @Test
+    void deletesCollectionLikesBeforeCollection() {
+        Collection collection = existingCollection(List.of(1L), 1L);
+        given(collectionService.getOwnedCollectionOrException(COLLECTION_ID, OWNER_ID)).willReturn(collection);
+
+        application.delete(owner, COLLECTION_ID);
+
+        InOrder inOrder = inOrder(collectionLikeService, collectionService);
+        inOrder.verify(collectionLikeService).deleteAllByCollectionId(COLLECTION_ID);
+        inOrder.verify(collectionService).delete(collection);
+    }
+
+    @DisplayName("소유자가 아니면 좋아요도 지우지 않는다")
+    @Test
+    void keepsCollectionLikesWhenDeleteIsRejected() {
+        willThrow(new CustomCollectionException(INVALID_AUTHORIZED_COLLECTION, "not owner"))
+                .given(collectionService).getOwnedCollectionOrException(COLLECTION_ID, OWNER_ID);
+
+        assertThatThrownBy(() -> application.delete(owner, COLLECTION_ID))
+                .isInstanceOf(CustomCollectionException.class);
+        then(collectionLikeService).should(never()).deleteAllByCollectionId(anyLong());
     }
 
     private Collection existingCollection(List<Long> novelIds, Long representativeNovelId) {

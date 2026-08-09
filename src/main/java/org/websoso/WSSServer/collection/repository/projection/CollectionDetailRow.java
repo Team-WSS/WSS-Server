@@ -19,14 +19,20 @@ public record CollectionDetailRow(
         Long ownerId,
         String ownerNickname,
         String ownerAvatarImage,
-        Long representativeNovelId
+        Long representativeNovelId,
+        Long likeCount
 ) {
 
     public boolean isOwnedBy(Long userId) {
         return userId != null && userId.equals(ownerId);
     }
 
-    public CollectionGetResponse toResponse(Long viewerId, List<CollectionNovelSummaryGetResponse> novels) {
+    /**
+     * {@code isLiked}는 조회자가 이 컬렉션에 좋아요를 눌렀는지다. 컬렉션 자체의 값이 아니라 조회자별 값이므로
+     * 컬렉션을 읽는 이 행이 아니라 호출하는 쪽이 판단해서 넘긴다. 비로그인 조회에서는 항상 {@code false}다.
+     */
+    public CollectionGetResponse toResponse(Long viewerId, boolean isLiked,
+                                            List<CollectionNovelSummaryGetResponse> novels) {
         return new CollectionGetResponse(
                 collectionId,
                 name,
@@ -36,6 +42,8 @@ public record CollectionDetailRow(
                 toOwner(),
                 representativeNovelId,
                 novels.size(),
+                likeCount == null ? 0L : likeCount,
+                isLiked,
                 novels
         );
     }

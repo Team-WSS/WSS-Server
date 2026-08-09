@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.collection.repository;
 
 import static org.websoso.WSSServer.collection.domain.QCollection.collection;
+import static org.websoso.WSSServer.collection.domain.QCollectionLike.collectionLike;
 import static org.websoso.WSSServer.collection.domain.QCollectionNovel.collectionNovel;
 import static org.websoso.WSSServer.novel.domain.QNovel.novel;
 import static org.websoso.WSSServer.user.domain.QAvatarProfile.avatarProfile;
@@ -119,7 +120,8 @@ public class CollectionQueryRepositoryImpl implements CollectionQueryRepository 
                         user.userId,
                         user.nickname,
                         avatarProfile.avatarProfileImage,
-                        collection.representativeNovelId
+                        collection.representativeNovelId,
+                        likeCount()
                 ))
                 .from(collection)
                 .join(collection.user, user)
@@ -155,6 +157,17 @@ public class CollectionQueryRepositoryImpl implements CollectionQueryRepository 
                 .select(novelCountSub.collectionNovelId.count())
                 .from(novelCountSub)
                 .where(novelCountSub.collection.collectionId.eq(collection.collectionId));
+    }
+
+    /**
+     * 컬렉션이 받은 좋아요 수. 상세 쿼리 안의 서브 쿼리이므로 상세를 그리는 쿼리 수가 늘지 않는다.
+     * 컬렉션이 비공개로 바뀌어도 좋아요 데이터를 지우지 않으므로 이 값은 공개 여부와 무관하게 유지된다.
+     */
+    private JPQLQuery<Long> likeCount() {
+        return JPAExpressions
+                .select(collectionLike.collectionLikeId.count())
+                .from(collectionLike)
+                .where(collectionLike.collection.collectionId.eq(collection.collectionId));
     }
 
     /**

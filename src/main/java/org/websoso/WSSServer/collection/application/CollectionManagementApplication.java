@@ -13,6 +13,7 @@ import org.websoso.WSSServer.collection.controller.dto.CollectionCreateRequest;
 import org.websoso.WSSServer.collection.controller.dto.CollectionCreateResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionUpdateRequest;
 import org.websoso.WSSServer.collection.domain.Collection;
+import org.websoso.WSSServer.collection.service.CollectionLikeService;
 import org.websoso.WSSServer.collection.service.CollectionService;
 import org.websoso.WSSServer.exception.exception.CustomNovelException;
 import org.websoso.WSSServer.novel.domain.Novel;
@@ -25,6 +26,7 @@ import org.websoso.WSSServer.user.domain.User;
 public class CollectionManagementApplication {
 
     private final CollectionService collectionService;
+    private final CollectionLikeService collectionLikeService;
     private final NovelServiceImpl novelService;
 
     public CollectionCreateResponse create(User user, CollectionCreateRequest request) {
@@ -76,8 +78,11 @@ public class CollectionManagementApplication {
         // 1. 존재하는 컬렉션인지, 요청한 사용자가 소유자인지 확인한다.
         Collection collection = collectionService.getOwnedCollectionOrException(collectionId, user.getUserId());
 
-        // 2. 컬렉션 작품은 cascade + orphanRemoval로 함께 삭제된다.
-        //    별도 애그리거트인 컬렉션 좋아요(#562)는 이 지점에 정리를 추가한다.
+        // 2. 컬렉션 좋아요는 별도 애그리거트라 cascade로 따라 지워지지 않으므로 컬렉션보다 먼저 지운다.
+        //    좋아요가 남아 있으면 외래 키 때문에 컬렉션 삭제 자체가 실패한다.
+        collectionLikeService.deleteAllByCollectionId(collectionId);
+
+        // 3. 컬렉션 작품은 cascade + orphanRemoval로 함께 삭제된다.
         collectionService.delete(collection);
     }
 
