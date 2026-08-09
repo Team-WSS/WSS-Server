@@ -100,6 +100,10 @@ class GetCollectionDocsTest {
             "",
             "owner.avatarImage는 항상 내려갑니다. 아바타는 모든 사용자가 반드시 가지는 값입니다.",
             "",
+            "likeCount는 이 컬렉션이 받은 전체 좋아요 수이고, isLiked는 조회자가 좋아요를 눌렀는지입니다.",
+            "좋아요 데이터는 컬렉션이 비공개로 바뀌어도 유지되므로 likeCount는 공개 여부에 영향을 받지 않습니다.",
+            "비로그인 조회에서 isLiked는 항상 false입니다.",
+            "",
             "Try it out으로 로그인 상태를 재현하려면 상단 Authorize에 실제 Access Token을 입력해야 합니다.",
             "",
             "이 API가 정의하는 응답은 다음과 같습니다.",
@@ -318,6 +322,11 @@ class GetCollectionDocsTest {
                         .description("대표 작품 ID. novels에 포함된 작품 중 하나다."),
                 fieldWithPath("novelCount").type(NUMBER)
                         .description("컬렉션에 포함된 작품 수. novels의 길이와 같다."),
+                fieldWithPath("likeCount").type(NUMBER)
+                        .description("컬렉션이 받은 전체 좋아요 수. 조회자의 좋아요 여부와 무관하며 "
+                                + "컬렉션이 비공개로 바뀌어도 유지된다."),
+                fieldWithPath("isLiked").type(BOOLEAN)
+                        .description("조회자가 이 컬렉션에 좋아요를 눌렀는지 여부. 비로그인 조회는 항상 false다."),
                 fieldWithPath("novels").type(ARRAY)
                         .description("포함 작품 전체. 요청한 추가 시점 정렬 기준을 따르며 페이지네이션은 없다."),
                 fieldWithPath("novels[].novelId").type(NUMBER).description("작품 ID"),
@@ -336,6 +345,8 @@ class GetCollectionDocsTest {
                 new CollectionOwnerGetResponse(7L, "웹소소", "https://image.websoso/avatar/1.png"),
                 5L,
                 2,
+                128L,
+                true,
                 List.of(
                         new CollectionNovelSummaryGetResponse(9L, "전지적 독자 시점",
                                 "https://image.websoso/novel/9.png", "싱숑"),
