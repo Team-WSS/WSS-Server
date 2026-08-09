@@ -57,7 +57,7 @@ public class CollectionLikeFindApplication {
         boolean hasNext = rows.size() > size;
         List<LikedCollectionRow> pageRows = hasNext ? rows.subList(0, size) : rows;
 
-        // 4. 이번 페이지 컬렉션의 최근 추가 작품을 한 번의 조회로 모두 가져온다.
+        // 4. 이번 페이지 컬렉션의 미리보기 작품을 한 번의 조회로 모두 가져온다.
         Map<Long, List<CollectionNovelSummaryGetResponse>> recentNovels = collectionQueryService
                 .findRecentNovelPreviews(toCollectionIds(pageRows), NOVEL_PREVIEW_SIZE);
 

@@ -335,7 +335,8 @@ class PostCollectionDocsTest {
                         .description("공개 여부. 생략할 수 있고 생략하면 공개(true)로 생성한다."),
                 fieldWithPath("novelIds").type(ARRAY)
                         .attributes(key("itemsType").value("number"))
-                        .description("컬렉션에 포함할 작품 ID 목록. 필수이며 1개 이상 100개 이하이고 중복될 수 없다."),
+                        .description("컬렉션에 포함할 작품 ID 목록. 필수이며 1개 이상 100개 이하이고 중복될 수 없다. "
+                                + "배열 순서가 그대로 표시 순서로 저장되며 앞쪽이 최신·우선, 뒤쪽이 오래된 작품이다."),
                 fieldWithPath("representativeNovelId").type(NUMBER)
                         .description("대표 작품 ID. 필수이며 novelIds에 포함된 작품이어야 한다."));
     }

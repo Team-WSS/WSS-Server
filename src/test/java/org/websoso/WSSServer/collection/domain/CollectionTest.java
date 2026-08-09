@@ -3,6 +3,7 @@ package org.websoso.WSSServer.collection.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.DUPLICATE_COLLECTION_NOVEL;
@@ -42,6 +43,16 @@ class CollectionTest {
         assertThat(collection.toCollectionNovelIds()).containsExactly(30L, 10L, 20L);
         assertThat(collection.getRepresentativeNovelId()).isEqualTo(20L);
         assertThat(collection.getUser()).isSameAs(owner);
+    }
+
+    @DisplayName("컬렉션을 생성하면 표시 순서를 요청 배열 순서대로 0부터 매긴다")
+    @Test
+    void assignsDisplayOrderFromRequestedOrderOnCreate() {
+        Collection collection = create(List.of(30L, 10L, 20L), 20L);
+
+        assertThat(collection.getCollectionNovels())
+                .extracting(CollectionNovel::getNovelId, CollectionNovel::getDisplayOrder)
+                .containsExactly(tuple(30L, 0), tuple(10L, 1), tuple(20L, 2));
     }
 
     @DisplayName("생성 시 공개 여부를 생략하면 공개 컬렉션으로 만든다")
@@ -240,6 +251,44 @@ class CollectionTest {
                 .extracting(CollectionNovel::getCreatedDate)
                 .isNull();
         assertThat(collection.getCollectionNovels()).doesNotContain(before.get(1L));
+    }
+
+    /**
+     * 재배치만 하는 수정에서 추가 시점이 순서를 정하면, 기존 작품끼리의 순서를 바꿔 달라는 요청이
+     * 아무 일도 하지 않는 것으로 끝난다. 표시 순서를 따로 두는 이유가 이것이다.
+     */
+    @DisplayName("기존 작품의 순서만 재배치하는 수정도 요청 배열 순서로 저장하고 추가 시점은 보존한다")
+    @Test
+    void reordersRetainedNovelsWithoutTouchingAddedTime() {
+        Collection collection = create(List.of(1L, 2L, 3L), 1L);
+
+        LocalDateTime addedAt = LocalDateTime.of(2026, 1, 1, 0, 0);
+        collection.getCollectionNovels().forEach(collectionNovel ->
+                ReflectionTestUtils.setField(collectionNovel, "createdDate", addedAt));
+        Map<Long, CollectionNovel> before = byNovelId(collection);
+
+        collection.update("이름", "설명", true, novels(List.of(3L, 1L, 2L)), 1L);
+
+        assertThat(collection.toCollectionNovelIds()).containsExactly(3L, 1L, 2L);
+        assertThat(collection.getCollectionNovels())
+                .extracting(CollectionNovel::getNovelId, CollectionNovel::getDisplayOrder)
+                .containsExactly(tuple(3L, 0), tuple(1L, 1), tuple(2L, 2));
+        assertThat(byNovelId(collection)).allSatisfy((novelId, collectionNovel) -> {
+            assertThat(collectionNovel).isSameAs(before.get(novelId));
+            assertThat(collectionNovel.getCreatedDate()).isEqualTo(addedAt);
+        });
+    }
+
+    @DisplayName("작품이 빠지고 더해진 수정도 표시 순서를 요청 배열 순서대로 0부터 다시 매긴다")
+    @Test
+    void renumbersDisplayOrderAfterNovelDelta() {
+        Collection collection = create(List.of(1L, 2L, 3L), 1L);
+
+        collection.update("수정된 이름", null, true, novels(List.of(4L, 3L, 2L)), 2L);
+
+        assertThat(collection.getCollectionNovels())
+                .extracting(CollectionNovel::getNovelId, CollectionNovel::getDisplayOrder)
+                .containsExactly(tuple(4L, 0), tuple(3L, 1), tuple(2L, 2));
     }
 
     @DisplayName("포함 작품이 모두 그대로면 컬렉션 작품 행을 하나도 새로 만들지 않는다")

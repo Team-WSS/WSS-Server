@@ -98,12 +98,11 @@ public class CollectionQueryRepositoryImpl implements CollectionQueryRepository 
                 .join(collectionNovel.novel, novel)
                 .where(
                         collectionNovel.collection.collectionId.in(collectionIds),
-                        withinRecentlyAdded(previewSize)
+                        withinPreview(previewSize)
                 )
                 .orderBy(
                         collectionNovel.collection.collectionId.asc(),
-                        collectionNovel.createdDate.desc(),
-                        collectionNovel.collectionNovelId.desc()
+                        collectionNovel.displayOrder.asc()
                 )
                 .fetch();
     }
@@ -143,7 +142,7 @@ public class CollectionQueryRepositoryImpl implements CollectionQueryRepository 
                 .from(collectionNovel)
                 .join(collectionNovel.novel, novel)
                 .where(collectionNovel.collection.collectionId.eq(collectionId))
-                .orderBy(addedDateOrder(sortCriteria), addedIdOrder(sortCriteria))
+                .orderBy(displayOrder(sortCriteria))
                 .fetch();
     }
 
@@ -197,45 +196,28 @@ public class CollectionQueryRepositoryImpl implements CollectionQueryRepository 
     }
 
     /**
-     * 컬렉션마다 최근 추가 작품 {@code previewSize}개만 남긴다.
+     * 컬렉션마다 표시 순서 앞쪽 {@code previewSize}개만 남긴다.
      * <p>
-     * JPQL에는 윈도 함수가 없으므로, 같은 컬렉션 안에서 자기보다 나중에 추가된 작품 수가
-     * {@code previewSize}개 미만인 행만 고르는 방식으로 컬렉션별 상위 N개를 한 번의 쿼리로 얻는다.
-     * 컬렉션마다 미리보기를 따로 조회하지 않으므로 목록 크기에 비례해 쿼리가 늘지 않고,
+     * 표시 순서는 컬렉션 안에서 {@code 0}부터 연속하므로(컬렉션 작품 엔티티가 보장하는 불변식이다)
+     * 컬렉션별 상위 N개가 {@code displayOrder < previewSize} 하나로 정확히 표현된다. 윈도 함수도,
+     * 자기보다 앞선 행을 세는 상관 서브 쿼리도 필요 없고 인덱스 {@code (collection_id, display_order)}를
+     * 그대로 탄다. 컬렉션마다 미리보기를 따로 조회하지 않으므로 목록 크기에 비례해 쿼리가 늘지 않고,
      * 컬렉션당 최대 {@code previewSize}행만 돌아온다.
      */
-    private BooleanExpression withinRecentlyAdded(int previewSize) {
-        QCollectionNovel newerNovel = new QCollectionNovel("newerCollectionNovel");
-
-        return JPAExpressions
-                .select(newerNovel.collectionNovelId.count())
-                .from(newerNovel)
-                .where(
-                        newerNovel.collection.collectionId.eq(collectionNovel.collection.collectionId),
-                        newerNovel.createdDate.gt(collectionNovel.createdDate)
-                                .or(newerNovel.createdDate.eq(collectionNovel.createdDate)
-                                        .and(newerNovel.collectionNovelId.gt(collectionNovel.collectionNovelId)))
-                )
-                .lt((long) previewSize);
+    private BooleanExpression withinPreview(int previewSize) {
+        return collectionNovel.displayOrder.lt(previewSize);
     }
 
-    private OrderSpecifier<?> addedDateOrder(SortCriteria sortCriteria) {
-        if (isOldest(sortCriteria)) {
-            return new OrderSpecifier<>(Order.ASC, collectionNovel.createdDate);
+    /**
+     * 포함 작품의 순서는 클라이언트가 저장해 둔 표시 순서 하나로 정해진다. 앞쪽이 최신·우선이므로
+     * 최신순은 오름차순이고, 오래된순은 그 역순이다. 표시 순서는 컬렉션 안에서 중복되지 않으므로
+     * 보조 정렬 기준이 없어도 순서가 결정적이다.
+     */
+    private OrderSpecifier<?> displayOrder(SortCriteria sortCriteria) {
+        if (sortCriteria != null && sortCriteria.isOld()) {
+            return new OrderSpecifier<>(Order.DESC, collectionNovel.displayOrder);
         }
 
-        return new OrderSpecifier<>(Order.DESC, collectionNovel.createdDate);
-    }
-
-    private OrderSpecifier<?> addedIdOrder(SortCriteria sortCriteria) {
-        if (isOldest(sortCriteria)) {
-            return new OrderSpecifier<>(Order.ASC, collectionNovel.collectionNovelId);
-        }
-
-        return new OrderSpecifier<>(Order.DESC, collectionNovel.collectionNovelId);
-    }
-
-    private boolean isOldest(SortCriteria sortCriteria) {
-        return sortCriteria != null && sortCriteria.isOld();
+        return new OrderSpecifier<>(Order.ASC, collectionNovel.displayOrder);
     }
 }

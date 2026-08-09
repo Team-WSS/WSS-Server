@@ -150,8 +150,21 @@ class CollectionManagementApplicationTest {
 
         application.update(owner, COLLECTION_ID, updateRequest(List.of(2L, 3L, 4L), 2L));
 
-        assertThat(collection.toCollectionNovelIds()).containsExactlyInAnyOrder(2L, 3L, 4L);
+        assertThat(collection.toCollectionNovelIds()).containsExactly(2L, 3L, 4L);
         assertThat(collection.getRepresentativeNovelId()).isEqualTo(2L);
+        then(collectionService).should().flushChanges();
+    }
+
+    @DisplayName("기존 작품의 순서만 바꾼 수정도 요청 배열 순서를 그대로 저장한다")
+    @Test
+    void updatesNovelOrderWhenOnlyOrderChanges() {
+        Collection collection = existingCollection(List.of(1L, 2L, 3L), 1L);
+        given(collectionService.getOwnedCollectionOrException(COLLECTION_ID, OWNER_ID)).willReturn(collection);
+        givenExistingNovels(3L, 1L, 2L);
+
+        application.update(owner, COLLECTION_ID, updateRequest(List.of(3L, 1L, 2L), 1L));
+
+        assertThat(collection.toCollectionNovelIds()).containsExactly(3L, 1L, 2L);
         then(collectionService).should().flushChanges();
     }
 

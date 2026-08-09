@@ -167,29 +167,29 @@ class CollectionQueryRepositoryImplTest {
         assertThat(capturedConditions(query)).contains("collectionNovel.collection.collectionId in [11, 12, 13]");
     }
 
-    @DisplayName("미리보기는 컬렉션마다 최근 추가 작품 상위 N개만 읽는다")
+    @DisplayName("미리보기는 컬렉션마다 표시 순서 앞쪽 N개만 읽는다")
     @Test
-    void previewKeepsOnlyRecentNovelsPerCollection() {
+    void previewKeepsOnlyLeadingNovelsPerCollection() {
         JPAQuery<Object> query = givenSelectQuery(List.of());
 
         repository.findRecentNovelPreviewRows(List.of(11L), PREVIEW_SIZE);
 
-        assertThat(capturedConditions(query)).contains("< " + PREVIEW_SIZE);
+        assertThat(capturedConditions(query)).contains("collectionNovel.displayOrder < " + PREVIEW_SIZE);
     }
 
-    @DisplayName("미리보기는 컬렉션 안에서 최근 추가 순으로 읽는다")
+    @DisplayName("미리보기는 컬렉션 안에서 클라이언트가 정한 표시 순서대로 읽는다")
     @Test
-    void previewOrdersByRecentlyAdded() {
+    void previewOrdersByDisplayOrder() {
         JPAQuery<Object> query = givenSelectQuery(List.of());
 
         repository.findRecentNovelPreviewRows(List.of(11L), PREVIEW_SIZE);
 
         List<OrderSpecifier<?>> orders = capturedOrders(query);
-        assertThat(orders).hasSize(3);
-        assertThat(orders.get(1).getOrder()).isEqualTo(Order.DESC);
-        assertThat(orders.get(1).getTarget()).hasToString("collectionNovel.createdDate");
-        assertThat(orders.get(2).getOrder()).isEqualTo(Order.DESC);
-        assertThat(orders.get(2).getTarget()).hasToString("collectionNovel.collectionNovelId");
+        assertThat(orders).hasSize(2);
+        assertThat(orders.get(0).getOrder()).isEqualTo(Order.ASC);
+        assertThat(orders.get(0).getTarget()).hasToString("collectionNovel.collection.collectionId");
+        assertThat(orders.get(1).getOrder()).isEqualTo(Order.ASC);
+        assertThat(orders.get(1).getTarget()).hasToString("collectionNovel.displayOrder");
     }
 
     @DisplayName("미리보기할 컬렉션이 없으면 쿼리를 실행하지 않는다")
@@ -245,35 +245,32 @@ class CollectionQueryRepositoryImplTest {
         then(query).should(never()).leftJoin(any(EntityPath.class), any(Path.class));
     }
 
-    @DisplayName("상세 작품은 기본적으로 추가된 시점 최신순으로 읽는다")
+    @DisplayName("상세 작품은 기본적으로 표시 순서 앞쪽부터 읽는다")
     @Test
-    void detailNovelsDefaultToNewestFirst() {
-        assertAddedOrder(RECENT, Order.DESC);
+    void detailNovelsDefaultToClientOrder() {
+        assertDisplayOrder(RECENT, Order.ASC);
     }
 
-    @DisplayName("정렬 기준을 생략해도 추가된 시점 최신순으로 읽는다")
+    @DisplayName("정렬 기준을 생략해도 표시 순서 앞쪽부터 읽는다")
     @Test
-    void detailNovelsFallBackToNewestFirst() {
-        assertAddedOrder(null, Order.DESC);
+    void detailNovelsFallBackToClientOrder() {
+        assertDisplayOrder(null, Order.ASC);
     }
 
-    @DisplayName("오래된순을 요청하면 추가된 시점 오름차순으로 읽는다")
+    @DisplayName("오래된순을 요청하면 표시 순서 역순으로 읽는다")
     @Test
     void detailNovelsSupportOldestFirst() {
-        assertAddedOrder(OLD, Order.ASC);
+        assertDisplayOrder(OLD, Order.DESC);
     }
 
-    private void assertAddedOrder(SortCriteria sortCriteria, Order expected) {
+    private void assertDisplayOrder(SortCriteria sortCriteria, Order expected) {
         JPAQuery<Object> query = givenSelectQuery(List.of());
 
         repository.findCollectionNovelRows(COLLECTION_ID, sortCriteria);
 
-        List<OrderSpecifier<?>> orders = capturedOrders(query);
-        assertThat(orders).hasSize(2);
-        assertThat(orders.get(0).getOrder()).isEqualTo(expected);
-        assertThat(orders.get(0).getTarget()).hasToString("collectionNovel.createdDate");
-        assertThat(orders.get(1).getOrder()).isEqualTo(expected);
-        assertThat(orders.get(1).getTarget()).hasToString("collectionNovel.collectionNovelId");
+        OrderSpecifier<?> order = capturedOrder(query);
+        assertThat(order.getOrder()).isEqualTo(expected);
+        assertThat(order.getTarget()).hasToString("collectionNovel.displayOrder");
         assertThat(capturedCondition(query)).contains("collectionNovel.collection.collectionId = " + COLLECTION_ID);
     }
 
@@ -321,6 +318,16 @@ class CollectionQueryRepositoryImplTest {
         then(query).should().where(captor.capture());
 
         return captor.getValue().toString();
+    }
+
+    /**
+     * QueryDSL은 정렬 기준이 하나뿐인 {@code orderBy}에도 가변 인자가 아닌 단일 인자 메서드를 쓰므로 따로 확인한다.
+     */
+    private OrderSpecifier<?> capturedOrder(JPAQuery<Object> query) {
+        ArgumentCaptor<OrderSpecifier<?>> captor = ArgumentCaptor.forClass(OrderSpecifier.class);
+        then(query).should().orderBy(captor.capture());
+
+        return captor.getValue();
     }
 
     private List<OrderSpecifier<?>> capturedOrders(JPAQuery<Object> query) {

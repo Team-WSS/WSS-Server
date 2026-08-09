@@ -32,7 +32,7 @@ public interface CollectionQueryRepository {
     long countVisibleCollections(Long ownerId, boolean includePrivate);
 
     /**
-     * 여러 컬렉션의 최근 추가 작품을 컬렉션당 {@code previewSize}개까지 한 번의 쿼리로 읽는다.
+     * 여러 컬렉션의 미리보기 작품을 표시 순서 앞에서부터 컬렉션당 {@code previewSize}개까지 한 번의 쿼리로 읽는다.
      * 컬렉션마다 따로 조회하지 않으므로 목록 크기에 비례해 쿼리가 늘지 않는다.
      */
     List<CollectionNovelPreviewRow> findRecentNovelPreviewRows(List<Long> collectionIds, int previewSize);
@@ -47,8 +47,8 @@ public interface CollectionQueryRepository {
     Optional<CollectionDetailRow> findCollectionDetailRow(Long collectionId);
 
     /**
-     * 컬렉션에 포함된 작품을 컬렉션에 추가된 시점 기준으로 정렬해 읽는다.
-     * 같은 시각에 추가된 작품이 있어도 순서가 흔들리지 않도록 식별자를 보조 정렬 기준으로 쓴다.
+     * 컬렉션에 포함된 작품을 표시 순서({@code display_order}) 기준으로 정렬해 읽는다.
+     * 표시 순서는 컬렉션 안에서 비거나 중복되지 않으므로 보조 정렬 기준이 필요하지 않다.
      * <p>
      * 목록 카드와 같은 작품 요약만 내보내므로 작품 통계는 읽지 않는다.
      */

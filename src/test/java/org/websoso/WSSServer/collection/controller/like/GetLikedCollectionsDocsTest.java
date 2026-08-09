@@ -286,14 +286,14 @@ class GetLikedCollectionsDocsTest {
                         .description("컬렉션이 받은 전체 좋아요 수. 조회자의 좋아요 하나가 아니다."),
                 fieldWithPath("collections[].representativeNovel").type(OBJECT)
                         .description("카드 표지로 쓰는 대표 작품 하나. recentNovels와 독립적인 값이며 "
-                                + "대표 작품이 최근 추가 작품이면 recentNovels에도 같은 작품이 함께 내려간다."),
+                                + "대표 작품이 표시 순서 앞쪽 작품이면 recentNovels에도 같은 작품이 함께 내려간다."),
                 fieldWithPath("collections[].representativeNovel.novelId").type(NUMBER).description("작품 ID"),
                 fieldWithPath("collections[].representativeNovel.title").type(STRING).description("작품 제목"),
                 fieldWithPath("collections[].representativeNovel.novelImage").type(STRING)
                         .description("작품 표지 이미지 URL"),
                 fieldWithPath("collections[].representativeNovel.author").type(STRING).description("작가"),
                 fieldWithPath("collections[].recentNovels").type(ARRAY)
-                        .description("카드 안 미리보기 줄. 최근 추가된 작품부터 최대 5개다. "
+                        .description("카드 안 미리보기 줄. novelIds로 저장한 표시 순서 앞에서부터 최대 5개다. "
                                 + "대표 작품을 제외하지 않으므로 representativeNovel과 같은 작품이 포함될 수 있다."),
                 fieldWithPath("collections[].recentNovels[].novelId").type(NUMBER).description("작품 ID"),
                 fieldWithPath("collections[].recentNovels[].title").type(STRING).description("작품 제목"),
