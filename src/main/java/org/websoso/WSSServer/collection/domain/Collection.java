@@ -3,6 +3,7 @@ package org.websoso.WSSServer.collection.domain;
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
+import static java.util.Comparator.comparingInt;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.DUPLICATE_COLLECTION_NOVEL;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.INVALID_AUTHORIZED_COLLECTION;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.INVALID_COLLECTION_NOVEL_COUNT;
@@ -18,8 +19,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -102,6 +105,7 @@ public class Collection extends BaseEntity {
 
     /**
      * 컬렉션을 생성한다. 공개 여부를 생략하면 생성자가 기본값 공개를 적용한다.
+     * 포함 작품의 표시 순서는 요청 배열 순서를 그대로 따른다.
      */
     public static Collection create(User user, String name, String description, Boolean isPublic,
                                     List<Novel> novels, Long representativeNovelId) {
@@ -114,7 +118,11 @@ public class Collection extends BaseEntity {
                 isPublic,
                 representativeNovelId
         );
-        novels.forEach(novel -> collection.collectionNovels.add(CollectionNovel.create(collection, novel)));
+        for (int displayOrder = 0; displayOrder < novels.size(); displayOrder++) {
+            collection.collectionNovels.add(
+                    CollectionNovel.create(collection, novels.get(displayOrder), displayOrder)
+            );
+        }
 
         return collection;
     }
@@ -123,9 +131,12 @@ public class Collection extends BaseEntity {
      * 컬렉션을 전체 교체 의미로 수정한다.
      * <p>
      * 포함 작품은 전체 삭제 후 재삽입하지 않고 delta로만 갱신한다. 계속 포함되는 작품의
-     * {@link CollectionNovel} 행은 손대지 않으므로 컬렉션에 추가된 시점({@code createdDate})이 보존되고,
-     * 같은 트랜잭션에서 같은 {@code (collection_id, novel_id)}를 지웠다가 다시 넣지 않으므로
-     * 유니크 제약 위반도 발생하지 않는다.
+     * {@link CollectionNovel} 행은 표시 순서 외에는 손대지 않으므로 컬렉션에 추가된
+     * 시점({@code createdDate})이 보존되고, 같은 트랜잭션에서 같은 {@code (collection_id, novel_id)}를
+     * 지웠다가 다시 넣지 않으므로 유니크 제약 위반도 발생하지 않는다.
+     * <p>
+     * 표시 순서는 추가 시점과 별개의 값이므로 요청 배열 순서대로 매번 다시 매긴다. 계속 포함되는 작품만
+     * 재배치한 수정도 새 순서로 저장된다.
      * <p>
      * 검증을 통과한 수정은 항상 컬렉션을 수정된 것으로 표시한다. 포함 작품만 바뀌면 컬렉션 행 자체는
      * 변경되지 않아 자동 갱신되는 {@code modifiedDate}가 그대로 남기 때문에, 자식만 바뀐 경우에도
@@ -143,15 +154,29 @@ public class Collection extends BaseEntity {
         touch();
     }
 
+    /**
+     * 제거된 작품만 지우고 새 작품만 더한 뒤, 남은 작품 전체에 요청 배열 순서를 다시 매긴다.
+     * 유지되는 작품은 인스턴스를 교체하지 않고 표시 순서만 갱신하므로 추가 시점이 그대로 남는다.
+     */
     private void applyNovelDelta(List<Novel> novels) {
         Set<Long> requestedNovelIds = new LinkedHashSet<>(toNovelIds(novels));
 
         collectionNovels.removeIf(collectionNovel -> !requestedNovelIds.contains(collectionNovel.getNovelId()));
 
-        Set<Long> retainedNovelIds = new LinkedHashSet<>(toCollectionNovelIds());
-        novels.stream()
-                .filter(novel -> !retainedNovelIds.contains(novel.getNovelId()))
-                .forEach(novel -> collectionNovels.add(CollectionNovel.create(this, novel)));
+        Map<Long, CollectionNovel> retained = new HashMap<>();
+        collectionNovels.forEach(collectionNovel -> retained.put(collectionNovel.getNovelId(), collectionNovel));
+
+        for (int displayOrder = 0; displayOrder < novels.size(); displayOrder++) {
+            Novel novel = novels.get(displayOrder);
+            CollectionNovel collectionNovel = retained.get(novel.getNovelId());
+            if (collectionNovel == null) {
+                collectionNovels.add(CollectionNovel.create(this, novel, displayOrder));
+                continue;
+            }
+            collectionNovel.updateDisplayOrder(displayOrder);
+        }
+
+        collectionNovels.sort(comparingInt(CollectionNovel::getDisplayOrder));
     }
 
     public void validateOwner(Long userId) {

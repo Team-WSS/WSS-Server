@@ -90,8 +90,9 @@ class GetCollectionDocsTest {
             "공유 링크로 들어온 비로그인 사용자도 공개 컬렉션은 볼 수 있으므로 인증은 선택입니다.",
             "Authorization 헤더 없이 호출하면 비로그인 조회로 처리되고, 비공개 컬렉션에는 접근할 수 없습니다.",
             "",
-            "포함 작품은 컬렉션에 추가된 시점을 기준으로 정렬합니다.",
-            "sortCriteria=RECENT이면 최근에 추가한 작품부터, OLD이면 먼저 추가한 작품부터 반환합니다.",
+            "포함 작품은 컬렉션을 만들거나 수정할 때 novelIds 배열로 보낸 순서를 그대로 유지합니다.",
+            "배열 앞쪽이 최신·우선이고 뒤쪽이 오래된 작품이라는 뜻이므로,",
+            "sortCriteria=RECENT이면 저장된 순서대로, OLD이면 그 역순으로 반환합니다.",
             "포함 작품에는 페이지네이션이 없습니다. 컬렉션의 작품 수가 최대 100개로 제한되므로 한 번에 모두 반환합니다.",
             "",
             "novels 배열은 컬렉션 목록의 representativeNovel·recentNovels 배열과 같은 작품 요약 구조",
@@ -290,13 +291,13 @@ class GetCollectionDocsTest {
     /**
      * Swagger UI에서 직접 입력 대신 값을 고르게 하려면 생성 명세의 파라미터 스키마에 enum이 있어야 한다.
      * restdocs-api-spec은 {@code enumValues} 속성을 읽어 스키마 enum으로 옮기므로 허용 값을 그 속성으로 넘긴다.
-     * 생략하면 서버가 최근 추가순으로 정렬하므로 같은 값을 스키마 default로 남긴다.
+     * 생략하면 서버가 저장된 표시 순서대로 정렬하므로 같은 값을 스키마 default로 남긴다.
      */
     private List<ParameterDescriptorWithType> queryParameters() {
         return List.of(parameterWithName("sortCriteria").type(SimpleType.STRING).optional()
                 .defaultValue(RECENT.name())
                 .attributes(key("enumValues").value(List.of(RECENT.name(), OLD.name())))
-                .description("포함 작품 정렬 기준. RECENT는 최근 추가순, OLD는 오래된 추가순이며 생략하면 RECENT다."));
+                .description("포함 작품 정렬 기준. RECENT는 novelIds로 보낸 순서대로, OLD는 그 역순이며 생략하면 RECENT다."));
     }
 
     /**
@@ -328,7 +329,8 @@ class GetCollectionDocsTest {
                 fieldWithPath("isLiked").type(BOOLEAN)
                         .description("조회자가 이 컬렉션에 좋아요를 눌렀는지 여부. 비로그인 조회는 항상 false다."),
                 fieldWithPath("novels").type(ARRAY)
-                        .description("포함 작품 전체. 요청한 추가 시점 정렬 기준을 따르며 페이지네이션은 없다."),
+                        .description("포함 작품 전체. novelIds로 저장한 표시 순서를 요청한 정렬 기준으로 읽으며 "
+                                + "페이지네이션은 없다."),
                 fieldWithPath("novels[].novelId").type(NUMBER).description("작품 ID"),
                 fieldWithPath("novels[].title").type(STRING).description("작품 제목"),
                 fieldWithPath("novels[].novelImage").type(STRING).description("작품 표지 이미지 URL"),

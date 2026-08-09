@@ -94,8 +94,8 @@ class GetUserCollectionsDocsTest {
             "컬렉션 카드의 representativeNovel과 recentNovels 배열은 컬렉션 상세의 novels 배열과 같은",
             "작품 요약 구조(novelId, title, novelImage, author)입니다.",
             "",
-            "representativeNovel은 카드 표지로 쓰는 대표 작품 하나이고, recentNovels는 최근 추가된 작품부터",
-            "최대 5개입니다. 둘은 서로 독립적인 값이라 대표 작품이 최근에 추가된 작품이면 두 곳에 함께 내려갑니다.",
+            "representativeNovel은 카드 표지로 쓰는 대표 작품 하나이고, recentNovels는 novelIds로 저장한",
+            "표시 순서 앞에서부터 최대 5개입니다. 둘은 서로 독립적인 값이라 대표 작품이 앞쪽 작품이면 두 곳에 함께 내려갑니다.",
             "따라서 클라이언트는 recentNovels에서 대표 작품을 걸러 내지 않아도 되며, 걸러 낼지는 화면이 정합니다.",
             "아래 성공 응답 예시는 대표 작품이 recentNovels에 포함된 5개짜리 카드입니다.",
             "",
@@ -305,14 +305,14 @@ class GetUserCollectionsDocsTest {
                         .description("컬렉션에 포함된 전체 작품 수. recentNovels의 개수가 아니다."),
                 fieldWithPath("collections[].representativeNovel").type(OBJECT)
                         .description("카드 표지로 쓰는 대표 작품 하나. recentNovels와 독립적인 값이며 "
-                                + "대표 작품이 최근 추가 작품이면 recentNovels에도 같은 작품이 함께 내려간다."),
+                                + "대표 작품이 표시 순서 앞쪽 작품이면 recentNovels에도 같은 작품이 함께 내려간다."),
                 fieldWithPath("collections[].representativeNovel.novelId").type(NUMBER).description("작품 ID"),
                 fieldWithPath("collections[].representativeNovel.title").type(STRING).description("작품 제목"),
                 fieldWithPath("collections[].representativeNovel.novelImage").type(STRING)
                         .description("작품 표지 이미지 URL"),
                 fieldWithPath("collections[].representativeNovel.author").type(STRING).description("작가"),
                 fieldWithPath("collections[].recentNovels").type(ARRAY)
-                        .description("카드 안 미리보기 줄. 최근 추가된 작품부터 최대 5개다. "
+                        .description("카드 안 미리보기 줄. novelIds로 저장한 표시 순서 앞에서부터 최대 5개다. "
                                 + "대표 작품을 제외하지 않으므로 representativeNovel과 같은 작품이 포함될 수 있다."),
                 fieldWithPath("collections[].recentNovels[].novelId").type(NUMBER).description("작품 ID"),
                 fieldWithPath("collections[].recentNovels[].title").type(STRING).description("작품 제목"),
