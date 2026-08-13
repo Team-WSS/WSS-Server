@@ -12,12 +12,15 @@ import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.websoso.support.logging.request.RequestLoggingFilter;
 
+/** JWT 인증 결과와 요청 로그용 사용자 식별자 전달을 검증한다. */
 class JwtAuthenticationFilterTest {
 
     private static final String TOKEN = "dummy-token";
@@ -26,21 +29,26 @@ class JwtAuthenticationFilterTest {
     private final FilterChain filterChain = mock(FilterChain.class);
     private final JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, new ObjectMapper());
 
+    /** 테스트 간 인증 컨텍스트가 공유되지 않도록 정리한다. */
     @AfterEach
     void clearContext() {
         SecurityContextHolder.clearContext();
+        MDC.clear();
     }
 
+    /** 유효한 Access Token이 인증 정보와 문자열 사용자 ID를 요청에 설정하는지 검증한다. */
     @DisplayName("유효한 Access Token이면 인증 정보를 설정하고 필터 체인을 계속 진행한다")
     @Test
     void validAccessToken_authenticatesAndContinues() throws Exception {
         given(jwtUtil.validateJWT(TOKEN)).willReturn(JwtValidationType.VALID_ACCESS);
         given(jwtUtil.getUserIdFromJwt(TOKEN)).willReturn(42L);
 
-        MockHttpServletResponse response = doFilter(bearerRequest(TOKEN));
+        MockHttpServletRequest request = bearerRequest(TOKEN);
+        MockHttpServletResponse response = doFilter(request);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         assertThat(authentication.getPrincipal()).isEqualTo(42L);
+        assertThat(MDC.get(RequestLoggingFilter.USER_ID)).isEqualTo("42");
         verify(filterChain).doFilter(any(), any());
         assertThat(response.getStatus()).isEqualTo(200);
     }
@@ -120,12 +128,14 @@ class JwtAuthenticationFilterTest {
         assertThat(authentication).isInstanceOf(AnonymousAuthenticationToken.class);
     }
 
+    /** Bearer 토큰이 포함된 테스트 요청을 생성한다. */
     private MockHttpServletRequest bearerRequest(String token) {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer " + token);
         return request;
     }
 
+    /** 테스트 요청을 JWT 필터에 전달하고 응답을 반환한다. */
     private MockHttpServletResponse doFilter(MockHttpServletRequest request) throws Exception {
         MockHttpServletResponse response = new MockHttpServletResponse();
         filter.doFilter(request, response, filterChain);

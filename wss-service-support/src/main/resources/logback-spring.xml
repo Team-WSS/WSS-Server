@@ -3,14 +3,12 @@
 
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
-    <property name="LOG_PATTERN_CONSOLE"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %clr(%-5level) %clr([%X{traceId:-EMPTY}]){magenta} %clr(%logger{36}){cyan} - %msg%n"/>
-    <property name="LOG_PATTERN_FILE"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-EMPTY}] %logger{36} - %msg%n"/>
-
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>${LOG_PATTERN_CONSOLE}</pattern>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
+            <lineSeparator>UNIX</lineSeparator>
         </encoder>
     </appender>
 
@@ -20,8 +18,11 @@
             <fileNamePattern>logs/app-%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>14</maxHistory>
         </rollingPolicy>
-        <encoder>
-            <pattern>${LOG_PATTERN_FILE}</pattern>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
+            <lineSeparator>UNIX</lineSeparator>
         </encoder>
         <immediateFlush>true</immediateFlush>
     </appender>

@@ -9,6 +9,7 @@ import java.io.IOException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -19,7 +20,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.websoso.WSSServer.exception.error.CustomAuthError;
 import org.websoso.common.exception.ErrorResult;
+import org.websoso.support.logging.request.RequestLoggingFilter;
 
+/** JWT 인증을 처리하고 인증된 사용자 식별자를 요청 로그 컨텍스트에 전달한다. */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
     private final ObjectMapper objectMapper;
 
+    /** Access Token을 검증하고 인증 성공 시 실제 사용자 ID를 MDC에 저장한다. */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
@@ -40,6 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             switch (validationResult) {
                 case VALID_ACCESS -> {
                     Long userId = jwtUtil.getUserIdFromJwt(token);
+                    MDC.put(RequestLoggingFilter.USER_ID, userId.toString());
                     CustomAuthenticationToken customAuthenticationToken =
                             new CustomAuthenticationToken(userId, null, null);
                     customAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
