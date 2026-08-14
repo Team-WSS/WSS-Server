@@ -3,6 +3,7 @@
 
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
+    <!-- 컨테이너 stdout은 Docker awslogs 드라이버가 수집하므로 파일 출력은 두지 않는다 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <includeMdcKeyName>traceId</includeMdcKeyName>
@@ -12,24 +13,20 @@
         </encoder>
     </appender>
 
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/app.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/app-%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>14</maxHistory>
-        </rollingPolicy>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeMdcKeyName>traceId</includeMdcKeyName>
-            <includeMdcKeyName>userId</includeMdcKeyName>
-            <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
-            <lineSeparator>UNIX</lineSeparator>
-        </encoder>
-        <immediateFlush>true</immediateFlush>
+    <!--
+        로그 전송이 정체돼도 요청 스레드가 멈추지 않도록 비동기로 내보낸다.
+        큐가 가득 차면 로그를 버리되(neverBlock), INFO 로그까지 임의로 버리지 않도록
+        discardingThreshold는 0으로 둔다.
+    -->
+    <appender name="ASYNC_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>8192</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="CONSOLE"/>
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
+        <appender-ref ref="ASYNC_CONSOLE"/>
     </root>
 
 </configuration>
