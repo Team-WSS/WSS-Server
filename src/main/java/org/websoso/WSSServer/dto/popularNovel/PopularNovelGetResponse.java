@@ -4,12 +4,15 @@ import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.feed.feed.domain.Feed;
 import org.websoso.WSSServer.novel.domain.Novel;
 import java.util.List;
+import org.websoso.support.logging.masking.MaskingPolicy;
+import org.websoso.support.logging.masking.SensitiveData;
 
 public record PopularNovelGetResponse(
         Long novelId,
         String title,
         String novelImage,
         String avatarImage,
+        @SensitiveData(MaskingPolicy.NAME)
         String nickname,
         String feedContent,
         List<String> keywords,

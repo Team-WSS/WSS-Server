@@ -3,9 +3,12 @@ package org.websoso.WSSServer.feed.comment.controller.dto;
 import org.websoso.WSSServer.feed.comment.domain.Comment;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.util.TimeFormatUtil;
+import org.websoso.support.logging.masking.MaskingPolicy;
+import org.websoso.support.logging.masking.SensitiveData;
 
 public record CommentGetResponse(
         Long userId,
+        @SensitiveData(MaskingPolicy.NAME)
         String nickname,
         String avatarImage,
         Long commentId,
