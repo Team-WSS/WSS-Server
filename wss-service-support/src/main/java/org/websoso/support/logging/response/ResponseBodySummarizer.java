@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.springframework.stereotype.Component;
 
 /**
  * 응답 본문을 값 없이 구조만 담은 요약으로 변환한다.
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Component;
  * 값을 직렬화하지 않으므로 개인정보가 로그로 흘러갈 수 없고, 목록 응답도 원소를 순회하지 않아
  * 크기와 무관하게 비용이 일정하다.
  */
-@Component
 public class ResponseBodySummarizer {
 
     private static final Map<Class<?>, RecordComponent[]> RECORD_COMPONENTS = new ConcurrentHashMap<>();

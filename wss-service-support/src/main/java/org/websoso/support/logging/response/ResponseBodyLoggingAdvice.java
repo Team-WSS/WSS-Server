@@ -1,7 +1,6 @@
 package org.websoso.support.logging.response;
 
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -14,13 +13,12 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 /** 응답 본문의 구조만 요약해 구조화 로그로 기록한다. */
 @Slf4j
 @RestControllerAdvice
-@RequiredArgsConstructor
 public class ResponseBodyLoggingAdvice implements ResponseBodyAdvice<Object> {
 
     /** 서비스 트래픽이 아니어서 기록 가치가 없는 경로다. */
     private static final List<String> EXCLUDED_PATH_PREFIXES = List.of("/actuator", "/swagger-ui", "/v3/api-docs");
 
-    private final ResponseBodySummarizer responseBodySummarizer;
+    private final ResponseBodySummarizer responseBodySummarizer = new ResponseBodySummarizer();
 
     /** 모든 컨트롤러 응답 본문을 로깅 대상으로 지정한다. */
     @Override

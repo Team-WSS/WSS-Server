@@ -8,16 +8,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.stereotype.Component;
 
 /**
  * 본문을 민감정보가 가려진 JSON으로 변환한다.
  * <p>
  * 마스킹 직렬화기는 이 클래스가 직접 만든 전용 ObjectMapper에만 등록한다. ObjectMapper 타입 빈을
- * 노출하면 Spring Boot 기본 ObjectMapper 자동 구성을 밀어내 실제 API 응답 직렬화까지 바뀌므로,
- * 매퍼를 감싼 컴포넌트 형태로만 제공한다.
+ * 노출하면 Spring Boot 기본 ObjectMapper 자동 구성을 밀어내 실제 API 응답 직렬화까지 바뀌기 때문이다.
+ * 상태가 없어 빈으로 등록하지 않고 로깅 어드바이스가 직접 생성한다. @WebMvcTest 같은 슬라이스
+ * 테스트는 @ControllerAdvice만 등록하고 일반 컴포넌트는 제외하므로, 빈으로 두면 컨텍스트가 깨진다.
  */
-@Component
 public class SensitiveDataMasker {
 
     /** 로그 한 건이 지나치게 커지지 않도록 제한하는 직렬화 결과 길이다. */

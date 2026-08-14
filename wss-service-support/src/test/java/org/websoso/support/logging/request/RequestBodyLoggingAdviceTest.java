@@ -16,13 +16,11 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpInputMessage;
-import org.websoso.support.logging.masking.SensitiveDataMasker;
 
 /** 요청 본문이 구조화 로그의 body 필드에 유지되는지 검증한다. */
 class RequestBodyLoggingAdviceTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final SensitiveDataMasker sensitiveDataMasker = new SensitiveDataMasker();
     private final Logger logger = (Logger) LoggerFactory.getLogger(RequestBodyLoggingAdvice.class);
     private ListAppender<ILoggingEvent> listAppender;
 
@@ -45,7 +43,7 @@ class RequestBodyLoggingAdviceTest {
     /** 요청 본문을 누락하지 않고 JSON 객체 필드로 기록하는지 검증한다. */
     @Test
     void logsRequestBodyAsStructuredJsonField() {
-        RequestBodyLoggingAdvice advice = new RequestBodyLoggingAdvice(sensitiveDataMasker);
+        RequestBodyLoggingAdvice advice = new RequestBodyLoggingAdvice();
         Map<String, String> body = Map.of("content", "first\nsecond");
         MDC.put("traceId", "trace-1234");
         MDC.put(RequestLoggingFilter.USER_ID, "42");
@@ -72,7 +70,7 @@ class RequestBodyLoggingAdviceTest {
     /** 요청 본문의 민감정보를 가린 채 기록하는지 검증한다. */
     @Test
     void masksSensitiveFieldsInRequestBody() {
-        RequestBodyLoggingAdvice advice = new RequestBodyLoggingAdvice(sensitiveDataMasker);
+        RequestBodyLoggingAdvice advice = new RequestBodyLoggingAdvice();
         Map<String, String> body = Map.of("refreshToken", "eyJhbGciOiJIUzI1NiJ9", "content", "일반 내용");
 
         advice.afterBodyRead(

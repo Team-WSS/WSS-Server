@@ -23,7 +23,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 /** 응답 본문이 값 없이 구조 요약으로만 기록되는지 검증한다. */
 class ResponseBodyLoggingAdviceTest {
 
-    private final ResponseBodyLoggingAdvice advice = new ResponseBodyLoggingAdvice(new ResponseBodySummarizer());
+    private final ResponseBodyLoggingAdvice advice = new ResponseBodyLoggingAdvice();
     private final Logger logger = (Logger) LoggerFactory.getLogger(ResponseBodyLoggingAdvice.class);
     private ListAppender<ILoggingEvent> listAppender;
 

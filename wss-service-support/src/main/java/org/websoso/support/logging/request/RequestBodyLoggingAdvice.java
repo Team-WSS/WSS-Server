@@ -1,7 +1,6 @@
 package org.websoso.support.logging.request;
 
 import java.lang.reflect.Type;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
@@ -14,10 +13,9 @@ import org.websoso.support.logging.masking.SensitiveDataMasker;
 /** 역직렬화된 요청 본문을 민감정보만 가린 구조화 로그로 기록한다. */
 @Slf4j
 @RestControllerAdvice
-@RequiredArgsConstructor
 public class RequestBodyLoggingAdvice extends RequestBodyAdviceAdapter {
 
-    private final SensitiveDataMasker sensitiveDataMasker;
+    private final SensitiveDataMasker sensitiveDataMasker = new SensitiveDataMasker();
 
     /** 모든 컨트롤러 요청 본문을 로깅 대상으로 지정한다. */
     @Override
