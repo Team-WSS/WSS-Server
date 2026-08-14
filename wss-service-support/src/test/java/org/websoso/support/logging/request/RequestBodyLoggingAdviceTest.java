@@ -16,11 +16,13 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpInputMessage;
+import org.websoso.support.logging.masking.SensitiveDataMasker;
 
 /** 요청 본문이 구조화 로그의 body 필드에 유지되는지 검증한다. */
 class RequestBodyLoggingAdviceTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final SensitiveDataMasker sensitiveDataMasker = new SensitiveDataMasker();
     private final Logger logger = (Logger) LoggerFactory.getLogger(RequestBodyLoggingAdvice.class);
     private ListAppender<ILoggingEvent> listAppender;
 
@@ -43,7 +45,7 @@ class RequestBodyLoggingAdviceTest {
     /** 요청 본문을 누락하지 않고 JSON 객체 필드로 기록하는지 검증한다. */
     @Test
     void logsRequestBodyAsStructuredJsonField() {
-        RequestBodyLoggingAdvice advice = new RequestBodyLoggingAdvice(objectMapper);
+        RequestBodyLoggingAdvice advice = new RequestBodyLoggingAdvice(sensitiveDataMasker);
         Map<String, String> body = Map.of("content", "first\nsecond");
         MDC.put("traceId", "trace-1234");
         MDC.put(RequestLoggingFilter.USER_ID, "42");
@@ -65,6 +67,27 @@ class RequestBodyLoggingAdviceTest {
         assertThat(listAppender.list.get(0).getMDCPropertyMap())
                 .containsEntry("traceId", "trace-1234")
                 .containsEntry("userId", "42");
+    }
+
+    /** 요청 본문의 민감정보를 가린 채 기록하는지 검증한다. */
+    @Test
+    void masksSensitiveFieldsInRequestBody() {
+        RequestBodyLoggingAdvice advice = new RequestBodyLoggingAdvice(sensitiveDataMasker);
+        Map<String, String> body = Map.of("refreshToken", "eyJhbGciOiJIUzI1NiJ9", "content", "일반 내용");
+
+        advice.afterBodyRead(
+                body,
+                new MockHttpInputMessage(new byte[0]),
+                null,
+                Map.class,
+                MappingJackson2HttpMessageConverter.class
+        );
+
+        Map<String, Object> fields = keyValues(listAppender.list.get(0));
+        JsonNode logged = (JsonNode) fields.get("body");
+        assertThat(logged.get("refreshToken").asText()).isEqualTo("***(len=20)");
+        assertThat(logged.get("content").asText()).isEqualTo("일반 내용");
+        assertThat(fields).containsEntry("truncated", false);
     }
 
     /** 로그 이벤트의 구조화 키-값 목록을 검증 가능한 Map으로 변환한다. */

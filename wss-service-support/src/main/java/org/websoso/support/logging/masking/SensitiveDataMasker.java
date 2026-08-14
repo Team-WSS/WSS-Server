@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,10 +38,41 @@ public class SensitiveDataMasker {
     /** 민감정보를 가린 JSON으로 바꾸고, 상한을 넘으면 잘라낸 문자열로 대체한다. */
     public MaskedBody mask(Object body) {
         JsonNode masked = maskingMapper.valueToTree(body);
+        maskByFieldName(masked);
         String serialized = masked.toString();
         if (serialized.length() <= MAX_BODY_LENGTH) {
             return new MaskedBody(masked, false);
         }
         return new MaskedBody(TextNode.valueOf(serialized.substring(0, MAX_BODY_LENGTH) + TRUNCATED_SUFFIX), true);
+    }
+
+    /**
+     * 필드 이름 안전망을 JSON 트리 전체에 적용한다.
+     * <p>
+     * 어노테이션 기반 마스킹은 record·POJO 프로퍼티에만 걸리므로, Map 본문이나 중첩 구조는
+     * 직렬화 결과를 순회하며 한 번 더 걸러야 평문 유출을 막을 수 있다.
+     */
+    private void maskByFieldName(JsonNode node) {
+        if (node.isArray()) {
+            node.forEach(this::maskByFieldName);
+            return;
+        }
+        if (!node.isObject()) {
+            return;
+        }
+        ObjectNode objectNode = (ObjectNode) node;
+        List<String> fieldNames = new ArrayList<>();
+        objectNode.fieldNames().forEachRemaining(fieldNames::add);
+        for (String fieldName : fieldNames) {
+            JsonNode value = objectNode.get(fieldName);
+            MaskingPolicy policy = SensitiveFieldNames.policyOf(fieldName);
+            if (policy == null || !value.isValueNode() || value.isNull()) {
+                maskByFieldName(value);
+                continue;
+            }
+            if (!MaskingPolicy.isMasked(value.asText())) {
+                objectNode.put(fieldName, policy.mask(value.asText()));
+            }
+        }
     }
 }

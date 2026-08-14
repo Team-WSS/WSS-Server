@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -76,6 +77,33 @@ class SensitiveDataMaskerTest {
         assertThat(apiResponse.get("email").asText()).isEqualTo("reader@websoso.kr");
         assertThat(apiResponse.get("nickname").asText()).isEqualTo("웹소소독자");
         assertThat(apiResponse.get("birth").asInt()).isEqualTo(1998);
+    }
+
+    @Test
+    @DisplayName("Map 본문과 중첩 구조에도 필드명 안전망을 적용한다")
+    void masksSensitiveFieldNamesInMapAndNestedNodes() {
+        Map<String, Object> body = Map.of(
+                "email", "reader@websoso.kr",
+                "device", Map.of("fcmToken", "fcm-token-value", "model", "iPhone 15"),
+                "novelTitle", "전지적 독자 시점"
+        );
+
+        JsonNode masked = masker.mask(body).json();
+
+        assertThat(masked.get("email").asText()).isEqualTo("re***@we***");
+        assertThat(masked.get("device").get("fcmToken").asText()).isEqualTo("***(len=15)");
+        assertThat(masked.get("device").get("model").asText()).isEqualTo("iPhone 15");
+        assertThat(masked.get("novelTitle").asText()).isEqualTo("전지적 독자 시점");
+    }
+
+    @Test
+    @DisplayName("어노테이션으로 가린 값을 안전망이 다시 가리지 않는다")
+    void doesNotMaskAlreadyMaskedValueTwice() {
+        LoginRequest body = new LoginRequest("0123456789", "reader@websoso.kr", "웹소소독자", 1998, "전지적 독자 시점");
+
+        JsonNode masked = masker.mask(body).json();
+
+        assertThat(masked.get("refreshToken").asText()).isEqualTo("***(len=10)");
     }
 
     @Test

@@ -47,6 +47,11 @@ public enum MaskingPolicy {
     /** 원본 값을 정책에 맞게 가린 문자열로 변환한다. */
     public abstract String mask(Object value);
 
+    /** 이미 마스킹된 값을 다시 가려 길이 정보가 어긋나지 않도록 판별한다. */
+    public static boolean isMasked(String value) {
+        return value.startsWith(MASK);
+    }
+
     /** 마스킹 시 노출을 허용하는 앞부분만 잘라낸다. */
     private static String head(String value) {
         return value.length() <= VISIBLE_LENGTH ? value : value.substring(0, VISIBLE_LENGTH);
