@@ -4,11 +4,14 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import org.websoso.WSSServer.validation.NullAllowedNicknameConstraint;
+import org.websoso.support.logging.masking.MaskingPolicy;
+import org.websoso.support.logging.masking.SensitiveData;
 
 public record UpdateMyProfileRequest(
         Long avatarId,
 
         @NullAllowedNicknameConstraint
+        @SensitiveData(MaskingPolicy.NAME)
         String nickname,
 
         @Size(max = 60, message = "소개글은 60자를 초과할 수 없습니다.")

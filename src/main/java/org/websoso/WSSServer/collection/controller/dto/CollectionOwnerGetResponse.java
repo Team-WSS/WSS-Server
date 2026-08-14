@@ -1,5 +1,7 @@
 package org.websoso.WSSServer.collection.controller.dto;
 
+import org.websoso.support.logging.masking.MaskingPolicy;
+import org.websoso.support.logging.masking.SensitiveData;
 /**
  * 컬렉션 상세의 소유자 정보. 공유 링크로 들어온 조회자에게 누가 만든 컬렉션인지 보여 주기 위해 함께 준다.
  * <p>
@@ -8,6 +10,7 @@ package org.websoso.WSSServer.collection.controller.dto;
  */
 public record CollectionOwnerGetResponse(
         Long userId,
+        @SensitiveData(MaskingPolicy.NAME)
         String nickname,
         String avatarImage
 ) {
