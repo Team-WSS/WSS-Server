@@ -11,40 +11,23 @@ dependencyManagement {
     }
 }
 
-allprojects {
-    group = "${projectGroup}"
-    version = "${applicationVersion}"
-    sourceCompatibility = project.javaVersion
+group = "${projectGroup}"
+version = "${applicationVersion}"
 
-    repositories {
-        mavenCentral()
-        maven { url 'https://jitpack.io' }
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(project.javaVersion)
     }
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
-    }
-}
-
-subprojects {
-    apply plugin: 'java-library'
-    apply plugin: 'org.springframework.boot'
-    apply plugin: 'io.spring.dependency-management'
-
-    bootJar.enabled = false
-    jar.enabled = true
-
-    dependencies {
-        // ============== Utils & Libraries ==============
-        // Lombok
-        compileOnly 'org.projectlombok:lombok'
-        annotationProcessor 'org.projectlombok:lombok'
-    }
-
-    tasks.named('test') {
-        useJUnitPlatform()
     }
 }
 
@@ -55,6 +38,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     // ============== Database & Persistence ==============
     // MySQL
@@ -66,8 +50,9 @@ dependencies {
     annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
     annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
 
-    // QueryDSL BaseEntity
-    annotationProcessor project(':wss-common')
+    // SQL Logging (P6Spy)
+    implementation "p6spy:p6spy:${p6spyVersion}"
+    implementation "com.github.gavlyukovskiy:datasource-decorator-spring-boot-autoconfigure:${datasourceDecoratorVersion}"
 
     // ============== Security & JWT ==============
     // JWT
@@ -86,6 +71,9 @@ dependencies {
     // JSON
     implementation "com.googlecode.json-simple:json-simple:${jsonSimpleVersion}"
 
+    // 구조화 로깅
+    runtimeOnly "net.logstash.logback:logstash-logback-encoder:${logstashLogbackEncoderVersion}"
+
     // ============== External Services ==============
     // FCM (Firebase Cloud Messaging)
     implementation "com.google.firebase:firebase-admin:${firebaseAdminVersion}"
@@ -96,10 +84,6 @@ dependencies {
     // Swagger UI (WebJar로 번들을 직접 제공한다. API 명세는 REST Docs 산출물만 사용한다)
     implementation "org.webjars:swagger-ui:${swaggerUiVersion}"
     implementation 'org.webjars:webjars-locator-core'
-
-    // ============== Project Modules ==============
-    implementation project(':wss-service-support')
-    implementation project(':wss-common')
 
     // ============== Test ==============
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

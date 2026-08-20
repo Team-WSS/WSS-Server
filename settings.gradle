@@ -7,6 +7,3 @@ pluginManagement {
 }
 
 rootProject.name = 'WSS-Server'
-
-include 'wss-service-support'
-include 'wss-common'
