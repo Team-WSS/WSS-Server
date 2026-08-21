@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.auth.jwt;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -10,6 +9,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.exception.error.CustomAuthError;
 import org.websoso.common.exception.ErrorResult;
+import org.websoso.common.exception.ErrorResultWriter;
 
 /**
  * 인증이 필요한 요청이 인증 정보 없이 도달했을 때의 응답을 정의한다.
@@ -21,20 +21,12 @@ import org.websoso.common.exception.ErrorResult;
 @RequiredArgsConstructor
 public class CustomJwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper;
+    private final ErrorResultWriter errorResultWriter;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
-        writeError(response, CustomAuthError.INVALID_TOKEN);
-    }
-
-    private void writeError(HttpServletResponse response, CustomAuthError error) throws IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.setStatus(error.getStatusCode().value());
-        response.getWriter().write(
-                objectMapper.writeValueAsString(new ErrorResult(error.getCode(), error.getDescription())));
+        errorResultWriter.write(response, CustomAuthError.INVALID_TOKEN);
     }
 
 }

@@ -14,6 +14,7 @@ import org.websoso.WSSServer.auth.jwt.CustomAccessDeniedHandler;
 import org.websoso.WSSServer.auth.jwt.CustomJwtAuthenticationEntryPoint;
 import org.websoso.WSSServer.config.SecurityConfig;
 import org.websoso.WSSServer.support.ControllerTestApplication;
+import org.websoso.common.exception.ErrorResultWriter;
 
 /**
  * 실제 {@code JwtAuthenticationFilter}, {@code JWTUtil}, {@code JwtKeyProvider},
@@ -25,6 +26,7 @@ import org.websoso.WSSServer.support.ControllerTestApplication;
  * class AuthControllerLogoutAuthenticationTest { ... }
  * </pre>
  *
+ * 오류 본문을 쓰는 {@link ErrorResultWriter}는 웹 슬라이스가 자동으로 등록하지 않으므로 함께 가져온다.
  * 사용자 조회({@code UserService})와 Controller가 의존하는 Application/Service는
  * 테스트에서 {@code @MockBean}으로 격리한다. JWT Secret과 만료 시간은
  * {@link ControllerAuthTestConfig}가 제공하므로 application-*.yml이 필요 없다.
@@ -36,7 +38,7 @@ import org.websoso.WSSServer.support.ControllerTestApplication;
 @ContextConfiguration(classes = ControllerTestApplication.class)
 @ActiveProfiles("test")
 @Import({SecurityConfig.class, CustomJwtAuthenticationEntryPoint.class, CustomAccessDeniedHandler.class,
-        ControllerAuthTestConfig.class})
+        ErrorResultWriter.class, ControllerAuthTestConfig.class})
 public @interface AuthenticatedControllerTest {
 
     @AliasFor(annotation = WebMvcTest.class, attribute = "controllers")

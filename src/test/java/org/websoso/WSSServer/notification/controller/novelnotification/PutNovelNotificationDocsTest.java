@@ -7,7 +7,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
@@ -33,6 +32,7 @@ import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.erro
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.errorResultFields;
 import static org.websoso.WSSServer.support.docs.RequestPreprocessors.withoutRequestBody;
 import static org.websoso.common.exception.CustomCommonError.INVALID_REQUEST_FIELD;
+import static org.websoso.common.exception.CustomCommonError.INVALID_REQUEST_PARAMETER;
 import static org.websoso.common.exception.CustomCommonError.MALFORMED_REQUEST_BODY;
 
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
@@ -86,7 +86,7 @@ class PutNovelNotificationDocsTest {
             "이 API가 정의하는 응답은 다음과 같습니다.",
             "",
             "- 204 No Content — 성공. (응답 본문이 없습니다.)",
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), NOVEL_ID_POSITIVE),
+            errorLine(INVALID_REQUEST_PARAMETER, NOVEL_ID_POSITIVE),
             errorLine(INVALID_REQUEST_FIELD, COMPLETION_NOTIFICATION_NOT_NULL),
             errorLine(INVALID_REQUEST_FIELD, HIATUS_RETURN_NOTIFICATION_NOT_NULL),
             errorLine(MALFORMED_REQUEST_BODY) + " (본문이 JSON으로 읽히지 않을 때 반환합니다.)",
@@ -128,13 +128,13 @@ class PutNovelNotificationDocsTest {
                                 .build())));
     }
 
-    @DisplayName("양수가 아닌 작품 ID 요청의 400 응답을 문서화한다")
+    @DisplayName("양수가 아닌 작품 ID 요청의 400 COMMON-003 응답을 문서화한다")
     @Test
     void documentUpdateSettingsWithNonPositiveNovelId() throws Exception {
         mockMvc.perform(updateRequest(INVALID_NOVEL_ID, UPDATE_REQUEST).with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_PARAMETER.getCode()))
                 .andExpect(jsonPath("$.message").value(NOVEL_ID_POSITIVE))
                 .andDo(document("novel-notification-update-novel-id-not-positive",
                         withoutRequestBody(),
