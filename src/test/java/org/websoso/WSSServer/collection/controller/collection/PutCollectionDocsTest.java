@@ -7,7 +7,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
@@ -37,6 +36,8 @@ import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.ERRO
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.errorLine;
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.errorResultFields;
 import static org.websoso.WSSServer.support.docs.RequestPreprocessors.withoutRequestBody;
+import static org.websoso.common.exception.CustomCommonError.INVALID_REQUEST_FIELD;
+import static org.websoso.common.exception.CustomCommonError.MALFORMED_REQUEST_BODY;
 
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.epages.restdocs.apispec.ResourceSnippetParametersBuilder;
@@ -85,7 +86,6 @@ class PutCollectionDocsTest {
     private static final String TAG = "Collection";
     private static final String SUMMARY = "컬렉션 수정";
     private static final Schema UPDATE_REQUEST_SCHEMA = Schema.schema("CollectionUpdateRequest");
-    private static final String MALFORMED_JSON_MESSAGE = "잘못된 JSON 형식입니다.";
     private static final String NULL_IS_PUBLIC_MESSAGE = "공개 여부는 null일 수 없습니다.";
 
     private static final String DESCRIPTION = String.join("\n",
@@ -102,9 +102,8 @@ class PutCollectionDocsTest {
             errorLine(ACCESS_TOKEN_EXPIRED),
             errorLine(INVALID_TOKEN) + " (헤더 형식 오류 또는 누락을 포함합니다.)",
             errorLine(WRONG_TOKEN_TYPE),
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), MALFORMED_JSON_MESSAGE)
-                    + " (본문이 JSON으로 읽히지 않을 때 반환합니다.)",
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), "검증에 실패한 첫 번째 요청 필드의 메시지")
+            errorLine(MALFORMED_REQUEST_BODY) + " (본문이 JSON으로 읽히지 않을 때 반환합니다.)",
+            errorLine(INVALID_REQUEST_FIELD, "검증에 실패한 첫 번째 요청 필드의 메시지")
                     + " (요청 본문 필드 검증에 실패했을 때 반환하며, 메시지는 실패한 필드에 따라 다릅니다.)",
             errorLine(INVALID_COLLECTION_NOVEL_COUNT),
             errorLine(DUPLICATE_COLLECTION_NOVEL),
@@ -191,7 +190,7 @@ class PutCollectionDocsTest {
                         resource(collectionError().build())));
     }
 
-    @DisplayName("본문 JSON 형식이 잘못된 요청의 400 BAD_REQUEST 응답을 문서화한다")
+    @DisplayName("본문 JSON 형식이 잘못된 요청의 400 COMMON-002 응답을 문서화한다")
     @Test
     void documentUpdateWithMalformedJson() throws Exception {
         mockMvc.perform(put(PATH, COLLECTION_ID)
@@ -200,14 +199,14 @@ class PutCollectionDocsTest {
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
-                .andExpect(jsonPath("$.message").value(MALFORMED_JSON_MESSAGE))
+                .andExpect(jsonPath("$.code").value(MALFORMED_REQUEST_BODY.getCode()))
+                .andExpect(jsonPath("$.message").value(MALFORMED_REQUEST_BODY.getDescription()))
                 .andDo(document("collections-update-malformed-json",
                         withoutRequestBody(),
                         resource(collectionError().build())));
     }
 
-    @DisplayName("공개 여부를 생략한 요청의 400 BAD_REQUEST 응답을 문서화한다")
+    @DisplayName("공개 여부를 생략한 요청의 400 COMMON-001 응답을 문서화한다")
     @Test
     void documentUpdateWithoutIsPublic() throws Exception {
         CollectionUpdateRequest withoutIsPublic = new CollectionUpdateRequest(
@@ -216,7 +215,7 @@ class PutCollectionDocsTest {
         mockMvc.perform(updateRequest(withoutIsPublic).with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_FIELD.getCode()))
                 .andExpect(jsonPath("$.message").value(NULL_IS_PUBLIC_MESSAGE))
                 .andDo(document("collections-update-invalid-request-field",
                         withoutRequestBody(),

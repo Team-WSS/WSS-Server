@@ -32,6 +32,8 @@ import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.ERRO
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.errorLine;
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.errorResultFields;
 import static org.websoso.WSSServer.support.docs.RequestPreprocessors.withoutRequestBody;
+import static org.websoso.common.exception.CustomCommonError.INVALID_REQUEST_FIELD;
+import static org.websoso.common.exception.CustomCommonError.MALFORMED_REQUEST_BODY;
 
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.epages.restdocs.apispec.ResourceSnippetParametersBuilder;
@@ -72,7 +74,6 @@ class PutNovelNotificationDocsTest {
     private static final String TAG = "Novel Notification";
     private static final String SUMMARY = "작품 알림 설정 변경";
     private static final Schema REQUEST_SCHEMA = Schema.schema("NovelNotificationUpdateRequest");
-    private static final String MALFORMED_JSON_MESSAGE = "잘못된 JSON 형식입니다.";
 
     private static final String DESCRIPTION = String.join("\n",
             "작품 상세에서 완결·휴재 복귀 알림을 요청한 상태로 맞춥니다.",
@@ -86,10 +87,9 @@ class PutNovelNotificationDocsTest {
             "",
             "- 204 No Content — 성공. (응답 본문이 없습니다.)",
             errorLine(BAD_REQUEST, BAD_REQUEST.name(), NOVEL_ID_POSITIVE),
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), COMPLETION_NOTIFICATION_NOT_NULL),
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), HIATUS_RETURN_NOTIFICATION_NOT_NULL),
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), MALFORMED_JSON_MESSAGE)
-                    + " (본문이 JSON으로 읽히지 않을 때 반환합니다.)",
+            errorLine(INVALID_REQUEST_FIELD, COMPLETION_NOTIFICATION_NOT_NULL),
+            errorLine(INVALID_REQUEST_FIELD, HIATUS_RETURN_NOTIFICATION_NOT_NULL),
+            errorLine(MALFORMED_REQUEST_BODY) + " (본문이 JSON으로 읽히지 않을 때 반환합니다.)",
             errorLine(ACCESS_TOKEN_EXPIRED),
             errorLine(INVALID_TOKEN) + " (헤더 형식 오류 또는 누락을 포함합니다.)",
             errorLine(WRONG_TOKEN_TYPE),
@@ -141,35 +141,35 @@ class PutNovelNotificationDocsTest {
                         resource(updateError().build())));
     }
 
-    @DisplayName("완결 알림 값이 없는 요청의 400 응답을 문서화한다")
+    @DisplayName("완결 알림 값이 없는 요청의 400 COMMON-001 응답을 문서화한다")
     @Test
     void documentUpdateSettingsWithoutCompletionValue() throws Exception {
         mockMvc.perform(updateRequest(NOVEL_ID, new NovelNotificationUpdateRequest(null, false))
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_FIELD.getCode()))
                 .andExpect(jsonPath("$.message").value(COMPLETION_NOTIFICATION_NOT_NULL))
                 .andDo(document("novel-notification-update-completion-null",
                         withoutRequestBody(),
                         resource(updateError().build())));
     }
 
-    @DisplayName("휴재 복귀 알림 값이 없는 요청의 400 응답을 문서화한다")
+    @DisplayName("휴재 복귀 알림 값이 없는 요청의 400 COMMON-001 응답을 문서화한다")
     @Test
     void documentUpdateSettingsWithoutHiatusReturnValue() throws Exception {
         mockMvc.perform(updateRequest(NOVEL_ID, new NovelNotificationUpdateRequest(true, null))
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_FIELD.getCode()))
                 .andExpect(jsonPath("$.message").value(HIATUS_RETURN_NOTIFICATION_NOT_NULL))
                 .andDo(document("novel-notification-update-hiatus-return-null",
                         withoutRequestBody(),
                         resource(updateError().build())));
     }
 
-    @DisplayName("본문 JSON 형식이 잘못된 요청의 400 응답을 문서화한다")
+    @DisplayName("본문 JSON 형식이 잘못된 요청의 400 COMMON-002 응답을 문서화한다")
     @Test
     void documentUpdateSettingsWithMalformedJson() throws Exception {
         mockMvc.perform(put("/novels/{novelId}/notification", NOVEL_ID)
@@ -178,8 +178,8 @@ class PutNovelNotificationDocsTest {
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
-                .andExpect(jsonPath("$.message").value(MALFORMED_JSON_MESSAGE))
+                .andExpect(jsonPath("$.code").value(MALFORMED_REQUEST_BODY.getCode()))
+                .andExpect(jsonPath("$.message").value(MALFORMED_REQUEST_BODY.getDescription()))
                 .andDo(document("novel-notification-update-malformed-json",
                         withoutRequestBody(),
                         resource(updateError().build())));

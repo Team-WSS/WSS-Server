@@ -3,6 +3,8 @@ package org.websoso.WSSServer.exception.handler;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_NICKNAME;
+import static org.websoso.common.exception.CustomCommonError.INVALID_REQUEST_FIELD;
+import static org.websoso.common.exception.CustomCommonError.MALFORMED_REQUEST_BODY;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -10,9 +12,9 @@ import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.websoso.common.exception.AbstractCustomException;
+import org.websoso.common.exception.CustomCommonError;
 import org.websoso.common.exception.ErrorResult;
 import org.websoso.common.exception.ICustomError;
 
@@ -30,13 +33,19 @@ public class GlobalExceptionHandler {
     private static final double MAX_TOTAL_FILE_SIZE_MB = 2.5;
     private static final double MAX_FILE_SIZE_MB = 0.5;
 
+    /**
+     * {@code @Valid @RequestBody} DTO의 Bean Validation 실패를 처리한다.
+     * 원인이 도메인이 아니라 요청 형식이므로 코드는 공통 {@link CustomCommonError#INVALID_REQUEST_FIELD}로 고정하고,
+     * 메시지만 실패한 검증 애너테이션의 것으로 대체해 클라이언트가 어느 필드가 잘못됐는지 알 수 있게 한다.
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResult> MethodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
         log.error("[MethodArgumentNotValidException] exception ", e);
-        HttpStatus httpStatus = HttpStatus.valueOf(e.getStatusCode().value());
-        return ResponseEntity.status(httpStatus)
-                .body(new ErrorResult(httpStatus.name(),
-                        e.getBindingResult().getAllErrors().get(0).getDefaultMessage()));
+        String message = e.getBindingResult().getAllErrors().stream()
+                .findFirst()
+                .map(ObjectError::getDefaultMessage)
+                .orElse(INVALID_REQUEST_FIELD.getDescription());
+        return errorResponse(INVALID_REQUEST_FIELD, message);
     }
 
     /**
@@ -44,7 +53,8 @@ public class GlobalExceptionHandler {
      * 이 핸들러가 없으면 예외가 처리되지 않은 채 ERROR 디스패치로 넘어가고, 그 재요청은
      * SecurityContext가 비어 있어 인증에 실패한다. 그 결과 검증 실패가 401 AUTH-001로 둔갑해
      * 제약 조건에 정의한 메시지가 클라이언트에 전달되지 않는다.
-     * RequestBody 검증({@link MethodArgumentNotValidException})과 같은 형식으로 응답한다.
+     * RequestBody DTO 검증({@link MethodArgumentNotValidException})과 같은 {@link ErrorResult} 형식으로 응답한다.
+     * 공통 코드 부여 대상은 아직 RequestBody DTO 검증뿐이라 코드는 기존대로 HTTP 상태 이름을 쓴다.
      */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResult> ConstraintViolationExceptionHandler(ConstraintViolationException e) {
@@ -86,12 +96,15 @@ public class GlobalExceptionHandler {
                         "요청 값의 형식이 올바르지 않습니다: " + e.getName()));
     }
 
+    /**
+     * 요청 본문을 JSON으로 읽지 못했을 때를 처리한다.
+     * 본문을 읽지 못했으므로 어느 필드가 문제인지 알 수 없고, 코드와 메시지 모두
+     * {@link CustomCommonError#MALFORMED_REQUEST_BODY} 정의를 그대로 사용한다.
+     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResult> HttpMessageNotReadableExceptionHandler(HttpMessageNotReadableException e) {
         log.error("[HttpMessageNotReadableException] exception ", e);
-        return ResponseEntity
-                .status(BAD_REQUEST)
-                .body(new ErrorResult(BAD_REQUEST.name(), "잘못된 JSON 형식입니다."));
+        return errorResponse(MALFORMED_REQUEST_BODY);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -130,6 +143,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(iCustomError.getStatusCode())
                 .body(new ErrorResult(iCustomError.getCode(), iCustomError.getDescription()));
+    }
+
+    /**
+     * {@link ICustomError} 정의 하나로 응답을 만든다. 상태 코드, 코드, 메시지가 모두 정의에서 정해지는 오류에 쓴다.
+     */
+    private ResponseEntity<ErrorResult> errorResponse(ICustomError error) {
+        return errorResponse(error, error.getDescription());
+    }
+
+    /**
+     * {@link ICustomError} 정의의 상태 코드와 코드에 동적 메시지를 조합해 응답을 만든다.
+     * 코드는 정의에서만 가져오므로 같은 원인의 오류가 엔드포인트마다 다른 코드로 나가지 않고,
+     * 요청마다 달라지는 실패 원인은 메시지로만 전달된다.
+     */
+    private ResponseEntity<ErrorResult> errorResponse(ICustomError error, String message) {
+        return ResponseEntity
+                .status(error.getStatusCode())
+                .body(new ErrorResult(error.getCode(), message));
     }
 
 }

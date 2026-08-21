@@ -3,7 +3,6 @@ package org.websoso.WSSServer.notification.controller.novelnotification;
 import static com.epages.restdocs.apispec.ResourceDocumentation.resource;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
@@ -28,6 +27,8 @@ import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.ERRO
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.errorLine;
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.errorResultFields;
 import static org.websoso.WSSServer.support.docs.RequestPreprocessors.withoutRequestBody;
+import static org.websoso.common.exception.CustomCommonError.INVALID_REQUEST_FIELD;
+import static org.websoso.common.exception.CustomCommonError.MALFORMED_REQUEST_BODY;
 
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.epages.restdocs.apispec.ResourceSnippetParametersBuilder;
@@ -71,7 +72,6 @@ class DeleteMyNovelNotificationsDocsTest {
     private static final String TAG = "Novel Notification";
     private static final String SUMMARY = "작품 알림 구독 일괄 삭제";
     private static final Schema REQUEST_SCHEMA = Schema.schema("NovelNotificationDeleteRequest");
-    private static final String MALFORMED_JSON_MESSAGE = "잘못된 JSON 형식입니다.";
 
     private static final String DESCRIPTION = String.join("\n",
             "설정 화면에서 선택한 같은 유형의 작품 알림을 한 번에 해제합니다.",
@@ -84,12 +84,11 @@ class DeleteMyNovelNotificationsDocsTest {
             "이 API가 정의하는 응답은 다음과 같습니다.",
             "",
             "- 204 No Content — 성공. (응답 본문이 없습니다.)",
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), NOTIFICATION_TYPE_NOT_NULL),
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), NOVEL_IDS_NOT_EMPTY),
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), NOVEL_IDS_MAX_SIZE),
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), NOVEL_ID_POSITIVE),
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), MALFORMED_JSON_MESSAGE)
-                    + " (본문이 JSON으로 읽히지 않을 때 반환합니다.)",
+            errorLine(INVALID_REQUEST_FIELD, NOTIFICATION_TYPE_NOT_NULL),
+            errorLine(INVALID_REQUEST_FIELD, NOVEL_IDS_NOT_EMPTY),
+            errorLine(INVALID_REQUEST_FIELD, NOVEL_IDS_MAX_SIZE),
+            errorLine(INVALID_REQUEST_FIELD, NOVEL_ID_POSITIVE),
+            errorLine(MALFORMED_REQUEST_BODY) + " (본문이 JSON으로 읽히지 않을 때 반환합니다.)",
             errorLine(ACCESS_TOKEN_EXPIRED),
             errorLine(INVALID_TOKEN) + " (헤더 형식 오류 또는 누락을 포함합니다.)",
             errorLine(WRONG_TOKEN_TYPE),
@@ -127,21 +126,21 @@ class DeleteMyNovelNotificationsDocsTest {
                                 .build())));
     }
 
-    @DisplayName("알림 유형이 없는 요청의 400 응답을 문서화한다")
+    @DisplayName("알림 유형이 없는 요청의 400 COMMON-001 응답을 문서화한다")
     @Test
     void documentDeleteSubscriptionsWithoutNotificationType() throws Exception {
         mockMvc.perform(deleteRequest(new NovelNotificationDeleteRequest(null, List.of(1L)))
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_FIELD.getCode()))
                 .andExpect(jsonPath("$.message").value(NOTIFICATION_TYPE_NOT_NULL))
                 .andDo(document("my-novel-notifications-delete-notification-type-null",
                         withoutRequestBody(),
                         resource(deletionError().build())));
     }
 
-    @DisplayName("삭제할 작품이 하나도 없는 요청의 400 응답을 문서화한다")
+    @DisplayName("삭제할 작품이 하나도 없는 요청의 400 COMMON-001 응답을 문서화한다")
     @Test
     void documentDeleteSubscriptionsWithEmptyNovelIds() throws Exception {
         mockMvc.perform(deleteRequest(
@@ -149,14 +148,14 @@ class DeleteMyNovelNotificationsDocsTest {
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_FIELD.getCode()))
                 .andExpect(jsonPath("$.message").value(NOVEL_IDS_NOT_EMPTY))
                 .andDo(document("my-novel-notifications-delete-novel-ids-empty",
                         withoutRequestBody(),
                         resource(deletionError().build())));
     }
 
-    @DisplayName("삭제할 작품이 100개를 넘는 요청의 400 응답을 문서화한다")
+    @DisplayName("삭제할 작품이 100개를 넘는 요청의 400 COMMON-001 응답을 문서화한다")
     @Test
     void documentDeleteSubscriptionsWithTooManyNovelIds() throws Exception {
         List<Long> tooManyNovelIds = LongStream.rangeClosed(1, MAX_NOVEL_IDS + 1).boxed().toList();
@@ -166,14 +165,14 @@ class DeleteMyNovelNotificationsDocsTest {
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_FIELD.getCode()))
                 .andExpect(jsonPath("$.message").value(NOVEL_IDS_MAX_SIZE))
                 .andDo(document("my-novel-notifications-delete-novel-ids-too-many",
                         withoutRequestBody(),
                         resource(deletionError().build())));
     }
 
-    @DisplayName("양수가 아닌 작품 ID가 섞인 요청의 400 응답을 문서화한다")
+    @DisplayName("양수가 아닌 작품 ID가 섞인 요청의 400 COMMON-001 응답을 문서화한다")
     @Test
     void documentDeleteSubscriptionsWithNonPositiveNovelId() throws Exception {
         mockMvc.perform(deleteRequest(
@@ -181,14 +180,14 @@ class DeleteMyNovelNotificationsDocsTest {
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_FIELD.getCode()))
                 .andExpect(jsonPath("$.message").value(NOVEL_ID_POSITIVE))
                 .andDo(document("my-novel-notifications-delete-novel-id-not-positive",
                         withoutRequestBody(),
                         resource(deletionError().build())));
     }
 
-    @DisplayName("본문 JSON 형식이 잘못된 요청의 400 응답을 문서화한다")
+    @DisplayName("본문 JSON 형식이 잘못된 요청의 400 COMMON-002 응답을 문서화한다")
     @Test
     void documentDeleteSubscriptionsWithMalformedJson() throws Exception {
         mockMvc.perform(delete("/users/me/notification/novels")
@@ -197,8 +196,8 @@ class DeleteMyNovelNotificationsDocsTest {
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
-                .andExpect(jsonPath("$.message").value(MALFORMED_JSON_MESSAGE))
+                .andExpect(jsonPath("$.code").value(MALFORMED_REQUEST_BODY.getCode()))
+                .andExpect(jsonPath("$.message").value(MALFORMED_REQUEST_BODY.getDescription()))
                 .andDo(document("my-novel-notifications-delete-malformed-json",
                         withoutRequestBody(),
                         resource(deletionError().build())));

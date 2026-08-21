@@ -53,6 +53,14 @@ public final class ErrorResponseDocumentation {
         return errorLine(error.getStatusCode(), error.getCode(), error.getDescription());
     }
 
+    /**
+     * 상태 코드와 오류 코드는 정의에서 가져오고 메시지만 실제 응답 값으로 대체한 오류 한 줄.
+     * 공통 오류 코드처럼 응답 메시지가 요청마다 달라지는 오류를 서술할 때 쓴다.
+     */
+    public static String errorLine(ICustomError error, String message) {
+        return errorLine(error.getStatusCode(), error.getCode(), message);
+    }
+
     public static String errorLine(HttpStatus status, String code, String message) {
         return "- %d %s · %s — %s".formatted(status.value(), status.getReasonPhrase(), code, message);
     }

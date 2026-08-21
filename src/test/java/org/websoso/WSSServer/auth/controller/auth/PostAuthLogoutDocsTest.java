@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -28,6 +27,7 @@ import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.ERRO
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.errorLine;
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.errorResultFields;
 import static org.websoso.WSSServer.support.docs.RequestPreprocessors.withoutRequestBody;
+import static org.websoso.common.exception.CustomCommonError.MALFORMED_REQUEST_BODY;
 
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.epages.restdocs.apispec.ResourceSnippetParametersBuilder;
@@ -69,7 +69,6 @@ class PostAuthLogoutDocsTest {
     private static final String TAG = "Auth";
     private static final String SUMMARY = "로그아웃";
     private static final Schema LOGOUT_REQUEST_SCHEMA = Schema.schema("LogoutRequest");
-    private static final String MALFORMED_JSON_MESSAGE = "잘못된 JSON 형식입니다.";
 
     private static final String DESCRIPTION = String.join("\n",
             "Access Token으로 인증한 사용자의 Refresh Token과 기기 정보를 만료시킵니다.",
@@ -82,8 +81,7 @@ class PostAuthLogoutDocsTest {
             errorLine(ACCESS_TOKEN_EXPIRED),
             errorLine(INVALID_TOKEN) + " (헤더 형식 오류 또는 누락을 포함합니다.)",
             errorLine(WRONG_TOKEN_TYPE),
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), MALFORMED_JSON_MESSAGE)
-                    + " (응답 본문이 없으며, 본문이 JSON으로 읽히지 않을 때 반환합니다.)",
+            errorLine(MALFORMED_REQUEST_BODY) + " (응답 본문이 없으며, 본문이 JSON으로 읽히지 않을 때 반환합니다.)",
             errorLine(USER_NOT_FOUND) + " (토큰은 유효하지만, 해당 사용자 정보가 없을 때 반환합니다.)",
             errorLine(KAKAO_REQUEST_FAILED) + " (카카오 사용자의 카카오 로그아웃 요청이 실패했을 때 반환합니다.)",
             errorLine(KAKAO_SERVER_ERROR) + " (카카오 로그아웃 요청에 카카오 서버가 5xx로 응답했을 때 반환합니다.)",
@@ -165,7 +163,7 @@ class PostAuthLogoutDocsTest {
                         resource(logoutError().build())));
     }
 
-    @DisplayName("본문 JSON 형식이 잘못된 요청의 400 BAD_REQUEST 응답을 문서화한다")
+    @DisplayName("본문 JSON 형식이 잘못된 요청의 400 COMMON-002 응답을 문서화한다")
     @Test
     void documentLogoutWithMalformedJson() throws Exception {
         mockMvc.perform(post("/auth/logout")
@@ -174,8 +172,8 @@ class PostAuthLogoutDocsTest {
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
-                .andExpect(jsonPath("$.message").value(MALFORMED_JSON_MESSAGE))
+                .andExpect(jsonPath("$.code").value(MALFORMED_REQUEST_BODY.getCode()))
+                .andExpect(jsonPath("$.message").value(MALFORMED_REQUEST_BODY.getDescription()))
                 .andDo(document("auth-logout-malformed-json",
                         withoutRequestBody(),
                         resource(logoutError().build())));
