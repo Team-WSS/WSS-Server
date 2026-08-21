@@ -47,6 +47,9 @@ API를 새로 문서화할 때 아래를 지킨다.
    `ACCESS_TOKEN_EXPIRED.getCode()`, `ACCESS_TOKEN_EXPIRED.getDescription()`처럼 enum에서 읽어 단언한다.
    문자열을 테스트에 옮겨 적으면 오탈자나 정의 변경을 테스트가 잡지 못한다.
    `GlobalExceptionHandler`가 직접 만드는 메시지처럼 enum이 없는 경우에만 상수로 두고, 실제 응답과 일치하는지 같은 테스트에서 확인한다.
+   `COMMON-001`처럼 코드는 고정이고 메시지만 요청마다 달라지는 오류는 코드만 정의에서 읽고 메시지는 실제 응답 값으로 단언한다.
+   엔드포인트 서술에는 `errorLine(error, message)` 오버로드를 써서 코드는 정의에서, 메시지는 실제 값으로 채운다.
+   어떤 코드를 어디에 정의하는지는 [error-codes.md](error-codes.md)를 따른다.
 4. **오류 본문은 공통 `ErrorResult` 스키마를 재사용한다.**
    `support/docs/ErrorResponseDocumentation`의 `ERROR_RESULT_SCHEMA`와 `errorResultFields()`를 쓴다.
    생성 명세에서 오류 응답들이 `components.schemas.ErrorResult` 하나를 공유한다.
