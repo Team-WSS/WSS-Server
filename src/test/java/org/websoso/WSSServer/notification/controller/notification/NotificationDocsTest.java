@@ -79,6 +79,8 @@ class NotificationDocsTest {
     private static final String SIZE_MIN_MESSAGE = "must be greater than or equal to 1";
     private static final String SIZE_MAX_MESSAGE = "must be less than or equal to 50";
     private static final String NOTIFICATION_ID_POSITIVE_MESSAGE = "must be greater than 0";
+    private static final String VALIDATION_MESSAGE_NOTICE =
+            "검증 실패 응답의 message는 요청 Accept-Language에 따라 달라질 수 있으므로, 클라이언트는 code로 분기해야 합니다.";
     private static final Schema PAGE_RESPONSE_SCHEMA = Schema.schema("NotificationPageResponse");
     private static final Schema DETAIL_RESPONSE_SCHEMA = Schema.schema("NotificationDetailResponse");
     private static final Schema STATUS_RESPONSE_SCHEMA = Schema.schema("NotificationReadStatusResponse");
@@ -88,6 +90,7 @@ class NotificationDocsTest {
             "첫 페이지는 lastNotificationId를 생략하거나 0으로 보내고, 다음 페이지는 마지막 notificationId를 커서로 보냅니다.",
             "피드 알림은 feedId, 작품 완결·휴재 복귀 알림은 novelId가 이동 대상이며 나머지 이동 ID는 null입니다.",
             "isLoadable이 false면 다음 페이지가 없습니다.",
+            VALIDATION_MESSAGE_NOTICE,
             "",
             "Try it out으로 호출하려면 상단 Authorize에 실제 Access Token을 입력해야 합니다.",
             "",
@@ -105,6 +108,7 @@ class NotificationDocsTest {
     private static final String DETAIL_DESCRIPTION = String.join("\n",
             "공지·이벤트 알림의 상세 내용을 조회하고 해당 알림을 읽음 처리합니다.",
             "피드 또는 작품 이동 알림은 상세 조회 대상이 아니며 NOTIFICATION-003을 반환합니다.",
+            VALIDATION_MESSAGE_NOTICE,
             "",
             "이 API가 정의하는 응답은 다음과 같습니다.",
             "",
@@ -131,6 +135,7 @@ class NotificationDocsTest {
     private static final String READ_DESCRIPTION = String.join("\n",
             "사용자에게 발송된 알림을 읽음 상태로 변경합니다.",
             "이미 읽은 알림을 다시 요청해도 성공하는 멱등 API입니다.",
+            VALIDATION_MESSAGE_NOTICE,
             "",
             "이 API가 정의하는 응답은 다음과 같습니다.",
             "",
@@ -150,7 +155,10 @@ class NotificationDocsTest {
             "이 API가 정의하는 응답은 다음과 같습니다.",
             "",
             "- 200 OK — 성공.",
-            errorLine(INVALID_TOKEN));
+            errorLine(ACCESS_TOKEN_EXPIRED),
+            errorLine(INVALID_TOKEN),
+            errorLine(WRONG_TOKEN_TYPE),
+            errorLine(USER_NOT_FOUND));
 
     private static final String LEGACY_READ_DESCRIPTION = String.join("\n",
             "Deprecated API입니다. 신규 구현에서는 PATCH /notifications/{notificationId}/read-status를 사용합니다.",
@@ -160,7 +168,12 @@ class NotificationDocsTest {
             "이 API가 정의하는 응답은 다음과 같습니다.",
             "",
             "- 201 Created — 성공. (응답 본문이 없습니다.)",
-            errorLine(INVALID_TOKEN));
+            errorLine(ACCESS_TOKEN_EXPIRED),
+            errorLine(INVALID_TOKEN),
+            errorLine(WRONG_TOKEN_TYPE),
+            errorLine(NOTIFICATION_READ_FORBIDDEN),
+            errorLine(NOTIFICATION_NOT_FOUND),
+            errorLine(USER_NOT_FOUND));
 
     @Autowired
     private MockMvc mockMvc;
@@ -545,6 +558,17 @@ class NotificationDocsTest {
                                 .build())));
     }
 
+    @DisplayName("기존 알림 상태 조회의 만료 토큰 401 응답을 문서화한다")
+    @Test
+    void documentGetNotificationStatusDeprecatedWithExpiredToken() throws Exception {
+        mockMvc.perform(get("/notifications/unread").with(expiredAccessToken(USER_ID)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(ACCESS_TOKEN_EXPIRED.getCode()))
+                .andExpect(jsonPath("$.message").value(ACCESS_TOKEN_EXPIRED.getDescription()))
+                .andDo(document("notification-unread-get-deprecated-access-token-expired",
+                        resource(notificationLegacyStatusError().build())));
+    }
+
     @DisplayName("기존 알림 상태 조회의 변조 토큰 401 응답을 문서화한다")
     @Test
     void documentGetNotificationStatusDeprecatedWithInvalidToken() throws Exception {
@@ -553,10 +577,32 @@ class NotificationDocsTest {
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getCode()))
                 .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getDescription()))
                 .andDo(document("notification-unread-get-deprecated-invalid-token",
-                        resource(notificationLegacyStatus()
-                                .responseSchema(ERROR_RESULT_SCHEMA)
-                                .responseFields(errorResultFields())
-                                .build())));
+                        resource(notificationLegacyStatusError().build())));
+    }
+
+    @DisplayName("기존 알림 상태 조회의 Refresh Token 401 응답을 문서화한다")
+    @Test
+    void documentGetNotificationStatusDeprecatedWithWrongTokenType() throws Exception {
+        mockMvc.perform(get("/notifications/unread").with(refreshToken(USER_ID)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(WRONG_TOKEN_TYPE.getCode()))
+                .andExpect(jsonPath("$.message").value(WRONG_TOKEN_TYPE.getDescription()))
+                .andDo(document("notification-unread-get-deprecated-wrong-token-type",
+                        resource(notificationLegacyStatusError().build())));
+    }
+
+    @DisplayName("기존 알림 상태 조회의 사용자가 없으면 404 응답을 문서화한다")
+    @Test
+    void documentGetNotificationStatusDeprecatedWithUnknownUser() throws Exception {
+        given(userService.getUserOrException(USER_ID))
+                .willThrow(new CustomUserException(USER_NOT_FOUND, "user not found"));
+
+        mockMvc.perform(get("/notifications/unread").with(accessToken(USER_ID)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(USER_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(USER_NOT_FOUND.getDescription()))
+                .andDo(document("notification-unread-get-deprecated-user-not-found",
+                        resource(notificationLegacyStatusError().build())));
     }
 
     @DisplayName("기존 알림 읽음 처리 201 응답을 Deprecated API로 문서화한다")
@@ -569,6 +615,17 @@ class NotificationDocsTest {
                         resource(notificationLegacyRead().build())));
     }
 
+    @DisplayName("기존 알림 읽음 처리의 만료 토큰 401 응답을 문서화한다")
+    @Test
+    void documentCreateNotificationAsReadDeprecatedWithExpiredToken() throws Exception {
+        mockMvc.perform(notificationLegacyReadRequest().with(expiredAccessToken(USER_ID)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(ACCESS_TOKEN_EXPIRED.getCode()))
+                .andExpect(jsonPath("$.message").value(ACCESS_TOKEN_EXPIRED.getDescription()))
+                .andDo(document("notification-read-post-deprecated-access-token-expired",
+                        resource(notificationLegacyReadError().build())));
+    }
+
     @DisplayName("기존 알림 읽음 처리의 변조 토큰 401 응답을 문서화한다")
     @Test
     void documentCreateNotificationAsReadDeprecatedWithInvalidToken() throws Exception {
@@ -577,10 +634,52 @@ class NotificationDocsTest {
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getCode()))
                 .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getDescription()))
                 .andDo(document("notification-read-post-deprecated-invalid-token",
-                        resource(notificationLegacyRead()
-                                .responseSchema(ERROR_RESULT_SCHEMA)
-                                .responseFields(errorResultFields())
-                                .build())));
+                        resource(notificationLegacyReadError().build())));
+    }
+
+    @DisplayName("기존 알림 읽음 처리의 Refresh Token 401 응답을 문서화한다")
+    @Test
+    void documentCreateNotificationAsReadDeprecatedWithWrongTokenType() throws Exception {
+        mockMvc.perform(notificationLegacyReadRequest().with(refreshToken(USER_ID)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(WRONG_TOKEN_TYPE.getCode()))
+                .andExpect(jsonPath("$.message").value(WRONG_TOKEN_TYPE.getDescription()))
+                .andDo(document("notification-read-post-deprecated-wrong-token-type",
+                        resource(notificationLegacyReadError().build())));
+    }
+
+    @DisplayName("기존 알림 읽음 처리의 사용자가 없으면 404 응답을 문서화한다")
+    @Test
+    void documentCreateNotificationAsReadDeprecatedWithUnknownUser() throws Exception {
+        given(userService.getUserOrException(USER_ID))
+                .willThrow(new CustomUserException(USER_NOT_FOUND, "user not found"));
+
+        mockMvc.perform(notificationLegacyReadRequest().with(accessToken(USER_ID)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(USER_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(USER_NOT_FOUND.getDescription()))
+                .andDo(document("notification-read-post-deprecated-user-not-found",
+                        resource(notificationLegacyReadError().build())));
+    }
+
+    @DisplayName("기존 알림 읽음 처리에서 알림이 없으면 404 응답을 문서화한다")
+    @Test
+    void documentCreateNotificationAsReadDeprecatedNotFound() throws Exception {
+        willThrow(new CustomNotificationException(NOTIFICATION_NOT_FOUND, "notification not found"))
+                .given(notificationApplication)
+                .updateNotificationReadStatus(any(User.class), eq(NOTIFICATION_ID));
+
+        documentLegacyReadError(NOTIFICATION_NOT_FOUND, "notification-read-post-deprecated-not-found");
+    }
+
+    @DisplayName("기존 알림 읽음 처리에서 다른 사용자의 알림이면 403 응답을 문서화한다")
+    @Test
+    void documentCreateNotificationAsReadDeprecatedForbidden() throws Exception {
+        willThrow(new CustomNotificationException(NOTIFICATION_READ_FORBIDDEN, "notification read forbidden"))
+                .given(notificationApplication)
+                .updateNotificationReadStatus(any(User.class), eq(NOTIFICATION_ID));
+
+        documentLegacyReadError(NOTIFICATION_READ_FORBIDDEN, "notification-read-post-deprecated-forbidden");
     }
 
     @DisplayName("알림 목록 요청의 사용자가 없으면 404 응답을 문서화한다")
@@ -623,6 +722,14 @@ class NotificationDocsTest {
                 .andExpect(jsonPath("$.code").value(error.getCode()))
                 .andExpect(jsonPath("$.message").value(error.getDescription()))
                 .andDo(document(identifier, resource(notificationReadError().build())));
+    }
+
+    private void documentLegacyReadError(ICustomError error, String identifier) throws Exception {
+        mockMvc.perform(notificationLegacyReadRequest().with(accessToken(USER_ID)))
+                .andExpect(status().is(error.getStatusCode().value()))
+                .andExpect(jsonPath("$.code").value(error.getCode()))
+                .andExpect(jsonPath("$.message").value(error.getDescription()))
+                .andDo(document(identifier, resource(notificationLegacyReadError().build())));
     }
 
     private ResourceSnippetParametersBuilder notificationListError() {
@@ -688,6 +795,12 @@ class NotificationDocsTest {
                 .deprecated(true);
     }
 
+    private ResourceSnippetParametersBuilder notificationLegacyStatusError() {
+        return notificationLegacyStatus()
+                .responseSchema(ERROR_RESULT_SCHEMA)
+                .responseFields(errorResultFields());
+    }
+
     private ResourceSnippetParametersBuilder notificationLegacyRead() {
         return ResourceSnippetParameters.builder()
                 .tag(TAG)
@@ -697,6 +810,12 @@ class NotificationDocsTest {
                         .type(SimpleType.INTEGER)
                         .description("읽음 처리할 알림 ID"))
                 .deprecated(true);
+    }
+
+    private ResourceSnippetParametersBuilder notificationLegacyReadError() {
+        return notificationLegacyRead()
+                .responseSchema(ERROR_RESULT_SCHEMA)
+                .responseFields(errorResultFields());
     }
 
     private List<ParameterDescriptorWithType> notificationQueryParameters() {
