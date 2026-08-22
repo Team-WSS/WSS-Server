@@ -44,6 +44,7 @@ import com.epages.restdocs.apispec.ResourceSnippetParametersBuilder;
 import com.epages.restdocs.apispec.Schema;
 import com.epages.restdocs.apispec.SimpleType;
 import java.util.List;
+import java.util.Locale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -66,7 +67,7 @@ import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.service.UserService;
 import org.websoso.common.exception.ICustomError;
 
-/** 노티피케이션 Controller의 운영 API 4개를 문서화하는 REST Docs 테스트. */
+/** 노티피케이션 Controller의 운영 API 4개와 Deprecated API 2개를 문서화하는 REST Docs 테스트. */
 @AutoConfigureRestDocs
 @AuthenticatedControllerTest(NotificationController.class)
 class NotificationDocsTest {
@@ -74,6 +75,10 @@ class NotificationDocsTest {
     private static final Long USER_ID = 42L;
     private static final Long NOTIFICATION_ID = 10L;
     private static final String TAG = "Notification";
+    private static final String CURSOR_MIN_MESSAGE = "must be greater than or equal to 0";
+    private static final String SIZE_MIN_MESSAGE = "must be greater than or equal to 1";
+    private static final String SIZE_MAX_MESSAGE = "must be less than or equal to 50";
+    private static final String NOTIFICATION_ID_POSITIVE_MESSAGE = "must be greater than 0";
     private static final Schema PAGE_RESPONSE_SCHEMA = Schema.schema("NotificationPageResponse");
     private static final Schema DETAIL_RESPONSE_SCHEMA = Schema.schema("NotificationDetailResponse");
     private static final Schema STATUS_RESPONSE_SCHEMA = Schema.schema("NotificationReadStatusResponse");
@@ -89,7 +94,9 @@ class NotificationDocsTest {
             "이 API가 정의하는 응답은 다음과 같습니다.",
             "",
             "- 200 OK — 성공.",
-            "- 400 BAD_REQUEST — 커서가 음수이거나 size가 1 미만 또는 50 초과인 요청.",
+            errorLine(BAD_REQUEST, BAD_REQUEST.name(), CURSOR_MIN_MESSAGE),
+            errorLine(BAD_REQUEST, BAD_REQUEST.name(), SIZE_MIN_MESSAGE),
+            errorLine(BAD_REQUEST, BAD_REQUEST.name(), SIZE_MAX_MESSAGE),
             errorLine(ACCESS_TOKEN_EXPIRED),
             errorLine(INVALID_TOKEN),
             errorLine(WRONG_TOKEN_TYPE),
@@ -102,7 +109,7 @@ class NotificationDocsTest {
             "이 API가 정의하는 응답은 다음과 같습니다.",
             "",
             "- 200 OK — 성공.",
-            "- 400 BAD_REQUEST — notificationId가 양수가 아닌 요청.",
+            errorLine(BAD_REQUEST, BAD_REQUEST.name(), NOTIFICATION_ID_POSITIVE_MESSAGE),
             errorLine(ACCESS_TOKEN_EXPIRED),
             errorLine(INVALID_TOKEN),
             errorLine(WRONG_TOKEN_TYPE),
@@ -128,7 +135,7 @@ class NotificationDocsTest {
             "이 API가 정의하는 응답은 다음과 같습니다.",
             "",
             "- 204 No Content — 성공. (응답 본문이 없습니다.)",
-            "- 400 BAD_REQUEST — notificationId가 양수가 아닌 요청.",
+            errorLine(BAD_REQUEST, BAD_REQUEST.name(), NOTIFICATION_ID_POSITIVE_MESSAGE),
             errorLine(ACCESS_TOKEN_EXPIRED),
             errorLine(INVALID_TOKEN),
             errorLine(WRONG_TOKEN_TYPE),
@@ -181,8 +188,16 @@ class NotificationDocsTest {
                 .andExpect(jsonPath("$.isLoadable").value(true))
                 .andExpect(jsonPath("$.notifications[0].feedId").value(31L))
                 .andExpect(jsonPath("$.notifications[0].novelId").isEmpty())
+                .andExpect(jsonPath("$.notifications[0].isNotice").value(false))
                 .andExpect(jsonPath("$.notifications[1].feedId").isEmpty())
                 .andExpect(jsonPath("$.notifications[1].novelId").value(7L))
+                .andExpect(jsonPath("$.notifications[1].isNotice").value(false))
+                .andExpect(jsonPath("$.notifications[2].feedId").isEmpty())
+                .andExpect(jsonPath("$.notifications[2].novelId").value(8L))
+                .andExpect(jsonPath("$.notifications[2].isNotice").value(false))
+                .andExpect(jsonPath("$.notifications[3].feedId").isEmpty())
+                .andExpect(jsonPath("$.notifications[3].novelId").isEmpty())
+                .andExpect(jsonPath("$.notifications[3].isNotice").value(true))
                 .andDo(document("notifications-get",
                         resource(notificationList()
                                 .responseSchema(PAGE_RESPONSE_SCHEMA)
@@ -208,9 +223,11 @@ class NotificationDocsTest {
         mockMvc.perform(get("/notifications")
                         .queryParam("lastNotificationId", "-1")
                         .queryParam("size", "10")
+                        .locale(Locale.ENGLISH)
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.message").value(CURSOR_MIN_MESSAGE))
                 .andDo(document("notifications-get-cursor-negative",
                         resource(notificationListError().build())));
     }
@@ -218,13 +235,13 @@ class NotificationDocsTest {
     @DisplayName("1 미만 조회 개수의 400 응답을 문서화한다")
     @Test
     void documentGetNotificationsWithTooSmallSize() throws Exception {
-        documentListValidationError("0", "notifications-get-size-too-small");
+        documentListValidationError("0", SIZE_MIN_MESSAGE, "notifications-get-size-too-small");
     }
 
     @DisplayName("50 초과 조회 개수의 400 응답을 문서화한다")
     @Test
     void documentGetNotificationsWithTooLargeSize() throws Exception {
-        documentListValidationError("51", "notifications-get-size-too-large");
+        documentListValidationError("51", SIZE_MAX_MESSAGE, "notifications-get-size-too-large");
     }
 
     @DisplayName("알림 목록 요청의 만료 토큰 401 응답을 문서화한다")
@@ -233,6 +250,7 @@ class NotificationDocsTest {
         mockMvc.perform(notificationsRequest().with(expiredAccessToken(USER_ID)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(ACCESS_TOKEN_EXPIRED.getCode()))
+                .andExpect(jsonPath("$.message").value(ACCESS_TOKEN_EXPIRED.getDescription()))
                 .andDo(document("notifications-get-access-token-expired",
                         resource(notificationListError().build())));
     }
@@ -243,6 +261,7 @@ class NotificationDocsTest {
         mockMvc.perform(notificationsRequest().with(tamperedAccessToken(USER_ID)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getCode()))
+                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getDescription()))
                 .andDo(document("notifications-get-invalid-token",
                         resource(notificationListError().build())));
     }
@@ -253,6 +272,7 @@ class NotificationDocsTest {
         mockMvc.perform(notificationsRequest().with(refreshToken(USER_ID)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(WRONG_TOKEN_TYPE.getCode()))
+                .andExpect(jsonPath("$.message").value(WRONG_TOKEN_TYPE.getDescription()))
                 .andDo(document("notifications-get-wrong-token-type",
                         resource(notificationListError().build())));
     }
@@ -279,9 +299,12 @@ class NotificationDocsTest {
     @DisplayName("양수가 아닌 상세 알림 ID의 400 응답을 문서화한다")
     @Test
     void documentGetNotificationDetailWithNonPositiveId() throws Exception {
-        mockMvc.perform(get("/notifications/{notificationId}", 0L).with(accessToken(USER_ID)))
+        mockMvc.perform(get("/notifications/{notificationId}", 0L)
+                        .locale(Locale.ENGLISH)
+                        .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.message").value(NOTIFICATION_ID_POSITIVE_MESSAGE))
                 .andDo(document("notification-detail-get-id-not-positive",
                         resource(notificationDetailError().build())));
     }
@@ -304,13 +327,50 @@ class NotificationDocsTest {
         documentDetailError(NOTIFICATION_TYPE_INVALID, "notification-detail-get-type-invalid");
     }
 
+    @DisplayName("공지 알림 상세 요청의 만료 토큰 401 응답을 문서화한다")
+    @Test
+    void documentGetNotificationDetailWithExpiredToken() throws Exception {
+        mockMvc.perform(notificationDetailRequest().with(expiredAccessToken(USER_ID)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(ACCESS_TOKEN_EXPIRED.getCode()))
+                .andExpect(jsonPath("$.message").value(ACCESS_TOKEN_EXPIRED.getDescription()))
+                .andDo(document("notification-detail-get-access-token-expired",
+                        resource(notificationDetailError().build())));
+    }
+
     @DisplayName("공지 알림 상세 요청의 변조 토큰 401 응답을 문서화한다")
     @Test
     void documentGetNotificationDetailWithInvalidToken() throws Exception {
         mockMvc.perform(notificationDetailRequest().with(tamperedAccessToken(USER_ID)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getCode()))
+                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getDescription()))
                 .andDo(document("notification-detail-get-invalid-token",
+                        resource(notificationDetailError().build())));
+    }
+
+    @DisplayName("공지 알림 상세 요청의 Refresh Token 401 응답을 문서화한다")
+    @Test
+    void documentGetNotificationDetailWithWrongTokenType() throws Exception {
+        mockMvc.perform(notificationDetailRequest().with(refreshToken(USER_ID)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(WRONG_TOKEN_TYPE.getCode()))
+                .andExpect(jsonPath("$.message").value(WRONG_TOKEN_TYPE.getDescription()))
+                .andDo(document("notification-detail-get-wrong-token-type",
+                        resource(notificationDetailError().build())));
+    }
+
+    @DisplayName("공지 알림 상세 요청의 사용자가 없으면 404 응답을 문서화한다")
+    @Test
+    void documentGetNotificationDetailWithUnknownUser() throws Exception {
+        given(userService.getUserOrException(USER_ID))
+                .willThrow(new CustomUserException(USER_NOT_FOUND, "user not found"));
+
+        mockMvc.perform(notificationDetailRequest().with(accessToken(USER_ID)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(USER_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(USER_NOT_FOUND.getDescription()))
+                .andDo(document("notification-detail-get-user-not-found",
                         resource(notificationDetailError().build())));
     }
 
@@ -331,13 +391,36 @@ class NotificationDocsTest {
                                 .build())));
     }
 
+    @DisplayName("알림 상태 요청의 만료 토큰 401 응답을 문서화한다")
+    @Test
+    void documentGetNotificationStatusWithExpiredToken() throws Exception {
+        mockMvc.perform(get("/notifications/status").with(expiredAccessToken(USER_ID)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(ACCESS_TOKEN_EXPIRED.getCode()))
+                .andExpect(jsonPath("$.message").value(ACCESS_TOKEN_EXPIRED.getDescription()))
+                .andDo(document("notification-status-get-access-token-expired",
+                        resource(notificationStatusError().build())));
+    }
+
     @DisplayName("알림 상태 요청의 변조 토큰 401 응답을 문서화한다")
     @Test
     void documentGetNotificationStatusWithInvalidToken() throws Exception {
         mockMvc.perform(get("/notifications/status").with(tamperedAccessToken(USER_ID)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getCode()))
+                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getDescription()))
                 .andDo(document("notification-status-get-invalid-token",
+                        resource(notificationStatusError().build())));
+    }
+
+    @DisplayName("알림 상태 요청의 Refresh Token 401 응답을 문서화한다")
+    @Test
+    void documentGetNotificationStatusWithWrongTokenType() throws Exception {
+        mockMvc.perform(get("/notifications/status").with(refreshToken(USER_ID)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(WRONG_TOKEN_TYPE.getCode()))
+                .andExpect(jsonPath("$.message").value(WRONG_TOKEN_TYPE.getDescription()))
+                .andDo(document("notification-status-get-wrong-token-type",
                         resource(notificationStatusError().build())));
     }
 
@@ -350,6 +433,7 @@ class NotificationDocsTest {
         mockMvc.perform(get("/notifications/status").with(accessToken(USER_ID)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(USER_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(USER_NOT_FOUND.getDescription()))
                 .andDo(document("notification-status-get-user-not-found",
                         resource(notificationStatusError().build())));
     }
@@ -368,9 +452,11 @@ class NotificationDocsTest {
     @Test
     void documentUpdateNotificationReadStatusWithNonPositiveId() throws Exception {
         mockMvc.perform(patch("/notifications/{notificationId}/read-status", 0L)
+                        .locale(Locale.ENGLISH)
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.message").value(NOTIFICATION_ID_POSITIVE_MESSAGE))
                 .andDo(document("notification-read-status-patch-id-not-positive",
                         resource(notificationReadError().build())));
     }
@@ -395,13 +481,50 @@ class NotificationDocsTest {
         documentReadError(NOTIFICATION_READ_FORBIDDEN, "notification-read-status-patch-forbidden");
     }
 
+    @DisplayName("알림 읽음 요청의 만료 토큰 401 응답을 문서화한다")
+    @Test
+    void documentUpdateNotificationReadStatusWithExpiredToken() throws Exception {
+        mockMvc.perform(notificationReadRequest().with(expiredAccessToken(USER_ID)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(ACCESS_TOKEN_EXPIRED.getCode()))
+                .andExpect(jsonPath("$.message").value(ACCESS_TOKEN_EXPIRED.getDescription()))
+                .andDo(document("notification-read-status-patch-access-token-expired",
+                        resource(notificationReadError().build())));
+    }
+
     @DisplayName("알림 읽음 요청의 변조 토큰 401 응답을 문서화한다")
     @Test
     void documentUpdateNotificationReadStatusWithInvalidToken() throws Exception {
         mockMvc.perform(notificationReadRequest().with(tamperedAccessToken(USER_ID)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getCode()))
+                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getDescription()))
                 .andDo(document("notification-read-status-patch-invalid-token",
+                        resource(notificationReadError().build())));
+    }
+
+    @DisplayName("알림 읽음 요청의 Refresh Token 401 응답을 문서화한다")
+    @Test
+    void documentUpdateNotificationReadStatusWithWrongTokenType() throws Exception {
+        mockMvc.perform(notificationReadRequest().with(refreshToken(USER_ID)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(WRONG_TOKEN_TYPE.getCode()))
+                .andExpect(jsonPath("$.message").value(WRONG_TOKEN_TYPE.getDescription()))
+                .andDo(document("notification-read-status-patch-wrong-token-type",
+                        resource(notificationReadError().build())));
+    }
+
+    @DisplayName("알림 읽음 요청의 사용자가 없으면 404 응답을 문서화한다")
+    @Test
+    void documentUpdateNotificationReadStatusWithUnknownUser() throws Exception {
+        given(userService.getUserOrException(USER_ID))
+                .willThrow(new CustomUserException(USER_NOT_FOUND, "user not found"));
+
+        mockMvc.perform(notificationReadRequest().with(accessToken(USER_ID)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(USER_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(USER_NOT_FOUND.getDescription()))
+                .andDo(document("notification-read-status-patch-user-not-found",
                         resource(notificationReadError().build())));
     }
 
@@ -428,6 +551,7 @@ class NotificationDocsTest {
         mockMvc.perform(get("/notifications/unread").with(tamperedAccessToken(USER_ID)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getCode()))
+                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getDescription()))
                 .andDo(document("notification-unread-get-deprecated-invalid-token",
                         resource(notificationLegacyStatus()
                                 .responseSchema(ERROR_RESULT_SCHEMA)
@@ -451,6 +575,7 @@ class NotificationDocsTest {
         mockMvc.perform(notificationLegacyReadRequest().with(tamperedAccessToken(USER_ID)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getCode()))
+                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getDescription()))
                 .andDo(document("notification-read-post-deprecated-invalid-token",
                         resource(notificationLegacyRead()
                                 .responseSchema(ERROR_RESULT_SCHEMA)
@@ -458,7 +583,7 @@ class NotificationDocsTest {
                                 .build())));
     }
 
-    @DisplayName("유효한 토큰의 사용자가 없으면 404 응답을 문서화한다")
+    @DisplayName("알림 목록 요청의 사용자가 없으면 404 응답을 문서화한다")
     @Test
     void documentUnknownUser() throws Exception {
         given(userService.getUserOrException(USER_ID))
@@ -467,17 +592,20 @@ class NotificationDocsTest {
         mockMvc.perform(notificationsRequest().with(accessToken(USER_ID)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(USER_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(USER_NOT_FOUND.getDescription()))
                 .andDo(document("notifications-get-user-not-found",
                         resource(notificationListError().build())));
     }
 
-    private void documentListValidationError(String size, String identifier) throws Exception {
+    private void documentListValidationError(String size, String expectedMessage, String identifier) throws Exception {
         mockMvc.perform(get("/notifications")
                         .queryParam("lastNotificationId", "0")
                         .queryParam("size", size)
+                        .locale(Locale.ENGLISH)
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.message").value(expectedMessage))
                 .andDo(document(identifier, resource(notificationListError().build())));
     }
 
@@ -565,7 +693,9 @@ class NotificationDocsTest {
                 .tag(TAG)
                 .summary("[Deprecated] 알림 읽음 처리")
                 .description(LEGACY_READ_DESCRIPTION)
-                .pathParameters(notificationIdParameter("읽음 처리할 알림 ID"))
+                .pathParameters(parameterWithName("notificationId")
+                        .type(SimpleType.INTEGER)
+                        .description("읽음 처리할 알림 ID"))
                 .deprecated(true);
     }
 
@@ -573,7 +703,6 @@ class NotificationDocsTest {
         return List.of(
                 parameterWithName("lastNotificationId").optional()
                         .type(SimpleType.INTEGER)
-                        .defaultValue(0)
                         .description("이전 페이지의 마지막 알림 ID. 첫 페이지는 생략하거나 0을 보낸다."),
                 parameterWithName("size").optional()
                         .type(SimpleType.INTEGER)
@@ -609,7 +738,7 @@ class NotificationDocsTest {
         return List.of(
                 fieldWithPath("notificationTitle").type(STRING).description("공지 알림 제목"),
                 fieldWithPath("notificationCreatedDate").type(STRING).description("공지 생성일. yyyy.MM.dd 형식."),
-                fieldWithPath("notificationDetail").type(STRING).description("공지 상세 내용"));
+                fieldWithPath("notificationDetail").type(STRING).optional().description("공지 상세 내용"));
     }
 
     private List<FieldDescriptor> notificationStatusFields() {
@@ -619,10 +748,12 @@ class NotificationDocsTest {
 
     private NotificationPageResponse notificationPageResponse() {
         return new NotificationPageResponse(true, List.of(
-                new NotificationItem(102L, "https://image.websoso.kr/notification/feed.png",
+                new NotificationItem(103L, "https://image.websoso.kr/notification/feed.png",
                         "재혼 황후", "내 글에 댓글이 달렸어요.", "3분 전", false, false, 31L, null),
+                new NotificationItem(102L, "https://image.websoso.kr/notification/novel.png",
+                        "재혼 황후", "작품이 완결되었어요.", "30분 전", false, false, null, 7L),
                 new NotificationItem(101L, "https://image.websoso.kr/notification/novel.png",
-                        "재혼 황후", "작품 연재가 재개되었어요.", "1시간 전", false, false, null, 7L),
+                        "화산귀환", "작품 연재가 재개되었어요.", "1시간 전", false, false, null, 8L),
                 new NotificationItem(100L, "https://image.websoso.kr/notification/notice.png",
                         "서비스 점검 안내", "공지 내용을 확인해 주세요.", "2026.08.20", true, true, null, null)));
     }
@@ -644,4 +775,5 @@ class NotificationDocsTest {
     private MockHttpServletRequestBuilder notificationLegacyReadRequest() {
         return post("/notifications/{notificationId}/read", NOTIFICATION_ID);
     }
+
 }

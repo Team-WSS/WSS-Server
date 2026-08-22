@@ -17,7 +17,6 @@ import org.websoso.WSSServer.notification.controller.response.NotificationReadSt
 import org.websoso.WSSServer.user.domain.User;
 
 /** 알림 Controller의 요청 위임과 상태 코드를 검증한다. */
-@SuppressWarnings("deprecation")
 class NotificationControllerTest {
 
     private final NotificationApplication notificationApplication = mock(NotificationApplication.class);
@@ -74,6 +73,7 @@ class NotificationControllerTest {
         then(notificationApplication).should().updateNotificationReadStatus(user, 10L);
     }
 
+    @SuppressWarnings("deprecation")
     @DisplayName("기존 읽지 않은 알림 상태 조회 결과와 200을 반환한다")
     @Test
     void getsNotificationStatusDeprecated() {
@@ -88,6 +88,7 @@ class NotificationControllerTest {
         then(notificationApplication).should().getReadStatus(user);
     }
 
+    @SuppressWarnings("deprecation")
     @DisplayName("기존 알림 읽음 처리는 201을 반환한다")
     @Test
     void createsNotificationAsReadDeprecated() {
@@ -97,4 +98,5 @@ class NotificationControllerTest {
         assertThat(response.getBody()).isNull();
         then(notificationApplication).should().updateNotificationReadStatus(user, 10L);
     }
+
 }
