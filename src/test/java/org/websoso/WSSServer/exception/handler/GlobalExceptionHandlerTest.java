@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.COLLECTION_NOT_FOUND;
@@ -14,6 +15,7 @@ import static org.websoso.WSSServer.exception.error.CustomUserError.DUPLICATED_N
 import static org.websoso.common.exception.CustomCommonError.DATA_INTEGRITY_VIOLATED;
 import static org.websoso.common.exception.CustomCommonError.INVALID_REQUEST_FIELD;
 import static org.websoso.common.exception.CustomCommonError.MALFORMED_REQUEST_BODY;
+import static org.websoso.common.exception.CustomCommonError.METHOD_NOT_SUPPORTED;
 import static org.websoso.common.exception.CustomCommonError.MISSING_REQUEST_PARAMETER;
 import static org.websoso.common.exception.CustomCommonError.MISSING_REQUEST_PART;
 import static org.websoso.common.exception.CustomCommonError.REQUEST_VALUE_TYPE_MISMATCH;
@@ -27,6 +29,7 @@ import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -92,6 +95,20 @@ class GlobalExceptionHandlerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(MALFORMED_REQUEST_BODY.getCode()))
                 .andExpect(jsonPath("$.message").value(MALFORMED_REQUEST_BODY.getDescription()));
+    }
+
+    /**
+     * 405 응답을 공통 형식으로 새로 만들면서 예외가 들고 있던 {@code Allow} 헤더를 잃지 않는지 확인한다.
+     * 클라이언트는 이 헤더로 해당 엔드포인트가 어떤 메서드를 받는지 알 수 있어야 한다.
+     */
+    @DisplayName("지원하지 않는 HTTP 메서드로 요청하면 405 COMMON-009와 지원 메서드를 담은 Allow 헤더로 응답한다")
+    @Test
+    void respondsWithCommonMethodNotSupportedAndKeepsAllowHeader() throws Exception {
+        mockMvc.perform(get("/test/validated"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(header().string(HttpHeaders.ALLOW, containsString("POST")))
+                .andExpect(jsonPath("$.code").value(METHOD_NOT_SUPPORTED.getCode()))
+                .andExpect(jsonPath("$.message").value(METHOD_NOT_SUPPORTED.getDescription()));
     }
 
     /**

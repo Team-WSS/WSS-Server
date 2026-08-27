@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -188,12 +189,15 @@ public class GlobalExceptionHandler {
 
     /**
      * 엔드포인트는 있으나 요청한 HTTP 메서드를 지원하지 않을 때를 처리한다.
+     *
+     * <p>405는 그 엔드포인트가 지원하는 메서드를 {@code Allow} 헤더로 알려야 한다.
+     * 예외가 이미 그 헤더를 들고 있으므로 응답을 새로 만들 때 버리지 않고 그대로 옮긴다.
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResult> HttpRequestMethodNotSupportedExceptionHandler(
             HttpRequestMethodNotSupportedException e) {
         log.warn("[HttpRequestMethodNotSupportedException] exception ", e);
-        return errorResponse(METHOD_NOT_SUPPORTED);
+        return errorResponse(METHOD_NOT_SUPPORTED, e.getHeaders());
     }
 
     /**
@@ -294,8 +298,21 @@ public class GlobalExceptionHandler {
      * JSON을 받지 못하는 Accept로 들어온 요청은 오류 응답조차 만들지 못한다.
      */
     private ResponseEntity<ErrorResult> errorResponse(ICustomError error, String message) {
+        return errorResponse(error, message, HttpHeaders.EMPTY);
+    }
+
+    /**
+     * {@link ICustomError} 정의 하나에 프로토콜이 요구하는 응답 헤더를 더해 응답을 만든다.
+     * 405의 {@code Allow}처럼 오류 응답 자체가 헤더로 전달해야 하는 정보가 있을 때 쓴다.
+     */
+    private ResponseEntity<ErrorResult> errorResponse(ICustomError error, HttpHeaders headers) {
+        return errorResponse(error, error.getDescription(), headers);
+    }
+
+    private ResponseEntity<ErrorResult> errorResponse(ICustomError error, String message, HttpHeaders headers) {
         return ResponseEntity
                 .status(error.getStatusCode())
+                .headers(headers)
                 .contentType(APPLICATION_JSON)
                 .body(new ErrorResult(error.getCode(), message));
     }
