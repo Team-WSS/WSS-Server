@@ -33,19 +33,22 @@ public class NovelController {
     /**
      * 검색어를 사용해서 소설을 찾는다.
      *
-     * @param query 검색할 작품명 or 작가명
-     * @param page  페이지 네이션 페이지
-     * @param size  페이지 네이션 사이즈
+     * @param query              검색할 작품명 or 작가명
+     * @param page               페이지 네이션 페이지
+     * @param size               페이지 네이션 사이즈
+     * @param recordRecentSearch 이번 조회를 최근 검색어로 저장할지 여부. 생략하면 기존 동작대로 저장한다.
      * @return SearchedNovelsResponse
      */
     @GetMapping
     public ResponseEntity<SearchedNovelsResponse> searchNovels(@AuthenticationPrincipal User user,
                                                                @RequestParam(required = false) String query,
                                                                @RequestParam int page,
-                                                               @RequestParam int size) {
+                                                               @RequestParam int size,
+                                                               @RequestParam(required = false, defaultValue = "true")
+                                                               boolean recordRecentSearch) {
         return ResponseEntity
                 .status(OK)
-                .body(searchNovelApplication.searchNovels(user, query, page, size));
+                .body(searchNovelApplication.searchNovels(user, query, page, size, recordRecentSearch));
     }
 
     /**

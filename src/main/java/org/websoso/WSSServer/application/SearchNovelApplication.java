@@ -71,13 +71,15 @@ public class SearchNovelApplication {
     /**
      * 검색어(소셜명, 작가명)에 해당하는 소설 찾기
      *
-     * @param query 검색할 작품명 or 작가명
-     * @param page  페이지 네이션 페이지
-     * @param size  페이지 네이션 사이즈
+     * @param query              검색할 작품명 or 작가명
+     * @param page               페이지 네이션 페이지
+     * @param size               페이지 네이션 사이즈
+     * @param recordRecentSearch 이번 조회를 최근 검색어로 저장할지 여부
      * @return SearchedNovelsGetResponse
      */
     @Transactional(readOnly = true)
-    public SearchedNovelsResponse searchNovels(User user, String query, int page, int size) {
+    public SearchedNovelsResponse searchNovels(User user, String query, int page, int size,
+                                               boolean recordRecentSearch) {
         PageRequest pageRequest = PageRequest.of(page, size);
         String searchQuery = sanitizeQuery(query);
 
@@ -89,8 +91,8 @@ public class SearchNovelApplication {
 
         List<NovelSummaryResponse> novelGetResponsePreviews = convertToNovelSummaries(novels.getContent());
 
-        // 로그인한 사용자이며, 검색어가 있는 경우에만 검색 기록에 저장한다.
-        if (user != null && user.getUserId() != null && !searchQuery.isBlank()) {
+        // 저장을 요청한 로그인 사용자의 검색만 검색 기록에 저장한다. 검색어가 비어 있으면 위에서 이미 반환된다.
+        if (recordRecentSearch && user != null && user.getUserId() != null) {
             eventPublisher.publishEvent(new NovelSearchedEvent(user.getUserId(), searchQuery));
         }
 
