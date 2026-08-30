@@ -1,6 +1,5 @@
 package org.websoso.WSSServer.auth.jwt;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.websoso.WSSServer.exception.error.CustomAuthError;
-import org.websoso.common.exception.ErrorResult;
+import org.websoso.common.exception.ErrorResultWriter;
 import org.websoso.support.logging.request.RequestLoggingFilter;
 
 /** JWT 인증을 처리하고 인증된 사용자 식별자를 요청 로그 컨텍스트에 전달한다. */
@@ -30,7 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final static String TOKEN_PREFIX = "Bearer ";
     private final JWTUtil jwtUtil;
-    private final ObjectMapper objectMapper;
+    private final ErrorResultWriter errorResultWriter;
 
     /** Access Token을 검증하고 인증 성공 시 실제 사용자 ID를 MDC에 저장한다. */
     @Override
@@ -51,15 +50,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(customAuthenticationToken);
                 }
                 case EXPIRED_ACCESS -> {
-                    writeError(response, CustomAuthError.ACCESS_TOKEN_EXPIRED);
+                    errorResultWriter.write(response, CustomAuthError.ACCESS_TOKEN_EXPIRED);
                     return;
                 }
                 case VALID_REFRESH, EXPIRED_REFRESH -> {
-                    writeError(response, CustomAuthError.WRONG_TOKEN_TYPE);
+                    errorResultWriter.write(response, CustomAuthError.WRONG_TOKEN_TYPE);
                     return;
                 }
                 case INVALID_TOKEN, INVALID_SIGNATURE, UNSUPPORTED_TOKEN, UNSUPPORTED_SUBJECT, EMPTY_TOKEN -> {
-                    writeError(response, CustomAuthError.INVALID_TOKEN);
+                    errorResultWriter.write(response, CustomAuthError.INVALID_TOKEN);
                     return;
                 }
             }
@@ -80,13 +79,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(TOKEN_PREFIX.length());
         }
         return null;
-    }
-
-    private void writeError(HttpServletResponse response, CustomAuthError error) throws IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.setStatus(error.getStatusCode().value());
-        response.getWriter().write(
-                objectMapper.writeValueAsString(new ErrorResult(error.getCode(), error.getDescription())));
     }
 }

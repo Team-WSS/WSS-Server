@@ -4,7 +4,6 @@ import static com.epages.restdocs.apispec.ResourceDocumentation.resource;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -32,6 +31,8 @@ import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.ERRO
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.errorLine;
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.errorResultFields;
 import static org.websoso.WSSServer.support.docs.RequestPreprocessors.withoutRequestBody;
+import static org.websoso.common.exception.CustomCommonError.INVALID_REQUEST_FIELD;
+import static org.websoso.common.exception.CustomCommonError.MALFORMED_REQUEST_BODY;
 
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.epages.restdocs.apispec.ResourceSnippetParametersBuilder;
@@ -82,7 +83,6 @@ class PostCollectionDocsTest {
     private static final String SUMMARY = "컬렉션 생성";
     private static final Schema CREATE_REQUEST_SCHEMA = Schema.schema("CollectionCreateRequest");
     private static final Schema CREATE_RESPONSE_SCHEMA = Schema.schema("CollectionCreateResponse");
-    private static final String MALFORMED_JSON_MESSAGE = "잘못된 JSON 형식입니다.";
     private static final String BLANK_NAME_MESSAGE = "컬렉션 이름은 비어 있거나, 공백일 수 없습니다.";
 
     private static final String DESCRIPTION = String.join("\n",
@@ -96,9 +96,8 @@ class PostCollectionDocsTest {
             errorLine(ACCESS_TOKEN_EXPIRED),
             errorLine(INVALID_TOKEN) + " (헤더 형식 오류 또는 누락을 포함합니다.)",
             errorLine(WRONG_TOKEN_TYPE),
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), MALFORMED_JSON_MESSAGE)
-                    + " (본문이 JSON으로 읽히지 않을 때 반환합니다.)",
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), "검증에 실패한 첫 번째 요청 필드의 메시지")
+            errorLine(MALFORMED_REQUEST_BODY) + " (본문이 JSON으로 읽히지 않을 때 반환합니다.)",
+            errorLine(INVALID_REQUEST_FIELD, "검증에 실패한 첫 번째 요청 필드의 메시지")
                     + " (요청 본문 필드 검증에 실패했을 때 반환하며, 메시지는 실패한 필드에 따라 다릅니다.)",
             errorLine(INVALID_COLLECTION_NOVEL_COUNT),
             errorLine(DUPLICATE_COLLECTION_NOVEL),
@@ -208,7 +207,7 @@ class PostCollectionDocsTest {
                         resource(collectionError().build())));
     }
 
-    @DisplayName("본문 JSON 형식이 잘못된 요청의 400 BAD_REQUEST 응답을 문서화한다")
+    @DisplayName("본문 JSON 형식이 잘못된 요청의 400 COMMON-002 응답을 문서화한다")
     @Test
     void documentCreateWithMalformedJson() throws Exception {
         mockMvc.perform(post("/collections")
@@ -217,14 +216,14 @@ class PostCollectionDocsTest {
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
-                .andExpect(jsonPath("$.message").value(MALFORMED_JSON_MESSAGE))
+                .andExpect(jsonPath("$.code").value(MALFORMED_REQUEST_BODY.getCode()))
+                .andExpect(jsonPath("$.message").value(MALFORMED_REQUEST_BODY.getDescription()))
                 .andDo(document("collections-create-malformed-json",
                         withoutRequestBody(),
                         resource(collectionError().build())));
     }
 
-    @DisplayName("이름이 공백인 요청의 400 BAD_REQUEST 응답을 문서화한다")
+    @DisplayName("이름이 공백인 요청의 400 COMMON-001 응답을 문서화한다")
     @Test
     void documentCreateWithBlankName() throws Exception {
         CollectionCreateRequest blankName =
@@ -233,7 +232,7 @@ class PostCollectionDocsTest {
         mockMvc.perform(createRequest(blankName).with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_FIELD.getCode()))
                 .andExpect(jsonPath("$.message").value(BLANK_NAME_MESSAGE))
                 .andDo(document("collections-create-invalid-request-field",
                         withoutRequestBody(),

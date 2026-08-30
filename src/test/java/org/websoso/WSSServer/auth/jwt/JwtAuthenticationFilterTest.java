@@ -18,6 +18,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.websoso.common.exception.ErrorResultWriter;
 import org.websoso.support.logging.request.RequestLoggingFilter;
 
 /** JWT 인증 결과와 요청 로그용 사용자 식별자 전달을 검증한다. */
@@ -27,7 +28,8 @@ class JwtAuthenticationFilterTest {
 
     private final JWTUtil jwtUtil = mock(JWTUtil.class);
     private final FilterChain filterChain = mock(FilterChain.class);
-    private final JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, new ObjectMapper());
+    private final JwtAuthenticationFilter filter =
+            new JwtAuthenticationFilter(jwtUtil, new ErrorResultWriter(new ObjectMapper()));
 
     /** 테스트 간 인증 컨텍스트가 공유되지 않도록 정리한다. */
     @AfterEach

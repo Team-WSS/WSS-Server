@@ -15,6 +15,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.websoso.common.exception.ErrorResultWriter;
 
 /**
  * TestTokenFactory가 발급한 실제 형식의 토큰이 실제(mock 아닌) JWTUtil/JwtProvider를 거쳐
@@ -29,7 +30,8 @@ class JwtAuthenticationFilterRealTokenTest {
     private final TestTokenFactory testTokenFactory = new TestTokenFactory();
     private final JWTUtil jwtUtil = new JWTUtil(new JwtKeyProvider(TestTokenFactory.TEST_SECRET));
     private final FilterChain filterChain = mock(FilterChain.class);
-    private final JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, new ObjectMapper());
+    private final JwtAuthenticationFilter filter =
+            new JwtAuthenticationFilter(jwtUtil, new ErrorResultWriter(new ObjectMapper()));
 
     @AfterEach
     void clearContext() {

@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -32,6 +31,9 @@ import static org.websoso.WSSServer.support.auth.TestBearerToken.refreshToken;
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.ERROR_RESULT_SCHEMA;
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.errorLine;
 import static org.websoso.WSSServer.support.docs.ErrorResponseDocumentation.errorResultFields;
+import static org.websoso.common.exception.CustomCommonError.INVALID_REQUEST_PARAMETER;
+import static org.websoso.common.exception.CustomCommonError.MISSING_REQUEST_PARAMETER;
+import static org.websoso.common.exception.CustomCommonError.REQUEST_VALUE_TYPE_MISMATCH;
 
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.epages.restdocs.apispec.ResourceSnippetParametersBuilder;
@@ -92,12 +94,12 @@ class GetMyNovelNotificationsDocsTest {
             "이 API가 정의하는 응답은 다음과 같습니다.",
             "",
             "- 200 OK — 성공.",
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), NOTIFICATION_TYPE_REQUIRED_MESSAGE),
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), NOTIFICATION_TYPE_MISMATCH_MESSAGE)
+            errorLine(MISSING_REQUEST_PARAMETER, NOTIFICATION_TYPE_REQUIRED_MESSAGE),
+            errorLine(REQUEST_VALUE_TYPE_MISMATCH, NOTIFICATION_TYPE_MISMATCH_MESSAGE)
                     + " (COMPLETION, HIATUS_RETURN 외의 값을 보냈을 때 반환합니다.)",
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), LAST_SUBSCRIPTION_ID_POSITIVE_OR_ZERO),
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), SIZE_MIN),
-            errorLine(BAD_REQUEST, BAD_REQUEST.name(), SIZE_MAX),
+            errorLine(INVALID_REQUEST_PARAMETER, LAST_SUBSCRIPTION_ID_POSITIVE_OR_ZERO),
+            errorLine(INVALID_REQUEST_PARAMETER, SIZE_MIN),
+            errorLine(INVALID_REQUEST_PARAMETER, SIZE_MAX),
             errorLine(ACCESS_TOKEN_EXPIRED),
             errorLine(INVALID_TOKEN) + " (헤더 형식 오류 또는 누락을 포함합니다.)",
             errorLine(WRONG_TOKEN_TYPE),
@@ -145,13 +147,13 @@ class GetMyNovelNotificationsDocsTest {
                                 .build())));
     }
 
-    @DisplayName("알림 유형을 보내지 않은 요청의 400 응답을 문서화한다")
+    @DisplayName("알림 유형을 보내지 않은 요청의 400 COMMON-004 응답을 문서화한다")
     @Test
     void documentGetSubscriptionsWithoutNotificationType() throws Exception {
         mockMvc.perform(get("/users/me/notification/novels").with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(MISSING_REQUEST_PARAMETER.getCode()))
                 .andExpect(jsonPath("$.message").value(NOTIFICATION_TYPE_REQUIRED_MESSAGE))
                 .andDo(document("my-novel-notifications-notification-type-required",
                         resource(withoutQueryParameters()
@@ -160,19 +162,19 @@ class GetMyNovelNotificationsDocsTest {
                                 .build())));
     }
 
-    @DisplayName("정의되지 않은 알림 유형 요청의 400 응답을 문서화한다")
+    @DisplayName("정의되지 않은 알림 유형 요청의 400 COMMON-005 응답을 문서화한다")
     @Test
     void documentGetSubscriptionsWithUnknownNotificationType() throws Exception {
         mockMvc.perform(subscriptionsRequest("UNKNOWN").with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(REQUEST_VALUE_TYPE_MISMATCH.getCode()))
                 .andExpect(jsonPath("$.message").value(NOTIFICATION_TYPE_MISMATCH_MESSAGE))
                 .andDo(document("my-novel-notifications-notification-type-mismatch",
                         resource(subscriptionsError().build())));
     }
 
-    @DisplayName("음수 커서 요청의 400 응답을 문서화한다")
+    @DisplayName("음수 커서 요청의 400 COMMON-003 응답을 문서화한다")
     @Test
     void documentGetSubscriptionsWithNegativeCursor() throws Exception {
         mockMvc.perform(get("/users/me/notification/novels")
@@ -181,13 +183,13 @@ class GetMyNovelNotificationsDocsTest {
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_PARAMETER.getCode()))
                 .andExpect(jsonPath("$.message").value(LAST_SUBSCRIPTION_ID_POSITIVE_OR_ZERO))
                 .andDo(document("my-novel-notifications-cursor-negative",
                         resource(subscriptionsError().build())));
     }
 
-    @DisplayName("조회 개수가 1 미만인 요청의 400 응답을 문서화한다")
+    @DisplayName("조회 개수가 1 미만인 요청의 400 COMMON-003 응답을 문서화한다")
     @Test
     void documentGetSubscriptionsWithTooSmallSize() throws Exception {
         mockMvc.perform(get("/users/me/notification/novels")
@@ -196,13 +198,13 @@ class GetMyNovelNotificationsDocsTest {
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_PARAMETER.getCode()))
                 .andExpect(jsonPath("$.message").value(SIZE_MIN))
                 .andDo(document("my-novel-notifications-size-too-small",
                         resource(subscriptionsError().build())));
     }
 
-    @DisplayName("조회 개수가 50을 넘는 요청의 400 응답을 문서화한다")
+    @DisplayName("조회 개수가 50을 넘는 요청의 400 COMMON-003 응답을 문서화한다")
     @Test
     void documentGetSubscriptionsWithTooLargeSize() throws Exception {
         mockMvc.perform(get("/users/me/notification/novels")
@@ -211,7 +213,7 @@ class GetMyNovelNotificationsDocsTest {
                         .with(accessToken(USER_ID)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(INVALID_REQUEST_PARAMETER.getCode()))
                 .andExpect(jsonPath("$.message").value(SIZE_MAX))
                 .andDo(document("my-novel-notifications-size-too-large",
                         resource(subscriptionsError().build())));

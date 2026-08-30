@@ -38,7 +38,7 @@ public final class ErrorResponseDocumentation {
     public static List<FieldDescriptor> errorResultFields() {
         return List.of(
                 fieldWithPath("code").type(STRING).description(
-                        "오류 코드. 서비스 에러 코드가 정의된 오류는 그 코드이고, 정의되지 않은 오류는 HTTP 상태 이름이다."),
+                        "서비스 에러 코드. {영역}-{일련번호 3자리} 형식이며, 클라이언트는 HTTP 상태가 아니라 이 값으로 원인을 구분한다."),
                 fieldWithPath("message").type(STRING).description("오류 메시지"));
     }
 
@@ -50,10 +50,18 @@ public final class ErrorResponseDocumentation {
      * 상태 코드와 에러 코드가 줄마다 반복되면 목록 전체가 읽기 어려워지기 때문이다.
      */
     public static String errorLine(ICustomError error) {
-        return errorLine(error.getStatusCode(), error.getCode(), error.getDescription());
+        return errorLine(error, error.getDescription());
     }
 
-    public static String errorLine(HttpStatus status, String code, String message) {
-        return "- %d %s · %s — %s".formatted(status.value(), status.getReasonPhrase(), code, message);
+    /**
+     * 상태 코드와 오류 코드는 정의에서 가져오고 메시지만 실제 응답 값으로 대체한 오류 한 줄.
+     * 공통 오류 코드처럼 응답 메시지가 요청마다 달라지는 오류를 서술할 때 쓴다.
+     *
+     * <p>코드와 상태 코드를 문자열로 직접 받는 오버로드는 두지 않는다. 그런 입구가 있으면
+     * 정의되지 않은 오류를 HTTP 상태 이름으로 서술하게 되고, 문서와 실제 응답 코드가 어긋난다.
+     */
+    public static String errorLine(ICustomError error, String message) {
+        HttpStatus status = error.getStatusCode();
+        return "- %d %s · %s — %s".formatted(status.value(), status.getReasonPhrase(), error.getCode(), message);
     }
 }

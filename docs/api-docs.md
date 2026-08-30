@@ -32,6 +32,13 @@ Controller에 들어오기 전에 프레임워크가 만드는 응답은 문서�
 이 API 고유의 계약이 아니라 모든 엔드포인트에 똑같이 적용되는 동작이라, 명세에 넣어도 클라이언트가 이 API에 대해 알 수 있는 것이 없다.
 특히 다른 HTTP 메서드로 요청해 `405`를 문서화하면 명세에 그 메서드의 엔드포인트가 통째로 생겨 버린다.
 
+모든 엔드포인트에 공통으로 적용되는 `COMMON-008`(404), `COMMON-009`(405), `COMMON-010`(415),
+`COMMON-011`(406), `COMMON-012`(403), `COMMON-999`(500)이 여기에 해당한다.
+이 응답들의 계약은 명세가 아니라 [error-codes.md](error-codes.md)의 공통 코드 목록과
+`CommonErrorResponseTest`가 정의한다. 특정 엔드포인트의 요청으로 실제 발생하는
+`COMMON-001`~`COMMON-007`, `COMMON-013`, `COMMON-014`는 그 엔드포인트의 계약이므로 문서화한다.
+필수 헤더는 엔드포인트마다 다르므로 `COMMON-014`도 그 엔드포인트가 요구하는 헤더의 계약으로 본다.
+
 ## 오류 응답 문서화 규칙
 
 명세의 기준은 문서 테스트가 실제로 받은 응답이다. 성공 응답만 문서화하면 클라이언트는 실패를 명세에서 알 수 없다.
@@ -47,6 +54,10 @@ API를 새로 문서화할 때 아래를 지킨다.
    `ACCESS_TOKEN_EXPIRED.getCode()`, `ACCESS_TOKEN_EXPIRED.getDescription()`처럼 enum에서 읽어 단언한다.
    문자열을 테스트에 옮겨 적으면 오탈자나 정의 변경을 테스트가 잡지 못한다.
    `GlobalExceptionHandler`가 직접 만드는 메시지처럼 enum이 없는 경우에만 상수로 두고, 실제 응답과 일치하는지 같은 테스트에서 확인한다.
+   `COMMON-001`처럼 코드는 고정이고 메시지만 요청마다 달라지는 오류는 코드만 정의에서 읽고 메시지는 실제 응답 값으로 단언한다.
+   엔드포인트 서술에는 `errorLine(error, message)` 오버로드를 써서 코드는 정의에서, 메시지는 실제 값으로 채운다.
+   `errorLine`은 `ICustomError`만 받는다. 코드를 문자열로 넘길 수 없으므로 HTTP 상태 이름이 문서에 코드로 실릴 일이 없다.
+   어떤 코드를 어디에 정의하는지는 [error-codes.md](error-codes.md)를 따른다.
 4. **오류 본문은 공통 `ErrorResult` 스키마를 재사용한다.**
    `support/docs/ErrorResponseDocumentation`의 `ERROR_RESULT_SCHEMA`와 `errorResultFields()`를 쓴다.
    생성 명세에서 오류 응답들이 `components.schemas.ErrorResult` 하나를 공유한다.
