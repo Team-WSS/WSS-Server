@@ -163,6 +163,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
         JPAQuery<UserNovel> queryBuilder = jpaQueryFactory
                 .selectFrom(userNovel)
                 .join(userNovel.novel, novel).fetchJoin()
+                .leftJoin(novel.novelStatistics, novelStatistics).fetchJoin()
                 .where(userNovel.user.userId.eq(userId));
 
         applyFilters(queryBuilder, isInterest, readStatuses, attractivePoints, novelRating, query, updatedSince);
@@ -216,6 +217,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .selectFrom(userNovel)
                 .distinct()
                 .join(userNovel.novel, novel).fetchJoin()
+                .leftJoin(novel.novelStatistics, novelStatistics).fetchJoin()
                 .where(userNovel.user.userId.eq(userId));
 
         applyFiltersV2(queryBuilder, isInterest, readStatuses, genres, isCompleted, ratingMin, ratingMax,
