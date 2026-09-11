@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.novel.repository;
 
 import static org.websoso.WSSServer.domain.QGenre.genre;
+import static org.websoso.WSSServer.library.domain.QUserNovelKeyword.userNovelKeyword;
 import static org.websoso.WSSServer.novel.domain.QNovel.novel;
 import static org.websoso.WSSServer.novel.domain.QNovelGenre.novelGenre;
 import static org.websoso.WSSServer.novel.domain.QNovelPlatform.novelPlatform;
@@ -9,9 +10,9 @@ import static org.websoso.WSSServer.novel.domain.QPlatform.platform;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.core.types.dsl.StringTemplate;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
@@ -25,7 +26,6 @@ import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.library.domain.Keyword;
 import org.websoso.WSSServer.novel.domain.Novel;
-import org.websoso.WSSServer.novel.domain.QNovel;
 
 @Repository
 @RequiredArgsConstructor
@@ -105,7 +105,7 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
                         getAverageRatingCondition(novelRatingStart, novelRatingEnd),
                         keywords.isEmpty()
                                 ? null
-                                : getKeywordCount(novel, keywords).eq(keywords.size()),
+                                : hasAnyKeyword(keywords),
                         hasPlatformFilter
                                 ? platform.platformName.in(platformNames)
                                 : null
@@ -159,10 +159,15 @@ public class NovelCustomRepositoryImpl implements NovelCustomRepository {
         );
     }
 
-    private NumberExpression<Integer> getKeywordCount(QNovel novel, List<Keyword> keywords) {
-        return Expressions.numberTemplate(Integer.class,
-                "(SELECT COUNT(unk.keyword) FROM UserNovelKeyword unk WHERE unk.userNovel.novel = {0} AND unk.keyword IN ({1}) GROUP BY unk.userNovel.novel.id)",
-                novel, keywords);
+    private BooleanExpression hasAnyKeyword(List<Keyword> keywords) {
+        return JPAExpressions
+                .selectOne()
+                .from(userNovelKeyword)
+                .where(
+                        userNovelKeyword.userNovel.novel.eq(novel),
+                        userNovelKeyword.keyword.in(keywords)
+                )
+                .exists();
     }
 
     private Page<Novel> applyPagination(Pageable pageable, JPAQuery<Novel> query) {
