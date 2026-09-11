@@ -45,6 +45,15 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
+    public List<UserNovel> findUserNovelByUserId(Long userId) {
+        return jpaQueryFactory
+                .selectFrom(userNovel)
+                .join(userNovel.novel, novel).fetchJoin()
+                .where(userNovel.user.userId.eq(userId))
+                .fetch();
+    }
+
+    @Override
     public Optional<UserNovel> findByNovelIdAndUserForUpdate(Long novelId, User user) {
         return Optional.ofNullable(jpaQueryFactory
                 .selectFrom(userNovel)
