@@ -13,6 +13,7 @@ public record UserNovelAndNovelGetResponse(
         Long userNovelId,
         Long novelId,
         String title,
+        String author,
         String novelImage,
         Float novelRating,
         String readStatus,
@@ -41,6 +42,7 @@ public record UserNovelAndNovelGetResponse(
                 userNovel.getUserNovelId(),
                 novel.getNovelId(),
                 novel.getTitle(),
+                novel.getAuthor(),
                 novel.getNovelImage(),
                 novelRatingAvg,
                 userNovel.getStatus() != null
