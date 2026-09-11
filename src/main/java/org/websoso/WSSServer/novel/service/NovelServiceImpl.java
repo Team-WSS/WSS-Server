@@ -35,6 +35,13 @@ public class NovelServiceImpl {
     }
 
     @Transactional(readOnly = true)
+    public Novel getNovelWithStatisticsOrException(Long novelId) {
+        return novelRepository.findByIdWithStatistics(novelId)
+                .orElseThrow(() -> new CustomNovelException(NOVEL_NOT_FOUND,
+                        "novel with the given id is not found"));
+    }
+
+    @Transactional(readOnly = true)
     public Optional<Novel> findOptionalNovel(Long novelId) {
         if (novelId == null) {
             return Optional.empty();
