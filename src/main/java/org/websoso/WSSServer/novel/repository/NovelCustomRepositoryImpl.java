@@ -16,6 +16,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,15 @@ import org.websoso.WSSServer.novel.domain.QNovel;
 public class NovelCustomRepositoryImpl implements NovelCustomRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
+
+    @Override
+    public Optional<Novel> findByIdWithStatistics(Long novelId) {
+        return Optional.ofNullable(jpaQueryFactory
+                .selectFrom(novel)
+                .leftJoin(novel.novelStatistics, novelStatistics).fetchJoin()
+                .where(novel.novelId.eq(novelId))
+                .fetchOne());
+    }
 
     @Override
     public Page<Novel> findSearchedNovels(Pageable pageable, String searchQuery) {

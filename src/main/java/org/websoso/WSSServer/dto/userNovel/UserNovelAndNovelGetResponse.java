@@ -8,6 +8,7 @@ import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.library.domain.UserNovelAttractivePoint;
 import org.websoso.WSSServer.library.domain.UserNovelKeyword;
+import org.websoso.WSSServer.novel.domain.NovelStatistics;
 
 public record UserNovelAndNovelGetResponse(
         Long userNovelId,
@@ -24,8 +25,20 @@ public record UserNovelAndNovelGetResponse(
         List<String> keywords,
         List<String> myFeeds
 ) {
-    public static UserNovelAndNovelGetResponse from(UserNovel userNovel, Float novelRatingAvg, List<String> feeds) {
+    public static UserNovelAndNovelGetResponse from(
+            UserNovel userNovel,
+            Float ignoredNovelRatingAvg,
+            List<String> feeds
+    ) {
+        return from(userNovel, feeds);
+    }
+
+    public static UserNovelAndNovelGetResponse from(UserNovel userNovel, List<String> feeds) {
         Novel novel = userNovel.getNovel();
+        NovelStatistics statistics = novel.getNovelStatistics();
+        float novelRating = statistics == null
+                ? 0.0f
+                : Math.round(statistics.getAverageRating().floatValue() * 10.0f) / 10.0f;
 
         List<String> attractivePoints = userNovel.getUserNovelAttractivePoints().stream()
                 .map(UserNovelAttractivePoint::getAttractivePoint)
@@ -42,7 +55,7 @@ public record UserNovelAndNovelGetResponse(
                 novel.getNovelId(),
                 novel.getTitle(),
                 novel.getNovelImage(),
-                novelRatingAvg,
+                novelRating,
                 userNovel.getStatus() != null
                         ? userNovel.getStatus().name()
                         : null,

@@ -2,6 +2,7 @@ package org.websoso.WSSServer.application;
 
 import static org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessageType.WITHDRAW;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,10 @@ import org.websoso.WSSServer.feed.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
 import org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessage;
 import org.websoso.WSSServer.dto.user.WithdrawalRequest;
+import org.websoso.WSSServer.library.domain.UserNovel;
+import org.websoso.WSSServer.library.repository.UserNovelRepository;
+import org.websoso.WSSServer.novel.domain.NovelStatisticsContribution;
+import org.websoso.WSSServer.novel.service.NovelStatisticsService;
 import org.websoso.WSSServer.auth.service.AppleService;
 import org.websoso.WSSServer.auth.service.TokenService;
 import org.websoso.WSSServer.auth.client.KakaoClient;
@@ -36,6 +41,8 @@ public class AccountApplication {
     private final CommentServiceImpl commentService;
     private final FeedServiceImpl feedService;
     private final CollectionService collectionService;
+    private final UserNovelRepository userNovelRepository;
+    private final NovelStatisticsService novelStatisticsService;
 
     public void withdrawUser(User user, WithdrawalRequest withdrawalRequest) {
         unlinkSocialAccount(user);
@@ -72,7 +79,17 @@ public class AccountApplication {
         feedService.updateWriterToUnknown(userId);
         // 컬렉션은 소유자가 반드시 있어야 하므로 사용자 삭제 전에 소유자를 알 수 없는 사용자로 넘긴다.
         collectionService.updateOwnerToUnknown(userId);
+        subtractNovelStatisticsContributions(userId);
         userRepository.deleteById(userId);
+    }
+
+    private void subtractNovelStatisticsContributions(Long userId) {
+        List<UserNovel> userNovels = userNovelRepository.findUserNovelByUserId(userId);
+        userNovels.forEach(userNovel -> novelStatisticsService.updateByDelta(
+                userNovel.getNovel().getNovelId(),
+                NovelStatisticsContribution.from(userNovel),
+                NovelStatisticsContribution.EMPTY
+        ));
     }
 
 }

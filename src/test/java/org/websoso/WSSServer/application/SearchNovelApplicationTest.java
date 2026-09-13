@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.websoso.WSSServer.domain.Genre;
 import org.websoso.WSSServer.domain.GenrePreference;
+import org.websoso.WSSServer.dto.novel.NovelGetResponseBasic;
 import org.websoso.WSSServer.dto.novel.SearchedNovelsResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.TasteNovelsGetResponse;
@@ -30,6 +31,7 @@ import org.websoso.WSSServer.library.service.AttractivePointService;
 import org.websoso.WSSServer.library.service.KeywordService;
 import org.websoso.WSSServer.library.service.LibraryService;
 import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.novel.domain.NovelGenre;
 import org.websoso.WSSServer.novel.domain.NovelStatistics;
 import org.websoso.WSSServer.novel.service.GenreServiceImpl;
 import org.websoso.WSSServer.novel.service.KeywordServiceImpl;
@@ -96,10 +98,34 @@ class SearchNovelApplicationTest {
     private Genre genre;
 
     @Mock
+    private NovelGenre novelGenre;
+
+    @Mock
     private Novel novel;
 
     @Mock
     private NovelStatistics novelStatistics;
+
+    @DisplayName("작품 기본 정보의 평점 통계를 통계 데이터로 반환한다")
+    @Test
+    void getsNovelBasicInfoWithNovelStatistics() {
+        given(novelService.getNovelWithStatisticsOrException(1L)).willReturn(novel);
+        given(novelService.getGenresByNovel(novel)).willReturn(List.of(novelGenre));
+        given(novelGenre.getGenre()).willReturn(genre);
+        given(genre.getGenreName()).willReturn("fantasy");
+        given(genre.getGenreImage()).willReturn("https://example.com/genre.png");
+        given(novel.getNovelStatistics()).willReturn(novelStatistics);
+        given(novelStatistics.getAverageRating()).willReturn(new BigDecimal("4.250"));
+        given(novelStatistics.getRatingCount()).willReturn(8L);
+        given(libraryService.getInterestCount(novel)).willReturn(3);
+        given(feedRepository.countByNovelId(1L)).willReturn(5);
+
+        NovelGetResponseBasic response = searchNovelApplication.getNovelInfoBasic(user, 1L);
+
+        assertThat(response.novelRating()).isEqualTo(4.3f);
+        assertThat(response.novelRatingCount()).isEqualTo(8);
+        then(novelService).should().getNovelWithStatisticsOrException(1L);
+    }
 
     // 추천 작품의 관심 수와 평점 통계를 컬렉션 로딩 없이 응답에 반영하는지 검증한다.
     @DisplayName("취향 추천 작품의 통계를 일괄 조회 결과로 반환한다")

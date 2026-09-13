@@ -45,6 +45,15 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
+    public List<UserNovel> findUserNovelByUserId(Long userId) {
+        return jpaQueryFactory
+                .selectFrom(userNovel)
+                .join(userNovel.novel, novel).fetchJoin()
+                .where(userNovel.user.userId.eq(userId))
+                .fetch();
+    }
+
+    @Override
     public Optional<UserNovel> findByNovelIdAndUserForUpdate(Long novelId, User user) {
         return Optional.ofNullable(jpaQueryFactory
                 .selectFrom(userNovel)
@@ -163,6 +172,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
         JPAQuery<UserNovel> queryBuilder = jpaQueryFactory
                 .selectFrom(userNovel)
                 .join(userNovel.novel, novel).fetchJoin()
+                .leftJoin(novel.novelStatistics, novelStatistics).fetchJoin()
                 .where(userNovel.user.userId.eq(userId));
 
         applyFilters(queryBuilder, isInterest, readStatuses, attractivePoints, novelRating, query, updatedSince);
@@ -216,6 +226,7 @@ public class UserNovelCustomRepositoryImpl implements UserNovelCustomRepository 
                 .selectFrom(userNovel)
                 .distinct()
                 .join(userNovel.novel, novel).fetchJoin()
+                .leftJoin(novel.novelStatistics, novelStatistics).fetchJoin()
                 .where(userNovel.user.userId.eq(userId));
 
         applyFiltersV2(queryBuilder, isInterest, readStatuses, genres, isCompleted, ratingMin, ratingMax,

@@ -129,14 +129,6 @@ public class LibraryService {
                 ));
     }
 
-    public int getRatingCount(Novel novel) {
-        return userNovelRepository.countByNovelAndUserNovelRatingNot(novel, 0.0f);
-    }
-
-    public float getRatingSum(Novel novel) {
-        return userNovelRepository.sumUserNovelRatingByNovel(novel);
-    }
-
     public int getInterestCount(Novel novel) {
         return userNovelRepository.countByNovelAndIsInterestTrue(novel);
     }
