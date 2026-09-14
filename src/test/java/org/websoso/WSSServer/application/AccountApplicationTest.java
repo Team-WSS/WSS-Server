@@ -8,6 +8,8 @@ import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 
+import java.math.BigDecimal;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +25,11 @@ import org.websoso.WSSServer.dto.user.WithdrawalRequest;
 import org.websoso.WSSServer.feed.comment.service.CommentServiceImpl;
 import org.websoso.WSSServer.feed.feed.service.FeedServiceImpl;
 import org.websoso.WSSServer.infrastructure.discord.DiscordMessageClient;
+import org.websoso.WSSServer.library.domain.UserNovel;
+import org.websoso.WSSServer.library.repository.UserNovelRepository;
+import org.websoso.WSSServer.novel.domain.Novel;
+import org.websoso.WSSServer.novel.domain.NovelStatisticsContribution;
+import org.websoso.WSSServer.novel.service.NovelStatisticsService;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.repository.UserRepository;
 import org.websoso.WSSServer.user.repository.WithdrawalReasonRepository;
@@ -65,7 +72,19 @@ class AccountApplicationTest {
     private CollectionService collectionService;
 
     @Mock
+    private UserNovelRepository userNovelRepository;
+
+    @Mock
+    private NovelStatisticsService novelStatisticsService;
+
+    @Mock
     private User user;
+
+    @Mock
+    private UserNovel userNovel;
+
+    @Mock
+    private Novel novel;
 
     @DisplayName("회원 탈퇴 시 탈퇴한 사용자의 리프레시 토큰 정리를 토큰 서비스에 위임한다")
     @Test
@@ -76,6 +95,27 @@ class AccountApplicationTest {
 
         then(tokenService).should().deleteAllRefreshTokensByUserId(USER_ID);
         then(userRepository).should().deleteById(USER_ID);
+    }
+
+    @DisplayName("회원 탈퇴 시 서재 삭제 전에 작품 통계 기여분을 차감한다")
+    @Test
+    void subtractsNovelStatisticsBeforeDeletingUser() {
+        givenWithdrawingUser(KAKAO_SOCIAL_ID);
+        given(userNovelRepository.findUserNovelByUserId(USER_ID)).willReturn(List.of(userNovel));
+        given(userNovel.getNovel()).willReturn(novel);
+        given(novel.getNovelId()).willReturn(10L);
+        given(userNovel.getUserNovelRating()).willReturn(4.5f);
+        given(userNovel.getIsInterest()).willReturn(true);
+
+        accountApplication.withdrawUser(user, new WithdrawalRequest("탈퇴 사유"));
+
+        NovelStatisticsContribution contribution = new NovelStatisticsContribution(
+                new BigDecimal("4.5"), 1L, 1L);
+        InOrder inOrder = inOrder(userNovelRepository, novelStatisticsService, userRepository);
+        inOrder.verify(userNovelRepository).findUserNovelByUserId(USER_ID);
+        inOrder.verify(novelStatisticsService).updateByDelta(
+                10L, contribution, NovelStatisticsContribution.EMPTY);
+        inOrder.verify(userRepository).deleteById(USER_ID);
     }
 
     @DisplayName("회원 탈퇴 시 소유 컬렉션의 소유자를 넘긴 뒤 사용자를 삭제한다")

@@ -2,6 +2,7 @@ package org.websoso.WSSServer.dto.novel;
 
 import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.library.domain.UserNovel;
+import org.websoso.WSSServer.novel.domain.NovelStatistics;
 
 public record NovelGetResponseBasic(
         Long userNovelId,
@@ -23,8 +24,15 @@ public record NovelGetResponseBasic(
 ) {
     public static NovelGetResponseBasic of(Novel novel, UserNovel userNovel, String novelGenres,
                                            String novelGenreImage,
-                                           Integer interestCount, Float novelRating, Integer novelRatingCount,
-                                           Integer feedCount) {
+                                           Integer interestCount, Integer feedCount) {
+        NovelStatistics statistics = novel.getNovelStatistics();
+        float novelRating = statistics == null
+                ? 0.0f
+                : Math.round(statistics.getAverageRating().floatValue() * 10.0f) / 10.0f;
+        int novelRatingCount = statistics == null
+                ? 0
+                : statistics.getRatingCount().intValue();
+
         if (userNovel == null) {
             return new NovelGetResponseBasic(
                     null,

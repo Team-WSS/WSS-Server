@@ -123,23 +123,17 @@ public class SearchNovelApplication {
 
     @Transactional(readOnly = true)
     public NovelGetResponseBasic getNovelInfoBasic(User user, Long novelId) {
-        Novel novel = novelService.getNovelOrException(novelId);
+        Novel novel = novelService.getNovelWithStatisticsOrException(novelId);
 
         // TODO: Novel에 List<NovelGenre> 있는데 굳이?
         List<NovelGenre> novelGenres = novelService.getGenresByNovel(novel);
 
-        int novelRatingCount = libraryService.getRatingCount(novel);
-
-        Float novelRating = novelRatingCount == 0 ? 0.0f
-                : Math.round(libraryService.getRatingSum(novel) / novelRatingCount * 10.0f) / 10.0f;
         return NovelGetResponseBasic.of(
                 novel,
                 libraryService.getLibraryOrNull(user, novel),
                 getNovelGenreNames(novelGenres),
                 getRandomNovelGenreImage(novelGenres),
                 libraryService.getInterestCount(novel),
-                novelRating,
-                novelRatingCount,
                 feedRepository.countByNovelId(novelId)
         );
     }
