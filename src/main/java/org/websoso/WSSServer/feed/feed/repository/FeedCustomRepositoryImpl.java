@@ -364,12 +364,13 @@ public class FeedCustomRepositoryImpl implements FeedCustomRepository {
     }
 
     private BooleanExpression checkGenresAndNovels(List<Genre> genres, boolean isNotNovelConnect) {
+        BooleanExpression novelConnectCondition = isNotNovelConnect ? feed.novelId.isNull() : null;
+
         if (genres != null && !genres.isEmpty()) {
             BooleanExpression genreCondition = genre.in(genres);
-            BooleanExpression novelConnectCondition = isNotNovelConnect ? feed.novelId.isNull() : null;
             return novelConnectCondition != null ? genreCondition.or(novelConnectCondition) : genreCondition;
         }
-        return null;
+        return novelConnectCondition;
     }
 
     private BooleanExpression excludeBlockedUsers(List<Long> blockedUserIds) {

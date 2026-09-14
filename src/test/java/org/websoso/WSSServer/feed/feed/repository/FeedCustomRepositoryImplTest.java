@@ -2,6 +2,7 @@ package org.websoso.WSSServer.feed.feed.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLTemplates;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -13,7 +14,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.websoso.WSSServer.feed.feed.domain.Feed;
 
 /**
- * 지금 뜨는 글 후보 선정 쿼리가 소설과 장르가 연결된 피드만 고르는지 검증한다.
+ * 피드 조회 조건이 작품 및 장르 필터 요구사항을 지키는지 검증한다.
  */
 class FeedCustomRepositoryImplTest {
 
@@ -47,6 +48,25 @@ class FeedCustomRepositoryImplTest {
         String query = popularRecommendedFeedsQuery().toString();
 
         assertThat(query).doesNotContain("left join");
+    }
+
+    @DisplayName("ETC만 선택하면 작품이 연결되지 않은 피드만 조회한다")
+    @Test
+    void filtersFeedsWithoutNovelWhenOnlyEtcIsSelected() {
+        BooleanExpression condition = ReflectionTestUtils.invokeMethod(
+                repository, "checkGenresAndNovels", List.of(), true);
+
+        assertThat(condition).isNotNull();
+        assertThat(condition.toString()).isEqualTo("feed.novelId is null");
+    }
+
+    @DisplayName("장르 필터를 선택하지 않으면 작품 연결 여부를 제한하지 않는다")
+    @Test
+    void doesNotFilterNovelConnectionWhenNoGenreIsSelected() {
+        BooleanExpression condition = ReflectionTestUtils.invokeMethod(
+                repository, "checkGenresAndNovels", List.of(), false);
+
+        assertThat(condition).isNull();
     }
 
     private JPAQuery<Feed> popularRecommendedFeedsQuery() {
