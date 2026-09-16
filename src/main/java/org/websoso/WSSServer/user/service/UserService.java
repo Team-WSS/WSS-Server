@@ -170,7 +170,7 @@ public class UserService {
         }
         User owner = getUserOrException(ownerId);
         Long visitorId = visitor == null ? null : visitor.getUserId();
-        validateProfileAccessible(owner, visitorId);
+        blockService.validateNotBlocked(visitorId, owner.getUserId());
 
         Long avatarId = owner.getAvatarProfileId();
         AvatarProfile avatar = findAvatarProfileByIdOrThrow(avatarId);

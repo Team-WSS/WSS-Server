@@ -3,6 +3,7 @@ package org.websoso.WSSServer.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -51,6 +52,16 @@ public class SecurityConfig {
             "/keywords/popular",
     };
 
+    /**
+     * 인증을 선택으로 두는 조회 API. 토큰이 있으면 그대로 인증에 사용하고, 없으면 비로그인 조회로 처리한다.
+     * <p>
+     * 메서드까지 지정해 같은 경로의 쓰기 요청이 함께 열리지 않게 한다. 예를 들어 컬렉션 상세는 공유 링크를 위해
+     * 비로그인 조회를 허용하지만, 같은 경로의 수정·삭제는 그대로 인증을 요구해야 한다.
+     */
+    private static final String[] permitAllGetPaths = {
+            "/collections/{collectionId}",
+    };
+
     private static final String[] swaggerPaths = {
             "/swagger-ui/**",
             "/swagger-ui.html",
@@ -70,6 +81,7 @@ public class SecurityConfig {
                 })
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(permitAllPaths).permitAll();
+                    auth.requestMatchers(HttpMethod.GET, permitAllGetPaths).permitAll();
                     auth.requestMatchers(swaggerPaths).permitAll();
                     auth.anyRequest().authenticated();
                 })

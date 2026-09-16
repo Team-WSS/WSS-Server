@@ -2,6 +2,8 @@ package org.websoso.WSSServer.auth.client.dto;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import org.websoso.support.logging.masking.MaskingPolicy;
+import org.websoso.support.logging.masking.SensitiveData;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record KakaoUserInfo(
@@ -10,10 +12,10 @@ public record KakaoUserInfo(
         KakaoAccount kakaoAccount
 ) {
 
-    public record Properties(String nickname) {
+    public record Properties(@SensitiveData(MaskingPolicy.NAME) String nickname) {
     }
 
-    public record KakaoAccount(String email) {
+    public record KakaoAccount(@SensitiveData(MaskingPolicy.EMAIL) String email) {
     }
 
     public String nickname() {

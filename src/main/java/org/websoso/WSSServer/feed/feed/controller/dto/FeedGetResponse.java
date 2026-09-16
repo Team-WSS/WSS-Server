@@ -7,9 +7,12 @@ import org.websoso.WSSServer.novel.domain.Novel;
 import org.websoso.WSSServer.library.domain.UserNovel;
 import org.websoso.WSSServer.dto.user.UserBasicInfo;
 import org.websoso.WSSServer.util.TimeFormatUtil;
+import org.websoso.support.logging.masking.MaskingPolicy;
+import org.websoso.support.logging.masking.SensitiveData;
 
 public record FeedGetResponse(
         Long userId,
+        @SensitiveData(MaskingPolicy.NAME)
         String nickname,
         String avatarImage,
         Long feedId,

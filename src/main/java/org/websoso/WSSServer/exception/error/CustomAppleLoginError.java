@@ -22,7 +22,9 @@ public enum CustomAppleLoginError implements ICustomError {
     EMPTY_JWT("APPLE-007", "비어있는 jwt입니다.", BAD_REQUEST),
     JWT_VERIFICATION_FAILED("APPLE-008", "jwt 검증 또는 분석에 실패했습니다.", INTERNAL_SERVER_ERROR),
     INVALID_APPLE_KEY("APPLE-009", "잘못된 애플 키입니다.", INTERNAL_SERVER_ERROR),
-    USER_APPLE_REFRESH_TOKEN_NOT_FOUND("APPLE-010", "유저의 애플 리프레시 토큰을 찾을 수 없습니다.", NOT_FOUND);
+    USER_APPLE_REFRESH_TOKEN_NOT_FOUND("APPLE-010", "유저의 애플 리프레시 토큰을 찾을 수 없습니다.", NOT_FOUND),
+    PUBLIC_KEY_REQUEST_FAILED("APPLE-011", "Apple 서버로부터 공개키를 받아오지 못했습니다.", INTERNAL_SERVER_ERROR),
+    TOKEN_REVOKE_FAILED("APPLE-012", "Apple 서버의 토큰 폐기에 실패했습니다.", INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String description;

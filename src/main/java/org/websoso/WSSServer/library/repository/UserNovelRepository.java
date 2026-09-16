@@ -21,11 +21,6 @@ public interface UserNovelRepository extends JpaRepository<UserNovel, Long>, Use
 
     Integer countByNovelAndIsInterestTrue(Novel novel);
 
-    @Query("SELECT SUM(un.userNovelRating) FROM UserNovel un WHERE un.novel = :novel")
-    Float sumUserNovelRatingByNovel(Novel novel);
-
-    Integer countByNovelAndUserNovelRatingNot(Novel novel, float ratingToExclude);
-
     List<UserNovel> findByUserAndIsInterestTrue(User user);
 
     List<UserNovel> findUserNovelByUser(User user);

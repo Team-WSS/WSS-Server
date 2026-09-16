@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.websoso.WSSServer.auth.application.AuthApplication;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.dto.keyword.KeywordPopularGetResponse;
@@ -29,7 +28,6 @@ import org.websoso.WSSServer.dto.user.PushSettingGetResponse;
 import org.websoso.WSSServer.dto.user.PushSettingRequest;
 import org.websoso.WSSServer.dto.user.EditMyInfoRequest;
 import org.websoso.WSSServer.dto.user.EditProfileStatusRequest;
-import org.websoso.WSSServer.dto.user.LoginResponse;
 import org.websoso.WSSServer.dto.user.MyProfileResponse;
 import org.websoso.WSSServer.dto.user.NicknameValidation;
 import org.websoso.WSSServer.dto.user.ProfileGetResponse;
@@ -58,16 +56,6 @@ public class UserController {
 
     private final UserService userService;
     private final UserNovelService userNovelService;
-    private final AuthApplication authApplication;
-
-    // TODO: AUTH 패키지로 이동해야 함, 그리고 가장 위험한 보안 취약점
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody String userId) {
-        LoginResponse response = authApplication.login(Long.valueOf(userId));
-        return ResponseEntity
-                .status(OK)
-                .body(response);
-    }
 
     // TODO: 닉네임 중복체크를 로그인했을때만 가능하다는게 좀 이상한 것 같기도?
     @GetMapping("/nickname/check")

@@ -5,8 +5,11 @@ import java.util.stream.Collectors;
 import org.websoso.WSSServer.user.domain.AvatarProfile;
 import org.websoso.WSSServer.domain.GenrePreference;
 import org.websoso.WSSServer.user.domain.User;
+import org.websoso.support.logging.masking.MaskingPolicy;
+import org.websoso.support.logging.masking.SensitiveData;
 
 public record ProfileGetResponse(
+        @SensitiveData(MaskingPolicy.NAME)
         String nickname,
         String intro,
         String avatarImage,

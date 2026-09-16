@@ -32,7 +32,8 @@ public record NotificationPageResponse(
             String createdDate,
             boolean isRead,
             boolean isNotice,
-            Long feedId
+            Long feedId,
+            Long novelId
     ) {
 
         public static NotificationItem from(ReadNotificationDto dto) {
@@ -46,7 +47,8 @@ public record NotificationPageResponse(
                     TimeFormatUtil.formatNotificationDate(notification.getCreatedDate()),
                     dto.isRead(),
                     NotificationTypeGroup.isTypeInGroup(notification.getNotificationType().getNotificationTypeName(), NOTICE),
-                    notification.getFeedId()
+                    notification.getFeedId(),
+                    notification.getNovelId()
             );
         }
 

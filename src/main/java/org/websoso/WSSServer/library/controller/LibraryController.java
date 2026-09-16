@@ -40,7 +40,7 @@ public class LibraryController {
      * @return 204 NO_CONTENT
      */
     @PostMapping("/novels/{novelId}/is-interest")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.novel.domain.Novel))")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> registerAsInterest(@AuthenticationPrincipal User user,
                                                    @PathVariable("novelId") Long novelId) {
         libraryInterestApplication.registerAsInterest(user, novelId);
@@ -57,7 +57,7 @@ public class LibraryController {
      * @return 204 NO_CONTENT
      */
     @DeleteMapping("/novels/{novelId}/is-interest")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.library.domain.UserNovel))")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unregisterAsInterest(@AuthenticationPrincipal User user,
                                                      @PathVariable("novelId") Long novelId) {
         libraryInterestApplication.unregisterAsInterest(user, novelId);
@@ -108,7 +108,7 @@ public class LibraryController {
      * @return 204 NO_CONTENT
      */
     @PutMapping("/user-novels/{novelId}")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.library.domain.UserNovel))")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> updateEvaluation(@AuthenticationPrincipal User user,
                                                  @PathVariable Long novelId,
                                                  @Valid @RequestBody UserNovelUpdateRequest request) {
@@ -126,7 +126,7 @@ public class LibraryController {
      * @return 204 NO_CONTENT
      */
     @DeleteMapping("/user-novels/{novelId}")
-    @PreAuthorize("isAuthenticated() and @authorizationService.validate(#novelId, #user, T(org.websoso.WSSServer.library.domain.UserNovel))")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteEvaluation(@AuthenticationPrincipal User user,
                                                  @PathVariable Long novelId) {
         libraryEvaluationApplication.deleteEvaluation(user, novelId);

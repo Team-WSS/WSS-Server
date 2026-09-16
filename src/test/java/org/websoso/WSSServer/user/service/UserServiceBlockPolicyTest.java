@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.never;
 import static org.websoso.WSSServer.user.exception.CustomBlockError.BLOCKED_USER_ACCESS;
 
 import java.util.Optional;
@@ -65,5 +66,22 @@ class UserServiceBlockPolicyTest {
 
         then(avatarProfileRepository).shouldHaveNoInteractions();
         then(genrePreferenceRepository).shouldHaveNoInteractions();
+    }
+
+    @DisplayName("비공개 프로필도 차단 관계면 프로필 공개 여부와 무관하게 차단 오류가 발생한다")
+    @Test
+    void rejectsBlockedUserPrivateProfile() {
+        given(visitor.getUserId()).willReturn(1L);
+        given(owner.getUserId()).willReturn(2L);
+        given(userRepository.findById(2L)).willReturn(Optional.of(owner));
+        willThrow(new CustomBlockException(BLOCKED_USER_ACCESS, "blocked"))
+                .given(blockService).validateNotBlocked(1L, 2L);
+
+        assertThatThrownBy(() -> userService.getProfileInfo(visitor, 2L))
+                .isInstanceOf(CustomBlockException.class)
+                .extracting(exception -> ((CustomBlockException) exception).getICustomError())
+                .isEqualTo(BLOCKED_USER_ACCESS);
+
+        then(owner).should(never()).getIsProfilePublic();
     }
 }

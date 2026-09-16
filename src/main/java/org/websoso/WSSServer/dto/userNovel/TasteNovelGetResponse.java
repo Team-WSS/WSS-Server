@@ -1,7 +1,7 @@
 package org.websoso.WSSServer.dto.userNovel;
 
 import org.websoso.WSSServer.novel.domain.Novel;
-import org.websoso.WSSServer.library.domain.UserNovel;
+import org.websoso.WSSServer.novel.domain.NovelStatistics;
 
 public record TasteNovelGetResponse(
         Long novelId,
@@ -13,46 +13,24 @@ public record TasteNovelGetResponse(
         Long novelRatingCount
 ) {
 
-    public static TasteNovelGetResponse of(Novel tasteNovel) {
-        Long novelRatingCount = getNovelRatingCount(tasteNovel);
-        Float novelRating = getNovelRating(tasteNovel, novelRatingCount);
+    // 작품과 미리 집계한 관심 수로 취향 추천 응답을 생성한다.
+    public static TasteNovelGetResponse of(Novel tasteNovel, Long interestCount) {
+        NovelStatistics statistics = tasteNovel.getNovelStatistics();
+        Float novelRating = statistics == null
+                ? 0.0f
+                : statistics.getAverageRating().floatValue();
+        Long novelRatingCount = statistics == null
+                ? 0L
+                : statistics.getRatingCount();
 
         return new TasteNovelGetResponse(
                 tasteNovel.getNovelId(),
                 tasteNovel.getTitle(),
                 tasteNovel.getAuthor(),
                 tasteNovel.getNovelImage(),
-                getInterestCount(tasteNovel),
+                interestCount,
                 novelRating,
                 novelRatingCount
         );
-    }
-
-    private static Long getInterestCount(Novel tasteNovel) {
-        return tasteNovel.getUserNovels()
-                .stream()
-                .filter(UserNovel::getIsInterest)
-                .count();
-    }
-
-    private static Long getNovelRatingCount(Novel tasteNovel) {
-        return tasteNovel.getUserNovels()
-                .stream()
-                .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
-                .count();
-    }
-
-    private static Float getNovelRatingSum(Novel tasteNovel) {
-        return (float) tasteNovel.getUserNovels()
-                .stream()
-                .filter(userNovel -> userNovel.getUserNovelRating() != 0.0f)
-                .mapToDouble(UserNovel::getUserNovelRating)
-                .sum();
-    }
-
-    private static float getNovelRating(Novel tasteNovel, Long novelRatingCount) {
-        return novelRatingCount > 0
-                ? getNovelRatingSum(tasteNovel) / novelRatingCount
-                : 0.0f;
     }
 }

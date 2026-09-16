@@ -15,6 +15,8 @@ import org.websoso.WSSServer.user.domain.User;
 
 public interface UserNovelCustomRepository {
 
+    List<UserNovel> findUserNovelByUserId(Long userId);
+
     Optional<UserNovel> findByNovelIdAndUserForUpdate(Long novelId, User user);
 
     List<NovelInterestCount> findInterestCountsByNovelIds(List<Long> novelIds);

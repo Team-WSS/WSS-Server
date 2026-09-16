@@ -1,0 +1,14 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "WSS-Server API (test fixture)",
+    "description": "SwaggerUiConfigTest 전용 고정 파일. 실제 명세는 ./gradlew apiDocs가 같은 경로에 생성한다.",
+    "version": "test"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {}
+}

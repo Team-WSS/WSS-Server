@@ -197,14 +197,8 @@ public class UserNovelService {
         return userNovels.stream()
                 .map(userNovel -> {
                     Long novelId = userNovel.getNovel().getNovelId();
-                    Integer novelRatingCount = userNovelRepository.countByNovelAndUserNovelRatingNot(
-                            userNovel.getNovel(), 0.0f);
-                    Float novelRatingAvg = novelRatingCount == 0
-                            ? 0.0f
-                            : roundToFirstDecimal(userNovelRepository.sumUserNovelRatingByNovel(userNovel.getNovel())
-                                    / novelRatingCount);
                     List<String> feeds = feedMap.getOrDefault(novelId, List.of());
-                    return UserNovelAndNovelGetResponse.from(userNovel, novelRatingAvg, feeds);
+                    return UserNovelAndNovelGetResponse.from(userNovel, feeds);
                 })
                 .toList();
     }
@@ -235,10 +229,6 @@ public class UserNovelService {
         return feeds.stream()
                 .collect(Collectors.groupingBy(Feed::getNovelId,
                         Collectors.mapping(Feed::getFeedContent, Collectors.toList())));
-    }
-
-    private float roundToFirstDecimal(float value) {
-        return Math.round(value * 10.0f) / 10.0f;
     }
 
     @Transactional(readOnly = true)
