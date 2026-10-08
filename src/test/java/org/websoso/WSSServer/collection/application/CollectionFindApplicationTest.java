@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -13,6 +14,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.websoso.WSSServer.collection.application.CollectionFindApplication.NOVEL_PREVIEW_SIZE;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.COLLECTION_NOT_FOUND;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.INVALID_COLLECTION_CURSOR;
@@ -36,10 +38,15 @@ import org.websoso.WSSServer.collection.controller.dto.CollectionGetResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionNovelSummaryGetResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionPreviewGetResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionsGetResponse;
+import org.websoso.WSSServer.collection.controller.dto.PublicCollectionPreviewGetResponse;
+import org.websoso.WSSServer.collection.controller.dto.PublicCollectionsGetResponse;
 import org.websoso.WSSServer.collection.domain.CollectionCursor;
+import org.websoso.WSSServer.collection.domain.CollectionLikeCursor;
+import org.websoso.WSSServer.collection.domain.PublicCollectionCursor;
 import org.websoso.WSSServer.collection.exception.CustomCollectionException;
 import org.websoso.WSSServer.collection.repository.projection.CollectionDetailRow;
 import org.websoso.WSSServer.collection.repository.projection.CollectionPreviewRow;
+import org.websoso.WSSServer.collection.repository.projection.PublicCollectionRow;
 import org.websoso.WSSServer.collection.service.CollectionLikeService;
 import org.websoso.WSSServer.collection.service.CollectionQueryService;
 import org.websoso.WSSServer.domain.common.SortCriteria;
@@ -571,9 +578,282 @@ class CollectionFindApplicationTest {
         assertThat(response.isLiked()).isFalse();
     }
 
+    // 전체 공개 목록: 인증과 차단
+
+    @DisplayName("비로그인 조회는 차단 관계를 읽지 않고 공개 컬렉션 전체를 조회한다")
+    @Test
+    void publicListForAnonymousViewerSkipsBlockLookup() {
+        givenPublicPage(List.of(publicRow(11L, FIRST_CREATED)));
+
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, SIZE);
+
+        assertThat(response.collections()).hasSize(1);
+        then(blockService).shouldHaveNoInteractions();
+        then(collectionQueryService).should().findPublicCollectionRows(eq(List.of()), any(), anyInt());
+    }
+
+    @DisplayName("로그인 조회는 양방향 차단 관계 사용자를 조회 조건으로 넘겨 페이지 제한 전에 걸러 낸다")
+    @Test
+    void publicListExcludesBlockedOwnersForLoggedInViewer() {
+        given(blockService.findBlockRelationUserIds(VISITOR_ID)).willReturn(List.of(3L, 4L));
+        givenPublicPage(List.of(publicRow(11L, FIRST_CREATED)));
+
+        PublicCollectionsGetResponse response = application.getPublicCollections(user(VISITOR_ID), null, SIZE);
+
+        then(collectionQueryService).should().findPublicCollectionRows(List.of(3L, 4L), null, SIZE + 1);
+        assertThat(response.collections()).hasSize(1);
+    }
+
+    @DisplayName("차단 관계가 있어도 목록 자체는 거부하지 않는다")
+    @Test
+    void publicListDoesNotRejectWholeListForBlockedRelation() {
+        given(blockService.findBlockRelationUserIds(VISITOR_ID)).willReturn(List.of(OWNER_ID));
+        givenPublicPage(List.of());
+
+        assertThatCode(() -> application.getPublicCollections(user(VISITOR_ID), null, SIZE))
+                .doesNotThrowAnyException();
+
+        then(blockService).should(never()).validateNotBlocked(any(), any());
+    }
+
+    @DisplayName("공개 여부와 차단 관계는 요청마다 그 시점의 값으로 다시 판단한다")
+    @Test
+    void publicListAppliesCurrentBlockRelationPerRequest() {
+        given(blockService.findBlockRelationUserIds(VISITOR_ID)).willReturn(List.of(), List.of(OWNER_ID));
+        givenPublicPage(List.of());
+
+        application.getPublicCollections(user(VISITOR_ID), null, SIZE);
+        application.getPublicCollections(user(VISITOR_ID), null, SIZE);
+
+        then(collectionQueryService).should().findPublicCollectionRows(List.of(), null, SIZE + 1);
+        then(collectionQueryService).should().findPublicCollectionRows(List.of(OWNER_ID), null, SIZE + 1);
+    }
+
+    // 전체 공개 목록: 커서 페이지네이션
+
+    @DisplayName("전체 공개 목록은 요청 크기보다 하나 더 읽어 다음 페이지를 판단하고 초과분은 응답에 넣지 않는다")
+    @Test
+    void publicListDetectsNextPageWithoutLeakingExtraRow() {
+        givenPublicPage(List.of(publicRow(11L, FIRST_CREATED), publicRow(12L, SECOND_CREATED),
+                publicRow(13L, THIRD_CREATED)));
+
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, SIZE);
+
+        then(collectionQueryService).should().findPublicCollectionRows(anyList(), any(), eq(SIZE + 1));
+        assertThat(response.hasNext()).isTrue();
+        assertThat(response.collections()).extracting(PublicCollectionPreviewGetResponse::collectionId)
+                .containsExactly(11L, 12L);
+    }
+
+    @DisplayName("전체 공개 목록의 다음 커서는 이번 페이지 마지막 컬렉션의 생성 시점과 식별자를 담는다")
+    @Test
+    void publicListNextCursorPointsToLastRowOfPage() {
+        givenPublicPage(List.of(publicRow(11L, FIRST_CREATED), publicRow(12L, SECOND_CREATED),
+                publicRow(13L, THIRD_CREATED)));
+
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, SIZE);
+
+        PublicCollectionCursor nextCursor = PublicCollectionCursor.decode(response.nextCursor());
+        assertThat(nextCursor.collectionId()).isEqualTo(12L);
+        assertThat(nextCursor.createdDate()).isEqualTo(SECOND_CREATED);
+    }
+
+    @DisplayName("생성 시각이 같은 컬렉션이 페이지 경계에 걸쳐도 식별자로 다음 페이지 위치를 정한다")
+    @Test
+    void publicListCursorSeparatesCollectionsCreatedAtSameTime() {
+        givenPublicPage(List.of(publicRow(15L, FIRST_CREATED), publicRow(14L, FIRST_CREATED),
+                publicRow(13L, FIRST_CREATED)));
+
+        PublicCollectionsGetResponse first = application.getPublicCollections(null, null, SIZE);
+        application.getPublicCollections(null, first.nextCursor(), SIZE);
+
+        ArgumentCaptor<PublicCollectionCursor> captor = ArgumentCaptor.forClass(PublicCollectionCursor.class);
+        then(collectionQueryService).should(times(2))
+                .findPublicCollectionRows(anyList(), captor.capture(), anyInt());
+        assertThat(captor.getAllValues().get(0)).isNull();
+        assertThat(captor.getAllValues().get(1).createdDate()).isEqualTo(FIRST_CREATED);
+        assertThat(captor.getAllValues().get(1).collectionId()).isEqualTo(14L);
+    }
+
+    @DisplayName("커서 기준 컬렉션을 다시 조회하지 않으므로 그 컬렉션이 삭제돼도 다음 페이지를 조회한다")
+    @Test
+    void publicListContinuesAfterCursorCollectionIsDeleted() {
+        givenPublicPage(List.of(publicRow(11L, THIRD_CREATED)));
+        String cursor = PublicCollectionCursor.of(SECOND_CREATED, 12L).encode();
+
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, cursor, SIZE);
+
+        assertThat(response.collections()).extracting(PublicCollectionPreviewGetResponse::collectionId)
+                .containsExactly(11L);
+        then(collectionQueryService).should(never()).getCollectionDetailRowOrException(anyLong());
+        then(collectionQueryService).should()
+                .findPublicCollectionRows(List.of(), PublicCollectionCursor.of(SECOND_CREATED, 12L), SIZE + 1);
+    }
+
+    @DisplayName("전체 공개 목록의 마지막 페이지는 커서를 주지 않는다")
+    @Test
+    void publicListOmitsCursorOnLastPage() {
+        givenPublicPage(List.of(publicRow(11L, FIRST_CREATED), publicRow(12L, SECOND_CREATED)));
+
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, SIZE);
+
+        assertThat(response.hasNext()).isFalse();
+        assertThat(response.nextCursor()).isNull();
+    }
+
+    @DisplayName("조회 가능한 공개 컬렉션이 없으면 빈 목록과 커서 없음을 반환한다")
+    @Test
+    void publicListReturnsEmptyPage() {
+        givenPublicPage(List.of());
+
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, SIZE);
+
+        assertThat(response.collections()).isEmpty();
+        assertThat(response.hasNext()).isFalse();
+        assertThat(response.nextCursor()).isNull();
+    }
+
+    @DisplayName("전체 공개 목록은 빈 커서와 공백 커서를 첫 페이지로 조회한다")
+    @ParameterizedTest
+    @ValueSource(strings = {"", " "})
+    void publicListTreatsBlankCursorAsFirstPage(String blankCursor) {
+        givenPublicPage(List.of(publicRow(11L, FIRST_CREATED)));
+
+        application.getPublicCollections(null, blankCursor, SIZE);
+
+        then(collectionQueryService).should().findPublicCollectionRows(anyList(), eq(null), anyInt());
+    }
+
+    @DisplayName("전체 공개 목록이 발급하지 않은 커서와 기존 목록의 커서는 조회 전에 거부한다")
+    @ParameterizedTest
+    @ValueSource(strings = {"not-a-cursor", "user", "liked"})
+    void publicListRejectsForeignCursor(String kind) {
+        String cursor = switch (kind) {
+            case "user" -> CollectionCursor.of(SECOND_CREATED, 12L).encode();
+            case "liked" -> CollectionLikeCursor.of(SECOND_CREATED, 12L).encode();
+            default -> kind;
+        };
+
+        // 커서는 조회자를 확인하기 전에 검증하므로 사용자 정보를 준비할 필요가 없다.
+        User viewer = mock(User.class);
+
+        assertThatThrownBy(() -> application.getPublicCollections(viewer, cursor, SIZE))
+                .isInstanceOf(CustomCollectionException.class)
+                .extracting(exception -> ((CustomCollectionException) exception).getICustomError())
+                .isEqualTo(INVALID_COLLECTION_CURSOR);
+
+        then(collectionQueryService).shouldHaveNoInteractions();
+        then(blockService).shouldHaveNoInteractions();
+    }
+
+    @DisplayName("전체 공개 목록의 허용 범위를 벗어난 페이지 크기는 조회 전에 거부한다")
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1, 101})
+    void publicListRejectsPageSizeOutOfRange(int size) {
+        assertThatThrownBy(() -> application.getPublicCollections(null, null, size))
+                .isInstanceOf(CustomCollectionException.class)
+                .extracting(exception -> ((CustomCollectionException) exception).getICustomError())
+                .isEqualTo(INVALID_COLLECTION_PAGE_SIZE);
+
+        then(collectionQueryService).shouldHaveNoInteractions();
+        then(blockService).shouldHaveNoInteractions();
+    }
+
+    @DisplayName("전체 공개 목록은 페이지 크기 경계값 1과 100을 허용한다")
+    @ParameterizedTest
+    @ValueSource(ints = {1, 100})
+    void publicListAcceptsPageSizeBoundaries(int size) {
+        givenPublicPage(List.of());
+
+        assertThatCode(() -> application.getPublicCollections(null, null, size)).doesNotThrowAnyException();
+
+        then(collectionQueryService).should().findPublicCollectionRows(anyList(), any(), eq(size + 1));
+    }
+
+    // 전체 공개 목록: 카드
+
+    @DisplayName("전체 공개 목록 카드는 작성자, 설명, 전체 작품 수를 함께 제공한다")
+    @Test
+    void publicListCardCarriesOwnerAndCount() {
+        givenPublicPage(List.of(publicRow(11L, FIRST_CREATED)));
+
+        PublicCollectionPreviewGetResponse card = application.getPublicCollections(null, null, SIZE)
+                .collections().get(0);
+
+        assertThat(card.collectionName()).isEqualTo("취향 저격 로판");
+        assertThat(card.collectionDescription()).isEqualTo("여주가 강한 로맨스 판타지");
+        assertThat(card.novelCount()).isEqualTo(12L);
+        assertThat(card.owner().userId()).isEqualTo(OWNER_ID);
+        assertThat(card.owner().nickname()).isEqualTo("웹소소");
+        assertThat(card.owner().avatarImage()).isEqualTo("https://image/avatar.png");
+    }
+
+    @DisplayName("설명이 없는 컬렉션 카드의 설명은 null이다")
+    @Test
+    void publicListCardKeepsNullDescription() {
+        givenPublicPage(List.of(new PublicCollectionRow(11L, "취향 저격 로판", null, FIRST_CREATED, 1L,
+                OWNER_ID, "웹소소", "https://image/avatar.png")));
+
+        PublicCollectionPreviewGetResponse card = application.getPublicCollections(null, null, SIZE)
+                .collections().get(0);
+
+        assertThat(card.collectionDescription()).isNull();
+    }
+
+    @DisplayName("탈퇴한 작성자의 공개 컬렉션은 알 수 없는 사용자 프로필로 내보낸다")
+    @Test
+    void publicListCardShowsUnknownUserForWithdrawnOwner() {
+        givenPublicPage(List.of(new PublicCollectionRow(11L, "취향 저격 로판", null, FIRST_CREATED, 1L,
+                -1L, "알 수 없음", "https://image/unknown.png")));
+
+        PublicCollectionPreviewGetResponse card = application.getPublicCollections(null, null, SIZE)
+                .collections().get(0);
+
+        assertThat(card.owner().userId()).isEqualTo(-1L);
+        assertThat(card.owner().nickname()).isEqualTo("알 수 없음");
+    }
+
+    @DisplayName("이번 페이지 컬렉션의 미리보기 작품을 초과분 없이 한 번의 조회로 채우고 없는 미리보기는 빈 배열이다")
+    @Test
+    void publicListFillsPreviewsWithSingleQuery() {
+        givenPublicPage(List.of(publicRow(11L, FIRST_CREATED), publicRow(12L, SECOND_CREATED),
+                publicRow(13L, THIRD_CREATED)));
+        given(collectionQueryService.findRecentNovelPreviews(List.of(11L, 12L), NOVEL_PREVIEW_SIZE))
+                .willReturn(Map.of(11L, List.of(novelSummary(7L), novelSummary(8L))));
+
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, SIZE);
+
+        assertThat(response.collections().get(0).recentNovels())
+                .extracting(CollectionNovelSummaryGetResponse::novelId)
+                .containsExactly(7L, 8L);
+        assertThat(response.collections().get(1).recentNovels()).isEmpty();
+        then(collectionQueryService).should().findRecentNovelPreviews(List.of(11L, 12L), NOVEL_PREVIEW_SIZE);
+    }
+
+    @DisplayName("전체 공개 목록은 좋아요 수와 전체 개수를 조회하지 않는다")
+    @Test
+    void publicListDoesNotQueryLikesOrTotalCount() {
+        givenPublicPage(List.of(publicRow(11L, FIRST_CREATED)));
+
+        application.getPublicCollections(user(VISITOR_ID), null, SIZE);
+
+        then(collectionLikeService).shouldHaveNoInteractions();
+        then(collectionQueryService).should(never()).countVisibleCollections(anyLong(), anyBoolean());
+        then(userService).shouldHaveNoInteractions();
+    }
+
     private void givenPage(List<CollectionPreviewRow> rows) {
         given(collectionQueryService.findCollectionPreviewRows(anyLong(), anyBoolean(), any(), anyInt()))
                 .willReturn(rows);
+    }
+
+    private void givenPublicPage(List<PublicCollectionRow> rows) {
+        given(collectionQueryService.findPublicCollectionRows(anyList(), any(), anyInt())).willReturn(rows);
+    }
+
+    private PublicCollectionRow publicRow(Long collectionId, LocalDateTime createdDate) {
+        return new PublicCollectionRow(collectionId, "취향 저격 로판", "여주가 강한 로맨스 판타지", createdDate, 12L,
+                OWNER_ID, "웹소소", "https://image/avatar.png");
     }
 
     private void givenDetail(CollectionDetailRow detail) {

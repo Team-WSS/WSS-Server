@@ -19,11 +19,13 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.websoso.WSSServer.collection.domain.CollectionCursor;
+import org.websoso.WSSServer.collection.domain.PublicCollectionCursor;
 import org.websoso.WSSServer.collection.domain.QCollectionNovel;
 import org.websoso.WSSServer.collection.repository.projection.CollectionDetailRow;
 import org.websoso.WSSServer.collection.repository.projection.CollectionNovelPreviewRow;
 import org.websoso.WSSServer.collection.repository.projection.CollectionNovelRow;
 import org.websoso.WSSServer.collection.repository.projection.CollectionPreviewRow;
+import org.websoso.WSSServer.collection.repository.projection.PublicCollectionRow;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.novel.domain.QNovel;
 
@@ -77,6 +79,34 @@ public class CollectionQueryRepositoryImpl implements CollectionQueryRepository 
                 .fetchOne();
 
         return count == null ? 0L : count;
+    }
+
+    @Override
+    public List<PublicCollectionRow> findPublicCollectionRows(List<Long> blockedUserIds,
+                                                              PublicCollectionCursor cursor, int limit) {
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        PublicCollectionRow.class,
+                        collection.collectionId,
+                        collection.name,
+                        collection.description,
+                        collection.createdDate,
+                        novelCount(),
+                        user.userId,
+                        user.nickname,
+                        avatarProfile.avatarProfileImage
+                ))
+                .from(collection)
+                .join(collection.user, user)
+                .join(avatarProfile).on(user.avatarProfileId.eq(avatarProfile.avatarProfileId))
+                .where(
+                        collection.isPublic.isTrue(),
+                        notOwnedByBlockedUser(blockedUserIds),
+                        afterPublicCursor(cursor)
+                )
+                .orderBy(collection.createdDate.desc(), collection.collectionId.desc())
+                .limit(limit)
+                .fetch();
     }
 
     @Override
@@ -186,6 +216,32 @@ public class CollectionQueryRepositoryImpl implements CollectionQueryRepository 
      * 커서 값 자체를 조건에 넣으므로 커서로 쓰던 컬렉션이 삭제돼도 페이지가 어긋나지 않는다.
      */
     private BooleanExpression afterCursor(CollectionCursor cursor) {
+        if (cursor == null) {
+            return null;
+        }
+
+        return collection.createdDate.lt(cursor.createdDate())
+                .or(collection.createdDate.eq(cursor.createdDate())
+                        .and(collection.collectionId.lt(cursor.collectionId())));
+    }
+
+    /**
+     * 어느 방향이든 차단 관계인 사용자가 만든 컬렉션은 숨긴다. 여러 사용자의 컬렉션이 섞이는 목록이므로
+     * 목록 전체를 거부하지 않고 해당 컬렉션만 걸러 낸다. 행 수 제한보다 먼저 적용되는 조회 조건이다.
+     */
+    private BooleanExpression notOwnedByBlockedUser(List<Long> blockedUserIds) {
+        if (blockedUserIds == null || blockedUserIds.isEmpty()) {
+            return null;
+        }
+
+        return collection.user.userId.notIn(blockedUserIds);
+    }
+
+    /**
+     * 전체 공개 목록의 커서 조건. 정렬과 비교 방식은 사용자별 목록의 {@link #afterCursor}와 같고,
+     * 커서 값 자체를 조건에 넣으므로 커서로 쓰던 컬렉션이 삭제돼도 페이지가 어긋나지 않는다.
+     */
+    private BooleanExpression afterPublicCursor(PublicCollectionCursor cursor) {
         if (cursor == null) {
             return null;
         }

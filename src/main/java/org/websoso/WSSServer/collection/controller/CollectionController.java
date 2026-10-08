@@ -25,6 +25,7 @@ import org.websoso.WSSServer.collection.controller.dto.CollectionCreateResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionGetResponse;
 import org.websoso.WSSServer.collection.controller.dto.CollectionUpdateRequest;
 import org.websoso.WSSServer.collection.controller.dto.CollectionsGetResponse;
+import org.websoso.WSSServer.collection.controller.dto.PublicCollectionsGetResponse;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 import org.websoso.WSSServer.user.domain.User;
 
@@ -66,6 +67,20 @@ public class CollectionController {
         return ResponseEntity
                 .status(NO_CONTENT)
                 .build();
+    }
+
+    /**
+     * 모든 사용자의 공개 컬렉션 목록. 홈의 컬렉션 섹션과 전체 컬렉션 화면이 함께 쓴다.
+     * 비로그인 조회를 허용하고, 토큰이 있으면 그대로 인증에 사용해 차단 관계인 작성자의 컬렉션을 걸러 낸다.
+     */
+    @GetMapping("/collections")
+    public ResponseEntity<PublicCollectionsGetResponse> getPublicCollections(
+            @AuthenticationPrincipal User user,
+            @RequestParam(value = "cursor", required = false) String cursor,
+            @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE) int size) {
+        return ResponseEntity
+                .status(OK)
+                .body(collectionFindApplication.getPublicCollections(user, cursor, size));
     }
 
     /**

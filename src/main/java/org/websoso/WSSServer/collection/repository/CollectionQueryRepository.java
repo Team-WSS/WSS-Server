@@ -3,10 +3,12 @@ package org.websoso.WSSServer.collection.repository;
 import java.util.List;
 import java.util.Optional;
 import org.websoso.WSSServer.collection.domain.CollectionCursor;
+import org.websoso.WSSServer.collection.domain.PublicCollectionCursor;
 import org.websoso.WSSServer.collection.repository.projection.CollectionDetailRow;
 import org.websoso.WSSServer.collection.repository.projection.CollectionNovelPreviewRow;
 import org.websoso.WSSServer.collection.repository.projection.CollectionNovelRow;
 import org.websoso.WSSServer.collection.repository.projection.CollectionPreviewRow;
+import org.websoso.WSSServer.collection.repository.projection.PublicCollectionRow;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 
 /**
@@ -30,6 +32,21 @@ public interface CollectionQueryRepository {
      * 호출해도 전체 개수를 그대로 표시할 수 있다.
      */
     long countVisibleCollections(Long ownerId, boolean includePrivate);
+
+    /**
+     * 모든 사용자의 공개 컬렉션 한 페이지를 최초 생성 시점 내림차순, 식별자 내림차순으로 읽는다.
+     * 조회자 본인의 비공개 컬렉션도 포함하지 않는다.
+     * <p>
+     * 공개·차단 조건을 행 수 제한보다 먼저 적용하므로, 걸러 낸 컬렉션 때문에 페이지가 요청 크기보다 짧아지지 않는다.
+     * 작성자와 아바타는 같은 쿼리에서 inner join으로, 포함 작품 수는 서브 쿼리로 읽으므로 카드 수만큼
+     * 추가 조회가 생기지 않는다. 좋아요 수는 읽지 않는다.
+     *
+     * @param blockedUserIds 조회자와 어느 방향이든 차단 관계인 사용자. 비로그인이거나 없으면 비어 있다.
+     * @param cursor         이전 페이지의 마지막 컬렉션. 첫 페이지는 {@code null}이다.
+     * @param limit          읽을 최대 행 수. 다음 페이지 존재 여부를 판단하려면 요청 크기보다 하나 더 읽는다.
+     */
+    List<PublicCollectionRow> findPublicCollectionRows(List<Long> blockedUserIds, PublicCollectionCursor cursor,
+                                                       int limit);
 
     /**
      * 여러 컬렉션의 미리보기 작품을 표시 순서 앞에서부터 컬렉션당 {@code previewSize}개까지 한 번의 쿼리로 읽는다.
