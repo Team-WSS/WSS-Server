@@ -57,8 +57,10 @@ public class SecurityConfig {
      * <p>
      * 메서드까지 지정해 같은 경로의 쓰기 요청이 함께 열리지 않게 한다. 예를 들어 컬렉션 상세는 공유 링크를 위해
      * 비로그인 조회를 허용하지만, 같은 경로의 수정·삭제는 그대로 인증을 요구해야 한다.
+     * 전체 공개 컬렉션 목록도 같은 경로의 생성({@code POST /collections})은 그대로 인증을 요구한다.
      */
     private static final String[] permitAllGetPaths = {
+            "/collections",
             "/collections/{collectionId}",
     };
 

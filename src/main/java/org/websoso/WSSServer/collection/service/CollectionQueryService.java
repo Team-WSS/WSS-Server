@@ -13,12 +13,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.websoso.WSSServer.collection.controller.dto.CollectionNovelSummaryGetResponse;
 import org.websoso.WSSServer.collection.domain.CollectionCursor;
+import org.websoso.WSSServer.collection.domain.PublicCollectionCursor;
 import org.websoso.WSSServer.collection.exception.CustomCollectionException;
 import org.websoso.WSSServer.collection.repository.CollectionQueryRepository;
 import org.websoso.WSSServer.collection.repository.projection.CollectionDetailRow;
 import org.websoso.WSSServer.collection.repository.projection.CollectionNovelPreviewRow;
 import org.websoso.WSSServer.collection.repository.projection.CollectionNovelRow;
 import org.websoso.WSSServer.collection.repository.projection.CollectionPreviewRow;
+import org.websoso.WSSServer.collection.repository.projection.PublicCollectionRow;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 
 /**
@@ -43,6 +45,12 @@ public class CollectionQueryService {
     @Transactional(readOnly = true)
     public long countVisibleCollections(Long ownerId, boolean includePrivate) {
         return collectionQueryRepository.countVisibleCollections(ownerId, includePrivate);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PublicCollectionRow> findPublicCollectionRows(List<Long> blockedUserIds,
+                                                              PublicCollectionCursor cursor, int limit) {
+        return collectionQueryRepository.findPublicCollectionRows(blockedUserIds, cursor, limit);
     }
 
     /**
