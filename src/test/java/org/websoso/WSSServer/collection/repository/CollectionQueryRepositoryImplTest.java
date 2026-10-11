@@ -8,18 +8,22 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.websoso.WSSServer.collection.domain.QCollection.collection;
 import static org.websoso.WSSServer.collection.domain.QCollectionNovel.collectionNovel;
 import static org.websoso.WSSServer.domain.common.SortCriteria.OLD;
 import static org.websoso.WSSServer.domain.common.SortCriteria.RECENT;
 import static org.websoso.WSSServer.novel.domain.QNovel.novel;
 import static org.websoso.WSSServer.user.domain.QAvatarProfile.avatarProfile;
+import static org.websoso.WSSServer.user.domain.QUser.user;
 
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.FactoryExpression;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
@@ -31,6 +35,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.websoso.WSSServer.collection.domain.CollectionCursor;
+import org.websoso.WSSServer.collection.domain.PublicCollectionCursor;
 import org.websoso.WSSServer.collection.repository.projection.CollectionDetailRow;
 import org.websoso.WSSServer.domain.common.SortCriteria;
 
@@ -154,6 +159,122 @@ class CollectionQueryRepositoryImplTest {
         givenSelectQuery((Object) null);
 
         assertThat(repository.countVisibleCollections(OWNER_ID, true)).isZero();
+    }
+
+    // 전체 공개 목록
+
+    @DisplayName("전체 공개 목록은 최초 생성 시점 내림차순으로 읽고 식별자로 순서를 확정한다")
+    @Test
+    void publicListOrdersByCreatedDateThenId() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findPublicCollectionRows(List.of(), null, LIMIT);
+
+        List<OrderSpecifier<?>> orders = capturedOrders(query);
+        assertThat(orders).hasSize(2);
+        assertThat(orders.get(0).getOrder()).isEqualTo(Order.DESC);
+        assertThat(orders.get(0).getTarget()).hasToString("collection.createdDate");
+        assertThat(orders.get(1).getOrder()).isEqualTo(Order.DESC);
+        assertThat(orders.get(1).getTarget()).hasToString("collection.collectionId");
+    }
+
+    @DisplayName("전체 공개 목록은 요청받은 행 수만큼만 읽는다")
+    @Test
+    void publicListReadsRequestedLimit() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findPublicCollectionRows(List.of(), null, LIMIT);
+
+        then(query).should().limit(LIMIT);
+    }
+
+    @DisplayName("전체 공개 목록은 작성자와 관계없이 공개 컬렉션만 읽는다")
+    @Test
+    void publicListReadsOnlyPublicCollectionsOfEveryone() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findPublicCollectionRows(List.of(), null, LIMIT);
+
+        String conditions = capturedConditions(query);
+        assertThat(conditions).contains("collection.isPublic = true");
+        assertThat(conditions).doesNotContain("collection.user.userId =");
+    }
+
+    @DisplayName("전체 공개 목록은 차단 관계 사용자의 컬렉션을 행 수 제한 전의 조회 조건으로 뺀다")
+    @Test
+    void publicListExcludesBlockedOwnersInQuery() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findPublicCollectionRows(List.of(3L, 4L), null, LIMIT);
+
+        assertThat(capturedConditions(query)).contains("collection.user.userId not in [3, 4]");
+        then(query).should().limit(LIMIT);
+    }
+
+    @DisplayName("차단 관계가 없으면 전체 공개 목록에 제외 조건을 넣지 않는다")
+    @Test
+    void publicListSkipsBlockConditionWithoutBlockedUsers() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findPublicCollectionRows(List.of(), null, LIMIT);
+
+        assertThat(capturedConditions(query)).doesNotContain("not in");
+    }
+
+    @DisplayName("전체 공개 목록의 첫 페이지는 커서 조건 없이 읽는다")
+    @Test
+    void publicListFirstPageHasNoCursorCondition() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findPublicCollectionRows(List.of(), null, LIMIT);
+
+        assertThat(capturedConditions(query)).doesNotContain("createdDate <");
+    }
+
+    @DisplayName("전체 공개 목록의 커서 조건은 커서에 담긴 생성 시점과 식별자를 함께 비교한다")
+    @Test
+    void publicListCursorComparesCreatedDateAndIdTogether() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findPublicCollectionRows(List.of(), PublicCollectionCursor.of(CURSOR_CREATED_DATE, 42L), LIMIT);
+
+        String conditions = capturedConditions(query);
+        assertThat(conditions).contains("collection.createdDate < " + CURSOR_CREATED_DATE);
+        assertThat(conditions).contains("collection.createdDate = " + CURSOR_CREATED_DATE);
+        assertThat(conditions).contains("collection.collectionId < 42");
+    }
+
+    @DisplayName("전체 공개 목록은 작성자와 아바타를 같은 쿼리에서 inner join으로 읽는다")
+    @Test
+    void publicListJoinsOwnerAndAvatarInSameQuery() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findPublicCollectionRows(List.of(), null, LIMIT);
+
+        then(query).should().join(collection.user, user);
+        then(query).should().join(avatarProfile);
+        then(query).should(never()).leftJoin(any(EntityPath.class));
+        then(query).should(never()).leftJoin(any(EntityPath.class), any(Path.class));
+        then(jpaQueryFactory).should().select(any(Expression.class));
+    }
+
+    @DisplayName("전체 공개 목록은 좋아요 수와 대표 작품을 읽지 않는다")
+    @Test
+    void publicListDoesNotReadLikesOrRepresentativeNovel() {
+        givenSelectQuery(List.of());
+
+        repository.findPublicCollectionRows(List.of(), null, LIMIT);
+
+        ArgumentCaptor<FactoryExpression<?>> captor = ArgumentCaptor.forClass(FactoryExpression.class);
+        then(jpaQueryFactory).should().select(captor.capture());
+        List<Expression<?>> args = captor.getValue().getArgs();
+        String subQuerySources = args.stream()
+                .filter(SubQueryExpression.class::isInstance)
+                .map(arg -> ((SubQueryExpression<?>) arg).getMetadata().getJoins().toString())
+                .collect(Collectors.joining(" "));
+        assertThat(args).hasSize(8);
+        assertThat(args.toString()).doesNotContain("collectionLike", "representativeNovel");
+        assertThat(subQuerySources).contains("novelCountSub").doesNotContain("collectionLike");
     }
 
     @DisplayName("미리보기는 여러 컬렉션을 한 번의 쿼리로 읽는다")
