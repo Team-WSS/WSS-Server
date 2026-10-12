@@ -1,0 +1,8 @@
+FROM amazoncorretto:17
+
+WORKDIR /app
+
+# OCI 개발 서버의 설정과 인증 파일은 실행 시 읽기 전용으로 마운트한다.
+COPY build/libs/WSS-Server-0.0.1-SNAPSHOT.jar /app/websoso.jar
+
+ENTRYPOINT ["java", "-Duser.timezone=Asia/Seoul", "-jar", "/app/websoso.jar"]

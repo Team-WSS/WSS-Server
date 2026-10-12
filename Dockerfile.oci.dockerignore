@@ -1,0 +1,4 @@
+*
+!build/
+!build/libs/
+!build/libs/WSS-Server-0.0.1-SNAPSHOT.jar
