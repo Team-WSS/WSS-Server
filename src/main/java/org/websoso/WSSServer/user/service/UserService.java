@@ -4,6 +4,7 @@ import static java.lang.Boolean.FALSE;
 import static org.websoso.WSSServer.exception.error.CustomUserError.PRIVATE_PROFILE_STATUS;
 import static org.websoso.WSSServer.infrastructure.discord.DiscordWebhookMessageType.JOIN;
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
+import static org.websoso.WSSServer.exception.error.CustomAvatarError.UNSELECTABLE_AVATAR;
 import static org.websoso.WSSServer.exception.error.CustomGenreError.GENRE_NOT_FOUND;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_AVATAR;
 import static org.websoso.WSSServer.exception.error.CustomUserError.ALREADY_SET_INTRO;
@@ -112,6 +113,7 @@ public class UserService {
     public void updateMyProfileInfo(User user, UpdateMyProfileRequest updateMyProfileRequest) {
         checkIfAlreadySetOrThrow(user.getAvatarId(), updateMyProfileRequest.avatarId(),
                 ALREADY_SET_AVATAR, "avatarId with given is already set");
+        checkSelectableAvatarProfile(updateMyProfileRequest.avatarId());
 
         checkIfAlreadySetOrThrow(user.getNickname(), updateMyProfileRequest.nickname(),
                 ALREADY_SET_NICKNAME, "nickname with given is already set");
@@ -132,6 +134,7 @@ public class UserService {
     public void updateProfileInfo(User user, UpdateMyProfileRequest updateMyProfileRequest) {
         checkIfAlreadySetOrThrow(user.getAvatarProfileId(), updateMyProfileRequest.avatarId(),
                 ALREADY_SET_AVATAR, "avatarId with given is already set");
+        checkSelectableAvatarProfile(updateMyProfileRequest.avatarId());
 
         checkIfAlreadySetOrThrow(user.getNickname(), updateMyProfileRequest.nickname(),
                 ALREADY_SET_NICKNAME, "nickname with given is already set");
@@ -205,6 +208,12 @@ public class UserService {
         return avatarProfileRepository.findById(avatarId)
                 .orElseThrow(
                         () -> new CustomAvatarException(AVATAR_NOT_FOUND, "avatar with the given id was not found"));
+    }
+
+    private void checkSelectableAvatarProfile(Long avatarProfileId) {
+        if (AvatarProfile.isRestrictedAvatarProfile(avatarProfileId)) {
+            throw new CustomAvatarException(UNSELECTABLE_AVATAR, "avatar with the given id is not selectable");
+        }
     }
 
     private void checkNicknameIfAlreadyExist(String nickname) {

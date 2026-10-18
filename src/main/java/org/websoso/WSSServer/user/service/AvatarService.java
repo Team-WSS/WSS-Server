@@ -1,6 +1,8 @@
 package org.websoso.WSSServer.user.service;
 
 import static org.websoso.WSSServer.exception.error.CustomAvatarError.AVATAR_NOT_FOUND;
+import static org.websoso.WSSServer.user.domain.AvatarProfile.ADMIN_AVATAR_PROFILE_ID;
+import static org.websoso.WSSServer.user.domain.AvatarProfile.OFFICIAL_AVATAR_PROFILE_ID;
 
 import java.util.List;
 import java.util.Random;
@@ -28,8 +30,6 @@ public class AvatarService {
     private final AvatarRepository avatarRepository;
     private final AvatarProfileRepository avatarProfileRepository;
 
-    private static final long ADMIN_AVATAR_PROFILE_ID = -1L;
-
     private static final Random random = new Random();      //TODO thread-safe하지 않아서 multi-thread 환경에서는 사용X
 
     @Transactional(readOnly = true)
@@ -41,8 +41,8 @@ public class AvatarService {
     public AvatarProfilesGetResponse getAvatarProfileList(User user) {
         long representativeAvatarProfileId = user.getAvatarProfileId();
 
-        List<AvatarProfile> avatarProfiles = avatarProfileRepository.findAllByAvatarProfileIdNot(
-                ADMIN_AVATAR_PROFILE_ID);
+        List<AvatarProfile> avatarProfiles = avatarProfileRepository.findAllByAvatarProfileIdNotIn(
+                getHiddenAvatarProfileIds(representativeAvatarProfileId));
 
         List<AvatarProfileGetResponse> avatarProfileGetResponses = avatarProfiles.stream()
                 .map(avatarProfile -> {
@@ -53,6 +53,13 @@ public class AvatarService {
 
         return new AvatarProfilesGetResponse(avatarProfileGetResponses);
 
+    }
+
+    private static List<Long> getHiddenAvatarProfileIds(long representativeAvatarProfileId) {
+        if (representativeAvatarProfileId == OFFICIAL_AVATAR_PROFILE_ID) {
+            return List.of(ADMIN_AVATAR_PROFILE_ID);
+        }
+        return List.of(ADMIN_AVATAR_PROFILE_ID, OFFICIAL_AVATAR_PROFILE_ID);
     }
 
     private static AvatarProfileLine getRandomAvatarProfileLine(List<AvatarProfileLine> avatarLines) {
