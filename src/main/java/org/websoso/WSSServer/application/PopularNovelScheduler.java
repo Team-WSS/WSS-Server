@@ -25,6 +25,10 @@ public class PopularNovelScheduler {
 
         List<Long> topNovelIds = libraryService.getTodayPopularNovelIds(PageRequest.of(0, 30));
 
+        if (topNovelIds.isEmpty()) {
+            return;
+        }
+
         List<PopularNovel> popularNovels = topNovelIds.stream()
                 .map(PopularNovel::from)
                 .collect(Collectors.toList());

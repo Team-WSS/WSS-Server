@@ -19,6 +19,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AvatarProfile {
 
+    public static final long ADMIN_AVATAR_PROFILE_ID = -1L;
+    public static final long OFFICIAL_AVATAR_PROFILE_ID = -2L;
+
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(nullable = false)
@@ -39,5 +42,10 @@ public class AvatarProfile {
 
     public boolean isSameAvatarProfile(Long avatarProfileId) {
         return this.avatarProfileId.equals(avatarProfileId);
+    }
+
+    public static boolean isRestrictedAvatarProfile(Long avatarProfileId) {
+        return avatarProfileId != null
+                && (avatarProfileId == ADMIN_AVATAR_PROFILE_ID || avatarProfileId == OFFICIAL_AVATAR_PROFILE_ID);
     }
 }
