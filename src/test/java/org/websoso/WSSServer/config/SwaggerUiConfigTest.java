@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.websoso.WSSServer.application.AppVersionApplication;
@@ -30,10 +30,10 @@ class SwaggerUiConfigTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private AppVersionApplication appVersionApplication;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
     @DisplayName("Swagger UI 진입 경로는 인증 없이 index로 리다이렉트된다")
