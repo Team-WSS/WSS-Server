@@ -17,7 +17,6 @@ import static org.websoso.WSSServer.support.auth.TestBearerToken.accessToken;
 import static org.websoso.WSSServer.support.auth.TestBearerToken.refreshToken;
 import static org.websoso.WSSServer.support.auth.TestBearerToken.tamperedAccessToken;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,6 +32,7 @@ import org.websoso.WSSServer.support.auth.AuthenticatedControllerTest;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.repository.UserRepository;
 import org.websoso.WSSServer.user.service.UserService;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * 실제 JwtAuthenticationFilter / JWTUtil을 통과하는 인증 Controller 요청 대표 테스트.

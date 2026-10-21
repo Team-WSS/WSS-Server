@@ -5,8 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
@@ -14,8 +12,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.mock.http.MockHttpInputMessage;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /** 요청 본문이 구조화 로그의 body 필드에 유지되는지 검증한다. */
 class RequestBodyLoggingAdviceTest {
@@ -53,7 +53,7 @@ class RequestBodyLoggingAdviceTest {
                 new MockHttpInputMessage(new byte[0]),
                 null,
                 Map.class,
-                MappingJackson2HttpMessageConverter.class
+                JacksonJsonHttpMessageConverter.class
         );
 
         assertThat(result).isSameAs(body);
@@ -78,13 +78,13 @@ class RequestBodyLoggingAdviceTest {
                 new MockHttpInputMessage(new byte[0]),
                 null,
                 Map.class,
-                MappingJackson2HttpMessageConverter.class
+                JacksonJsonHttpMessageConverter.class
         );
 
         Map<String, Object> fields = keyValues(listAppender.list.get(0));
         JsonNode logged = (JsonNode) fields.get("body");
-        assertThat(logged.get("refreshToken").asText()).isEqualTo("***(len=20)");
-        assertThat(logged.get("content").asText()).isEqualTo("일반 내용");
+        assertThat(logged.get("refreshToken").asString()).isEqualTo("***(len=20)");
+        assertThat(logged.get("content").asString()).isEqualTo("일반 내용");
         assertThat(fields).containsEntry("truncated", false);
     }
 

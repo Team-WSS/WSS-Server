@@ -1,9 +1,9 @@
 package org.websoso.WSSServer.auth.client.dto;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import org.websoso.support.logging.masking.MaskingPolicy;
 import org.websoso.support.logging.masking.SensitiveData;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record KakaoUserInfo(

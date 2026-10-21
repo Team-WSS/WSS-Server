@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +15,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.websoso.common.exception.ErrorResultWriter;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * TestTokenFactory가 발급한 실제 형식의 토큰이 실제(mock 아닌) JWTUtil/JwtProvider를 거쳐

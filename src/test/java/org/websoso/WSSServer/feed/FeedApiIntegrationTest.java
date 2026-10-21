@@ -3,7 +3,6 @@ package org.websoso.WSSServer.feed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +10,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -23,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.websoso.WSSServer.domain.common.FeedGetOption;
 import org.websoso.WSSServer.auth.repository.RefreshTokenRepository;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -94,7 +94,7 @@ class FeedApiIntegrationTest {
                 .andReturn();
 
         String body = result.getResponse().getContentAsString();
-        return objectMapper.readTree(body).get("Authorization").asText();
+        return objectMapper.readTree(body).get("Authorization").asString();
     }
 
     // ============================================================
@@ -286,7 +286,7 @@ class FeedApiIntegrationTest {
         assertThat(feeds.size()).isGreaterThanOrEqualTo(2);
         feeds.forEach(feed -> {
             var genreNode = feed.get("genre");
-            boolean isNullOrRomance = genreNode.isNull() || "romance".equals(genreNode.asText());
+            boolean isNullOrRomance = genreNode.isNull() || "romance".equals(genreNode.asString());
 
             assertThat(isNullOrRomance).isTrue();
         });
@@ -309,7 +309,7 @@ class FeedApiIntegrationTest {
         assertThat(feeds.size()).isGreaterThanOrEqualTo(2);
         feeds.forEach(feed -> {
             var genreNode = feed.get("genre");
-            boolean isNullOrRomance = genreNode.isNull() || "romance".equals(genreNode.asText());
+            boolean isNullOrRomance = genreNode.isNull() || "romance".equals(genreNode.asString());
 
             assertThat(isNullOrRomance).isTrue();
         });
