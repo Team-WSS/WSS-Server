@@ -24,7 +24,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -82,19 +82,19 @@ class PostUserIdLoginDocsTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
-    @MockBean
+    @MockitoBean
     private AuthApplication authApplication;
 
-    @MockBean
+    @MockitoBean
     private AppleService appleService;
 
-    @MockBean
+    @MockitoBean
     private AccountApplication accountApplication;
 
-    @MockBean
+    @MockitoBean
     private UserRepository userRepository;
 
     @DisplayName("사용자 ID로 Access Token을 발급받는 200 응답을 문서화한다")

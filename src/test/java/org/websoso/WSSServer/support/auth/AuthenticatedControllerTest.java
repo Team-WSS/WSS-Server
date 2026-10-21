@@ -28,7 +28,7 @@ import org.websoso.common.exception.ErrorResultWriter;
  *
  * 오류 본문을 쓰는 {@link ErrorResultWriter}는 웹 슬라이스가 자동으로 등록하지 않으므로 함께 가져온다.
  * 사용자 조회({@code UserService})와 Controller가 의존하는 Application/Service는
- * 테스트에서 {@code @MockBean}으로 격리한다. JWT Secret과 만료 시간은
+ * 테스트에서 {@code @MockitoBean}으로 격리한다. JWT Secret과 만료 시간은
  * {@link ControllerAuthTestConfig}가 제공하므로 application-*.yml이 필요 없다.
  */
 @Target(ElementType.TYPE)
