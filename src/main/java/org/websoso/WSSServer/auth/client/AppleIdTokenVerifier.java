@@ -6,9 +6,6 @@ import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.INVALI
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.JWT_VERIFICATION_FAILED;
 import static org.websoso.WSSServer.exception.error.CustomAppleLoginError.UNSUPPORTED_JWT_TYPE;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -20,6 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.websoso.WSSServer.auth.client.dto.ApplePublicKeys;
 import org.websoso.WSSServer.exception.exception.CustomAppleLoginException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Apple ID Token(idToken)의 헤더 파싱, 공개키 매칭, 서명 검증을 담당한다.
@@ -48,10 +48,10 @@ public class AppleIdTokenVerifier {
             String encodedHeader = appleIdToken.split(IDENTITY_TOKEN_VALUE_DELIMITER)[HEADER_INDEX];
             String decodedHeader = new String(Base64.getUrlDecoder().decode(encodedHeader));
             return objectMapper.readValue(decodedHeader, Map.class);
-        } catch (JsonMappingException e) {
+        } catch (DatabindException e) {
             throw new CustomAppleLoginException(INVALID_APPLE_TOKEN_FORMAT,
                     "make sure the idToken value is in jwt format and that the value is valid");
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new CustomAppleLoginException(HEADER_PARSING_FAILED,
                     "the decoded header cannot be classified as a Map, please check the header");
         }

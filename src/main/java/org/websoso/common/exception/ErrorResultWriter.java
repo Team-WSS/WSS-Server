@@ -1,10 +1,10 @@
 package org.websoso.common.exception;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Servlet 필터·Security 핸들러가 {@link ErrorResult} 본문을 직접 써야 할 때 쓰는 공통 도구.

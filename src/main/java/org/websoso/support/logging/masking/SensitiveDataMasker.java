@@ -1,13 +1,13 @@
 package org.websoso.support.logging.masking;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import java.util.ArrayList;
 import java.util.List;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 
 /**
  * 본문을 민감정보가 가려진 JSON으로 변환한다.
@@ -42,7 +42,7 @@ public class SensitiveDataMasker {
         if (serialized.length() <= MAX_BODY_LENGTH) {
             return new MaskedBody(masked, false);
         }
-        return new MaskedBody(TextNode.valueOf(serialized.substring(0, MAX_BODY_LENGTH) + TRUNCATED_SUFFIX), true);
+        return new MaskedBody(StringNode.valueOf(serialized.substring(0, MAX_BODY_LENGTH) + TRUNCATED_SUFFIX), true);
     }
 
     /**
@@ -60,8 +60,7 @@ public class SensitiveDataMasker {
             return;
         }
         ObjectNode objectNode = (ObjectNode) node;
-        List<String> fieldNames = new ArrayList<>();
-        objectNode.fieldNames().forEachRemaining(fieldNames::add);
+        List<String> fieldNames = new ArrayList<>(objectNode.propertyNames());
         for (String fieldName : fieldNames) {
             JsonNode value = objectNode.get(fieldName);
             MaskingPolicy policy = SensitiveFieldNames.policyOf(fieldName);
@@ -69,8 +68,8 @@ public class SensitiveDataMasker {
                 maskByFieldName(value);
                 continue;
             }
-            if (!MaskingPolicy.isMasked(value.asText())) {
-                objectNode.put(fieldName, policy.mask(value.asText()));
+            if (!MaskingPolicy.isMasked(value.asString())) {
+                objectNode.put(fieldName, policy.mask(value.asString()));
             }
         }
     }

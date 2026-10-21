@@ -2,12 +2,12 @@ package org.websoso.support.logging.masking;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /** 민감정보 마스킹 결과와 실제 응답 직렬화 비침해를 검증한다. */
 class SensitiveDataMaskerTest {
@@ -38,10 +38,10 @@ class SensitiveDataMaskerTest {
 
         JsonNode masked = masker.mask(body).json();
 
-        assertThat(masked.get("refreshToken").asText()).isEqualTo("***(len=30)");
-        assertThat(masked.get("email").asText()).isEqualTo("re***@we***");
-        assertThat(masked.get("nickname").asText()).isEqualTo("웹***");
-        assertThat(masked.get("birth").asText()).isEqualTo("***");
+        assertThat(masked.get("refreshToken").asString()).isEqualTo("***(len=30)");
+        assertThat(masked.get("email").asString()).isEqualTo("re***@we***");
+        assertThat(masked.get("nickname").asString()).isEqualTo("웹***");
+        assertThat(masked.get("birth").asString()).isEqualTo("***");
     }
 
     @Test
@@ -51,7 +51,7 @@ class SensitiveDataMaskerTest {
 
         JsonNode masked = masker.mask(body).json();
 
-        assertThat(masked.get("novelTitle").asText()).isEqualTo("전지적 독자 시점");
+        assertThat(masked.get("novelTitle").asString()).isEqualTo("전지적 독자 시점");
     }
 
     @Test
@@ -61,9 +61,9 @@ class SensitiveDataMaskerTest {
 
         JsonNode masked = masker.mask(body).json();
 
-        assertThat(masked.get("refreshToken").asText()).isEqualTo("***(len=20)");
-        assertThat(masked.get("email").asText()).isEqualTo("re***@we***");
-        assertThat(masked.get("novelTitle").asText()).isEqualTo("전지적 독자 시점");
+        assertThat(masked.get("refreshToken").asString()).isEqualTo("***(len=20)");
+        assertThat(masked.get("email").asString()).isEqualTo("re***@we***");
+        assertThat(masked.get("novelTitle").asString()).isEqualTo("전지적 독자 시점");
     }
 
     @Test
@@ -73,9 +73,9 @@ class SensitiveDataMaskerTest {
 
         JsonNode apiResponse = new ObjectMapper().valueToTree(body);
 
-        assertThat(apiResponse.get("refreshToken").asText()).isEqualTo("eyJhbGciOiJIUzI1NiJ9");
-        assertThat(apiResponse.get("email").asText()).isEqualTo("reader@websoso.kr");
-        assertThat(apiResponse.get("nickname").asText()).isEqualTo("웹소소독자");
+        assertThat(apiResponse.get("refreshToken").asString()).isEqualTo("eyJhbGciOiJIUzI1NiJ9");
+        assertThat(apiResponse.get("email").asString()).isEqualTo("reader@websoso.kr");
+        assertThat(apiResponse.get("nickname").asString()).isEqualTo("웹소소독자");
         assertThat(apiResponse.get("birth").asInt()).isEqualTo(1998);
     }
 
@@ -90,10 +90,10 @@ class SensitiveDataMaskerTest {
 
         JsonNode masked = masker.mask(body).json();
 
-        assertThat(masked.get("email").asText()).isEqualTo("re***@we***");
-        assertThat(masked.get("device").get("fcmToken").asText()).isEqualTo("***(len=15)");
-        assertThat(masked.get("device").get("model").asText()).isEqualTo("iPhone 15");
-        assertThat(masked.get("novelTitle").asText()).isEqualTo("전지적 독자 시점");
+        assertThat(masked.get("email").asString()).isEqualTo("re***@we***");
+        assertThat(masked.get("device").get("fcmToken").asString()).isEqualTo("***(len=15)");
+        assertThat(masked.get("device").get("model").asString()).isEqualTo("iPhone 15");
+        assertThat(masked.get("novelTitle").asString()).isEqualTo("전지적 독자 시점");
     }
 
     @Test
@@ -103,7 +103,7 @@ class SensitiveDataMaskerTest {
 
         JsonNode masked = masker.mask(body).json();
 
-        assertThat(masked.get("refreshToken").asText()).isEqualTo("***(len=10)");
+        assertThat(masked.get("refreshToken").asString()).isEqualTo("***(len=10)");
     }
 
     @Test
@@ -114,7 +114,7 @@ class SensitiveDataMaskerTest {
         MaskedBody masked = masker.mask(body);
 
         assertThat(masked.truncated()).isTrue();
-        assertThat(masked.json().asText()).endsWith("...(truncated)");
+        assertThat(masked.json().asString()).endsWith("...(truncated)");
     }
 
     @Test
