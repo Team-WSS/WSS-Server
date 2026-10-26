@@ -5,8 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.webjars.WebJarAssetLocator;
-import org.webjars.WebJarAssetLocator.WebJarInfo;
+import org.webjars.WebJarVersionLocator;
 
 /**
  * Swagger UI를 WebJar 번들로 직접 제공한다. 외부 CDN을 사용하지 않는다.
@@ -43,10 +42,10 @@ public class SwaggerUiConfig implements WebMvcConfigurer {
     }
 
     private String webJarLocation() {
-        WebJarInfo swaggerUi = new WebJarAssetLocator().getAllWebJars().get(WEB_JAR_NAME);
-        if (swaggerUi == null) {
+        String version = new WebJarVersionLocator().version(WEB_JAR_NAME);
+        if (version == null) {
             throw new IllegalStateException("swagger-ui WebJar을 classpath에서 찾을 수 없습니다.");
         }
-        return String.format(WEB_JAR_LOCATION_FORMAT, WEB_JAR_NAME, swaggerUi.getVersion());
+        return String.format(WEB_JAR_LOCATION_FORMAT, WEB_JAR_NAME, version);
     }
 }

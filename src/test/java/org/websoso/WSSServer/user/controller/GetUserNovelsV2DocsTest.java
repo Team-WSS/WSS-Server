@@ -28,7 +28,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.websoso.WSSServer.dto.userNovel.UserNovelAndNovelGetResponse;
 import org.websoso.WSSServer.dto.userNovel.UserNovelsV2GetResponse;
@@ -47,10 +47,10 @@ class GetUserNovelsV2DocsTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
-    @MockBean
+    @MockitoBean
     private UserNovelService userNovelService;
 
     @BeforeEach

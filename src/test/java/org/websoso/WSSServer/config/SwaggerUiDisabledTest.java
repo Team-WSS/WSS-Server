@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.websoso.WSSServer.application.AppVersionApplication;
@@ -25,10 +25,10 @@ class SwaggerUiDisabledTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private AppVersionApplication appVersionApplication;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
     @DisplayName("swagger-ui가 비활성이면 UI와 명세를 제공하지 않는다")
