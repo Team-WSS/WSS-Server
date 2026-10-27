@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.feed.feed.listener;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -14,6 +15,7 @@ public class PopularFeedCheckEventListener {
     private final PopularFeedApplication popularFeedApplication;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Async("asyncExecutor")
     public void handle(PopularFeedCheckEvent event) {
         popularFeedApplication.checkAndRegister(event.feedId());
     }

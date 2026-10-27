@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.notification.listener;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -14,6 +15,7 @@ public class PopularFeedNotificationListener {
     private final NotificationSendApplication notificationSendApplication;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Async("asyncExecutor")
     public void handle(FeedBecamePopularEvent event) {
         notificationSendApplication.sendFeedBecamePopularPushMessage(event.feedId());
     }
