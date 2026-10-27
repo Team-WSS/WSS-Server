@@ -51,7 +51,7 @@ jobs:
 
     - name: Docker image Build and Push
       run: |
-        docker build --platform linux/amd64 -t websoso/websoso-image .
+        docker build --pull --platform linux/amd64 -t websoso/websoso-image .
         docker push websoso/websoso-image
 
   deploy-cd-release:
