@@ -1,6 +1,7 @@
 package org.websoso.WSSServer.notification.listener;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -13,6 +14,7 @@ public class FeedLikeNotificationListener {
 
     private final NotificationSendApplication notificationSendApplication;
 
+    @Async("asyncExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(FeedLikedEvent event) {
         notificationSendApplication.sendFeedLikedPushMessage(event.feedId(), event.userId(), event.writerId());

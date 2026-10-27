@@ -83,7 +83,7 @@ dependencies {
 
     // Swagger UI (WebJar로 번들을 직접 제공한다. API 명세는 REST Docs 산출물만 사용한다)
     implementation "org.webjars:swagger-ui:${swaggerUiVersion}"
-    implementation 'org.webjars:webjars-locator-core'
+    implementation 'org.webjars:webjars-locator-lite'
 
     // ============== Test ==============
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

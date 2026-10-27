@@ -44,7 +44,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -113,16 +113,16 @@ class PostCollectionDocsTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
-    @MockBean
+    @MockitoBean
     private CollectionManagementApplication collectionManagementApplication;
 
     /**
      * 같은 Controller가 조회 유스케이스도 함께 의존하므로 슬라이스 테스트에서 대역으로 둔다.
      */
-    @MockBean
+    @MockitoBean
     private CollectionFindApplication collectionFindApplication;
 
     @BeforeEach

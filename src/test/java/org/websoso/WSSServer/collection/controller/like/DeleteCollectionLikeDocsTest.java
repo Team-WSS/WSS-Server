@@ -35,7 +35,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.websoso.WSSServer.collection.application.CollectionLikeApplication;
@@ -90,16 +90,16 @@ class DeleteCollectionLikeDocsTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
-    @MockBean
+    @MockitoBean
     private CollectionLikeApplication collectionLikeApplication;
 
     /**
      * 같은 Controller가 좋아요한 컬렉션 목록 조회도 함께 의존하므로 슬라이스 테스트에서 대역으로 둔다.
      */
-    @MockBean
+    @MockitoBean
     private CollectionLikeFindApplication collectionLikeFindApplication;
 
     @BeforeEach
