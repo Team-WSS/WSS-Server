@@ -1,4 +1,4 @@
-FROM amd64/amazoncorretto:17
+FROM amd64/amazoncorretto:17.0.21
 
 WORKDIR /app
 
