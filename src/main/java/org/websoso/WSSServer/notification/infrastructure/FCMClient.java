@@ -9,6 +9,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
+import com.google.firebase.messaging.Notification;
 import com.google.firebase.messaging.SendResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,7 @@ public class FCMClient {
 
         return Message.builder()
                 .setToken(targetFCMToken)
+                .setNotification(createNotification(fcmMessageRequest))
                 .putData("title", fcmMessageRequest.title())
                 .putData("body", fcmMessageRequest.body())
                 .putData("feedId", fcmMessageRequest.feedId())
@@ -104,12 +106,20 @@ public class FCMClient {
 
         return MulticastMessage.builder()
                 .addAllTokens(targetFCMTokens)
+                .setNotification(createNotification(fcmMessageRequest))
                 .putData("title", fcmMessageRequest.title())
                 .putData("body", fcmMessageRequest.body())
                 .putData("feedId", fcmMessageRequest.feedId())
                 .putData("view", fcmMessageRequest.view())
                 .putData("notificationId", fcmMessageRequest.notificationId())
                 .setApnsConfig(apnsConfig)
+                .build();
+    }
+
+    private Notification createNotification(FCMMessageRequest fcmMessageRequest) {
+        return Notification.builder()
+                .setTitle(fcmMessageRequest.title())
+                .setBody(fcmMessageRequest.body())
                 .build();
     }
 
