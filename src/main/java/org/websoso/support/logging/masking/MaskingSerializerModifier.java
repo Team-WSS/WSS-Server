@@ -1,17 +1,17 @@
 package org.websoso.support.logging.masking;
 
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import java.util.List;
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.SerializationConfig;
+import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.ValueSerializerModifier;
 
 /** 민감정보로 표시된 프로퍼티의 직렬화기를 마스킹 직렬화기로 교체한다. */
-public class MaskingSerializerModifier extends BeanSerializerModifier {
+public class MaskingSerializerModifier extends ValueSerializerModifier {
 
     /** 로그 전용 ObjectMapper에서만 호출되므로 실제 API 응답 직렬화에는 영향이 없다. */
     @Override
-    public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDescription,
+    public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription.Supplier beanDescription,
                                                      List<BeanPropertyWriter> beanProperties) {
         for (BeanPropertyWriter writer : beanProperties) {
             MaskingPolicy policy = resolvePolicy(writer);

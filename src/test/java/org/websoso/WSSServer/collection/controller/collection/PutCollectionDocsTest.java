@@ -43,13 +43,12 @@ import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.epages.restdocs.apispec.ResourceSnippetParametersBuilder;
 import com.epages.restdocs.apispec.Schema;
 import com.epages.restdocs.apispec.SimpleType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
+import org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.test.web.servlet.MockMvc;
@@ -65,6 +64,7 @@ import org.websoso.WSSServer.support.auth.AuthenticatedControllerTest;
 import org.websoso.WSSServer.user.domain.User;
 import org.websoso.WSSServer.user.service.UserService;
 import org.websoso.common.exception.ICustomError;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * {@code PUT /collections/{collectionId}}의 실제 응답을 REST Docs로 문서화하는 테스트.

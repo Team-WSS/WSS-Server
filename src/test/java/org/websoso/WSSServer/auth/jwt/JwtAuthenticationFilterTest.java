@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.websoso.common.exception.ErrorResultWriter;
 import org.websoso.support.logging.request.RequestLoggingFilter;
+import tools.jackson.databind.ObjectMapper;
 
 /** JWT 인증 결과와 요청 로그용 사용자 식별자 전달을 검증한다. */
 class JwtAuthenticationFilterTest {
