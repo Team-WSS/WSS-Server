@@ -2,7 +2,6 @@ package org.websoso.WSSServer.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.websoso.WSSServer.auth.controller.dto.AppleLoginRequest;
@@ -11,6 +10,7 @@ import org.websoso.WSSServer.auth.controller.dto.LogoutRequest;
 import org.websoso.WSSServer.dto.user.UserInfoGetResponse;
 import org.websoso.WSSServer.notification.dto.FCMTokenRequest;
 import org.websoso.support.logging.masking.SensitiveDataMasker;
+import tools.jackson.databind.JsonNode;
 
 /** 실제 DTO에 부착된 마스킹 어노테이션이 로그 직렬화에 적용되는지 검증한다. */
 class SensitiveDtoMaskingTest {
@@ -22,8 +22,8 @@ class SensitiveDtoMaskingTest {
     void masksAppleLoginCredentials() {
         JsonNode masked = masker.mask(new AppleLoginRequest("authorization-code", "id-token")).json();
 
-        assertThat(masked.get("authorizationCode").asText()).isEqualTo("***(len=18)");
-        assertThat(masked.get("idToken").asText()).isEqualTo("***(len=8)");
+        assertThat(masked.get("authorizationCode").asString()).isEqualTo("***(len=18)");
+        assertThat(masked.get("idToken").asString()).isEqualTo("***(len=8)");
     }
 
     @Test
@@ -31,8 +31,8 @@ class SensitiveDtoMaskingTest {
     void masksLogoutCredentials() {
         JsonNode masked = masker.mask(new LogoutRequest("refresh-token", "device-identifier")).json();
 
-        assertThat(masked.get("refreshToken").asText()).isEqualTo("***(len=13)");
-        assertThat(masked.get("deviceIdentifier").asText()).isEqualTo("***(len=17)");
+        assertThat(masked.get("refreshToken").asString()).isEqualTo("***(len=13)");
+        assertThat(masked.get("deviceIdentifier").asString()).isEqualTo("***(len=17)");
     }
 
     @Test
@@ -40,8 +40,8 @@ class SensitiveDtoMaskingTest {
     void masksFcmTokenRequest() {
         JsonNode masked = masker.mask(new FCMTokenRequest("fcm-token", "device-identifier")).json();
 
-        assertThat(masked.get("fcmToken").asText()).isEqualTo("***(len=9)");
-        assertThat(masked.get("deviceIdentifier").asText()).isEqualTo("***(len=17)");
+        assertThat(masked.get("fcmToken").asString()).isEqualTo("***(len=9)");
+        assertThat(masked.get("deviceIdentifier").asString()).isEqualTo("***(len=17)");
     }
 
     @Test
@@ -49,9 +49,9 @@ class SensitiveDtoMaskingTest {
     void masksUserInfoResponse() {
         JsonNode masked = masker.mask(new UserInfoGetResponse("reader@websoso.kr", "MALE", 1998)).json();
 
-        assertThat(masked.get("email").asText()).isEqualTo("re***@we***");
-        assertThat(masked.get("gender").asText()).isEqualTo("***");
-        assertThat(masked.get("birth").asText()).isEqualTo("***");
+        assertThat(masked.get("email").asString()).isEqualTo("re***@we***");
+        assertThat(masked.get("gender").asString()).isEqualTo("***");
+        assertThat(masked.get("birth").asString()).isEqualTo("***");
     }
 
     @Test
@@ -59,8 +59,8 @@ class SensitiveDtoMaskingTest {
     void masksAuthResponseTokensOnly() {
         JsonNode masked = masker.mask(AuthResponse.of("access-token", "refresh-token", true)).json();
 
-        assertThat(masked.get("Authorization").asText()).isEqualTo("***(len=12)");
-        assertThat(masked.get("refreshToken").asText()).isEqualTo("***(len=13)");
+        assertThat(masked.get("Authorization").asString()).isEqualTo("***(len=12)");
+        assertThat(masked.get("refreshToken").asString()).isEqualTo("***(len=13)");
         assertThat(masked.get("isRegister").asBoolean()).isTrue();
     }
 }
