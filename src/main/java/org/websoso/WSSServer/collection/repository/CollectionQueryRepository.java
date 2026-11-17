@@ -49,6 +49,18 @@ public interface CollectionQueryRepository {
                                                        int limit);
 
     /**
+     * 모든 사용자의 공개 컬렉션 중 무작위로 최대 {@code limit}개를 읽는다. 홈의 컬렉션 섹션이 쓰는 단일 페이지 조회다.
+     * <p>
+     * 공개·차단 조건을 무작위 정렬과 행 수 제한보다 먼저 적용하므로, 조건을 통과한 전체 후보 중에서 고른다.
+     * 컬렉션 한 건이 한 행이므로 같은 컬렉션이 중복으로 나오지 않는다. 카드 값은 {@link #findPublicCollectionRows}와
+     * 같은 projection으로 읽는다. 요청마다 새로 고르며 같은 결과를 다시 받을 수 있는 시드나 커서는 두지 않는다.
+     *
+     * @param blockedUserIds 조회자와 어느 방향이든 차단 관계인 사용자. 비로그인이거나 없으면 비어 있다.
+     * @param limit          읽을 최대 행 수
+     */
+    List<PublicCollectionRow> findRandomPublicCollectionRows(List<Long> blockedUserIds, int limit);
+
+    /**
      * 여러 컬렉션의 미리보기 작품을 표시 순서 앞에서부터 컬렉션당 {@code previewSize}개까지 한 번의 쿼리로 읽는다.
      * 컬렉션마다 따로 조회하지 않으므로 목록 크기에 비례해 쿼리가 늘지 않는다.
      */

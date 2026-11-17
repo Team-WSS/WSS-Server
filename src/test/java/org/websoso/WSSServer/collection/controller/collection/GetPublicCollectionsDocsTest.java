@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.INVALID_COLLECTION_CURSOR;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.INVALID_COLLECTION_PAGE_SIZE;
+import static org.websoso.WSSServer.collection.exception.CustomCollectionError.INVALID_COLLECTION_SORT;
 import static org.websoso.WSSServer.exception.error.CustomAuthError.ACCESS_TOKEN_EXPIRED;
 import static org.websoso.WSSServer.exception.error.CustomAuthError.INVALID_TOKEN;
 import static org.websoso.WSSServer.exception.error.CustomAuthError.WRONG_TOKEN_TYPE;
@@ -93,9 +94,16 @@ class GetPublicCollectionsDocsTest {
     private static final Schema RESPONSE_SCHEMA = Schema.schema("PublicCollectionsGetResponse");
 
     private static final String DESCRIPTION = String.join("\n",
-            "모든 사용자의 공개 컬렉션을 최초 생성 시점 최신순으로 조회합니다. 생성 시각이 같으면 컬렉션 ID 내림차순입니다.",
-            "수정·작품 재배치·좋아요로 정렬 위치가 바뀌지 않습니다.",
-            "홈의 컬렉션 섹션은 첫 페이지를, 전체 컬렉션 화면은 첫 페이지와 이후 페이지를 이 API로 조회합니다.",
+            "모든 사용자의 공개 컬렉션을 조회합니다. sort를 생략하면 최초 생성 시점 최신순이며, 생성 시각이 같으면",
+            "컬렉션 ID 내림차순입니다. 수정·작품 재배치·좋아요로 정렬 위치가 바뀌지 않습니다.",
+            "전체 컬렉션 화면은 sort 없이 첫 페이지와 이후 페이지를, 홈의 컬렉션 섹션은 sort=random&size=10으로",
+            "첫 페이지만 이 API로 조회합니다.",
+            "",
+            "sort=random이면 공개·차단 조건을 통과한 전체 후보 중 중복 없이 최대 size개를 무작위로 골라 한 페이지로 반환합니다.",
+            "요청마다 새로 고르므로 새로고침하면 다른 컬렉션이 나올 수 있지만, 매번 달라진다고 보장하지는 않습니다.",
+            "무작위 조회는 페이지네이션이 없습니다. hasNext는 항상 false, nextCursor는 항상 null이며 cursor 파라미터를",
+            "함께 보내면 빈 값이어도 400 COLLECTION-007입니다. 후보가 없으면 빈 배열입니다. 지원하는 sort 값은 random 하나이며",
+            "다른 값은 400 COLLECTION-009입니다. 빈 값·공백만 있는 sort는 생략과 같습니다.",
             "",
             "인증은 선택입니다. Authorization 헤더가 없거나, Bearer 형식이 아니거나, Bearer 뒤 토큰 값이 비어 있으면",
             "토큰이 없는 것으로 보고 비로그인 조회로 처리합니다.",
@@ -125,8 +133,9 @@ class GetPublicCollectionsDocsTest {
             "이 API가 정의하는 응답은 다음과 같습니다.",
             "",
             "- 200 OK — 성공. 조회 가능한 컬렉션이 없으면 빈 배열입니다.",
-            errorLine(INVALID_COLLECTION_CURSOR) + " (다른 목록의 커서를 포함합니다.)",
+            errorLine(INVALID_COLLECTION_CURSOR) + " (다른 목록의 커서와, sort=random에 함께 보낸 커서를 포함합니다.)",
             errorLine(INVALID_COLLECTION_PAGE_SIZE),
+            errorLine(INVALID_COLLECTION_SORT) + " (sort가 random이 아닐 때)",
             errorLine(REQUEST_VALUE_TYPE_MISMATCH, SIZE_TYPE_MISMATCH_MESSAGE) + " (size가 정수가 아닐 때)",
             errorLine(ACCESS_TOKEN_EXPIRED) + " (Bearer 토큰을 보냈을 때만 해당합니다.)",
             errorLine(INVALID_TOKEN) + " (Bearer 토큰 값이 위조·손상됐을 때입니다. 헤더가 없거나 Bearer 형식이 아니거나 "
@@ -151,7 +160,7 @@ class GetPublicCollectionsDocsTest {
     @BeforeEach
     void setUp() {
         given(userService.getUserOrException(USER_ID)).willReturn(mock(User.class));
-        given(collectionFindApplication.getPublicCollections(any(), any(), anyInt()))
+        given(collectionFindApplication.getPublicCollections(any(), any(), any(), anyInt()))
                 .willReturn(publicCollectionsResponse());
     }
 
@@ -183,7 +192,90 @@ class GetPublicCollectionsDocsTest {
                                 .responseFields(responseFields())
                                 .build())));
 
-        then(collectionFindApplication).should().getPublicCollections(any(User.class), eq(NEXT_CURSOR), eq(10));
+        then(collectionFindApplication).should().getPublicCollections(any(User.class), isNull(), eq(NEXT_CURSOR), eq(10));
+    }
+
+    @DisplayName("홈의 무작위 공개 컬렉션 조회 성공(200) 응답을 문서화한다")
+    @Test
+    void documentGetRandomPublicCollectionsSuccess() throws Exception {
+        given(collectionFindApplication.getPublicCollections(any(), any(), any(), anyInt()))
+                .willReturn(PublicCollectionsGetResponse.of(false, null, publicCollectionsResponse().collections()));
+
+        mockMvc.perform(get(PATH)
+                        .param("sort", "random")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.hasNext").value(false))
+                .andExpect(jsonPath("$.nextCursor").isEmpty())
+                .andExpect(jsonPath("$.collections.length()").value(2))
+                .andExpect(jsonPath("$.collections[0].owner.userId").value(7))
+                .andExpect(jsonPath("$.collections[0].recentNovels.length()").value(5))
+                .andDo(document("collections-list-get-random",
+                        resource(collection()
+                                .queryParameters(randomQueryParameters())
+                                .responseSchema(RESPONSE_SCHEMA)
+                                .responseFields(responseFields())
+                                .build())));
+
+        then(collectionFindApplication).should().getPublicCollections(isNull(), eq("random"), isNull(), eq(10));
+    }
+
+    @DisplayName("로그인 조회의 무작위 요청도 조회자와 정렬 기준을 그대로 넘긴다")
+    @Test
+    void passesViewerAndSortForRandomRequest() throws Exception {
+        mockMvc.perform(get(PATH).param("sort", "random").with(accessToken(USER_ID)))
+                .andExpect(status().isOk());
+
+        then(collectionFindApplication).should().getPublicCollections(any(User.class), eq("random"), isNull(), eq(10));
+    }
+
+    @DisplayName("지원하지 않는 정렬 기준 요청의 400 COLLECTION-009 응답을 문서화한다")
+    @Test
+    void documentGetWithUnsupportedSort() throws Exception {
+        givenListThrows(new CustomCollectionException(
+                INVALID_COLLECTION_SORT, "public collection sort must be omitted or 'random'"));
+
+        mockMvc.perform(get(PATH).param("sort", "popular"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.code").value(INVALID_COLLECTION_SORT.getCode()))
+                .andExpect(jsonPath("$.message").value(INVALID_COLLECTION_SORT.getDescription()))
+                .andDo(document("collections-list-get-invalid-sort",
+                        resource(collectionError().build())));
+
+        then(collectionFindApplication).should().getPublicCollections(isNull(), eq("popular"), isNull(), eq(10));
+    }
+
+    @DisplayName("무작위 정렬과 커서를 함께 보낸 요청의 400 COLLECTION-007 응답을 문서화한다")
+    @Test
+    void documentGetRandomWithCursor() throws Exception {
+        givenListThrows(new CustomCollectionException(
+                INVALID_COLLECTION_CURSOR, "random public collections do not accept a cursor"));
+
+        mockMvc.perform(listRequest().param("sort", "random"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.code").value(INVALID_COLLECTION_CURSOR.getCode()))
+                .andExpect(jsonPath("$.message").value(INVALID_COLLECTION_CURSOR.getDescription()))
+                .andDo(document("collections-list-get-random-with-cursor",
+                        resource(collectionError().build())));
+
+        then(collectionFindApplication).should()
+                .getPublicCollections(isNull(), eq("random"), eq(NEXT_CURSOR), eq(10));
+    }
+
+    @DisplayName("무작위 정렬에 빈 커서를 보내도 커서 파라미터를 그대로 넘겨 400 COLLECTION-007로 응답한다")
+    @Test
+    void rejectsRandomWithEmptyCursor() throws Exception {
+        givenListThrows(new CustomCollectionException(
+                INVALID_COLLECTION_CURSOR, "random public collections do not accept a cursor"));
+
+        mockMvc.perform(get(PATH).param("sort", "random").param("cursor", ""))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(INVALID_COLLECTION_CURSOR.getCode()));
+
+        then(collectionFindApplication).should().getPublicCollections(isNull(), eq("random"), eq(""), eq(10));
     }
 
     @DisplayName("토큰 없이 요청하면 비로그인 조회로 공개 컬렉션 목록을 반환한다")
@@ -193,7 +285,7 @@ class GetPublicCollectionsDocsTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.collections.length()").value(2));
 
-        then(collectionFindApplication).should().getPublicCollections(isNull(), eq(NEXT_CURSOR), eq(10));
+        then(collectionFindApplication).should().getPublicCollections(isNull(), isNull(), eq(NEXT_CURSOR), eq(10));
     }
 
     @DisplayName("Bearer 형식이 아닌 Authorization 헤더는 토큰 없음으로 보고 비로그인 조회로 처리한다")
@@ -202,7 +294,7 @@ class GetPublicCollectionsDocsTest {
         mockMvc.perform(listRequest().header(AUTHORIZATION, "Basic dXNlcjpwYXNz"))
                 .andExpect(status().isOk());
 
-        then(collectionFindApplication).should().getPublicCollections(isNull(), eq(NEXT_CURSOR), eq(10));
+        then(collectionFindApplication).should().getPublicCollections(isNull(), isNull(), eq(NEXT_CURSOR), eq(10));
     }
 
     @DisplayName("Bearer 뒤 토큰 값이 비어 있으면 토큰 없음으로 보고 비로그인 조회로 처리한다")
@@ -211,7 +303,7 @@ class GetPublicCollectionsDocsTest {
         mockMvc.perform(listRequest().header(AUTHORIZATION, "Bearer "))
                 .andExpect(status().isOk());
 
-        then(collectionFindApplication).should().getPublicCollections(isNull(), eq(NEXT_CURSOR), eq(10));
+        then(collectionFindApplication).should().getPublicCollections(isNull(), isNull(), eq(NEXT_CURSOR), eq(10));
     }
 
     @DisplayName("커서와 크기를 생략하면 커서 없이 기본 크기 10으로 첫 페이지를 조회한다")
@@ -220,13 +312,13 @@ class GetPublicCollectionsDocsTest {
         mockMvc.perform(get(PATH))
                 .andExpect(status().isOk());
 
-        then(collectionFindApplication).should().getPublicCollections(isNull(), isNull(), eq(10));
+        then(collectionFindApplication).should().getPublicCollections(isNull(), isNull(), isNull(), eq(10));
     }
 
     @DisplayName("조회 가능한 컬렉션이 없으면 빈 배열과 커서 없음을 반환한다")
     @Test
     void returnsEmptyList() throws Exception {
-        given(collectionFindApplication.getPublicCollections(any(), any(), anyInt()))
+        given(collectionFindApplication.getPublicCollections(any(), any(), any(), anyInt()))
                 .willReturn(PublicCollectionsGetResponse.of(false, null, List.of()));
 
         mockMvc.perform(get(PATH))
@@ -325,7 +417,7 @@ class GetPublicCollectionsDocsTest {
     }
 
     private void givenListThrows(RuntimeException exception) {
-        given(collectionFindApplication.getPublicCollections(any(), any(), anyInt())).willThrow(exception);
+        given(collectionFindApplication.getPublicCollections(any(), any(), any(), anyInt())).willThrow(exception);
     }
 
     /**
@@ -357,12 +449,25 @@ class GetPublicCollectionsDocsTest {
 
     private List<ParameterDescriptorWithType> queryParameters() {
         return List.of(
+                parameterWithName("sort").type(SimpleType.STRING).optional()
+                        .description("정렬 기준. 생략하면 최초 생성 시점 최신순이고, random이면 공개·차단 조건을 통과한 "
+                                + "전체 후보에서 무작위로 고른 단일 페이지다. 그 외 값은 400 COLLECTION-009다."),
                 parameterWithName("cursor").type(SimpleType.STRING).optional()
                         .description("직전 응답의 nextCursor를 URL 인코딩한 값. 첫 페이지는 생략하며 "
-                                + "빈 값이나 공백만 있는 값도 첫 페이지로 처리한다."),
+                                + "빈 값이나 공백만 있는 값도 첫 페이지로 처리한다. sort=random과는 빈 값이어도 함께 보낼 수 없다."),
                 parameterWithName("size").type(SimpleType.INTEGER).optional()
                         .defaultValue(10)
                         .description("한 번에 가져올 컬렉션 수. 생략하면 10이고 1 이상 100 이하여야 한다."));
+    }
+
+    private List<ParameterDescriptorWithType> randomQueryParameters() {
+        return List.of(
+                parameterWithName("sort").type(SimpleType.STRING).optional()
+                        .description("random이면 공개·차단 조건을 통과한 전체 후보에서 중복 없이 최대 size개를 "
+                                + "무작위로 고른다. 커서와 다음 페이지가 없다."),
+                parameterWithName("size").type(SimpleType.INTEGER).optional()
+                        .defaultValue(10)
+                        .description("고를 컬렉션 수. 생략하면 10이고 1 이상 100 이하여야 한다. 홈은 10을 쓴다."));
     }
 
     /**
@@ -371,12 +476,15 @@ class GetPublicCollectionsDocsTest {
      */
     private List<FieldDescriptor> responseFields() {
         return List.of(
-                fieldWithPath("hasNext").type(BOOLEAN).description("[페이지] 다음 페이지가 더 있는지 여부"),
+                fieldWithPath("hasNext").type(BOOLEAN)
+                        .description("[페이지] 다음 페이지가 더 있는지 여부. sort=random이면 항상 false다."),
                 fieldWithPath("nextCursor").type(STRING).optional()
-                        .description("[페이지] 다음 요청에 그대로 넘길 커서. hasNext가 false면 null이다."),
+                        .description("[페이지] 다음 요청에 그대로 넘길 커서. hasNext가 false면 null이다. "
+                                + "sort=random이면 항상 null이다."),
                 fieldWithPath("collections").type(ARRAY)
-                        .description("[페이지] 컬렉션 카드 배열. 최초 생성 시점 최신순(동률이면 ID 내림차순)이며 "
-                                + "최대 size개다. 조회 가능한 컬렉션이 없으면 빈 배열이다."),
+                        .description("[페이지] 컬렉션 카드 배열. 최대 size개이며 sort를 생략하면 최초 생성 시점 "
+                                + "최신순(동률이면 ID 내림차순), sort=random이면 무작위 순서다. "
+                                + "조회 가능한 컬렉션이 없으면 빈 배열이다."),
                 fieldWithPath("collections[].collectionId").type(NUMBER).description("[카드] 컬렉션 ID"),
                 fieldWithPath("collections[].collectionName").type(STRING).description("[카드] 컬렉션 이름"),
                 fieldWithPath("collections[].collectionDescription").type(STRING).optional()

@@ -1,5 +1,6 @@
 package org.websoso.WSSServer.collection.application;
 
+import static org.websoso.WSSServer.collection.exception.CustomCollectionError.INVALID_COLLECTION_CURSOR;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.INVALID_COLLECTION_PAGE_SIZE;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.PRIVATE_COLLECTION_ACCESS;
 
@@ -16,6 +17,7 @@ import org.websoso.WSSServer.collection.controller.dto.PublicCollectionPreviewGe
 import org.websoso.WSSServer.collection.controller.dto.PublicCollectionsGetResponse;
 import org.websoso.WSSServer.collection.domain.CollectionCursor;
 import org.websoso.WSSServer.collection.domain.PublicCollectionCursor;
+import org.websoso.WSSServer.collection.domain.PublicCollectionSort;
 import org.websoso.WSSServer.collection.exception.CustomCollectionException;
 import org.websoso.WSSServer.collection.repository.projection.CollectionDetailRow;
 import org.websoso.WSSServer.collection.repository.projection.CollectionPreviewRow;
@@ -93,17 +95,21 @@ public class CollectionFindApplication {
     }
 
     /**
-     * 모든 사용자의 공개 컬렉션을 최초 생성 시점 최신순으로 커서 기반 조회한다. 홈의 컬렉션 섹션과 전체 컬렉션
-     * 화면이 함께 쓴다. 비로그인 조회를 허용하므로 {@code viewer}가 없을 수 있다.
+     * 모든 사용자의 공개 컬렉션 목록을 조회한다. 홈의 컬렉션 섹션과 전체 컬렉션 화면이 함께 쓴다.
+     * 비로그인 조회를 허용하므로 {@code viewer}가 없을 수 있다.
+     * <p>
+     * 정렬을 생략하면 최초 생성 시점 최신순으로 커서 기반 조회한다. {@code random}이면 공개·차단 조건을 통과한
+     * 전체 후보 중 최대 {@code size}개를 무작위로 골라 단일 페이지로 돌려주며, 커서를 받지도 발급하지도 않는다.
      * <p>
      * 공개 여부와 차단 관계는 요청마다 그 시점의 값으로 판단한다. 여러 페이지에 걸친 고정 스냅샷은 두지 않는다.
      */
     @Transactional(readOnly = true)
-    public PublicCollectionsGetResponse getPublicCollections(User viewer, String cursor, int size) {
+    public PublicCollectionsGetResponse getPublicCollections(User viewer, String sort, String cursor, int size) {
 
-        // 1. 페이지 크기와 커서를 확인한다. 둘 다 조회 전에 거부한다.
+        // 1. 페이지 크기, 정렬 기준, 커서를 확인한다. 모두 조회 전에 거부한다.
         validatePageSize(size);
-        PublicCollectionCursor decodedCursor = decodePublicCursor(cursor);
+        PublicCollectionSort publicSort = PublicCollectionSort.from(sort);
+        PublicCollectionCursor decodedCursor = decodePublicCursor(publicSort, cursor);
 
         // 2. 로그인 조회자면 어느 방향이든 차단 관계인 사용자를 한 번에 읽어 그 사용자의 컬렉션만 걸러 낸다.
         //    여러 사용자의 컬렉션이 섞이는 목록이므로 목록 자체를 거부하지 않는다. 비로그인 조회에는 차단 관계가 없다.
@@ -111,15 +117,22 @@ public class CollectionFindApplication {
                 ? List.of()
                 : blockService.findBlockRelationUserIds(viewer.getUserId());
 
-        // 3. 공개·차단 조건을 적용한 뒤 요청 크기보다 하나 더 읽어 다음 페이지 존재 여부를 판단한다.
-        //    본인의 비공개 컬렉션도 이 목록에는 포함하지 않는다.
-        List<PublicCollectionRow> rows = collectionQueryService.findPublicCollectionRows(
-                blockedUserIds,
-                decodedCursor,
-                size + 1
-        );
-        boolean hasNext = rows.size() > size;
-        List<PublicCollectionRow> pageRows = hasNext ? rows.subList(0, size) : rows;
+        // 3. 공개·차단 조건을 적용한 뒤 이번 페이지 컬렉션을 읽는다. 본인의 비공개 컬렉션도 이 목록에는 포함하지 않는다.
+        //    무작위 조회는 단일 페이지이므로 요청 크기만큼만 읽고, 최신순은 하나 더 읽어 다음 페이지 존재 여부를 판단한다.
+        List<PublicCollectionRow> pageRows;
+        boolean hasNext;
+        if (publicSort.isRandom()) {
+            pageRows = collectionQueryService.findRandomPublicCollectionRows(blockedUserIds, size);
+            hasNext = false;
+        } else {
+            List<PublicCollectionRow> rows = collectionQueryService.findPublicCollectionRows(
+                    blockedUserIds,
+                    decodedCursor,
+                    size + 1
+            );
+            hasNext = rows.size() > size;
+            pageRows = hasNext ? rows.subList(0, size) : rows;
+        }
 
         // 4. 이번 페이지 컬렉션의 미리보기 작품을 한 번의 조회로 모두 가져온다.
         Map<Long, List<CollectionNovelSummaryGetResponse>> recentNovels = collectionQueryService
@@ -211,8 +224,15 @@ public class CollectionFindApplication {
     /**
      * 첫 페이지는 커서 없이 요청한다. 빈 문자열과 공백만 있는 값도 첫 페이지로 본다.
      * 값이 있으면 전체 공개 목록이 발급한 커서여야 하며, 다른 목록의 커서는 요청 오류로 처리한다.
+     * 무작위 조회는 커서를 발급하지 않으므로 빈 값·공백만 있는 값을 포함해 어떤 커서 파라미터도 받지 않는다.
      */
-    private PublicCollectionCursor decodePublicCursor(String cursor) {
+    private PublicCollectionCursor decodePublicCursor(PublicCollectionSort sort, String cursor) {
+        if (sort.isRandom() && cursor != null) {
+            throw new CustomCollectionException(
+                    INVALID_COLLECTION_CURSOR,
+                    "random public collections do not accept a cursor"
+            );
+        }
         if (cursor == null || cursor.isBlank()) {
             return null;
         }

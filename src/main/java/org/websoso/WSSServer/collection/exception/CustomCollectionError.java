@@ -20,7 +20,8 @@ public enum CustomCollectionError implements ICustomError {
     INVALID_AUTHORIZED_COLLECTION("COLLECTION-005", "컬렉션 소유자만 컬렉션을 수정하거나 삭제할 수 있습니다.", FORBIDDEN),
     PRIVATE_COLLECTION_ACCESS("COLLECTION-006", "비공개 컬렉션은 소유자만 조회할 수 있습니다.", FORBIDDEN),
     INVALID_COLLECTION_CURSOR("COLLECTION-007", "유효하지 않은 컬렉션 커서입니다.", BAD_REQUEST),
-    INVALID_COLLECTION_PAGE_SIZE("COLLECTION-008", "컬렉션 목록은 1개 이상 100개 이하로만 조회할 수 있습니다.", BAD_REQUEST);
+    INVALID_COLLECTION_PAGE_SIZE("COLLECTION-008", "컬렉션 목록은 1개 이상 100개 이하로만 조회할 수 있습니다.", BAD_REQUEST),
+    INVALID_COLLECTION_SORT("COLLECTION-009", "지원하지 않는 컬렉션 목록 정렬 기준입니다.", BAD_REQUEST);
 
     private final String code;
     private final String description;

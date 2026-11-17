@@ -11,8 +11,11 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Optional;
@@ -84,27 +87,25 @@ public class CollectionQueryRepositoryImpl implements CollectionQueryRepository 
     @Override
     public List<PublicCollectionRow> findPublicCollectionRows(List<Long> blockedUserIds,
                                                               PublicCollectionCursor cursor, int limit) {
-        return jpaQueryFactory
-                .select(Projections.constructor(
-                        PublicCollectionRow.class,
-                        collection.collectionId,
-                        collection.name,
-                        collection.description,
-                        collection.createdDate,
-                        novelCount(),
-                        user.userId,
-                        user.nickname,
-                        avatarProfile.avatarProfileImage
-                ))
-                .from(collection)
-                .join(collection.user, user)
-                .join(avatarProfile).on(user.avatarProfileId.eq(avatarProfile.avatarProfileId))
+        return selectPublicCollectionRows()
                 .where(
                         collection.isPublic.isTrue(),
                         notOwnedByBlockedUser(blockedUserIds),
                         afterPublicCursor(cursor)
                 )
                 .orderBy(collection.createdDate.desc(), collection.collectionId.desc())
+                .limit(limit)
+                .fetch();
+    }
+
+    @Override
+    public List<PublicCollectionRow> findRandomPublicCollectionRows(List<Long> blockedUserIds, int limit) {
+        return selectPublicCollectionRows()
+                .where(
+                        collection.isPublic.isTrue(),
+                        notOwnedByBlockedUser(blockedUserIds)
+                )
+                .orderBy(random().asc())
                 .limit(limit)
                 .fetch();
     }
@@ -179,6 +180,35 @@ public class CollectionQueryRepositoryImpl implements CollectionQueryRepository 
     /**
      * 카드에 표시할 포함 작품 수. 목록 쿼리 안의 서브 쿼리이므로 컬렉션 수만큼 쿼리가 늘지 않는다.
      */
+    /**
+     * 전체 공개 목록 카드 한 장에 필요한 값을 읽는다. 작성자와 아바타는 inner join으로, 포함 작품 수는 서브 쿼리로
+     * 읽는다. 컬렉션 한 건이 한 행이므로 정렬 기준과 관계없이 같은 컬렉션이 두 번 나오지 않는다.
+     */
+    private JPAQuery<PublicCollectionRow> selectPublicCollectionRows() {
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        PublicCollectionRow.class,
+                        collection.collectionId,
+                        collection.name,
+                        collection.description,
+                        collection.createdDate,
+                        novelCount(),
+                        user.userId,
+                        user.nickname,
+                        avatarProfile.avatarProfileImage
+                ))
+                .from(collection)
+                .join(collection.user, user)
+                .join(avatarProfile).on(user.avatarProfileId.eq(avatarProfile.avatarProfileId));
+    }
+
+    /**
+     * DB의 난수 함수로 행마다 정렬 값을 매긴다. MySQL과 H2 모두 {@code RAND()}를 제공한다.
+     */
+    private NumberExpression<Double> random() {
+        return Expressions.numberTemplate(Double.class, "function('rand')");
+    }
+
     private JPQLQuery<Long> novelCount() {
         QCollectionNovel novelCountSub = new QCollectionNovel("novelCountSub");
 
