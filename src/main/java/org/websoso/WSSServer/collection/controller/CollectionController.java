@@ -70,17 +70,19 @@ public class CollectionController {
     }
 
     /**
-     * 모든 사용자의 공개 컬렉션 목록. 홈의 컬렉션 섹션과 전체 컬렉션 화면이 함께 쓴다.
+     * 모든 사용자의 공개 컬렉션 목록. 홈의 컬렉션 섹션은 {@code sort=random}으로 첫 페이지만, 전체 컬렉션 화면은
+     * 정렬을 생략한 최신순으로 커서를 이어 쓴다.
      * 비로그인 조회를 허용하고, 토큰이 있으면 그대로 인증에 사용해 차단 관계인 작성자의 컬렉션을 걸러 낸다.
      */
     @GetMapping("/collections")
     public ResponseEntity<PublicCollectionsGetResponse> getPublicCollections(
             @AuthenticationPrincipal User user,
+            @RequestParam(value = "sort", required = false) String sort,
             @RequestParam(value = "cursor", required = false) String cursor,
             @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE) int size) {
         return ResponseEntity
                 .status(OK)
-                .body(collectionFindApplication.getPublicCollections(user, cursor, size));
+                .body(collectionFindApplication.getPublicCollections(user, sort, cursor, size));
     }
 
     /**

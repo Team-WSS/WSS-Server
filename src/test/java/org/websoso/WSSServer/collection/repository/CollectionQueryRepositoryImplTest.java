@@ -277,6 +277,70 @@ class CollectionQueryRepositoryImplTest {
         assertThat(subQuerySources).contains("novelCountSub").doesNotContain("collectionLike");
     }
 
+    // 전체 공개 목록: 무작위
+
+    @DisplayName("무작위 공개 목록은 DB 난수 하나로만 정렬해 후보 중에서 고른다")
+    @Test
+    void randomPublicListOrdersByRandomOnly() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findRandomPublicCollectionRows(List.of(), LIMIT);
+
+        OrderSpecifier<?> order = capturedOrder(query);
+        assertThat(order.getTarget()).hasToString("function('rand')");
+        then(query).should(never()).orderBy(any(OrderSpecifier[].class));
+    }
+
+    @DisplayName("무작위 공개 목록은 요청받은 행 수만큼만 읽는다")
+    @Test
+    void randomPublicListReadsRequestedLimit() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findRandomPublicCollectionRows(List.of(), LIMIT);
+
+        then(query).should().limit(LIMIT);
+    }
+
+    @DisplayName("무작위 공개 목록은 공개 조건과 차단 사용자 제외를 행 수 제한 전의 조회 조건으로 넣는다")
+    @Test
+    void randomPublicListFiltersCandidatesInQuery() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findRandomPublicCollectionRows(List.of(3L, 4L), LIMIT);
+
+        String conditions = capturedConditions(query);
+        assertThat(conditions).contains("collection.isPublic = true");
+        assertThat(conditions).contains("collection.user.userId not in [3, 4]");
+        assertThat(conditions).doesNotContain("collection.user.userId =", "createdDate <");
+    }
+
+    @DisplayName("차단 관계가 없으면 무작위 공개 목록에 제외 조건을 넣지 않는다")
+    @Test
+    void randomPublicListSkipsBlockConditionWithoutBlockedUsers() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findRandomPublicCollectionRows(List.of(), LIMIT);
+
+        assertThat(capturedConditions(query)).doesNotContain("not in");
+    }
+
+    @DisplayName("무작위 공개 목록은 최신순과 같은 카드 값을 같은 join으로 읽는다")
+    @Test
+    void randomPublicListReadsSameCardValuesAsRecentList() {
+        JPAQuery<Object> query = givenSelectQuery(List.of());
+
+        repository.findRandomPublicCollectionRows(List.of(), LIMIT);
+
+        then(query).should().join(collection.user, user);
+        then(query).should().join(avatarProfile);
+        then(query).should(never()).leftJoin(any(EntityPath.class));
+        ArgumentCaptor<FactoryExpression<?>> captor = ArgumentCaptor.forClass(FactoryExpression.class);
+        then(jpaQueryFactory).should().select(captor.capture());
+        assertThat(captor.getValue().getType().getSimpleName()).isEqualTo("PublicCollectionRow");
+        assertThat(captor.getValue().getArgs()).hasSize(8);
+        assertThat(captor.getValue().getArgs().toString()).doesNotContain("collectionLike", "representativeNovel");
+    }
+
     @DisplayName("미리보기는 여러 컬렉션을 한 번의 쿼리로 읽는다")
     @Test
     void previewReadsAllCollectionsInOneQuery() {

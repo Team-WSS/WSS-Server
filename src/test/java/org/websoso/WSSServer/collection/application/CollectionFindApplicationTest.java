@@ -19,6 +19,7 @@ import static org.websoso.WSSServer.collection.application.CollectionFindApplica
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.COLLECTION_NOT_FOUND;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.INVALID_COLLECTION_CURSOR;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.INVALID_COLLECTION_PAGE_SIZE;
+import static org.websoso.WSSServer.collection.exception.CustomCollectionError.INVALID_COLLECTION_SORT;
 import static org.websoso.WSSServer.collection.exception.CustomCollectionError.PRIVATE_COLLECTION_ACCESS;
 import static org.websoso.WSSServer.user.exception.CustomBlockError.BLOCKED_USER_ACCESS;
 
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -62,6 +64,7 @@ class CollectionFindApplicationTest {
     private static final long VISITOR_ID = 2L;
     private static final long COLLECTION_ID = 100L;
     private static final int SIZE = 2;
+    private static final String RANDOM = "random";
     private static final long LIKE_COUNT = 128L;
 
     private static final LocalDateTime FIRST_CREATED = LocalDateTime.of(2025, 1, 3, 0, 0);
@@ -585,7 +588,7 @@ class CollectionFindApplicationTest {
     void publicListForAnonymousViewerSkipsBlockLookup() {
         givenPublicPage(List.of(publicRow(11L, FIRST_CREATED)));
 
-        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, SIZE);
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, null, SIZE);
 
         assertThat(response.collections()).hasSize(1);
         then(blockService).shouldHaveNoInteractions();
@@ -598,7 +601,7 @@ class CollectionFindApplicationTest {
         given(blockService.findBlockRelationUserIds(VISITOR_ID)).willReturn(List.of(3L, 4L));
         givenPublicPage(List.of(publicRow(11L, FIRST_CREATED)));
 
-        PublicCollectionsGetResponse response = application.getPublicCollections(user(VISITOR_ID), null, SIZE);
+        PublicCollectionsGetResponse response = application.getPublicCollections(user(VISITOR_ID), null, null, SIZE);
 
         then(collectionQueryService).should().findPublicCollectionRows(List.of(3L, 4L), null, SIZE + 1);
         assertThat(response.collections()).hasSize(1);
@@ -610,7 +613,7 @@ class CollectionFindApplicationTest {
         given(blockService.findBlockRelationUserIds(VISITOR_ID)).willReturn(List.of(OWNER_ID));
         givenPublicPage(List.of());
 
-        assertThatCode(() -> application.getPublicCollections(user(VISITOR_ID), null, SIZE))
+        assertThatCode(() -> application.getPublicCollections(user(VISITOR_ID), null, null, SIZE))
                 .doesNotThrowAnyException();
 
         then(blockService).should(never()).validateNotBlocked(any(), any());
@@ -622,8 +625,8 @@ class CollectionFindApplicationTest {
         given(blockService.findBlockRelationUserIds(VISITOR_ID)).willReturn(List.of(), List.of(OWNER_ID));
         givenPublicPage(List.of());
 
-        application.getPublicCollections(user(VISITOR_ID), null, SIZE);
-        application.getPublicCollections(user(VISITOR_ID), null, SIZE);
+        application.getPublicCollections(user(VISITOR_ID), null, null, SIZE);
+        application.getPublicCollections(user(VISITOR_ID), null, null, SIZE);
 
         then(collectionQueryService).should().findPublicCollectionRows(List.of(), null, SIZE + 1);
         then(collectionQueryService).should().findPublicCollectionRows(List.of(OWNER_ID), null, SIZE + 1);
@@ -637,7 +640,7 @@ class CollectionFindApplicationTest {
         givenPublicPage(List.of(publicRow(11L, FIRST_CREATED), publicRow(12L, SECOND_CREATED),
                 publicRow(13L, THIRD_CREATED)));
 
-        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, SIZE);
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, null, SIZE);
 
         then(collectionQueryService).should().findPublicCollectionRows(anyList(), any(), eq(SIZE + 1));
         assertThat(response.hasNext()).isTrue();
@@ -651,7 +654,7 @@ class CollectionFindApplicationTest {
         givenPublicPage(List.of(publicRow(11L, FIRST_CREATED), publicRow(12L, SECOND_CREATED),
                 publicRow(13L, THIRD_CREATED)));
 
-        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, SIZE);
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, null, SIZE);
 
         PublicCollectionCursor nextCursor = PublicCollectionCursor.decode(response.nextCursor());
         assertThat(nextCursor.collectionId()).isEqualTo(12L);
@@ -664,8 +667,8 @@ class CollectionFindApplicationTest {
         givenPublicPage(List.of(publicRow(15L, FIRST_CREATED), publicRow(14L, FIRST_CREATED),
                 publicRow(13L, FIRST_CREATED)));
 
-        PublicCollectionsGetResponse first = application.getPublicCollections(null, null, SIZE);
-        application.getPublicCollections(null, first.nextCursor(), SIZE);
+        PublicCollectionsGetResponse first = application.getPublicCollections(null, null, null, SIZE);
+        application.getPublicCollections(null, null, first.nextCursor(), SIZE);
 
         ArgumentCaptor<PublicCollectionCursor> captor = ArgumentCaptor.forClass(PublicCollectionCursor.class);
         then(collectionQueryService).should(times(2))
@@ -681,7 +684,7 @@ class CollectionFindApplicationTest {
         givenPublicPage(List.of(publicRow(11L, THIRD_CREATED)));
         String cursor = PublicCollectionCursor.of(SECOND_CREATED, 12L).encode();
 
-        PublicCollectionsGetResponse response = application.getPublicCollections(null, cursor, SIZE);
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, cursor, SIZE);
 
         assertThat(response.collections()).extracting(PublicCollectionPreviewGetResponse::collectionId)
                 .containsExactly(11L);
@@ -695,7 +698,7 @@ class CollectionFindApplicationTest {
     void publicListOmitsCursorOnLastPage() {
         givenPublicPage(List.of(publicRow(11L, FIRST_CREATED), publicRow(12L, SECOND_CREATED)));
 
-        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, SIZE);
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, null, SIZE);
 
         assertThat(response.hasNext()).isFalse();
         assertThat(response.nextCursor()).isNull();
@@ -706,7 +709,7 @@ class CollectionFindApplicationTest {
     void publicListReturnsEmptyPage() {
         givenPublicPage(List.of());
 
-        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, SIZE);
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, null, SIZE);
 
         assertThat(response.collections()).isEmpty();
         assertThat(response.hasNext()).isFalse();
@@ -719,7 +722,7 @@ class CollectionFindApplicationTest {
     void publicListTreatsBlankCursorAsFirstPage(String blankCursor) {
         givenPublicPage(List.of(publicRow(11L, FIRST_CREATED)));
 
-        application.getPublicCollections(null, blankCursor, SIZE);
+        application.getPublicCollections(null, null, blankCursor, SIZE);
 
         then(collectionQueryService).should().findPublicCollectionRows(anyList(), eq(null), anyInt());
     }
@@ -737,7 +740,7 @@ class CollectionFindApplicationTest {
         // 커서는 조회자를 확인하기 전에 검증하므로 사용자 정보를 준비할 필요가 없다.
         User viewer = mock(User.class);
 
-        assertThatThrownBy(() -> application.getPublicCollections(viewer, cursor, SIZE))
+        assertThatThrownBy(() -> application.getPublicCollections(viewer, null, cursor, SIZE))
                 .isInstanceOf(CustomCollectionException.class)
                 .extracting(exception -> ((CustomCollectionException) exception).getICustomError())
                 .isEqualTo(INVALID_COLLECTION_CURSOR);
@@ -750,7 +753,7 @@ class CollectionFindApplicationTest {
     @ParameterizedTest
     @ValueSource(ints = {0, -1, 101})
     void publicListRejectsPageSizeOutOfRange(int size) {
-        assertThatThrownBy(() -> application.getPublicCollections(null, null, size))
+        assertThatThrownBy(() -> application.getPublicCollections(null, null, null, size))
                 .isInstanceOf(CustomCollectionException.class)
                 .extracting(exception -> ((CustomCollectionException) exception).getICustomError())
                 .isEqualTo(INVALID_COLLECTION_PAGE_SIZE);
@@ -765,7 +768,7 @@ class CollectionFindApplicationTest {
     void publicListAcceptsPageSizeBoundaries(int size) {
         givenPublicPage(List.of());
 
-        assertThatCode(() -> application.getPublicCollections(null, null, size)).doesNotThrowAnyException();
+        assertThatCode(() -> application.getPublicCollections(null, null, null, size)).doesNotThrowAnyException();
 
         then(collectionQueryService).should().findPublicCollectionRows(anyList(), any(), eq(size + 1));
     }
@@ -777,7 +780,7 @@ class CollectionFindApplicationTest {
     void publicListCardCarriesOwnerAndCount() {
         givenPublicPage(List.of(publicRow(11L, FIRST_CREATED)));
 
-        PublicCollectionPreviewGetResponse card = application.getPublicCollections(null, null, SIZE)
+        PublicCollectionPreviewGetResponse card = application.getPublicCollections(null, null, null, SIZE)
                 .collections().get(0);
 
         assertThat(card.collectionName()).isEqualTo("취향 저격 로판");
@@ -794,7 +797,7 @@ class CollectionFindApplicationTest {
         givenPublicPage(List.of(new PublicCollectionRow(11L, "취향 저격 로판", null, FIRST_CREATED, 1L,
                 OWNER_ID, "웹소소", "https://image/avatar.png")));
 
-        PublicCollectionPreviewGetResponse card = application.getPublicCollections(null, null, SIZE)
+        PublicCollectionPreviewGetResponse card = application.getPublicCollections(null, null, null, SIZE)
                 .collections().get(0);
 
         assertThat(card.collectionDescription()).isNull();
@@ -806,7 +809,7 @@ class CollectionFindApplicationTest {
         givenPublicPage(List.of(new PublicCollectionRow(11L, "취향 저격 로판", null, FIRST_CREATED, 1L,
                 -1L, "알 수 없음", "https://image/unknown.png")));
 
-        PublicCollectionPreviewGetResponse card = application.getPublicCollections(null, null, SIZE)
+        PublicCollectionPreviewGetResponse card = application.getPublicCollections(null, null, null, SIZE)
                 .collections().get(0);
 
         assertThat(card.owner().userId()).isEqualTo(-1L);
@@ -821,7 +824,7 @@ class CollectionFindApplicationTest {
         given(collectionQueryService.findRecentNovelPreviews(List.of(11L, 12L), NOVEL_PREVIEW_SIZE))
                 .willReturn(Map.of(11L, List.of(novelSummary(7L), novelSummary(8L))));
 
-        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, SIZE);
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, null, null, SIZE);
 
         assertThat(response.collections().get(0).recentNovels())
                 .extracting(CollectionNovelSummaryGetResponse::novelId)
@@ -835,11 +838,158 @@ class CollectionFindApplicationTest {
     void publicListDoesNotQueryLikesOrTotalCount() {
         givenPublicPage(List.of(publicRow(11L, FIRST_CREATED)));
 
-        application.getPublicCollections(user(VISITOR_ID), null, SIZE);
+        application.getPublicCollections(user(VISITOR_ID), null, null, SIZE);
 
         then(collectionLikeService).shouldHaveNoInteractions();
         then(collectionQueryService).should(never()).countVisibleCollections(anyLong(), anyBoolean());
         then(userService).shouldHaveNoInteractions();
+    }
+
+    // 전체 공개 목록: 정렬 기준
+
+    @DisplayName("정렬을 생략하거나 빈 값·공백만 보내면 최신순 커서 조회를 그대로 쓴다")
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {" "})
+    void publicListKeepsRecentOrderWhenSortIsOmitted(String sort) {
+        givenPublicPage(List.of(publicRow(11L, FIRST_CREATED)));
+
+        application.getPublicCollections(null, sort, null, SIZE);
+
+        then(collectionQueryService).should().findPublicCollectionRows(List.of(), null, SIZE + 1);
+        then(collectionQueryService).should(never()).findRandomPublicCollectionRows(anyList(), anyInt());
+    }
+
+    @DisplayName("지원하지 않는 정렬 기준은 조회 전에 거부한다")
+    @ParameterizedTest
+    @ValueSource(strings = {"RANDOM", "recent", "popular"})
+    void publicListRejectsUnsupportedSort(String sort) {
+        assertThatThrownBy(() -> application.getPublicCollections(null, sort, null, SIZE))
+                .isInstanceOf(CustomCollectionException.class)
+                .extracting(exception -> ((CustomCollectionException) exception).getICustomError())
+                .isEqualTo(INVALID_COLLECTION_SORT);
+
+        then(collectionQueryService).shouldHaveNoInteractions();
+        then(blockService).shouldHaveNoInteractions();
+    }
+
+    // 전체 공개 목록: 무작위
+
+    @DisplayName("무작위 조회는 요청 크기만큼만 읽어 단일 페이지로 반환하고 다음 페이지와 커서를 주지 않는다")
+    @Test
+    void randomPublicListReturnsSinglePage() {
+        givenRandomPublicPage(List.of(publicRow(13L, THIRD_CREATED), publicRow(11L, FIRST_CREATED)));
+
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, RANDOM, null, SIZE);
+
+        then(collectionQueryService).should().findRandomPublicCollectionRows(List.of(), SIZE);
+        then(collectionQueryService).should(never()).findPublicCollectionRows(anyList(), any(), anyInt());
+        assertThat(response.hasNext()).isFalse();
+        assertThat(response.nextCursor()).isNull();
+        assertThat(response.collections()).extracting(PublicCollectionPreviewGetResponse::collectionId)
+                .containsExactly(13L, 11L);
+    }
+
+    @DisplayName("무작위 조회는 비로그인이면 차단 관계를 읽지 않는다")
+    @Test
+    void randomPublicListForAnonymousViewerSkipsBlockLookup() {
+        givenRandomPublicPage(List.of(publicRow(11L, FIRST_CREATED)));
+
+        application.getPublicCollections(null, RANDOM, null, SIZE);
+
+        then(blockService).shouldHaveNoInteractions();
+        then(collectionQueryService).should().findRandomPublicCollectionRows(List.of(), SIZE);
+    }
+
+    @DisplayName("무작위 조회는 로그인 조회자와 양방향 차단 관계인 사용자를 후보 조회 조건으로 넘긴다")
+    @Test
+    void randomPublicListExcludesBlockedOwnersBeforeSelection() {
+        given(blockService.findBlockRelationUserIds(VISITOR_ID)).willReturn(List.of(3L, 4L));
+        givenRandomPublicPage(List.of(publicRow(11L, FIRST_CREATED)));
+
+        application.getPublicCollections(user(VISITOR_ID), RANDOM, null, SIZE);
+
+        then(collectionQueryService).should().findRandomPublicCollectionRows(List.of(3L, 4L), SIZE);
+        then(blockService).should(never()).validateNotBlocked(any(), any());
+    }
+
+    @DisplayName("무작위 조회도 같은 카드 응답과 페이지 단위 미리보기 조회를 쓴다")
+    @Test
+    void randomPublicListReusesCardsAndPreviews() {
+        givenRandomPublicPage(List.of(publicRow(12L, SECOND_CREATED), publicRow(11L, FIRST_CREATED)));
+        given(collectionQueryService.findRecentNovelPreviews(List.of(12L, 11L), NOVEL_PREVIEW_SIZE))
+                .willReturn(Map.of(11L, List.of(novelSummary(7L))));
+
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, RANDOM, null, SIZE);
+
+        PublicCollectionPreviewGetResponse first = response.collections().get(0);
+        assertThat(first.owner().userId()).isEqualTo(OWNER_ID);
+        assertThat(first.novelCount()).isEqualTo(12L);
+        assertThat(first.recentNovels()).isEmpty();
+        assertThat(response.collections().get(1).recentNovels())
+                .extracting(CollectionNovelSummaryGetResponse::novelId)
+                .containsExactly(7L);
+        then(collectionQueryService).should().findRecentNovelPreviews(List.of(12L, 11L), NOVEL_PREVIEW_SIZE);
+        then(collectionLikeService).shouldHaveNoInteractions();
+    }
+
+    @DisplayName("무작위 조회의 후보가 없으면 빈 배열과 커서 없음을 반환한다")
+    @Test
+    void randomPublicListReturnsEmptyPage() {
+        givenRandomPublicPage(List.of());
+
+        PublicCollectionsGetResponse response = application.getPublicCollections(null, RANDOM, null, SIZE);
+
+        assertThat(response.collections()).isEmpty();
+        assertThat(response.hasNext()).isFalse();
+        assertThat(response.nextCursor()).isNull();
+    }
+
+    @DisplayName("무작위 조회는 전체 공개 목록 커서와 빈 값·공백 커서를 포함해 어떤 커서도 조회 전에 거부한다")
+    @ParameterizedTest
+    @ValueSource(strings = {"not-a-cursor", "public", "", " "})
+    void randomPublicListRejectsCursor(String kind) {
+        String cursor = kind.equals("public") ? PublicCollectionCursor.of(SECOND_CREATED, 12L).encode() : kind;
+
+        assertThatThrownBy(() -> application.getPublicCollections(null, RANDOM, cursor, SIZE))
+                .isInstanceOf(CustomCollectionException.class)
+                .extracting(exception -> ((CustomCollectionException) exception).getICustomError())
+                .isEqualTo(INVALID_COLLECTION_CURSOR);
+
+        then(collectionQueryService).shouldHaveNoInteractions();
+        then(blockService).shouldHaveNoInteractions();
+    }
+
+    @DisplayName("무작위 조회는 커서 파라미터가 없을 때만 조회한다")
+    @Test
+    void randomPublicListAcceptsAbsentCursor() {
+        givenRandomPublicPage(List.of());
+
+        assertThatCode(() -> application.getPublicCollections(null, RANDOM, null, SIZE))
+                .doesNotThrowAnyException();
+    }
+
+    @DisplayName("무작위 조회도 허용 범위를 벗어난 페이지 크기는 조회 전에 거부한다")
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1, 101})
+    void randomPublicListRejectsPageSizeOutOfRange(int size) {
+        assertThatThrownBy(() -> application.getPublicCollections(null, RANDOM, null, size))
+                .isInstanceOf(CustomCollectionException.class)
+                .extracting(exception -> ((CustomCollectionException) exception).getICustomError())
+                .isEqualTo(INVALID_COLLECTION_PAGE_SIZE);
+
+        then(collectionQueryService).shouldHaveNoInteractions();
+    }
+
+    @DisplayName("무작위 조회는 페이지 크기 경계값 1과 100을 그대로 행 수로 쓴다")
+    @ParameterizedTest
+    @ValueSource(ints = {1, 100})
+    void randomPublicListAcceptsPageSizeBoundaries(int size) {
+        givenRandomPublicPage(List.of());
+
+        application.getPublicCollections(null, RANDOM, null, size);
+
+        then(collectionQueryService).should().findRandomPublicCollectionRows(List.of(), size);
     }
 
     private void givenPage(List<CollectionPreviewRow> rows) {
@@ -849,6 +999,10 @@ class CollectionFindApplicationTest {
 
     private void givenPublicPage(List<PublicCollectionRow> rows) {
         given(collectionQueryService.findPublicCollectionRows(anyList(), any(), anyInt())).willReturn(rows);
+    }
+
+    private void givenRandomPublicPage(List<PublicCollectionRow> rows) {
+        given(collectionQueryService.findRandomPublicCollectionRows(anyList(), anyInt())).willReturn(rows);
     }
 
     private PublicCollectionRow publicRow(Long collectionId, LocalDateTime createdDate) {
